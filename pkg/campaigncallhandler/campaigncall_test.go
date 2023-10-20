@@ -244,7 +244,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 			name: "normal",
 
 			customerID: uuid.FromStringOrNil("ebe2c7c6-6e30-11ee-9db0-c37efb343d1d"),
-			token:      "2020-10-10T03:30:17.000000",
+			token:      "2020-10-10 03:30:17.000000",
 			limit:      10,
 		},
 	}
@@ -283,7 +283,7 @@ func Test_GetsByCampaignID(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("0820b0ef-3014-431e-80a6-a45dd223a310"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10 03:30:17.000000",
 			10,
 		},
 	}
@@ -324,7 +324,7 @@ func Test_GetsByCampaignIDAndStatus(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("76f6f058-3ae2-41d2-9c33-ad1785b3b024"),
 			campaigncall.StatusDialing,
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10 03:30:17.000000",
 			10,
 		},
 	}
@@ -363,7 +363,7 @@ func Test_GetsOngoingByCampaignID(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("2086fd09-f91d-4ddc-9aa4-0f300959a1e7"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10 03:30:17.000000",
 			10,
 		},
 	}
