@@ -15,7 +15,75 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func Test_CampaigncallGetsByCampaignID(t *testing.T) {
+func Test_CampaigncallGets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer *cscustomer.Customer
+		size     uint64
+		token    string
+
+		responseCampaigncalls []cacampaigncall.Campaigncall
+		expectRes             []*cacampaigncall.WebhookMessage
+	}{
+		{
+			name: "normal",
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("149aaf9e-105d-11ee-aeae-4b0e41ee0cf6"),
+			},
+			size:  10,
+			token: "2020-09-20 03:23:20.995000",
+
+			responseCampaigncalls: []cacampaigncall.Campaigncall{
+				{
+					ID: uuid.FromStringOrNil("3b598286-105d-11ee-a8e0-d3fe1d127d17"),
+				},
+				{
+					ID: uuid.FromStringOrNil("3b7fc41e-105d-11ee-9b29-a77a519ca3b9"),
+				},
+			},
+			expectRes: []*cacampaigncall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("3b598286-105d-11ee-a8e0-d3fe1d127d17"),
+				},
+				{
+					ID: uuid.FromStringOrNil("3b7fc41e-105d-11ee-9b29-a77a519ca3b9"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CampaignV1CampaigncallGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.responseCampaigncalls, nil)
+
+			res, err := h.CampaigncallGets(ctx, tt.customer, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_campaigncallGetsByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -111,7 +179,8 @@ func Test_CampaigncallGet(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&cacampaigncall.WebhookMessage{
-				ID: uuid.FromStringOrNil("33a06e3c-c86b-11ec-85e5-27fb8fd8a197"),
+				ID:         uuid.FromStringOrNil("33a06e3c-c86b-11ec-85e5-27fb8fd8a197"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -167,7 +236,8 @@ func Test_CampaigncallDelete(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&cacampaigncall.WebhookMessage{
-				ID: uuid.FromStringOrNil("779eb134-c86b-11ec-bf08-0301553a89c1"),
+				ID:         uuid.FromStringOrNil("779eb134-c86b-11ec-bf08-0301553a89c1"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
