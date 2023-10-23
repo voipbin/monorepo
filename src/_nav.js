@@ -265,12 +265,8 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Campaigncalls',
-        to: '/resources/campaigns/campaigns_list',
+        to: '/resources/campaigns/campaigncalls_list',
       },
-      // {
-      //   component: CNavItem,
-      //   name: 'Campaigncalls',
-      // },
     ]
   },
   {

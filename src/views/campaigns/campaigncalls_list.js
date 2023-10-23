@@ -7,7 +7,19 @@ import {
   CModalHeader,
   CModalTitle,
 } from '@coreui/react'
-import store from '../../store'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
+  TextField,
+  Tooltip,
+} from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
 import { MaterialReactTable } from 'material-react-table';
 import {
   Get as ProviderGet,
@@ -16,8 +28,9 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
-const Campaigncalls = () => {
+const CampaigncallsList = () => {
 
   const [listData, setListData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,15 +49,18 @@ const Campaigncalls = () => {
       setIsLoading(false);
 
       const tmp = ParseData(data);
-      store.dispatch({
-        type: 'campaigncalls',
-        data: tmp,
-      });
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("campaigncalls", tmpData);
     });
   });
 
   const listColumns = useMemo(
     () => [
+      {
+        accessorKey: 'id',
+        header: 'ID',
+        enableEditing: false,
+      },
       {
         accessorKey: 'source.target',
         header: 'source number',
@@ -56,24 +72,14 @@ const Campaigncalls = () => {
         size: 100,
       },
       {
-        accessorKey: 'direction',
-        header: 'direction',
-        size: 100,
-      },
-      {
         accessorKey: 'status',
         header: 'status',
         size: 100,
       },
       {
-        accessorKey: 'hangup_by',
-        header: 'hangup by',
-        size: 80,
-      },
-      {
-        accessorKey: 'hangup_reason',
-        header: 'hangup reason',
-        size: 80,
+        accessorKey: 'result',
+        header: 'result',
+        size: 100,
       },
       {
         accessorKey: 'tm_update',
@@ -83,6 +89,10 @@ const Campaigncalls = () => {
     ],
     [],
   );
+
+  const columnVisibility = {
+    id: false,
+  };
 
   const [detailData, setDetailData] = useState({});
   const [modalState, setModalState] = useState(false);
@@ -109,26 +119,76 @@ const Campaigncalls = () => {
     )
   }
 
+  const handleDeleteRow = (row) => {
+    console.log("Deleting row. ", row)
+
+    if (
+      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
+    ) {
+      return;
+    }
+
+    const target = "campaigncalls/" + row.getValue('id');
+    ProviderDelete(target).then((response) => {
+      console.log("Deleted info.", JSON.stringify(response));
+    });
+  }
+
+  const navigate = useNavigate();
+  const Detail = (row) => {
+    const target = "/resources/campaigns/campaigncalls_detail/" + row.original.id;
+    console.log("navigate target: ", target);
+    navigate(target);
+  }
+
   return (
     <>
-      <ModalDetail/>
       <MaterialReactTable
         columns={listColumns}
-        data={listData}
+        data={listData ?? []} // data?.data ?? []
+
         enableRowNumbers
+        enableRowActions
+        renderRowActions={({ row, table }) => (
+          <Box sx={{ display: 'flex' }}>
+            <Tooltip arrow placement="left" title="Edit">
+              <IconButton onClick={() => {
+                  Detail(row);
+                }
+              }>
+                <Edit />
+              </IconButton>
+            </Tooltip>
+            <Tooltip arrow placement="right" title="Delete">
+              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
+                <Delete />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
+
         state={{
           isLoading: isLoading,
         }}
-        muiTableBodyRowProps={({ row }) => ({
+
+        muiTableBodyRowProps={({ row, table }) => ({
           onDoubleClick: (event) => {
-            console.info("print modal", modalState, event, row);
-            setDetailData(row.original);
-            setModalState(!modalState);
+            Detail(row);
           },
         })}
+        initialState={{
+          columnVisibility: columnVisibility
+        }}
+
+        displayColumnDefOptions={{
+          'mrt-row-numbers': {
+            enableResizing: true,
+            enableHiding: true
+          }
+        }}
       />
     </>
   )
 }
 
-export default Campaigncalls
+export default CampaigncallsList
