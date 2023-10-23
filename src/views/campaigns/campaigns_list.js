@@ -148,8 +148,8 @@ const CampaignsList = () => {
     }
 
     const target = "campaigns/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted queue.");
+    ProviderDelete(target).then((response) => {
+      console.log("Deleted info.", JSON.stringify(response));
     });
   }
 

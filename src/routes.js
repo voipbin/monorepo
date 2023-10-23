@@ -105,7 +105,9 @@ const RoutesCreate = React.lazy(() => import('./views/routes/routes_create'))
 // outbound campaign ----------------------------------------------------------------
 
 // campaigncalls
-const Campaigncalls = React.lazy(() => import('./views/campaigns/campaigncalls'))
+const CampaigncallsList = React.lazy(() => import('./views/campaigns/campaigncalls_list'))
+const CampaigncallsDetail = React.lazy(() => import('./views/campaigns/campaigncalls_detail'))
+
 
 // campaigns
 const CampaignsList = React.lazy(() => import('./views/campaigns/campaigns_list'))
@@ -212,7 +214,8 @@ const routes = [
   { path: '/resources/campaigns/campaigns_create', name: 'CampaignsCreate', element: CampaignsCreate },
   { path: '/resources/campaigns/campaigns_detail/:id', name: 'CampaignsDetail', element: CampaignsDetail },
 
-  { path: '/resources/campaigns/campaigncalls_list', name: 'Campaigncalls', element: Campaigncalls },
+  { path: '/resources/campaigns/campaigncalls_list', name: 'CampaigncallsList', element: CampaigncallsList },
+  { path: '/resources/campaigns/campaigncalls_detail/:id', name: 'CampaigncallsDetail', element: CampaigncallsDetail },
 
   { path: '/resources/outdials/outdials_list', name: 'OutdialsList', element: OutdialsList },
   { path: '/resources/outdials/outdials_create', name: 'OutdialsCreate', element: OutdialsCreate },
