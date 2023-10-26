@@ -23,9 +23,10 @@ type V1DataCampaignsPost struct {
 	EndHandle    campaign.EndHandle `json:"end_handle"`
 
 	// action settings
-	Actions []fmaction.Action `json:"actions"`
+	Actions []fmaction.Action `json:"actions"` // will be deprecated
 
 	// resource info
+	FlowID    uuid.UUID `json:"flow_id"`
 	OutplanID uuid.UUID `json:"outplan_id"`
 	OutdialID uuid.UUID `json:"outdial_id"`
 	QueueID   uuid.UUID `json:"queue_id"`
@@ -66,9 +67,11 @@ type V1DataCampaignsIDActionsPut struct {
 // v1 data type request struct for
 // /v1/campaigns/<campaign-id>/resource_info PUT
 type V1DataCampaignsIDResourceInfoPut struct {
-	OutplanID uuid.UUID `json:"outplan_id"`
-	OutdialID uuid.UUID `json:"outdial_id"`
-	QueueID   uuid.UUID `json:"queue_id"`
+	FlowID         uuid.UUID `json:"flow_id"`
+	OutplanID      uuid.UUID `json:"outplan_id"`
+	OutdialID      uuid.UUID `json:"outdial_id"`
+	QueueID        uuid.UUID `json:"queue_id"`
+	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 }
 
 // V1DataCampaignsIDNextCampaignIDPut is

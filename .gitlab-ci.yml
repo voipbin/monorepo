@@ -50,7 +50,8 @@ vet:
 test:
   stage: test
   script:
-    - go test -v $(go list ./...)
+    - go test -v $(go list ./...) -coverpkg=./... -coverprofile ./coverage.out
+    - go tool cover -func ./coverage.out
 
 golangci-lint:
   image: golangci/golangci-lint:latest

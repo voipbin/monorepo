@@ -36,9 +36,9 @@ func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *rabbitmqhandler.
 		req.Type,
 		req.Name,
 		req.Detail,
-		req.Actions,
 		req.ServiceLevel,
 		req.EndHandle,
+		req.FlowID,
 		req.OutplanID,
 		req.OutdialID,
 		req.QueueID,
@@ -341,50 +341,6 @@ func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *rab
 	return res, nil
 }
 
-// v1CampaignsIDActionsPut handles /v1/campaigns/{id}/actions PUT request
-func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "v1CampaignsIDActionsPut",
-		"request": m,
-	})
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 4 {
-		return simpleResponse(400), nil
-	}
-
-	id := uuid.FromStringOrNil(uriItems[3])
-
-	log.Debug("Executing v1CampaignsIDActionsPut.")
-
-	var req request.V1DataCampaignsIDActionsPut
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return nil, err
-	}
-
-	// update
-	tmp, err := h.campaignHandler.UpdateActions(ctx, id, req.Actions)
-	if err != nil {
-		log.Errorf("Could not update the campaign actions. err: %v", err)
-		return nil, err
-	}
-
-	data, err := json.Marshal(tmp)
-	if err != nil {
-		log.Errorf("Could not marshal the res. err: %v", err)
-		return nil, err
-	}
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
-	return res, nil
-}
-
 // v1CampaignsIDResourceInfoPut handles /v1/campaigns/{id}/resource_info PUT request
 func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -408,7 +364,7 @@ func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *rab
 	}
 
 	// update
-	tmp, err := h.campaignHandler.UpdateResourceInfo(ctx, id, req.OutplanID, req.OutdialID, req.QueueID)
+	tmp, err := h.campaignHandler.UpdateResourceInfo(ctx, id, req.FlowID, req.OutplanID, req.OutdialID, req.QueueID, req.NextCampaignID)
 	if err != nil {
 		log.Errorf("Could not update the campaign resource_info. err: %v", err)
 		return nil, err

@@ -1,3 +1,4 @@
 vendor
 campaign-manager
 !cmd/*
+coverage.out
