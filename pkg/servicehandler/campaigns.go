@@ -9,7 +9,6 @@ import (
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // campaignGet validates the campaign's ownership and returns the campaign info.
@@ -49,7 +48,7 @@ func (h *serviceHandler) CampaignCreate(
 	campaignType cacampaign.Type,
 	serviceLevel int,
 	endHandle cacampaign.EndHandle,
-	actions []fmaction.Action,
+	flowID uuid.UUID,
 	outplanID uuid.UUID,
 	outdialID uuid.UUID,
 	queueID uuid.UUID,
@@ -59,6 +58,7 @@ func (h *serviceHandler) CampaignCreate(
 		"func":        "CampaignCreate",
 		"customer_id": u.ID,
 		"name":        name,
+		"detail":      detail,
 	})
 
 	log.Debug("Creating a new campaign.")
@@ -71,7 +71,7 @@ func (h *serviceHandler) CampaignCreate(
 		detail,
 		serviceLevel,
 		endHandle,
-		actions,
+		flowID,
 		outplanID,
 		outdialID,
 		queueID,
@@ -251,37 +251,18 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(ctx context.Context, u *cscu
 	return res, nil
 }
 
-// CampaignUpdateActions updates the campaign's actions.
-// It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateActions(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "CampaignUpdateActions",
-		"customer_id": u.ID,
-		"username":    u.Username,
-		"campaign_id": id,
-	})
-	log.Debug("Updating an campaign.")
-
-	// get campaign
-	_, err := h.campaignGet(ctx, u, id)
-	if err != nil {
-		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
-	}
-
-	tmp, err := h.reqHandler.CampaignV1CampaignUpdateActions(ctx, id, actions)
-	if err != nil {
-		logrus.Errorf("Could not update the campaign. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
 // CampaignUpdateResourceInfo updates the campaign's resource_info.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error) {
+func (h *serviceHandler) CampaignUpdateResourceInfo(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	id uuid.UUID,
+	flowID uuid.UUID,
+	outplanID uuid.UUID,
+	outdialID uuid.UUID,
+	queueID uuid.UUID,
+	nextCampaignID uuid.UUID,
+) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateResourceInfo",
 		"customer_id": u.ID,
@@ -297,7 +278,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *cscu
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, id, flowID, outplanID, outdialID, queueID, nextCampaignID)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
