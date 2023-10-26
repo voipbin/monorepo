@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
@@ -27,21 +26,16 @@ func Test_CampaignCreate(t *testing.T) {
 		{
 			"type call with endhandle stop",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
-				Type:         campaign.TypeCall,
-				Execute:      campaign.ExecuteStop,
-				Name:         "test name",
-				Detail:       "test detail",
-				Status:       campaign.StatusStop,
-				ServiceLevel: 0,
-				EndHandle:    campaign.EndHandleStop,
-				FlowID:       uuid.FromStringOrNil("8aaeab73-36ce-4ac7-9dd2-2e21fc6210b1"),
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				ID:             uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
+				CustomerID:     uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Type:           campaign.TypeCall,
+				Execute:        campaign.ExecuteStop,
+				Name:           "test name",
+				Detail:         "test detail",
+				Status:         campaign.StatusStop,
+				ServiceLevel:   0,
+				EndHandle:      campaign.EndHandleStop,
+				FlowID:         uuid.FromStringOrNil("8aaeab73-36ce-4ac7-9dd2-2e21fc6210b1"),
 				OutplanID:      uuid.FromStringOrNil("ba29f006-b3ce-11ec-80d2-a71d2212a7d7"),
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
@@ -53,21 +47,16 @@ func Test_CampaignCreate(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
-				Type:         campaign.TypeCall,
-				Execute:      campaign.ExecuteStop,
-				Name:         "test name",
-				Detail:       "test detail",
-				Status:       campaign.StatusStop,
-				ServiceLevel: 0,
-				EndHandle:    campaign.EndHandleStop,
-				FlowID:       uuid.FromStringOrNil("8aaeab73-36ce-4ac7-9dd2-2e21fc6210b1"),
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				ID:             uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
+				CustomerID:     uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Type:           campaign.TypeCall,
+				Execute:        campaign.ExecuteStop,
+				Name:           "test name",
+				Detail:         "test detail",
+				Status:         campaign.StatusStop,
+				ServiceLevel:   0,
+				EndHandle:      campaign.EndHandleStop,
+				FlowID:         uuid.FromStringOrNil("8aaeab73-36ce-4ac7-9dd2-2e21fc6210b1"),
 				OutplanID:      uuid.FromStringOrNil("ba29f006-b3ce-11ec-80d2-a71d2212a7d7"),
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
@@ -80,21 +69,16 @@ func Test_CampaignCreate(t *testing.T) {
 		{
 			"type flow endhandle continue",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
-				Type:         campaign.TypeFlow,
-				Execute:      campaign.ExecuteRun,
-				Name:         "test name",
-				Detail:       "test detail",
-				Status:       campaign.StatusStop,
-				ServiceLevel: 0,
-				EndHandle:    campaign.EndHandleContinue,
-				FlowID:       uuid.FromStringOrNil("18972935-c90f-4e9b-bbd0-67aa9ae934b1"),
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				ID:             uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
+				CustomerID:     uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Type:           campaign.TypeFlow,
+				Execute:        campaign.ExecuteRun,
+				Name:           "test name",
+				Detail:         "test detail",
+				Status:         campaign.StatusStop,
+				ServiceLevel:   0,
+				EndHandle:      campaign.EndHandleContinue,
+				FlowID:         uuid.FromStringOrNil("18972935-c90f-4e9b-bbd0-67aa9ae934b1"),
 				OutplanID:      uuid.FromStringOrNil("ba29f006-b3ce-11ec-80d2-a71d2212a7d7"),
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
@@ -106,21 +90,16 @@ func Test_CampaignCreate(t *testing.T) {
 
 			"2020-04-18 03:22:17.995000",
 			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
-				CustomerID:   uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
-				Type:         campaign.TypeFlow,
-				Execute:      campaign.ExecuteRun,
-				Name:         "test name",
-				Detail:       "test detail",
-				Status:       campaign.StatusStop,
-				ServiceLevel: 0,
-				EndHandle:    campaign.EndHandleContinue,
-				FlowID:       uuid.FromStringOrNil("18972935-c90f-4e9b-bbd0-67aa9ae934b1"),
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
+				ID:             uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
+				CustomerID:     uuid.FromStringOrNil("b9f87f80-b3ce-11ec-8442-537a6b140131"),
+				Type:           campaign.TypeFlow,
+				Execute:        campaign.ExecuteRun,
+				Name:           "test name",
+				Detail:         "test detail",
+				Status:         campaign.StatusStop,
+				ServiceLevel:   0,
+				EndHandle:      campaign.EndHandleContinue,
+				FlowID:         uuid.FromStringOrNil("18972935-c90f-4e9b-bbd0-67aa9ae934b1"),
 				OutplanID:      uuid.FromStringOrNil("ba29f006-b3ce-11ec-80d2-a71d2212a7d7"),
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
@@ -241,19 +220,14 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			"1 item",
 			[]*campaign.Campaign{
 				{
-					ID:           uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
-					CustomerID:   uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
-					Name:         "test name",
-					Detail:       "test detail",
-					Status:       campaign.StatusStop,
-					ServiceLevel: 10,
-					EndHandle:    campaign.EndHandleStop,
-					FlowID:       uuid.FromStringOrNil("7d469238-eb40-481f-99dd-bc59bb1d38f7"),
-					Actions: []fmaction.Action{
-						{
-							Type: fmaction.TypeAnswer,
-						},
-					},
+					ID:             uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
+					CustomerID:     uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
+					Name:           "test name",
+					Detail:         "test detail",
+					Status:         campaign.StatusStop,
+					ServiceLevel:   10,
+					EndHandle:      campaign.EndHandleStop,
+					FlowID:         uuid.FromStringOrNil("7d469238-eb40-481f-99dd-bc59bb1d38f7"),
 					OutplanID:      uuid.FromStringOrNil("f9771d70-b3d2-11ec-9154-dfb637b4a732"),
 					OutdialID:      uuid.FromStringOrNil("f9a4deb8-b3d2-11ec-8ced-cfd5fa2a7c1b"),
 					QueueID:        uuid.FromStringOrNil("f9ce6d96-b3d2-11ec-94ac-bb22aad0488d"),
@@ -268,19 +242,14 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			"2020-04-18 03:22:18.995000",
 			[]*campaign.Campaign{
 				{
-					ID:           uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
-					CustomerID:   uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
-					Name:         "test name",
-					Detail:       "test detail",
-					Status:       campaign.StatusStop,
-					ServiceLevel: 10,
-					EndHandle:    campaign.EndHandleStop,
-					FlowID:       uuid.FromStringOrNil("7d469238-eb40-481f-99dd-bc59bb1d38f7"),
-					Actions: []fmaction.Action{
-						{
-							Type: fmaction.TypeAnswer,
-						},
-					},
+					ID:             uuid.FromStringOrNil("f902e478-b3d2-11ec-838c-f3f66784d081"),
+					CustomerID:     uuid.FromStringOrNil("f940793c-b3d2-11ec-8a3e-2f48bac6f31a"),
+					Name:           "test name",
+					Detail:         "test detail",
+					Status:         campaign.StatusStop,
+					ServiceLevel:   10,
+					EndHandle:      campaign.EndHandleStop,
+					FlowID:         uuid.FromStringOrNil("7d469238-eb40-481f-99dd-bc59bb1d38f7"),
 					OutplanID:      uuid.FromStringOrNil("f9771d70-b3d2-11ec-9154-dfb637b4a732"),
 					OutdialID:      uuid.FromStringOrNil("f9a4deb8-b3d2-11ec-8ced-cfd5fa2a7c1b"),
 					QueueID:        uuid.FromStringOrNil("f9ce6d96-b3d2-11ec-94ac-bb22aad0488d"),
@@ -484,42 +453,48 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 		name     string
 		campaign *campaign.Campaign
 
-		outplanID uuid.UUID
-		outdialID uuid.UUID
-		queueID   uuid.UUID
+		flowID         uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		responseCurTime string
 		expectRes       *campaign.Campaign
 	}{
 		{
-			"normal",
-			&campaign.Campaign{
+			name: "normal",
+			campaign: &campaign.Campaign{
 				ID:             uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
 				CustomerID:     uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
+				FlowID:         uuid.FromStringOrNil("4d2949b0-72d7-11ee-92f3-1f2603eceff0"),
 				OutplanID:      uuid.FromStringOrNil("298c7482-b3d4-11ec-9ea5-ef75a2e6bfb6"),
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("2a21ba1a-b3d4-11ec-a5cf-bf03f62e70c7"),
 			},
 
-			uuid.FromStringOrNil("2a56c49e-b3d4-11ec-adfe-b38bfdbaca15"),
-			uuid.FromStringOrNil("2a8c690a-b3d4-11ec-b837-4fc7444b844f"),
-			uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
+			flowID:         uuid.FromStringOrNil("4ca4a43a-72d7-11ee-8818-837c78ba80f2"),
+			outplanID:      uuid.FromStringOrNil("2a56c49e-b3d4-11ec-adfe-b38bfdbaca15"),
+			outdialID:      uuid.FromStringOrNil("2a8c690a-b3d4-11ec-b837-4fc7444b844f"),
+			queueID:        uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
+			nextCampaignID: uuid.FromStringOrNil("4cfb5ab4-72d7-11ee-a58f-c701a8d6ab9b"),
 
-			"2020-04-18 03:22:17.995000",
-			&campaign.Campaign{
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: &campaign.Campaign{
 				ID:             uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
 				CustomerID:     uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
 				Name:           "test name",
 				Detail:         "test detail",
 				Status:         campaign.StatusStop,
+				FlowID:         uuid.FromStringOrNil("4ca4a43a-72d7-11ee-8818-837c78ba80f2"),
 				OutplanID:      uuid.FromStringOrNil("2a56c49e-b3d4-11ec-adfe-b38bfdbaca15"),
 				OutdialID:      uuid.FromStringOrNil("2a8c690a-b3d4-11ec-b837-4fc7444b844f"),
 				QueueID:        uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
-				NextCampaignID: uuid.FromStringOrNil("2a21ba1a-b3d4-11ec-a5cf-bf03f62e70c7"),
+				NextCampaignID: uuid.FromStringOrNil("4cfb5ab4-72d7-11ee-a58f-c701a8d6ab9b"),
 				TMCreate:       "2020-04-18 03:22:17.995000",
 				TMUpdate:       "2020-04-18 03:22:17.995000",
 				TMDelete:       DefaultTimeStamp,
@@ -550,7 +525,7 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaignUpdateResourceInfo(ctx, tt.campaign.ID, tt.outplanID, tt.outdialID, tt.queueID); err != nil {
+			if err := h.CampaignUpdateResourceInfo(ctx, tt.campaign.ID, tt.flowID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -1083,106 +1058,6 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateEndHandle(ctx, tt.campaign.ID, tt.endHandle); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
-			res, err := h.CampaignGet(ctx, tt.campaign.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_CampaignUpdateActions(t *testing.T) {
-	tests := []struct {
-		name     string
-		campaign *campaign.Campaign
-
-		actions []fmaction.Action
-
-		responseCurTime string
-		expectRes       *campaign.Campaign
-	}{
-		{
-			"normal",
-			&campaign.Campaign{
-				ID:             uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
-				CustomerID:     uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
-				Name:           "test name",
-				Detail:         "test detail",
-				Status:         campaign.StatusStop,
-				ServiceLevel:   100,
-				EndHandle:      campaign.EndHandleStop,
-				FlowID:         uuid.FromStringOrNil("4a2530aa-9ea7-4441-a137-dfcf54e0f609"),
-				OutplanID:      uuid.FromStringOrNil("298c7482-b3d4-11ec-9ea5-ef75a2e6bfb6"),
-				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
-				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
-				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
-			},
-
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-
-			"2020-04-18 03:22:17.995000",
-			&campaign.Campaign{
-				ID:           uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
-				CustomerID:   uuid.FromStringOrNil("a1f09a50-f917-4de5-a46f-1a8c1bb0afbc"),
-				Name:         "test name",
-				Detail:       "test detail",
-				Status:       campaign.StatusStop,
-				ServiceLevel: 100,
-				EndHandle:    campaign.EndHandleStop,
-				FlowID:       uuid.FromStringOrNil("4a2530aa-9ea7-4441-a137-dfcf54e0f609"),
-				Actions: []fmaction.Action{
-					{
-						Type: fmaction.TypeAnswer,
-					},
-				},
-				OutplanID:      uuid.FromStringOrNil("298c7482-b3d4-11ec-9ea5-ef75a2e6bfb6"),
-				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
-				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
-				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
-				TMCreate:       "2020-04-18 03:22:17.995000",
-				TMUpdate:       "2020-04-18 03:22:17.995000",
-				TMDelete:       DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
-			}
-
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaignUpdateActions(ctx, tt.campaign.ID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

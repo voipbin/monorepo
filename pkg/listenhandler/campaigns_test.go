@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
@@ -19,14 +18,15 @@ func Test_v1CampaignsPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		id             uuid.UUID
-		customerID     uuid.UUID
-		campaignType   campaign.Type
-		campaignName   string
-		detail         string
-		actions        []fmaction.Action
-		serviceLevel   int
-		endHandle      campaign.EndHandle
+		id           uuid.UUID
+		customerID   uuid.UUID
+		campaignType campaign.Type
+		campaignName string
+		detail       string
+		serviceLevel int
+		endHandle    campaign.EndHandle
+
+		flowID         uuid.UUID
 		outplanID      uuid.UUID
 		outdialID      uuid.UUID
 		queueID        uuid.UUID
@@ -37,40 +37,36 @@ func Test_v1CampaignsPost(t *testing.T) {
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
-			"normal",
-			&rabbitmqhandler.Request{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/campaigns",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"60f76478-c454-11ec-969b-13906a5eea9d","type":"call","name":"test name","detail":"test detail","actions":[{"type":"answer"}],"service_level":100,"end_handle":"stop","outplan_id":"612a9186-c454-11ec-8afa-4327f7ed3a4e","outdial_id":"615dce2a-c454-11ec-aefb-a32f5d072685","queue_id":"61893ca4-c454-11ec-a2a2-3f4cd3113b05","next_campaign_id":"61b3c7f8-c454-11ec-9d0e-07f30d37566d"}`),
+				Data:     []byte(`{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"60f76478-c454-11ec-969b-13906a5eea9d","type":"call","name":"test name","detail":"test detail","service_level":100,"end_handle":"stop","flow_id":"73c4abc8-72e1-11ee-b168-47ac5c099fd8","outplan_id":"612a9186-c454-11ec-8afa-4327f7ed3a4e","outdial_id":"615dce2a-c454-11ec-aefb-a32f5d072685","queue_id":"61893ca4-c454-11ec-a2a2-3f4cd3113b05","next_campaign_id":"61b3c7f8-c454-11ec-9d0e-07f30d37566d"}`),
 			},
 
-			uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
-			uuid.FromStringOrNil("60f76478-c454-11ec-969b-13906a5eea9d"),
-			campaign.TypeCall,
-			"test name",
-			"test detail",
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			100,
-			campaign.EndHandleStop,
+			id:           uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
+			customerID:   uuid.FromStringOrNil("60f76478-c454-11ec-969b-13906a5eea9d"),
+			campaignType: campaign.TypeCall,
+			campaignName: "test name",
+			detail:       "test detail",
+			serviceLevel: 100,
+			endHandle:    campaign.EndHandleStop,
 
-			uuid.FromStringOrNil("612a9186-c454-11ec-8afa-4327f7ed3a4e"),
-			uuid.FromStringOrNil("615dce2a-c454-11ec-aefb-a32f5d072685"),
-			uuid.FromStringOrNil("61893ca4-c454-11ec-a2a2-3f4cd3113b05"),
-			uuid.FromStringOrNil("61b3c7f8-c454-11ec-9d0e-07f30d37566d"),
+			flowID:         uuid.FromStringOrNil("73c4abc8-72e1-11ee-b168-47ac5c099fd8"),
+			outplanID:      uuid.FromStringOrNil("612a9186-c454-11ec-8afa-4327f7ed3a4e"),
+			outdialID:      uuid.FromStringOrNil("615dce2a-c454-11ec-aefb-a32f5d072685"),
+			queueID:        uuid.FromStringOrNil("61893ca4-c454-11ec-a2a2-3f4cd3113b05"),
+			nextCampaignID: uuid.FromStringOrNil("61b3c7f8-c454-11ec-9d0e-07f30d37566d"),
 
-			&campaign.Campaign{
+			responseCampaign: &campaign.Campaign{
 				ID: uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
 			},
 
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -88,7 +84,7 @@ func Test_v1CampaignsPost(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().Create(gomock.Any(), tt.id, tt.customerID, tt.campaignType, tt.campaignName, tt.detail, tt.actions, tt.serviceLevel, tt.endHandle, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().Create(gomock.Any(), tt.id, tt.customerID, tt.campaignType, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle, tt.flowID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -136,7 +132,7 @@ func Test_v1CampaignsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -196,7 +192,7 @@ func Test_v1CampaignsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"edb1a7ca-c459-11ec-b591-733bb55d7160","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"edb1a7ca-c459-11ec-b591-733bb55d7160","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -256,7 +252,7 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5a797d38-c45a-11ec-95be-bb5e6cfb1d96","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5a797d38-c45a-11ec-95be-bb5e6cfb1d96","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -321,7 +317,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"40b95d6c-c466-11ec-88ac-734fd1ce5539","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"40b95d6c-c466-11ec-88ac-734fd1ce5539","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -443,7 +439,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -465,7 +461,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d26b0c58-c45a-11ec-b42d-3b261e615304","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d26b0c58-c45a-11ec-b42d-3b261e615304","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -528,7 +524,7 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -559,110 +555,47 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 	}
 }
 
-func Test_v1CampaignsIDActionsPut(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		request *rabbitmqhandler.Request
-
-		campaignID uuid.UUID
-		actions    []fmaction.Action
-
-		responseCampaign *campaign.Campaign
-
-		expectRes *rabbitmqhandler.Response
-	}{
-		{
-			"stopping",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/campaigns/045cdfc4-c45c-11ec-915c-5b6e9c81d305/actions",
-				Method:   rabbitmqhandler.RequestMethodPut,
-				DataType: "application/json",
-				Data:     []byte(`{"actions":[{"type":"answer"}]}`),
-			},
-
-			uuid.FromStringOrNil("045cdfc4-c45c-11ec-915c-5b6e9c81d305"),
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-
-			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("045cdfc4-c45c-11ec-915c-5b6e9c81d305"),
-			},
-
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"045cdfc4-c45c-11ec-915c-5b6e9c81d305","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:      mockSock,
-				campaignHandler: mockCampaign,
-			}
-
-			mockCampaign.EXPECT().UpdateActions(gomock.Any(), tt.campaignID, tt.actions).Return(tt.responseCampaign, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
 		request *rabbitmqhandler.Request
 
-		campaignID uuid.UUID
-		outplanID  uuid.UUID
-		outdialID  uuid.UUID
-		queueID    uuid.UUID
+		campaignID     uuid.UUID
+		flowID         uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		responseCampaign *campaign.Campaign
 
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
-			"stopping",
-			&rabbitmqhandler.Request{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/campaigns/e74223b2-c6af-11ec-9f40-1f88a3e01636/resource_info",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"outplan_id":"010e228c-c6b0-11ec-87b5-7bb69124c874","outdial_id":"013945a2-c6b0-11ec-ba93-2300004f60a7","queue_id":"0169cb32-c6b0-11ec-b616-4fe9ae9e95da"}`),
+				Data:     []byte(`{"flow_id":"a409cd48-72de-11ee-b8a0-435cba128be7","outplan_id":"010e228c-c6b0-11ec-87b5-7bb69124c874","outdial_id":"013945a2-c6b0-11ec-ba93-2300004f60a7","queue_id":"0169cb32-c6b0-11ec-b616-4fe9ae9e95da","next_campaign_id":"a4605924-72de-11ee-b1bd-8332b7df99ba"}`),
 			},
 
-			uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
-			uuid.FromStringOrNil("010e228c-c6b0-11ec-87b5-7bb69124c874"),
-			uuid.FromStringOrNil("013945a2-c6b0-11ec-ba93-2300004f60a7"),
-			uuid.FromStringOrNil("0169cb32-c6b0-11ec-b616-4fe9ae9e95da"),
+			campaignID:     uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
+			flowID:         uuid.FromStringOrNil("a409cd48-72de-11ee-b8a0-435cba128be7"),
+			outplanID:      uuid.FromStringOrNil("010e228c-c6b0-11ec-87b5-7bb69124c874"),
+			outdialID:      uuid.FromStringOrNil("013945a2-c6b0-11ec-ba93-2300004f60a7"),
+			queueID:        uuid.FromStringOrNil("0169cb32-c6b0-11ec-b616-4fe9ae9e95da"),
+			nextCampaignID: uuid.FromStringOrNil("a4605924-72de-11ee-b1bd-8332b7df99ba"),
 
-			&campaign.Campaign{
+			responseCampaign: &campaign.Campaign{
 				ID: uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
 			},
 
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e74223b2-c6af-11ec-9f40-1f88a3e01636","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e74223b2-c6af-11ec-9f40-1f88a3e01636","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -680,7 +613,7 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateResourceInfo(gomock.Any(), tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID).Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateResourceInfo(gomock.Any(), tt.campaignID, tt.flowID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -725,7 +658,7 @@ func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e1f5109e-c6b0-11ec-a87d-1f8fe2380e97","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e1f5109e-c6b0-11ec-a87d-1f8fe2380e97","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

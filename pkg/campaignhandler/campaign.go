@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
@@ -18,49 +17,47 @@ import (
 func (h *campaignHandler) Create(
 	ctx context.Context,
 	id uuid.UUID,
+
 	customerID uuid.UUID,
 	campaignType campaign.Type,
 	name string,
 	detail string,
 
-	actions []fmaction.Action,
 	serviceLevel int,
 	endHandle campaign.EndHandle,
 
+	flowID uuid.UUID,
 	outplanID uuid.UUID,
 	outdialID uuid.UUID,
 	queueID uuid.UUID,
 	nextCampaignID uuid.UUID,
 ) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Create",
-		"customer_id": customerID,
+		"func":             "Create",
+		"id":               id,
+		"customer_id":      customerID,
+		"campaign_type":    campaignType,
+		"name":             name,
+		"detail":           detail,
+		"service_level":    serviceLevel,
+		"end_handle":       endHandle,
+		"flow_id":          flowID,
+		"outplan_id":       outplanID,
+		"outdial_id":       outdialID,
+		"queue_id":         queueID,
+		"next_campaign_id": nextCampaignID,
 	})
 
 	if id == uuid.Nil {
 		id = h.util.UUIDCreate()
+		log = log.WithField("id", id)
 	}
 
 	// validate
-	if !h.validateResources(ctx, id, outplanID, outdialID, queueID, nextCampaignID) {
-		log.Errorf("Could not pass the resource validation. outplan_id: %s, outdial: %s, queue_id: %s, next_campaign_id: %s", outplanID, outdialID, queueID, nextCampaignID)
+	if !h.validateResources(ctx, id, flowID, outplanID, outdialID, queueID, nextCampaignID) {
+		log.Errorf("Could not pass the resource validation. flow_id: %s, outplan_id: %s, outdial: %s, queue_id: %s, next_campaign_id: %s", flowID, outplanID, outdialID, queueID, nextCampaignID)
 		return nil, fmt.Errorf("could not pass the resource validation")
 	}
-
-	// create a flow actions
-	flowActions, err := h.createFlowActions(ctx, actions, queueID)
-	if err != nil {
-		log.Errorf("Could not create a flowaction. err: %v", err)
-		return nil, err
-	}
-
-	// create a flow
-	f, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeCampaign, "", "", flowActions, true)
-	if err != nil {
-		log.Errorf("Could not create a flow. err: %v", err)
-		return nil, err
-	}
-	log.WithField("flow", f).Debugf("Created a flow for campaign. flow_id: %s", f.ID)
 
 	t := &campaign.Campaign{
 		ID:             id,
@@ -72,8 +69,7 @@ func (h *campaignHandler) Create(
 		Execute:        campaign.ExecuteStop,
 		ServiceLevel:   serviceLevel,
 		EndHandle:      endHandle,
-		FlowID:         f.ID,
-		Actions:        actions,
+		FlowID:         flowID,
 		OutplanID:      outplanID,
 		OutdialID:      outdialID,
 		QueueID:        queueID,
@@ -96,7 +92,7 @@ func (h *campaignHandler) Create(
 	log.WithField("campaign", res).Debugf("Created a new campaign. campaign_id: %s", res.ID)
 
 	// update resource
-	if !h.updateResources(ctx, res.ID, res.OutplanID, res.OutdialID, res.QueueID, res.NextCampaignID) {
+	if !h.updateResources(ctx, res.ID, res.OutdialID) {
 		log.Errorf("Could not update the resources info.")
 		return nil, fmt.Errorf("could not update the resources info")
 	}
@@ -156,6 +152,7 @@ func (h *campaignHandler) Get(ctx context.Context, id uuid.UUID) (*campaign.Camp
 		"func":        "Get",
 		"campaign_id": id,
 	})
+
 	res, err := h.db.CampaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign. err: %v", err)
@@ -167,13 +164,12 @@ func (h *campaignHandler) Get(ctx context.Context, id uuid.UUID) (*campaign.Camp
 
 // GetsByCustomerID returns list of campaigns
 func (h *campaignHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByCustomerID",
-			"customer_id": customerID,
-			"token":       token,
-			"limit":       limit,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+		"token":       token,
+		"limit":       limit,
+	})
 	log.Debug("Getting campaigns.")
 
 	res, err := h.db.CampaignGetsByCustomerID(ctx, customerID, token, limit)
@@ -212,57 +208,48 @@ func (h *campaignHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 }
 
 // UpdateResourceInfo updates campaign's resource info
-func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.Campaign, error) {
+func (h *campaignHandler) UpdateResourceInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	flowID uuid.UUID,
+	outplanID uuid.UUID,
+	outdialID uuid.UUID,
+	queueID uuid.UUID,
+	nextCampaignID uuid.UUID,
+) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "UpdateResourceInfo",
 		"campaign_id": id,
+		"flow_id":     flowID,
 		"outplan_id":  outplanID,
 		"outdial_id":  outdialID,
 		"queue_id":    queueID,
 	})
 	log.Debug("Updating campaign basic info.")
 
-	if !h.validateResources(ctx, id, outplanID, outdialID, queueID, uuid.Nil) {
+	if !h.validateResources(ctx, id, flowID, outplanID, outdialID, queueID, nextCampaignID) {
 		log.Errorf("Could not pass the resource validation. outplan_id: %s, outdial_id: %s, queue_id: %s, nex_campaign_id: %s",
 			outplanID, outdialID, queueID, uuid.Nil)
 		return nil, fmt.Errorf("could not pass the resource validation")
 	}
 
-	if err := h.db.CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID); err != nil {
+	if err := h.db.CampaignUpdateResourceInfo(ctx, id, flowID, outplanID, outdialID, queueID, nextCampaignID); err != nil {
 		log.Errorf("Could not update campaign. err: %v", err)
 		return nil, err
 	}
 
-	c, err := h.Get(ctx, id)
+	// get updated campaign
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign. err: %v", err)
 		return nil, err
 	}
+	log.WithField("campaign", res).Debugf("Updated campaign. campaign_id: %s", id)
 
-	actions, err := h.createFlowActions(ctx, c.Actions, queueID)
-	if err != nil {
-		log.Errorf("Could not create a flow actions. err: %v", err)
-		return nil, err
-	}
-
-	// update flow
-	f, err := h.reqHandler.FlowV1FlowUpdateActions(ctx, c.FlowID, actions)
-	if err != nil {
-		log.Errorf("Could not update the flow. err: %v", err)
-		return nil, err
-	}
-	log.WithField("flow", f).Debugf("Updated flow. campaign_id: %s, flow_id: %s", id, f.ID)
-
-	// get updated campaign
-	res, err := h.db.CampaignGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated campaign info. err: %v", err)
-		return nil, err
-	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignUpdated, res)
 
 	// update resources
-	if !h.updateResources(ctx, res.ID, res.OutplanID, res.OutdialID, res.QueueID, res.NextCampaignID) {
+	if !h.updateResources(ctx, res.ID, res.OutdialID) {
 		log.Errorf("Could not update the resources")
 		return nil, fmt.Errorf("could not update the resources")
 	}
@@ -273,7 +260,7 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 // UpdateNextCampaignID updates campaign's next_campaign_id info
 func (h *campaignHandler) UpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":             "UpdateResourceInfo",
+		"func":             "UpdateNextCampaignID",
 		"id":               id,
 		"next_campaign_id": nextCampaignID,
 	})
@@ -305,53 +292,6 @@ func (h *campaignHandler) UpdateServiceLevel(ctx context.Context, id uuid.UUID, 
 	log.Debug("Updating campaign service_level.")
 
 	if err := h.db.CampaignUpdateServiceLevel(ctx, id, serviceLevel); err != nil {
-		log.Errorf("Could not update campaign service_level. err: %v", err)
-		return nil, err
-	}
-
-	// get updated info
-	res, err := h.db.CampaignGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated campaign info. err: %v", err)
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignUpdated, res)
-
-	return res, nil
-}
-
-// UpdateActions updates campaign's actions
-func (h *campaignHandler) UpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*campaign.Campaign, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "UpdateActions",
-		"id":      id,
-		"actions": actions,
-	})
-	log.Debug("Updating campaign actions.")
-
-	c, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get campaign. err: %v", err)
-		return nil, err
-	}
-
-	// generate flow actions
-	tmpActions, err := h.createFlowActions(ctx, actions, c.QueueID)
-	if err != nil {
-		log.Errorf("Could not generate actions. err: %v", err)
-		return nil, err
-	}
-
-	// update flow
-	f, err := h.reqHandler.FlowV1FlowUpdateActions(ctx, c.FlowID, tmpActions)
-	if err != nil {
-		log.Errorf("Could not update the actions. err: %v", err)
-		return nil, err
-	}
-	log.WithField("flow", f).Debugf("Updated actions. flow_id: %s", f.ID)
-
-	// update campaign's actions
-	if err := h.db.CampaignUpdateActions(ctx, id, actions); err != nil {
 		log.Errorf("Could not update campaign service_level. err: %v", err)
 		return nil, err
 	}
@@ -420,9 +360,11 @@ func (h *campaignHandler) updateExecuteStop(ctx context.Context, id uuid.UUID) e
 	return nil
 }
 
+// validateResources returns
 func (h *campaignHandler) validateResources(
 	ctx context.Context,
 	id uuid.UUID,
+	flowID uuid.UUID,
 	outplanID uuid.UUID,
 	outdialID uuid.UUID,
 	queueID uuid.UUID,
@@ -430,11 +372,19 @@ func (h *campaignHandler) validateResources(
 ) bool {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "validateResources",
+		"id":               id,
+		"flow_id":          flowID,
 		"outplan_id":       outplanID,
 		"outdial_id":       outdialID,
 		"queue_id":         queueID,
 		"next_campaign_id": nextCampaignID,
 	})
+
+	// flow id
+	if !h.isValidFlowID(ctx, flowID) {
+		log.Debugf("The flow id is not valid. flow_id: %s", flowID)
+		return false
+	}
 
 	// outplan id
 	if !h.isValidOutplanID(ctx, outplanID) {
@@ -489,6 +439,33 @@ func (h *campaignHandler) isValidOutdialID(ctx context.Context, id uuid.UUID, ou
 	}
 
 	if od.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The outdial is already deleted.")
+		return false
+	}
+
+	return true
+}
+
+// isValidFlowID returns true if the flow id is valid.
+func (h *campaignHandler) isValidFlowID(ctx context.Context, flowID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "isValidFlowID",
+		"flow_id": flowID,
+	})
+
+	if flowID == uuid.Nil {
+		return true
+	}
+
+	// get flow
+	f, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
+	if err != nil {
+		log.Errorf("Could not get outdial info. err: %v", err)
+		return false
+	}
+	log.WithField("flow", f).Debugf("Checking flow info. flow_id: %s", f.ID)
+
+	if f.TMDelete != dbhandler.DefaultTimeStamp {
 		log.Debugf("The outdial is already deleted.")
 		return false
 	}
@@ -576,20 +553,11 @@ func (h *campaignHandler) isValidNextCampaignID(ctx context.Context, nextCampaig
 	return true
 }
 
-func (h *campaignHandler) updateResources(
-	ctx context.Context,
-	id uuid.UUID,
-	outplanID uuid.UUID,
-	outdialID uuid.UUID,
-	queueID uuid.UUID,
-	nextCampaignID uuid.UUID,
-) bool {
+func (h *campaignHandler) updateResources(ctx context.Context, id uuid.UUID, outdialID uuid.UUID) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func":             "validateResources",
-		"outplan_id":       outplanID,
-		"outdial_id":       outdialID,
-		"queue_id":         queueID,
-		"next_campaign_id": nextCampaignID,
+		"func":        "updateResources",
+		"campaign_id": id,
+		"outdial_id":  outdialID,
 	})
 
 	// outdial id

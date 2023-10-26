@@ -14,7 +14,6 @@ import (
 	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
@@ -98,20 +97,6 @@ func (mr *MockDBHandlerMockRecorder) CampaignGetsByCustomerID(ctx, customerID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaignGetsByCustomerID), ctx, customerID, token, limit)
 }
 
-// CampaignUpdateActions mocks base method.
-func (m *MockDBHandler) CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignUpdateActions", ctx, id, actions)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CampaignUpdateActions indicates an expected call of CampaignUpdateActions.
-func (mr *MockDBHandlerMockRecorder) CampaignUpdateActions(ctx, id, actions interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateActions", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateActions), ctx, id, actions)
-}
-
 // CampaignUpdateBasicInfo mocks base method.
 func (m *MockDBHandler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	m.ctrl.T.Helper()
@@ -169,17 +154,17 @@ func (mr *MockDBHandlerMockRecorder) CampaignUpdateNextCampaignID(ctx, id, nextC
 }
 
 // CampaignUpdateResourceInfo mocks base method.
-func (m *MockDBHandler) CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) error {
+func (m *MockDBHandler) CampaignUpdateResourceInfo(ctx context.Context, id, flowID, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignUpdateResourceInfo", ctx, id, outplanID, outdialID, queueID)
+	ret := m.ctrl.Call(m, "CampaignUpdateResourceInfo", ctx, id, flowID, outplanID, outdialID, queueID, nextCampaignID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CampaignUpdateResourceInfo indicates an expected call of CampaignUpdateResourceInfo.
-func (mr *MockDBHandlerMockRecorder) CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CampaignUpdateResourceInfo(ctx, id, flowID, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateResourceInfo", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateResourceInfo), ctx, id, outplanID, outdialID, queueID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateResourceInfo", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateResourceInfo), ctx, id, flowID, outplanID, outdialID, queueID, nextCampaignID)
 }
 
 // CampaignUpdateServiceLevel mocks base method.

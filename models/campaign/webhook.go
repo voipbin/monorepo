@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // WebhookMessage defines
@@ -21,8 +20,7 @@ type WebhookMessage struct {
 	ServiceLevel int       `json:"service_level"`
 	EndHandle    EndHandle `json:"end_handle"`
 
-	// action settings
-	Actions []fmaction.Action `json:"actions"` // this actions will be stored to the flow
+	FlowID uuid.UUID `json:"flow_id"`
 
 	// resource info
 	OutplanID uuid.UUID `json:"outplan_id"`
@@ -50,7 +48,7 @@ func (h *Campaign) ConvertWebhookMessage() *WebhookMessage {
 		ServiceLevel: h.ServiceLevel,
 		EndHandle:    h.EndHandle,
 
-		Actions: h.Actions,
+		FlowID: h.FlowID,
 
 		OutplanID: h.OutplanID,
 		OutdialID: h.OutdialID,
