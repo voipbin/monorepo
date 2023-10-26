@@ -132,7 +132,7 @@ type ServiceHandler interface {
 		campaignType cacampaign.Type,
 		serviceLevel int,
 		endHandle cacampaign.EndHandle,
-		actions []fmaction.Action,
+		flowID uuid.UUID,
 		outplanID uuid.UUID,
 		outdialID uuid.UUID,
 		queueID uuid.UUID,
@@ -144,8 +144,16 @@ type ServiceHandler interface {
 	CampaignUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateStatus(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateServiceLevel(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateActions(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateResourceInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateResourceInfo(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		id uuid.UUID,
+		flowID uuid.UUID,
+		outplanID uuid.UUID,
+		outdialID uuid.UUID,
+		queueID uuid.UUID,
+		nextCampaignID uuid.UUID,
+	) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateNextCampaignID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error)
 
 	// campaigncall handlers

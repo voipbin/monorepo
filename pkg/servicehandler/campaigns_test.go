@@ -10,7 +10,6 @@ import (
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -25,10 +24,11 @@ func Test_CampaignCreate(t *testing.T) {
 		campaignName string
 		detail       string
 
-		campaignType   cacampaign.Type
-		serviceLevel   int
-		endHandle      cacampaign.EndHandle
-		actions        []fmaction.Action
+		campaignType cacampaign.Type
+		serviceLevel int
+		endHandle    cacampaign.EndHandle
+
+		flowID         uuid.UUID
 		outplanID      uuid.UUID
 		outdialID      uuid.UUID
 		queueID        uuid.UUID
@@ -38,30 +38,27 @@ func Test_CampaignCreate(t *testing.T) {
 		expectRes *cacampaign.WebhookMessage
 	}{
 		{
-			"normal",
-			&cscustomer.Customer{
+			name: "normal",
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			"test name",
-			"test detail",
+			campaignName: "test name",
+			detail:       "test detail",
 
-			cacampaign.TypeCall,
-			100,
-			cacampaign.EndHandleStop,
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			uuid.FromStringOrNil("a44727da-c653-11ec-a0b7-a7d6b873b66d"),
-			uuid.FromStringOrNil("a4aafd28-c653-11ec-9b79-47790e39b9be"),
-			uuid.FromStringOrNil("a4e4ccce-c653-11ec-b64b-1b6af5c458a8"),
-			uuid.FromStringOrNil("a51c8010-c653-11ec-953a-43eabdb60873"),
+			campaignType: cacampaign.TypeCall,
+			serviceLevel: 100,
+			endHandle:    cacampaign.EndHandleStop,
 
-			&cacampaign.Campaign{
+			flowID:         uuid.FromStringOrNil("841d1578-7426-11ee-8a48-37fad44bd3d9"),
+			outplanID:      uuid.FromStringOrNil("a44727da-c653-11ec-a0b7-a7d6b873b66d"),
+			outdialID:      uuid.FromStringOrNil("a4aafd28-c653-11ec-9b79-47790e39b9be"),
+			queueID:        uuid.FromStringOrNil("a4e4ccce-c653-11ec-b64b-1b6af5c458a8"),
+			nextCampaignID: uuid.FromStringOrNil("a51c8010-c653-11ec-953a-43eabdb60873"),
+
+			response: &cacampaign.Campaign{
 				ID: uuid.FromStringOrNil("c5edb1ce-c653-11ec-bb63-1f0413e1ebdc"),
 			},
-			&cacampaign.WebhookMessage{
+			expectRes: &cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("c5edb1ce-c653-11ec-bb63-1f0413e1ebdc"),
 			},
 		},
@@ -79,11 +76,11 @@ func Test_CampaignCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaignCreate(ctx, uuid.Nil, tt.customer.ID, tt.campaignType, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle, tt.actions, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.response, nil)
-			res, err := h.CampaignCreate(ctx, tt.customer, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle, tt.actions, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
+			mockReq.EXPECT().CampaignV1CampaignCreate(ctx, uuid.Nil, tt.customer.ID, tt.campaignType, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle, tt.flowID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.response, nil)
+
+			res, err := h.CampaignCreate(ctx, tt.customer, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle, tt.flowID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -453,98 +450,40 @@ func Test_CampaignUpdateServiceLevel(t *testing.T) {
 	}
 }
 
-func Test_CampaignUpdateActions(t *testing.T) {
-
-	tests := []struct {
-		name       string
-		customer   *cscustomer.Customer
-		campaignID uuid.UUID
-		actions    []fmaction.Action
-
-		response  *cacampaign.Campaign
-		expectRes *cacampaign.WebhookMessage
-	}{
-		{
-			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-			},
-
-			uuid.FromStringOrNil("eb889654-c655-11ec-a97a-636c4c1455d8"),
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-
-			&cacampaign.Campaign{
-				ID:         uuid.FromStringOrNil("eb889654-c655-11ec-a97a-636c4c1455d8"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-			},
-			&cacampaign.WebhookMessage{
-				ID: uuid.FromStringOrNil("eb889654-c655-11ec-a97a-636c4c1455d8"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.response, nil)
-			mockReq.EXPECT().CampaignV1CampaignUpdateActions(ctx, tt.campaignID, tt.actions).Return(tt.response, nil)
-			res, err := h.CampaignUpdateActions(ctx, tt.customer, tt.campaignID, tt.actions)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(*res, *tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_CampaignUpdateResourceInfo(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		customer   *cscustomer.Customer
-		campaignID uuid.UUID
-		outplanID  uuid.UUID
-		outdialID  uuid.UUID
-		queueID    uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+
+		campaignID     uuid.UUID
+		flowID         uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		response  *cacampaign.Campaign
 		expectRes *cacampaign.WebhookMessage
 	}{
 		{
-			"normal",
-			&cscustomer.Customer{
+			name: "normal",
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 
-			uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
-			uuid.FromStringOrNil("65c34a94-c6b6-11ec-b153-6be43b327a5e"),
-			uuid.FromStringOrNil("65ef10ca-c6b6-11ec-93a6-af4ca7079371"),
-			uuid.FromStringOrNil("661dcbc2-c6b6-11ec-934c-c3c128f1d3b9"),
+			campaignID:     uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
+			flowID:         uuid.FromStringOrNil("c9ecc968-7426-11ee-beba-935d4b50abf2"),
+			outplanID:      uuid.FromStringOrNil("65c34a94-c6b6-11ec-b153-6be43b327a5e"),
+			outdialID:      uuid.FromStringOrNil("65ef10ca-c6b6-11ec-93a6-af4ca7079371"),
+			queueID:        uuid.FromStringOrNil("661dcbc2-c6b6-11ec-934c-c3c128f1d3b9"),
+			nextCampaignID: uuid.FromStringOrNil("caa0cd5a-7426-11ee-9207-974d79a03a8e"),
 
-			&cacampaign.Campaign{
+			response: &cacampaign.Campaign{
 				ID:         uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&cacampaign.WebhookMessage{
+			expectRes: &cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
 			},
 		},
@@ -566,8 +505,8 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.response, nil)
-			mockReq.EXPECT().CampaignV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID).Return(tt.response, nil)
-			res, err := h.CampaignUpdateResourceInfo(ctx, tt.customer, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID)
+			mockReq.EXPECT().CampaignV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.flowID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.response, nil)
+			res, err := h.CampaignUpdateResourceInfo(ctx, tt.customer, tt.campaignID, tt.flowID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
