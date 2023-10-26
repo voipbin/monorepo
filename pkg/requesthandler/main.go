@@ -516,7 +516,7 @@ type RequestHandler interface {
 		detail string,
 		serviceLevel int,
 		endHandle cacampaign.EndHandle,
-		actions []fmaction.Action,
+		flowID uuid.UUID,
 		outplanID uuid.UUID,
 		outdialID uuid.UUID,
 		queueID uuid.UUID,
@@ -529,8 +529,15 @@ type RequestHandler interface {
 	CampaignV1CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status cacampaign.Status) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*cacampaign.Campaign, error)
-	CampaignV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*cacampaign.Campaign, error)
-	CampaignV1CampaignUpdateResourceInfo(ctx context.Context, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.Campaign, error)
+	CampaignV1CampaignUpdateResourceInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		flowID uuid.UUID,
+		outplanID uuid.UUID,
+		outdialID uuid.UUID,
+		queueID uuid.UUID,
+		nextCampaignID uuid.UUID,
+	) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateNextCampaignID(ctx context.Context, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.Campaign, error)
 
 	// campaign-manager campaigncalls
