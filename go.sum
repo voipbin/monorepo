@@ -745,8 +745,6 @@ gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231019041637-47456b
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231019041637-47456b560088/go.mod h1:qCjGFfPBtWB9gjNBMwHmg7NMpc7qB8odDoIucESJj68=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231020005113-8d1bf349b5a9 h1:BqLkDVS3In5v0UDzcT9di6sUSI3vL2wOF2G9dC8Dc3Q=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231020005113-8d1bf349b5a9/go.mod h1:qCjGFfPBtWB9gjNBMwHmg7NMpc7qB8odDoIucESJj68=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231026173030-6e434875ea77 h1:yDgmKSoPN0v2FXfaCzd0VFTq0x8cHG4LuRig3Q1EL+o=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231026173030-6e434875ea77/go.mod h1:EJ0dgAMMzAgCErdRWYlCSZdiyTh0H8x6f4qzOzAe9TQ=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 h1:KpWVqqS+jFjQ8wOtZSOAorO/SpOEPbuPKWD72smHrQM=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093/go.mod h1:CMWCrp4ClhtjFGbcJY/VHmLkQ/D+tX5pUCp0Rsedj4k=
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c690da h1:3JO2jmdY1z2+evUqKAisxTux1IMuUUOep6lIsXEcKkk=
@@ -759,8 +757,6 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231019022548-fc1df64a
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231019022548-fc1df64acd7d/go.mod h1:Nnfi1BrXrZuxqc/e5dE1b5hJK06sLDRLGQxCSuYeEYI=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231019030223-c64c93b6a51a h1:rubUI3q2D8gHTfe/8HvD7OvObzTLZv19/L6nUIWrzFQ=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231019030223-c64c93b6a51a/go.mod h1:Nnfi1BrXrZuxqc/e5dE1b5hJK06sLDRLGQxCSuYeEYI=
-gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231026170300-b56278ac4e4e h1:tLy02QKKHu+EXC6nCN5fypgZdf4ZZ6l8ztgd9R/JBB8=
-gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231026170300-b56278ac4e4e/go.mod h1:IHunTz0kI0/SwOq3g6pxHPZ0qLfZ5ygc5eSHDmhOvCE=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578 h1:PzDD+gHw68YoW21NhfxyA9DHaqqcAJ2UkCCq3TkEcCo=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578/go.mod h1:K9Uk44FGgS/UgDvTLAsVFqINLfhGMCrBuRMNhGZyaLE=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02 h1:w1vRshMX9V0FfH1nyJ16yOyXNDnNui4iVPsUFOoUgOo=

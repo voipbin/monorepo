@@ -62,7 +62,6 @@ test:
     - apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
     - go test -coverprofile cp.out -v $(go list ./...)
     - go tool cover -html=cp.out -o cp.html
-    - go tool cover -func=./cp.out
 
 build:
   stage: build
