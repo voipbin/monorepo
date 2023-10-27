@@ -44,6 +44,7 @@ var (
 	regV1CampaignsIDExecute        = regexp.MustCompile("/v1/campaigns/" + regUUID + "/execute$")
 	regV1CampaignsIDStatus         = regexp.MustCompile("/v1/campaigns/" + regUUID + "/status$")
 	regV1CampaignsIDServiceLevel   = regexp.MustCompile("/v1/campaigns/" + regUUID + "/service_level$")
+	regV1CampaignsIDActions        = regexp.MustCompile("/v1/campaigns/" + regUUID + "/actions$")
 	regV1CampaignsIDResourceInfo   = regexp.MustCompile("/v1/campaigns/" + regUUID + "/resource_info$")
 	regV1CampaignsIDNextCampaignID = regexp.MustCompile("/v1/campaigns/" + regUUID + "/next_campaign_id$")
 
@@ -202,6 +203,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CampaignsIDServiceLevel.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/service_level"
 		response, err = h.v1CampaignsIDServiceLevelPut(ctx, m)
+
+	// /v1/campaigns/<campaign-id>/actions
+	case regV1CampaignsIDActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/v1/campaigns/<campaign-id>/actions"
+		response, err = h.v1CampaignsIDActionsPut(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/resource_info
 	case regV1CampaignsIDResourceInfo.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
