@@ -2,10 +2,12 @@ package campaignhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
@@ -303,6 +305,33 @@ func (h *campaignHandler) UpdateServiceLevel(ctx context.Context, id uuid.UUID, 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignUpdated, res)
 
 	return res, nil
+}
+
+// createFlowActions creates actions for campaign
+func (h *campaignHandler) createFlowActions(ctx context.Context, actions []fmaction.Action, queueID uuid.UUID) ([]fmaction.Action, error) {
+
+	flowActions := actions
+	if queueID == uuid.Nil {
+		return flowActions, nil
+	}
+
+	action := fmaction.Action{
+		Type: fmaction.TypeQueueJoin,
+	}
+
+	option := fmaction.OptionQueueJoin{
+		QueueID: queueID,
+	}
+
+	opt, err := json.Marshal(option)
+	if err != nil {
+		return nil, err
+	}
+
+	action.Option = opt
+	flowActions = append(flowActions, action)
+
+	return flowActions, nil
 }
 
 // updateExecuteStop updates the campaign execute to stop.
