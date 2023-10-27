@@ -2,6 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 )
@@ -20,6 +21,9 @@ type V1DataCampaignsPost struct {
 
 	ServiceLevel int                `json:"service_level"`
 	EndHandle    campaign.EndHandle `json:"end_handle"`
+
+	// action settings
+	Actions []fmaction.Action `json:"actions"` // will be deprecated
 
 	// resource info
 	FlowID    uuid.UUID `json:"flow_id"`
@@ -50,6 +54,13 @@ type V1DataCampaignsIDStatusPut struct {
 // /v1/campaigns/<campaign-id>/service_level PUT
 type V1DataCampaignsIDServiceLevelPut struct {
 	ServiceLevel int `json:"service_level"`
+}
+
+// V1DataCampaignsIDActionsPut is
+// v1 data type request struct for
+// /v1/campaigns/<campaign-id>/actions PUT
+type V1DataCampaignsIDActionsPut struct {
+	Actions []fmaction.Action `json:"actions"`
 }
 
 // V1DataCampaignsIDResourceInfoPut is

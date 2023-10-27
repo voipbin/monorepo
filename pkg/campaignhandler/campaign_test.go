@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
@@ -492,6 +493,83 @@ func Test_UpdateServiceLevel(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.response) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.response, res)
+			}
+		})
+	}
+}
+
+func Test_createFlowActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		actions []fmaction.Action
+		queueID uuid.UUID
+
+		expectRes []fmaction.Action
+	}{
+		{
+			"has no queue id",
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			uuid.Nil,
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+		},
+
+		{
+			"has queue id",
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			uuid.FromStringOrNil("8de92286-c3f6-11ec-bade-ff667a1ea0af"),
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+				{
+					Type:   fmaction.TypeQueueJoin,
+					Option: []byte(`{"queue_id":"8de92286-c3f6-11ec-bade-ff667a1ea0af"}`),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaignHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			res, err := h.createFlowActions(ctx, tt.actions, tt.queueID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
 		})
 	}

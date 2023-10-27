@@ -49,15 +49,9 @@ vet:
 
 test:
   stage: test
-  artifacts:
-    name: $CI_COMMIT_REF_NAME"
-    expire_in: 8 hours
-    paths:
-      - cp.html
   script:
-    - go test -coverprofile cp.out -v $(go list ./...)
-    - go tool cover -html=cp.out -o cp.html
-    - go tool cover -func ./cp.out
+    - go test -v $(go list ./...) -coverpkg=./... -coverprofile ./coverage.out
+    - go tool cover -func ./coverage.out
 
 golangci-lint:
   image: golangci/golangci-lint:latest

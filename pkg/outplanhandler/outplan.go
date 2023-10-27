@@ -148,7 +148,7 @@ func (h *outplanHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 	return res, nil
 }
 
-// UpdateDialInfo updates outplan's dial info
+// UpdateActionInfo updates outplan's dial info
 func (h *outplanHandler) UpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
