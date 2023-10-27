@@ -16,6 +16,7 @@ create table campaigns(
   end_handle  varchar(255),
 
   flow_id binary(16),
+  actions json,
 
   outplan_id  binary(16),
   outdial_id  binary(16),

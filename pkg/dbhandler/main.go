@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
@@ -47,21 +48,14 @@ type DBHandler interface {
 	CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
 	CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
 	CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
-	CampaignUpdateResourceInfo(
-		ctx context.Context,
-		id uuid.UUID,
-		flowID uuid.UUID,
-		outplanID uuid.UUID,
-		outdialID uuid.UUID,
-		queueID uuid.UUID,
-		nextCampaignID uuid.UUID,
-	) error
+	CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) error
 	CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error
 	CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) error
 	CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UUID, status campaign.Status, execute campaign.Execute) error
 	CampaignUpdateExecute(ctx context.Context, id uuid.UUID, execute campaign.Execute) error
 	CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) error
 	CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, endHandle campaign.EndHandle) error
+	CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) error
 	CampaignUpdateType(ctx context.Context, id uuid.UUID, campaignType campaign.Type) error
 
 	// campaigncall

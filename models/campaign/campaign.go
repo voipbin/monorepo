@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"github.com/gofrs/uuid"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // Campaign defines
@@ -20,8 +21,11 @@ type Campaign struct {
 	ServiceLevel int       `json:"service_level"`
 	EndHandle    EndHandle `json:"end_handle"`
 
+	// action settings
+	FlowID  uuid.UUID         `json:"flow_id"` // flow id for campaign execution
+	Actions []fmaction.Action `json:"actions"` // this actions will be stored to the flow
+
 	// resource info
-	FlowID    uuid.UUID `json:"flow_id"` // flow id for campaign execution
 	OutplanID uuid.UUID `json:"outplan_id"`
 	OutdialID uuid.UUID `json:"outdial_id"`
 	QueueID   uuid.UUID `json:"queue_id"`
