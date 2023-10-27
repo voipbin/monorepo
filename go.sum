@@ -57,8 +57,6 @@ gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206/go.mod h1:nxwlzRUC86fPO8t9kTkPIxLjRYVVMssIFlr46pIZWnE=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231018020519-33a713fff87f h1:cpusgGVCOwavEFJOU38IKK49xOTIzIb9FFTzls9W6f0=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231018020519-33a713fff87f/go.mod h1:QOnBbMJZGJtjFSIEfi5dJb4n+n3kGAmezdLng88N6ao=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231026160246-1d3971e1bc5a h1:JS0gwFz4aOlLGX8d/sxDJb1r1ganbNlUJ+dszFSr6Ho=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231026160246-1d3971e1bc5a/go.mod h1:qCjGFfPBtWB9gjNBMwHmg7NMpc7qB8odDoIucESJj68=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 h1:KpWVqqS+jFjQ8wOtZSOAorO/SpOEPbuPKWD72smHrQM=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093/go.mod h1:CMWCrp4ClhtjFGbcJY/VHmLkQ/D+tX5pUCp0Rsedj4k=
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c690da h1:3JO2jmdY1z2+evUqKAisxTux1IMuUUOep6lIsXEcKkk=
