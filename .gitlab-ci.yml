@@ -54,3 +54,4 @@ test:
   script:
     - go test -coverprofile cp.out -v $(go list ./...)
     - go tool cover -html=cp.out -o cp.html
+    - go tool cover -func=cp.out
