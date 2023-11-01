@@ -526,7 +526,14 @@ type RequestHandler interface {
 	CampaignV1CampaignGet(ctx context.Context, id uuid.UUID) (*cacampaign.Campaign, error)
 	CampaignV1CampaignDelete(ctx context.Context, campaignID uuid.UUID) (*cacampaign.Campaign, error)
 	CampaignV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error
-	CampaignV1CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*cacampaign.Campaign, error)
+	CampaignV1CampaignUpdateBasicInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		serviceLevel int,
+		endHandle cacampaign.EndHandle,
+	) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status cacampaign.Status) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*cacampaign.Campaign, error)

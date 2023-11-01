@@ -381,9 +381,11 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		campaignID   uuid.UUID
-		updateName   string
-		updateDetail string
+		campaignID         uuid.UUID
+		updateName         string
+		updateDetail       string
+		updateServiceLevel int
+		updateEndHandle    cacampaign.EndHandle
 
 		response *rabbitmqhandler.Response
 
@@ -392,26 +394,28 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 		expectResult  *cacampaign.Campaign
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
-			"update name",
-			"update detail",
+			campaignID:         uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
+			updateName:         "update name",
+			updateDetail:       "update detail",
+			updateServiceLevel: 100,
+			updateEndHandle:    cacampaign.EndHandleContinue,
 
-			&rabbitmqhandler.Response{
+			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1692450e-c50f-11ec-8e6c-07b184583eb1"}`),
 			},
 
-			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			expectTarget: "bin-manager.campaign-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/campaigns/1692450e-c50f-11ec-8e6c-07b184583eb1",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","service_level":100,"end_handle":"continue"}`),
 			},
-			&cacampaign.Campaign{
+			expectResult: &cacampaign.Campaign{
 				ID: uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
 			},
 		},
@@ -430,7 +434,7 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.updateName, tt.updateDetail)
+			res, err := reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.updateName, tt.updateDetail, tt.updateServiceLevel, tt.updateEndHandle)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

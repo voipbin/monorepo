@@ -166,12 +166,21 @@ func (r *requestHandler) CampaignV1CampaignExecute(ctx context.Context, id uuid.
 // CampaignV1CampaignUpdateBasicInfo sends a request to campaign-manager
 // to update the campaign's basic info.
 // delay millisecond
-func (r *requestHandler) CampaignV1CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*cacampaign.Campaign, error) {
+func (r *requestHandler) CampaignV1CampaignUpdateBasicInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	serviceLevel int,
+	endHandle cacampaign.EndHandle,
+) (*cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns/%s", id)
 
 	data := &carequest.V1DataCampaignsIDPut{
-		Name:   name,
-		Detail: detail,
+		Name:         name,
+		Detail:       detail,
+		ServiceLevel: serviceLevel,
+		EndHandle:    endHandle,
 	}
 
 	m, err := json.Marshal(data)
