@@ -320,17 +320,26 @@ func (h *handler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.
 }
 
 // CampaignUpdateBasicInfo updates campaign's basic information.
-func (h *handler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+func (h *handler) CampaignUpdateBasicInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	serviceLevel int,
+	endHandle campaign.EndHandle,
+) error {
 	q := `
 	update campaigns set
 		name = ?,
 		detail = ?,
+		service_level = ?,
+		end_handle = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, name, detail, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, serviceLevel, endHandle, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateBasicInfo. err: %v", err)
 	}
 

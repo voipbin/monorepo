@@ -14,7 +14,7 @@ import (
 // if every condition is ok, it sets the status to run and starts the campaign execution.
 func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "UpdateStatusRun",
+		"func": "campaignRun",
 		"id":   id,
 	})
 	log.Debug("Updating the campaign status to run.")
@@ -31,11 +31,17 @@ func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campa
 		return c, nil
 	}
 
-	// check the campaign is runable
-	if !h.isRunable(ctx, c) {
-		log.Errorf("The campaign is not runnable.")
-		return nil, fmt.Errorf("campaign is not runnable")
+	// check the campaign resource is valid
+	if !h.validateResources(ctx, c.ID, c.CustomerID, c.OutplanID, c.OutdialID, c.QueueID, c.NextCampaignID) {
+		log.Errorf("The campaign resource is not valid.")
+		return nil, fmt.Errorf("the campaign resource is not valid")
 	}
+
+	// // check the campaign is runable
+	// if !h.isRunable(ctx, c) {
+	// 	log.Errorf("The campaign is not runnable.")
+	// 	return nil, fmt.Errorf("campaign is not runnable")
+	// }
 
 	// Set status run
 	if err := h.db.CampaignUpdateStatusAndExecute(ctx, id, campaign.StatusRun, campaign.ExecuteRun); err != nil {
@@ -64,21 +70,21 @@ func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campa
 	return res, nil
 }
 
-// isRunable returns true if a given campaign is run-able
-func (h *campaignHandler) isRunable(ctx context.Context, c *campaign.Campaign) bool {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "isDialable",
-		"campaign_id": c.ID,
-	})
-	log.Debug("Checking the campaign is run-able.")
+// // isRunable returns true if a given campaign is run-able
+// func (h *campaignHandler) isRunable(ctx context.Context, c *campaign.Campaign) bool {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":        "isDialable",
+// 		"campaign_id": c.ID,
+// 	})
+// 	log.Debug("Checking the campaign is run-able.")
 
-	if c.OutdialID == uuid.Nil {
-		log.Infof("The campaign has no outdial_id.")
-		return false
-	} else if c.OutplanID == uuid.Nil {
-		log.Infof("The campaign has no outplan_id.")
-		return false
-	}
+// 	if c.OutdialID == uuid.Nil {
+// 		log.Infof("The campaign has no outdial_id.")
+// 		return false
+// 	} else if c.OutplanID == uuid.Nil {
+// 		log.Infof("The campaign has no outplan_id.")
+// 		return false
+// 	}
 
-	return true
-}
+// 	return true
+// }

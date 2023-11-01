@@ -37,8 +37,10 @@ type V1DataCampaignsPost struct {
 // v1 data type request struct for
 // /v1/campaigns/<campaign-id> PUT
 type V1DataCampaignsIDPut struct {
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name         string             `json:"name,omitempty"`
+	Detail       string             `json:"detail,omitempty"`
+	ServiceLevel int                `json:"service_level,omitempty"`
+	EndHandle    campaign.EndHandle `json:"end_handle,omitempty"`
 }
 
 // V1DataCampaignsIDStatusPut is

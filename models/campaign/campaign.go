@@ -26,10 +26,9 @@ type Campaign struct {
 	Actions []fmaction.Action `json:"actions"` // this actions will be stored to the flow
 
 	// resource info
-	OutplanID uuid.UUID `json:"outplan_id"`
-	OutdialID uuid.UUID `json:"outdial_id"`
-	QueueID   uuid.UUID `json:"queue_id"`
-
+	OutplanID      uuid.UUID `json:"outplan_id"`
+	OutdialID      uuid.UUID `json:"outdial_id"`
+	QueueID        uuid.UUID `json:"queue_id"`
 	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 
 	TMCreate string `json:"tm_create"`

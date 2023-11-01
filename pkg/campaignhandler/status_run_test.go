@@ -9,12 +9,16 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
+	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
 )
 
-func Test_UpdateStatusRun(t *testing.T) {
+func Test_campaignRun(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -24,11 +28,11 @@ func Test_UpdateStatusRun(t *testing.T) {
 		response *campaign.Campaign
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("8ff1d160-6110-43d4-a2da-d132f8696aaf"),
+			id: uuid.FromStringOrNil("8ff1d160-6110-43d4-a2da-d132f8696aaf"),
 
-			&campaign.Campaign{
+			response: &campaign.Campaign{
 				ID:         uuid.FromStringOrNil("bfd09fa5-4c2c-46ea-aee9-a01a386e154a"),
 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
 				OutplanID:  uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
@@ -45,15 +49,28 @@ func Test_UpdateStatusRun(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 			h := &campaignHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				reqHandler:    mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				reqHandler:     mockReq,
+				outplanHandler: mockOutplan,
 			}
-
 			ctx := context.Background()
 
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+
+			// validate resource
+			if tt.response.OutplanID != uuid.Nil {
+				mockOutplan.EXPECT().Get(ctx, tt.response.OutplanID).Return(&outplan.Outplan{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			}
+			if tt.response.OutdialID != uuid.Nil {
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.response.OutdialID).Return(&omoutdial.Outdial{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			}
+			if tt.response.QueueID != uuid.Nil {
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.response.QueueID).Return(&qmqueue.Queue{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			}
+
 			mockDB.EXPECT().CampaignUpdateStatusAndExecute(ctx, tt.id, campaign.StatusRun, campaign.ExecuteRun).Return(nil)
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusRun, tt.response)
@@ -71,78 +88,78 @@ func Test_UpdateStatusRun(t *testing.T) {
 	}
 }
 
-func Test_isRunable(t *testing.T) {
+// func Test_isRunable(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		campaign *campaign.Campaign
+// 		campaign *campaign.Campaign
 
-		expectRes bool
-	}{
-		{
-			"normal",
+// 		expectRes bool
+// 	}{
+// 		{
+// 			"normal",
 
-			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("621847e2-c43f-11ec-a7d9-9f0a9ddc8347"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				OutplanID:  uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
-				OutdialID:  uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
-			},
-			true,
-		},
-		{
-			"campaign has no outdial id",
+// 			&campaign.Campaign{
+// 				ID:         uuid.FromStringOrNil("621847e2-c43f-11ec-a7d9-9f0a9ddc8347"),
+// 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+// 				OutplanID:  uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
+// 				OutdialID:  uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
+// 			},
+// 			true,
+// 		},
+// 		{
+// 			"campaign has no outdial id",
 
-			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("91b8e236-c43f-11ec-84e3-4f39221f60e9"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				OutplanID:  uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
-			},
-			false,
-		},
-		{
-			"campaign has no outplan id",
+// 			&campaign.Campaign{
+// 				ID:         uuid.FromStringOrNil("91b8e236-c43f-11ec-84e3-4f39221f60e9"),
+// 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+// 				OutplanID:  uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
+// 			},
+// 			false,
+// 		},
+// 		{
+// 			"campaign has no outplan id",
 
-			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("621847e2-c43f-11ec-a7d9-9f0a9ddc8347"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-				OutdialID:  uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
-			},
-			false,
-		},
-		{
-			"campaign has no outplan id and outdial id",
+// 			&campaign.Campaign{
+// 				ID:         uuid.FromStringOrNil("621847e2-c43f-11ec-a7d9-9f0a9ddc8347"),
+// 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+// 				OutdialID:  uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
+// 			},
+// 			false,
+// 		},
+// 		{
+// 			"campaign has no outplan id and outdial id",
 
-			&campaign.Campaign{
-				ID:         uuid.FromStringOrNil("bf98bb0e-c43f-11ec-9e71-276c5b3e6078"),
-				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
-			},
-			false,
-		},
-	}
+// 			&campaign.Campaign{
+// 				ID:         uuid.FromStringOrNil("bf98bb0e-c43f-11ec-9e71-276c5b3e6078"),
+// 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+// 			},
+// 			false,
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			h := &campaignHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				reqHandler:    mockReq,
-			}
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			h := &campaignHandler{
+// 				db:            mockDB,
+// 				notifyHandler: mockNotify,
+// 				reqHandler:    mockReq,
+// 			}
 
-			ctx := context.Background()
+// 			ctx := context.Background()
 
-			res := h.isRunable(ctx, tt.campaign)
+// 			res := h.isRunable(ctx, tt.campaign)
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			if reflect.DeepEqual(res, tt.expectRes) != true {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }
