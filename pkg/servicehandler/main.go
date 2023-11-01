@@ -141,7 +141,15 @@ type ServiceHandler interface {
 	CampaignGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cacampaign.WebhookMessage, error)
 	CampaignGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
 	CampaignDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateBasicInfo(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		id uuid.UUID,
+		name string,
+		detail string,
+		serviceLevel int,
+		endHandle cacampaign.EndHandle,
+	) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateStatus(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateServiceLevel(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateActions(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error)
