@@ -169,12 +169,24 @@ func (h *serviceHandler) CampaignDelete(ctx context.Context, u *cscustomer.Custo
 
 // CampaignUpdateBasicInfo updates the campaign's basic info.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error) {
+func (h *serviceHandler) CampaignUpdateBasicInfo(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	id uuid.UUID,
+	name string,
+	detail string,
+	serviceLevel int,
+	endHandle cacampaign.EndHandle,
+) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "CampaignUpdateBasicInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
-		"campaign_id": id,
+		"func":          "CampaignUpdateBasicInfo",
+		"customer_id":   u.ID,
+		"username":      u.Username,
+		"campaign_id":   id,
+		"name":          name,
+		"detail":        detail,
+		"service_level": serviceLevel,
+		"end_handle":    endHandle,
 	})
 	log.Debug("Updating an campaign.")
 
@@ -185,7 +197,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(ctx context.Context, u *cscusto
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, id, name, detail)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, id, name, detail, serviceLevel, endHandle)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
