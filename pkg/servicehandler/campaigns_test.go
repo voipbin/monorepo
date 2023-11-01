@@ -282,25 +282,29 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 		campaignID   uuid.UUID
 		campaignName string
 		detail       string
+		serviceLevel int
+		endHandle    cacampaign.EndHandle
 
 		response  *cacampaign.Campaign
 		expectRes *cacampaign.WebhookMessage
 	}{
 		{
-			"normal",
-			&cscustomer.Customer{
+			name: "normal",
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 
-			uuid.FromStringOrNil("6d1e3e5e-c655-11ec-bc77-cf50387b8fe7"),
-			"test name",
-			"test detail",
+			campaignID:   uuid.FromStringOrNil("6d1e3e5e-c655-11ec-bc77-cf50387b8fe7"),
+			campaignName: "test name",
+			detail:       "test detail",
+			serviceLevel: 100,
+			endHandle:    cacampaign.EndHandleContinue,
 
-			&cacampaign.Campaign{
+			response: &cacampaign.Campaign{
 				ID:         uuid.FromStringOrNil("6d1e3e5e-c655-11ec-bc77-cf50387b8fe7"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&cacampaign.WebhookMessage{
+			expectRes: &cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("6d1e3e5e-c655-11ec-bc77-cf50387b8fe7"),
 			},
 		},
@@ -322,8 +326,8 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.response, nil)
-			mockReq.EXPECT().CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.campaignName, tt.detail).Return(tt.response, nil)
-			res, err := h.CampaignUpdateBasicInfo(ctx, tt.customer, tt.campaignID, tt.campaignName, tt.detail)
+			mockReq.EXPECT().CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle).Return(tt.response, nil)
+			res, err := h.CampaignUpdateBasicInfo(ctx, tt.customer, tt.campaignID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

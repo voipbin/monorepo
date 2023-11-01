@@ -362,22 +362,24 @@ func Test_campaignsIDPUT(t *testing.T) {
 		response *cacampaign.WebhookMessage
 	}{
 		{
-			"normal",
-			cscustomer.Customer{
+			name: "normal",
+			customer: cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				PermissionIDs: []uuid.UUID{
 					cspermission.PermissionAdmin.ID,
 				},
 			},
 
-			"/v1.0/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
-			uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
+			reqQuery:  "/v1.0/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
+			outdialID: uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
 
-			request.BodyCampaignsIDPUT{
-				Name:   "test name",
-				Detail: "test detail",
+			reqBody: request.BodyCampaignsIDPUT{
+				Name:         "test name",
+				Detail:       "test detail",
+				ServiceLevel: 100,
+				EndHandle:    "continue",
 			},
-			&cacampaign.WebhookMessage{
+			response: &cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
 			},
 		},
@@ -408,7 +410,7 @@ func Test_campaignsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.ServiceLevel, tt.reqBody.EndHandle).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

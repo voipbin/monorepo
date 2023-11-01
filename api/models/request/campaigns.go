@@ -34,8 +34,10 @@ type ParamCampaignsGET struct {
 // BodyCampaignsIDPUT is rquest body define for
 // PUT /v1.0/campaigns/<campaign-id>
 type BodyCampaignsIDPUT struct {
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name         string               `json:"name"`
+	Detail       string               `json:"detail"`
+	ServiceLevel int                  `json:"service_level"`
+	EndHandle    cacampaign.EndHandle `json:"end_handle"`
 }
 
 // BodyCampaignsIDStatusPUT is rquest body define for
