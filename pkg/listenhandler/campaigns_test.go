@@ -296,29 +296,33 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 		campaignID   uuid.UUID
 		campaignName string
 		detail       string
+		serviceLevel int
+		endHandle    campaign.EndHandle
 
 		responseCampaign *campaign.Campaign
 
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
-			"normal",
-			&rabbitmqhandler.Request{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/campaigns/40b95d6c-c466-11ec-88ac-734fd1ce5539",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","service_level":100,"end_handle":"continue"}`),
 			},
 
-			uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
-			"update name",
-			"update detail",
+			campaignID:   uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
+			campaignName: "update name",
+			detail:       "update detail",
+			serviceLevel: 100,
+			endHandle:    campaign.EndHandleContinue,
 
-			&campaign.Campaign{
+			responseCampaign: &campaign.Campaign{
 				ID: uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
 			},
 
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"40b95d6c-c466-11ec-88ac-734fd1ce5539","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -339,7 +343,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateBasicInfo(gomock.Any(), tt.campaignID, tt.campaignName, tt.detail).Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateBasicInfo(gomock.Any(), tt.campaignID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

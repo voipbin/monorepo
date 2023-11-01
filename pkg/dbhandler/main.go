@@ -47,7 +47,14 @@ type DBHandler interface {
 	CampaignDelete(ctx context.Context, id uuid.UUID) error
 	CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
 	CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
-	CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
+	CampaignUpdateBasicInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		serviceLevel int,
+		endHandle campaign.EndHandle,
+	) error
 	CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) error
 	CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error
 	CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) error

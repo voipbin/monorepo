@@ -394,18 +394,20 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 
 func Test_CampaignUpdateBasicInfo(t *testing.T) {
 	tests := []struct {
-		name     string
-		campaign *campaign.Campaign
+		name string
+		data *campaign.Campaign
 
 		campaignName string
 		detail       string
+		serviceLevel int
+		endHandle    campaign.EndHandle
 
 		responseCurTime string
 		expectRes       *campaign.Campaign
 	}{
 		{
-			"normal",
-			&campaign.Campaign{
+			name: "normal",
+			data: &campaign.Campaign{
 				ID:             uuid.FromStringOrNil("cadc92e6-b3d3-11ec-a6ec-ab2d193ab762"),
 				CustomerID:     uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
 				Name:           "test name",
@@ -417,16 +419,20 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 				NextCampaignID: uuid.FromStringOrNil("cbce4438-b3d3-11ec-9b72-cf0786bc7233"),
 			},
 
-			"update name",
-			"update detail",
+			campaignName: "update name",
+			detail:       "update detail",
+			serviceLevel: 100,
+			endHandle:    campaign.EndHandleContinue,
 
-			"2020-04-18 03:22:17.995000",
-			&campaign.Campaign{
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: &campaign.Campaign{
 				ID:             uuid.FromStringOrNil("cadc92e6-b3d3-11ec-a6ec-ab2d193ab762"),
 				CustomerID:     uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
 				Name:           "update name",
 				Detail:         "update detail",
 				Status:         campaign.StatusStop,
+				ServiceLevel:   100,
+				EndHandle:      campaign.EndHandleContinue,
 				OutplanID:      uuid.FromStringOrNil("cb3ae990-b3d3-11ec-9393-5b195f388b72"),
 				OutdialID:      uuid.FromStringOrNil("cb6a0d7e-b3d3-11ec-ae5f-1b6bf31623b8"),
 				QueueID:        uuid.FromStringOrNil("cb9ec816-b3d3-11ec-8fea-578f80554cac"),
@@ -455,19 +461,19 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
+			if err := h.CampaignCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaignUpdateBasicInfo(ctx, tt.campaign.ID, tt.campaignName, tt.detail); err != nil {
+			if err := h.CampaignUpdateBasicInfo(ctx, tt.data.ID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
-			res, err := h.CampaignGet(ctx, tt.campaign.ID)
+			res, err := h.CampaignGet(ctx, tt.data.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

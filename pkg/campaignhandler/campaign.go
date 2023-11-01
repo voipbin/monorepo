@@ -42,7 +42,7 @@ func (h *campaignHandler) Create(
 	}
 
 	// validate
-	if !h.validateResources(ctx, id, outplanID, outdialID, queueID, nextCampaignID) {
+	if !h.validateResources(ctx, id, customerID, outplanID, outdialID, queueID, nextCampaignID) {
 		log.Errorf("Could not pass the resource validation. outplan_id: %s, outdial: %s, queue_id: %s, next_campaign_id: %s", outplanID, outdialID, queueID, nextCampaignID)
 		return nil, fmt.Errorf("could not pass the resource validation")
 	}
@@ -186,16 +186,25 @@ func (h *campaignHandler) GetsByCustomerID(ctx context.Context, customerID uuid.
 }
 
 // UpdateBasicInfo updates campaign's basic info
-func (h *campaignHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*campaign.Campaign, error) {
+func (h *campaignHandler) UpdateBasicInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	serviceLevel int,
+	endHandle campaign.EndHandle,
+) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "UpdateBasicInfo",
-		"id":     id,
-		"name":   name,
-		"detail": detail,
+		"func":          "UpdateBasicInfo",
+		"id":            id,
+		"name":          name,
+		"detail":        detail,
+		"service_level": serviceLevel,
+		"end_handle":    endHandle,
 	})
 	log.Debug("Updating campaign basic info.")
 
-	if err := h.db.CampaignUpdateBasicInfo(ctx, id, name, detail); err != nil {
+	if err := h.db.CampaignUpdateBasicInfo(ctx, id, name, detail, serviceLevel, endHandle); err != nil {
 		log.Errorf("Could not update campaign. err: %v", err)
 		return nil, err
 	}
@@ -222,7 +231,13 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 	})
 	log.Debug("Updating campaign basic info.")
 
-	if !h.validateResources(ctx, id, outplanID, outdialID, queueID, uuid.Nil) {
+	c, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get campaign. err: %v", err)
+		return nil, err
+	}
+
+	if !h.validateResources(ctx, id, c.CustomerID, outplanID, outdialID, queueID, uuid.Nil) {
 		log.Errorf("Could not pass the resource validation. outplan_id: %s, outdial_id: %s, queue_id: %s, nex_campaign_id: %s",
 			outplanID, outdialID, queueID, uuid.Nil)
 		return nil, fmt.Errorf("could not pass the resource validation")
@@ -230,12 +245,6 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 
 	if err := h.db.CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID); err != nil {
 		log.Errorf("Could not update campaign. err: %v", err)
-		return nil, err
-	}
-
-	c, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get campaign. err: %v", err)
 		return nil, err
 	}
 
@@ -423,6 +432,7 @@ func (h *campaignHandler) updateExecuteStop(ctx context.Context, id uuid.UUID) e
 func (h *campaignHandler) validateResources(
 	ctx context.Context,
 	id uuid.UUID,
+	customerID uuid.UUID,
 	outplanID uuid.UUID,
 	outdialID uuid.UUID,
 	queueID uuid.UUID,
@@ -430,6 +440,8 @@ func (h *campaignHandler) validateResources(
 ) bool {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "validateResources",
+		"id":               id,
+		"customer_id":      customerID,
 		"outplan_id":       outplanID,
 		"outdial_id":       outdialID,
 		"queue_id":         queueID,
@@ -437,25 +449,25 @@ func (h *campaignHandler) validateResources(
 	})
 
 	// outplan id
-	if !h.isValidOutplanID(ctx, outplanID) {
+	if !h.isValidOutplanID(ctx, outplanID, customerID) {
 		log.Debugf("The outplan id is not valid. outplan_id: %s", outplanID)
 		return false
 	}
 
 	// outdial id
-	if !h.isValidOutdialID(ctx, id, outdialID) {
+	if !h.isValidOutdialID(ctx, outdialID, id, customerID) {
 		log.Debugf("The outdial id is not valid. outplan_id: %s", outplanID)
 		return false
 	}
 
 	// queue id
-	if !h.isValidQueueID(ctx, queueID) {
+	if !h.isValidQueueID(ctx, queueID, customerID) {
 		log.Debugf("The queue id is not valid. queue_id: %s", queueID)
 		return false
 	}
 
 	// next campaign id
-	if !h.isValidNextCampaignID(ctx, nextCampaignID) {
+	if !h.isValidNextCampaignID(ctx, nextCampaignID, customerID) {
 		log.Debugf("The next campaign id is not valid. next_campaign_id: %s", nextCampaignID)
 		return false
 	}
@@ -464,10 +476,10 @@ func (h *campaignHandler) validateResources(
 }
 
 // isValidOutdialID returns true if the given outdial id is valid
-func (h *campaignHandler) isValidOutdialID(ctx context.Context, id uuid.UUID, outdialID uuid.UUID) bool {
+func (h *campaignHandler) isValidOutdialID(ctx context.Context, outdialID uuid.UUID, campaignID uuid.UUID, customerID uuid.UUID) bool {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "isValidOutdialID",
-		"campaign_id": id,
+		"campaign_id": campaignID,
 		"outdial_id":  outdialID,
 	})
 
@@ -483,7 +495,7 @@ func (h *campaignHandler) isValidOutdialID(ctx context.Context, id uuid.UUID, ou
 	}
 	log.WithField("outdial", od).Debugf("Checking outdial info. outdial_id: %s", od.ID)
 
-	if od.CampaignID != uuid.Nil && od.CampaignID != id {
+	if od.CampaignID != uuid.Nil && od.CampaignID != campaignID {
 		log.Debugf("The outdial is used by other campaign already. campaign_id: %s", od.CampaignID)
 		return false
 	}
@@ -493,14 +505,20 @@ func (h *campaignHandler) isValidOutdialID(ctx context.Context, id uuid.UUID, ou
 		return false
 	}
 
+	if od.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", od.CustomerID)
+		return false
+	}
+
 	return true
 }
 
 // isValidOutplanID returns true if the outplan id is valid.
-func (h *campaignHandler) isValidOutplanID(ctx context.Context, outplanID uuid.UUID) bool {
+func (h *campaignHandler) isValidOutplanID(ctx context.Context, outplanID uuid.UUID, customerID uuid.UUID) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "isValidOutplanID",
-		"outplan_id": outplanID,
+		"func":        "isValidOutplanID",
+		"outplan_id":  outplanID,
+		"customer_id": customerID,
 	})
 
 	if outplanID == uuid.Nil {
@@ -520,14 +538,20 @@ func (h *campaignHandler) isValidOutplanID(ctx context.Context, outplanID uuid.U
 		return false
 	}
 
+	if op.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", op.CustomerID)
+		return false
+	}
+
 	return true
 }
 
 // isValidQueueID returns true if the queue id is valid for queue id.
-func (h *campaignHandler) isValidQueueID(ctx context.Context, queueID uuid.UUID) bool {
+func (h *campaignHandler) isValidQueueID(ctx context.Context, queueID uuid.UUID, customerID uuid.UUID) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "isValidQueueID",
-		"queue_id": queueID,
+		"func":        "isValidQueueID",
+		"queue_id":    queueID,
+		"customer_id": customerID,
 	})
 
 	if queueID == uuid.Nil {
@@ -547,14 +571,20 @@ func (h *campaignHandler) isValidQueueID(ctx context.Context, queueID uuid.UUID)
 		return false
 	}
 
+	if q.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", q.CustomerID)
+		return false
+	}
+
 	return true
 }
 
 // isValidNextCampaignID returns true if the given campaign id is valid for next campaign id
-func (h *campaignHandler) isValidNextCampaignID(ctx context.Context, nextCampaignID uuid.UUID) bool {
+func (h *campaignHandler) isValidNextCampaignID(ctx context.Context, nextCampaignID uuid.UUID, customerID uuid.UUID) bool {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "isValidNextCampaignID",
 		"next_campaign_id": nextCampaignID,
+		"customer_id":      customerID,
 	})
 
 	if nextCampaignID == uuid.Nil {
@@ -573,9 +603,15 @@ func (h *campaignHandler) isValidNextCampaignID(ctx context.Context, nextCampaig
 		return false
 	}
 
+	if c.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", c.CustomerID)
+		return false
+	}
+
 	return true
 }
 
+// updateResources updates the related resources
 func (h *campaignHandler) updateResources(
 	ctx context.Context,
 	id uuid.UUID,
@@ -585,7 +621,8 @@ func (h *campaignHandler) updateResources(
 	nextCampaignID uuid.UUID,
 ) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func":             "validateResources",
+		"func":             "updateResources",
+		"id":               id,
 		"outplan_id":       outplanID,
 		"outdial_id":       outdialID,
 		"queue_id":         queueID,
