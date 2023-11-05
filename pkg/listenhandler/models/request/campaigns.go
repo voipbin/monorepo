@@ -39,6 +39,7 @@ type V1DataCampaignsPost struct {
 type V1DataCampaignsIDPut struct {
 	Name         string             `json:"name,omitempty"`
 	Detail       string             `json:"detail,omitempty"`
+	Type         campaign.Type      `json:"type"`
 	ServiceLevel int                `json:"service_level,omitempty"`
 	EndHandle    campaign.EndHandle `json:"end_handle,omitempty"`
 }

@@ -205,7 +205,7 @@ func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *rabbitmqhandler
 	}
 
 	// update
-	tmp, err := h.campaignHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail, req.ServiceLevel, req.EndHandle)
+	tmp, err := h.campaignHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail, req.Type, req.ServiceLevel, req.EndHandle)
 	if err != nil {
 		log.Errorf("Could not update the campaign service_level. err: %v", err)
 		return nil, err

@@ -113,17 +113,17 @@ func (mr *MockDBHandlerMockRecorder) CampaignUpdateActions(ctx, id, actions inte
 }
 
 // CampaignUpdateBasicInfo mocks base method.
-func (m *MockDBHandler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, serviceLevel int, endHandle campaign.EndHandle) error {
+func (m *MockDBHandler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignUpdateBasicInfo", ctx, id, name, detail, serviceLevel, endHandle)
+	ret := m.ctrl.Call(m, "CampaignUpdateBasicInfo", ctx, id, name, detail, campaignType, serviceLevel, endHandle)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CampaignUpdateBasicInfo indicates an expected call of CampaignUpdateBasicInfo.
-func (mr *MockDBHandlerMockRecorder) CampaignUpdateBasicInfo(ctx, id, name, detail, serviceLevel, endHandle interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CampaignUpdateBasicInfo(ctx, id, name, detail, campaignType, serviceLevel, endHandle interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateBasicInfo), ctx, id, name, detail, serviceLevel, endHandle)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).CampaignUpdateBasicInfo), ctx, id, name, detail, campaignType, serviceLevel, endHandle)
 }
 
 // CampaignUpdateEndHandle mocks base method.

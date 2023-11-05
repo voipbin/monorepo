@@ -296,6 +296,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 		campaignID   uuid.UUID
 		campaignName string
 		detail       string
+		campaignType campaign.Type
 		serviceLevel int
 		endHandle    campaign.EndHandle
 
@@ -309,12 +310,13 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 				URI:      "/v1/campaigns/40b95d6c-c466-11ec-88ac-734fd1ce5539",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"update name","detail":"update detail","service_level":100,"end_handle":"continue"}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","type":"call","service_level":100,"end_handle":"continue"}`),
 			},
 
 			campaignID:   uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
 			campaignName: "update name",
 			detail:       "update detail",
+			campaignType: campaign.TypeCall,
 			serviceLevel: 100,
 			endHandle:    campaign.EndHandleContinue,
 
@@ -343,7 +345,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateBasicInfo(gomock.Any(), tt.campaignID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle).Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateBasicInfo(gomock.Any(), tt.campaignID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

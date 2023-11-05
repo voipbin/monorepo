@@ -53,6 +53,7 @@ type CampaignHandler interface {
 		id uuid.UUID,
 		name string,
 		detail string,
+		campaignType campaign.Type,
 		serviceLevel int,
 		endHandle campaign.EndHandle,
 	) (*campaign.Campaign, error)

@@ -259,6 +259,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 		id           uuid.UUID
 		campaignName string
 		detail       string
+		campaignType campaign.Type
 		serviceLevel int
 		endHandle    campaign.EndHandle
 
@@ -271,6 +272,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			id:           uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
 			campaignName: "update name",
 			detail:       "update detail",
+			campaignType: campaign.TypeCall,
 			serviceLevel: 100,
 			endHandle:    campaign.EndHandleContinue,
 
@@ -301,11 +303,11 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignUpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle).Return(nil)
+			mockDB.EXPECT().CampaignUpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle).Return(nil)
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 
-			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle)
+			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
