@@ -268,7 +268,7 @@ func campaignsIDPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail, req.ServiceLevel, req.EndHandle)
+	res, err := serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail, req.Type, req.ServiceLevel, req.EndHandle)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)

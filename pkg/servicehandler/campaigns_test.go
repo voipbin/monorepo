@@ -282,6 +282,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 		campaignID   uuid.UUID
 		campaignName string
 		detail       string
+		campaignType cacampaign.Type
 		serviceLevel int
 		endHandle    cacampaign.EndHandle
 
@@ -297,6 +298,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 			campaignID:   uuid.FromStringOrNil("6d1e3e5e-c655-11ec-bc77-cf50387b8fe7"),
 			campaignName: "test name",
 			detail:       "test detail",
+			campaignType: cacampaign.TypeCall,
 			serviceLevel: 100,
 			endHandle:    cacampaign.EndHandleContinue,
 
@@ -326,8 +328,8 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.response, nil)
-			mockReq.EXPECT().CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle).Return(tt.response, nil)
-			res, err := h.CampaignUpdateBasicInfo(ctx, tt.customer, tt.campaignID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle)
+			mockReq.EXPECT().CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle).Return(tt.response, nil)
+			res, err := h.CampaignUpdateBasicInfo(ctx, tt.customer, tt.campaignID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
