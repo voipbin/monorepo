@@ -325,6 +325,7 @@ func (h *handler) CampaignUpdateBasicInfo(
 	id uuid.UUID,
 	name string,
 	detail string,
+	campaignType campaign.Type,
 	serviceLevel int,
 	endHandle campaign.EndHandle,
 ) error {
@@ -332,6 +333,7 @@ func (h *handler) CampaignUpdateBasicInfo(
 	update campaigns set
 		name = ?,
 		detail = ?,
+		type = ?,
 		service_level = ?,
 		end_handle = ?,
 		tm_update = ?
@@ -339,7 +341,7 @@ func (h *handler) CampaignUpdateBasicInfo(
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, name, detail, serviceLevel, endHandle, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, campaignType, serviceLevel, endHandle, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateBasicInfo. err: %v", err)
 	}
 

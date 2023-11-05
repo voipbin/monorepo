@@ -399,6 +399,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
 		campaignName string
 		detail       string
+		campaignType campaign.Type
 		serviceLevel int
 		endHandle    campaign.EndHandle
 
@@ -412,6 +413,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 				CustomerID:     uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
 				Name:           "test name",
 				Detail:         "test detail",
+				Type:           campaign.TypeCall,
 				Status:         campaign.StatusStop,
 				OutplanID:      uuid.FromStringOrNil("cb3ae990-b3d3-11ec-9393-5b195f388b72"),
 				OutdialID:      uuid.FromStringOrNil("cb6a0d7e-b3d3-11ec-ae5f-1b6bf31623b8"),
@@ -421,6 +423,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
 			campaignName: "update name",
 			detail:       "update detail",
+			campaignType: campaign.TypeFlow,
 			serviceLevel: 100,
 			endHandle:    campaign.EndHandleContinue,
 
@@ -430,6 +433,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 				CustomerID:     uuid.FromStringOrNil("cb089aa8-b3d3-11ec-b831-0b9f457c4610"),
 				Name:           "update name",
 				Detail:         "update detail",
+				Type:           campaign.TypeFlow,
 				Status:         campaign.StatusStop,
 				ServiceLevel:   100,
 				EndHandle:      campaign.EndHandleContinue,
@@ -467,7 +471,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaignUpdateBasicInfo(ctx, tt.data.ID, tt.campaignName, tt.detail, tt.serviceLevel, tt.endHandle); err != nil {
+			if err := h.CampaignUpdateBasicInfo(ctx, tt.data.ID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

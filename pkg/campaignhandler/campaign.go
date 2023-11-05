@@ -191,6 +191,7 @@ func (h *campaignHandler) UpdateBasicInfo(
 	id uuid.UUID,
 	name string,
 	detail string,
+	campaignType campaign.Type,
 	serviceLevel int,
 	endHandle campaign.EndHandle,
 ) (*campaign.Campaign, error) {
@@ -199,12 +200,13 @@ func (h *campaignHandler) UpdateBasicInfo(
 		"id":            id,
 		"name":          name,
 		"detail":        detail,
+		"type":          campaignType,
 		"service_level": serviceLevel,
 		"end_handle":    endHandle,
 	})
 	log.Debug("Updating campaign basic info.")
 
-	if err := h.db.CampaignUpdateBasicInfo(ctx, id, name, detail, serviceLevel, endHandle); err != nil {
+	if err := h.db.CampaignUpdateBasicInfo(ctx, id, name, detail, campaignType, serviceLevel, endHandle); err != nil {
 		log.Errorf("Could not update campaign. err: %v", err)
 		return nil, err
 	}

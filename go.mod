@@ -14,7 +14,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230724184313-374908ea29b0
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20231005165752-434d8bc6c4b3
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231027084458-54037784e256
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231101162040-e6fd342e629c
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230728174519-d347587ee005
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230903182459-1d2f626b38fd
@@ -50,7 +50,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230716174942-b6a22e86ff12 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	google.golang.org/genproto v0.0.0-20231016165738-49dd2c1f3d0b // indirect
+	golang.org/x/sys v0.14.0 // indirect
+	google.golang.org/genproto v0.0.0-20231030173426-d783a09b4405 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )
