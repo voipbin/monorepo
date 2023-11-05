@@ -36,6 +36,7 @@ type ParamCampaignsGET struct {
 type BodyCampaignsIDPUT struct {
 	Name         string               `json:"name"`
 	Detail       string               `json:"detail"`
+	Type         cacampaign.Type      `json:"type"`
 	ServiceLevel int                  `json:"service_level"`
 	EndHandle    cacampaign.EndHandle `json:"end_handle"`
 }
