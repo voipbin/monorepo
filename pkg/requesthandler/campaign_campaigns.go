@@ -171,6 +171,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateBasicInfo(
 	id uuid.UUID,
 	name string,
 	detail string,
+	campaignType cacampaign.Type,
 	serviceLevel int,
 	endHandle cacampaign.EndHandle,
 ) (*cacampaign.Campaign, error) {
@@ -179,6 +180,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateBasicInfo(
 	data := &carequest.V1DataCampaignsIDPut{
 		Name:         name,
 		Detail:       detail,
+		Type:         campaignType,
 		ServiceLevel: serviceLevel,
 		EndHandle:    endHandle,
 	}
