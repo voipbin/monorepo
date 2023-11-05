@@ -376,6 +376,7 @@ func Test_campaignsIDPUT(t *testing.T) {
 			reqBody: request.BodyCampaignsIDPUT{
 				Name:         "test name",
 				Detail:       "test detail",
+				Type:         cacampaign.TypeCall,
 				ServiceLevel: 100,
 				EndHandle:    "continue",
 			},
@@ -410,7 +411,7 @@ func Test_campaignsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.ServiceLevel, tt.reqBody.EndHandle).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.Type, tt.reqBody.ServiceLevel, tt.reqBody.EndHandle).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

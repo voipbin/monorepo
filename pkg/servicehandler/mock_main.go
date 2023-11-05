@@ -701,18 +701,18 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateActions(ctx, u, id, acti
 }
 
 // CampaignUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) CampaignUpdateBasicInfo(ctx context.Context, u *customer.Customer, id uuid.UUID, name, detail string, serviceLevel int, endHandle campaign.EndHandle) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateBasicInfo(ctx context.Context, u *customer.Customer, id uuid.UUID, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignUpdateBasicInfo", ctx, u, id, name, detail, serviceLevel, endHandle)
+	ret := m.ctrl.Call(m, "CampaignUpdateBasicInfo", ctx, u, id, name, detail, campaignType, serviceLevel, endHandle)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CampaignUpdateBasicInfo indicates an expected call of CampaignUpdateBasicInfo.
-func (mr *MockServiceHandlerMockRecorder) CampaignUpdateBasicInfo(ctx, u, id, name, detail, serviceLevel, endHandle interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateBasicInfo(ctx, u, id, name, detail, campaignType, serviceLevel, endHandle interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateBasicInfo), ctx, u, id, name, detail, serviceLevel, endHandle)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateBasicInfo), ctx, u, id, name, detail, campaignType, serviceLevel, endHandle)
 }
 
 // CampaignUpdateNextCampaignID mocks base method.

@@ -175,6 +175,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 	id uuid.UUID,
 	name string,
 	detail string,
+	campaignType cacampaign.Type,
 	serviceLevel int,
 	endHandle cacampaign.EndHandle,
 ) (*cacampaign.WebhookMessage, error) {
@@ -185,6 +186,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 		"campaign_id":   id,
 		"name":          name,
 		"detail":        detail,
+		"type":          campaignType,
 		"service_level": serviceLevel,
 		"end_handle":    endHandle,
 	})
@@ -197,7 +199,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, id, name, detail, serviceLevel, endHandle)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, id, name, detail, campaignType, serviceLevel, endHandle)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err

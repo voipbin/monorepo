@@ -147,6 +147,7 @@ type ServiceHandler interface {
 		id uuid.UUID,
 		name string,
 		detail string,
+		campaignType cacampaign.Type,
 		serviceLevel int,
 		endHandle cacampaign.EndHandle,
 	) (*cacampaign.WebhookMessage, error)
