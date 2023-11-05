@@ -59,6 +59,8 @@ gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231018020519-33a713
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231018020519-33a713fff87f/go.mod h1:QOnBbMJZGJtjFSIEfi5dJb4n+n3kGAmezdLng88N6ao=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231101153019-476c1d37a9e0 h1:wWLNvqx1l83lZdyUxxuR+Qm53sUsgAmlBPy7u4pBnmU=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231101153019-476c1d37a9e0/go.mod h1:U4Uci2moYOdDNyFTbJc9f/C3rLtUyTgU9Eazg2qzN28=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231105153617-3ab0ab8b49a1 h1:bDnhSUMUYvUjKzvrd1aG7XKabKpke6o4n5d1/kbEiUg=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231105153617-3ab0ab8b49a1/go.mod h1:DJsM8s9ubY+/F85tikoZrI32ZYeQk0nRfps/RjApWDs=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 h1:KpWVqqS+jFjQ8wOtZSOAorO/SpOEPbuPKWD72smHrQM=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093/go.mod h1:CMWCrp4ClhtjFGbcJY/VHmLkQ/D+tX5pUCp0Rsedj4k=
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c690da h1:3JO2jmdY1z2+evUqKAisxTux1IMuUUOep6lIsXEcKkk=
@@ -121,6 +123,8 @@ golang.org/x/sys v0.0.0-20210510120138-977fb7262007/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.13.0 h1:Af8nKPmuFypiUBjVoU9V20FiaFXOcuZI21p0ycVYYGE=
 golang.org/x/sys v0.13.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.14.0 h1:Vz7Qs629MkJkGyHxUlRHizWJRG2j8fbQKjELVSNhy7Q=
+golang.org/x/sys v0.14.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=

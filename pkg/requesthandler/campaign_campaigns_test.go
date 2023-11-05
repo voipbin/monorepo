@@ -384,6 +384,7 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 		campaignID         uuid.UUID
 		updateName         string
 		updateDetail       string
+		campaignType       cacampaign.Type
 		updateServiceLevel int
 		updateEndHandle    cacampaign.EndHandle
 
@@ -399,6 +400,7 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 			campaignID:         uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
 			updateName:         "update name",
 			updateDetail:       "update detail",
+			campaignType:       cacampaign.TypeCall,
 			updateServiceLevel: 100,
 			updateEndHandle:    cacampaign.EndHandleContinue,
 
@@ -413,7 +415,7 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 				URI:      "/v1/campaigns/1692450e-c50f-11ec-8e6c-07b184583eb1",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"update name","detail":"update detail","service_level":100,"end_handle":"continue"}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","type":"call","service_level":100,"end_handle":"continue"}`),
 			},
 			expectResult: &cacampaign.Campaign{
 				ID: uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
@@ -434,7 +436,7 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.updateName, tt.updateDetail, tt.updateServiceLevel, tt.updateEndHandle)
+			res, err := reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.updateName, tt.updateDetail, tt.campaignType, tt.updateServiceLevel, tt.updateEndHandle)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
