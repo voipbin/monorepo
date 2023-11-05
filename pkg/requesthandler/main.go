@@ -531,6 +531,7 @@ type RequestHandler interface {
 		id uuid.UUID,
 		name string,
 		detail string,
+		campaignType cacampaign.Type,
 		serviceLevel int,
 		endHandle cacampaign.EndHandle,
 	) (*cacampaign.Campaign, error)
