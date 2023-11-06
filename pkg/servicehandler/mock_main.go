@@ -731,18 +731,18 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateNextCampaignID(ctx, u, i
 }
 
 // CampaignUpdateResourceInfo mocks base method.
-func (m *MockServiceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *customer.Customer, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *customer.Customer, id, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignUpdateResourceInfo", ctx, u, id, outplanID, outdialID, queueID)
+	ret := m.ctrl.Call(m, "CampaignUpdateResourceInfo", ctx, u, id, outplanID, outdialID, queueID, nextCampaignID)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CampaignUpdateResourceInfo indicates an expected call of CampaignUpdateResourceInfo.
-func (mr *MockServiceHandlerMockRecorder) CampaignUpdateResourceInfo(ctx, u, id, outplanID, outdialID, queueID interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateResourceInfo(ctx, u, id, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateResourceInfo", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateResourceInfo), ctx, u, id, outplanID, outdialID, queueID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateResourceInfo", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateResourceInfo), ctx, u, id, outplanID, outdialID, queueID, nextCampaignID)
 }
 
 // CampaignUpdateServiceLevel mocks base method.
