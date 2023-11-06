@@ -69,9 +69,10 @@ type V1DataCampaignsIDActionsPut struct {
 // v1 data type request struct for
 // /v1/campaigns/<campaign-id>/resource_info PUT
 type V1DataCampaignsIDResourceInfoPut struct {
-	OutplanID uuid.UUID `json:"outplan_id"`
-	OutdialID uuid.UUID `json:"outdial_id"`
-	QueueID   uuid.UUID `json:"queue_id"`
+	OutplanID      uuid.UUID `json:"outplan_id"`
+	OutdialID      uuid.UUID `json:"outdial_id"`
+	QueueID        uuid.UUID `json:"queue_id"`
+	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 }
 
 // V1DataCampaignsIDNextCampaignIDPut is

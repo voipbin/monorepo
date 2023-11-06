@@ -56,7 +56,7 @@ type DBHandler interface {
 		serviceLevel int,
 		endHandle campaign.EndHandle,
 	) error
-	CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) error
+	CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) error
 	CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error
 	CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) error
 	CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UUID, status campaign.Status, execute campaign.Execute) error
