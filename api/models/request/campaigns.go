@@ -18,10 +18,9 @@ type BodyCampaignsPOST struct {
 	Actions []fmaction.Action `json:"actions"` // this actions will be stored to the flow
 
 	// resource info
-	OutplanID uuid.UUID `json:"outplan_id"`
-	OutdialID uuid.UUID `json:"outdial_id"`
-	QueueID   uuid.UUID `json:"queue_id"`
-
+	OutplanID      uuid.UUID `json:"outplan_id"`
+	OutdialID      uuid.UUID `json:"outdial_id"`
+	QueueID        uuid.UUID `json:"queue_id"`
 	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 }
 
@@ -62,9 +61,10 @@ type BodyCampaignsIDActionsPUT struct {
 // BodyCampaignsIDResourceInfoPUT is rquest body define for
 // PUT /v1.0/campaigns/<campaign-id>/resource_info
 type BodyCampaignsIDResourceInfoPUT struct {
-	OutplanID uuid.UUID `json:"outplan_id"`
-	OutdialID uuid.UUID `json:"outdial_id"`
-	QueueID   uuid.UUID `json:"queue_id"`
+	OutplanID      uuid.UUID `json:"outplan_id"`
+	OutdialID      uuid.UUID `json:"outdial_id"`
+	QueueID        uuid.UUID `json:"queue_id"`
+	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 }
 
 // BodyCampaignsIDNextCampaignIDPUT is rquest body define for

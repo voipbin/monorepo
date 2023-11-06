@@ -295,7 +295,7 @@ func (h *serviceHandler) CampaignUpdateActions(ctx context.Context, u *cscustome
 
 // CampaignUpdateResourceInfo updates the campaign's resource_info.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error) {
+func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateResourceInfo",
 		"customer_id": u.ID,
@@ -311,7 +311,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *cscu
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID, nextCampaignID)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
