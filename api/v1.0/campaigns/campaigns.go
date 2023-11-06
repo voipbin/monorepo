@@ -488,7 +488,7 @@ func campaignsIDResourceInfoPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateResourceInfo(c.Request.Context(), &u, id, req.OutplanID, req.OutdialID, req.QueueID)
+	res, err := serviceHandler.CampaignUpdateResourceInfo(c.Request.Context(), &u, id, req.OutplanID, req.OutdialID, req.QueueID, req.NextCampaignID)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
