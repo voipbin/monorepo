@@ -649,10 +649,11 @@ func Test_CampaignV1CampaignUpdateResourceInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		campaignID uuid.UUID
-		outplanID  uuid.UUID
-		outdialID  uuid.UUID
-		queueID    uuid.UUID
+		campaignID     uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		response *rabbitmqhandler.Response
 
@@ -661,27 +662,28 @@ func Test_CampaignV1CampaignUpdateResourceInfo(t *testing.T) {
 		expectResult  *cacampaign.Campaign
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("e559c128-c6b3-11ec-8f7c-67e43d0d08d8"),
-			uuid.FromStringOrNil("e5907394-c6b3-11ec-9dfa-17e8177ec4c1"),
-			uuid.FromStringOrNil("e5bcde16-c6b3-11ec-b955-b75320ec1cc2"),
-			uuid.FromStringOrNil("e5e5f206-c6b3-11ec-bc99-17af712a37b1"),
+			campaignID:     uuid.FromStringOrNil("e559c128-c6b3-11ec-8f7c-67e43d0d08d8"),
+			outplanID:      uuid.FromStringOrNil("e5907394-c6b3-11ec-9dfa-17e8177ec4c1"),
+			outdialID:      uuid.FromStringOrNil("e5bcde16-c6b3-11ec-b955-b75320ec1cc2"),
+			queueID:        uuid.FromStringOrNil("e5e5f206-c6b3-11ec-bc99-17af712a37b1"),
+			nextCampaignID: uuid.FromStringOrNil("eeff5402-7cd0-11ee-bcb6-9b5f97f1f8a9"),
 
-			&rabbitmqhandler.Response{
+			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e559c128-c6b3-11ec-8f7c-67e43d0d08d8"}`),
 			},
 
-			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			expectTarget: "bin-manager.campaign-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/campaigns/e559c128-c6b3-11ec-8f7c-67e43d0d08d8/resource_info",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"outplan_id":"e5907394-c6b3-11ec-9dfa-17e8177ec4c1","outdial_id":"e5bcde16-c6b3-11ec-b955-b75320ec1cc2","queue_id":"e5e5f206-c6b3-11ec-bc99-17af712a37b1"}`),
+				Data:     []byte(`{"outplan_id":"e5907394-c6b3-11ec-9dfa-17e8177ec4c1","outdial_id":"e5bcde16-c6b3-11ec-b955-b75320ec1cc2","queue_id":"e5e5f206-c6b3-11ec-bc99-17af712a37b1","next_campaign_id":"eeff5402-7cd0-11ee-bcb6-9b5f97f1f8a9"}`),
 			},
-			&cacampaign.Campaign{
+			expectResult: &cacampaign.Campaign{
 				ID: uuid.FromStringOrNil("e559c128-c6b3-11ec-8f7c-67e43d0d08d8"),
 			},
 		},
@@ -700,7 +702,7 @@ func Test_CampaignV1CampaignUpdateResourceInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID)
+			res, err := reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
