@@ -314,13 +314,14 @@ func (r *requestHandler) CampaignV1CampaignUpdateActions(ctx context.Context, id
 // CampaignV1CampaignUpdateResourceInfo sends a request to campaign-manager
 // to update the resource_info.
 // it returns updated campaign if it succeed.
-func (r *requestHandler) CampaignV1CampaignUpdateResourceInfo(ctx context.Context, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.Campaign, error) {
+func (r *requestHandler) CampaignV1CampaignUpdateResourceInfo(ctx context.Context, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns/%s/resource_info", id)
 
 	data := &carequest.V1DataCampaignsIDResourceInfoPut{
-		OutplanID: outplanID,
-		OutdialID: outdialID,
-		QueueID:   queueID,
+		OutplanID:      outplanID,
+		OutdialID:      outdialID,
+		QueueID:        queueID,
+		NextCampaignID: nextCampaignID,
 	}
 
 	m, err := json.Marshal(data)
