@@ -525,32 +525,35 @@ func Test_CampaignUpdateActions(t *testing.T) {
 func Test_CampaignUpdateResourceInfo(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		customer   *cscustomer.Customer
-		campaignID uuid.UUID
-		outplanID  uuid.UUID
-		outdialID  uuid.UUID
-		queueID    uuid.UUID
+		name     string
+		customer *cscustomer.Customer
+
+		campaignID     uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		response  *cacampaign.Campaign
 		expectRes *cacampaign.WebhookMessage
 	}{
 		{
-			"normal",
-			&cscustomer.Customer{
+			name: "normal",
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 
-			uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
-			uuid.FromStringOrNil("65c34a94-c6b6-11ec-b153-6be43b327a5e"),
-			uuid.FromStringOrNil("65ef10ca-c6b6-11ec-93a6-af4ca7079371"),
-			uuid.FromStringOrNil("661dcbc2-c6b6-11ec-934c-c3c128f1d3b9"),
+			campaignID:     uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
+			outplanID:      uuid.FromStringOrNil("65c34a94-c6b6-11ec-b153-6be43b327a5e"),
+			outdialID:      uuid.FromStringOrNil("65ef10ca-c6b6-11ec-93a6-af4ca7079371"),
+			queueID:        uuid.FromStringOrNil("661dcbc2-c6b6-11ec-934c-c3c128f1d3b9"),
+			nextCampaignID: uuid.FromStringOrNil("d1b8ec48-7cd3-11ee-abac-3f9b33935d6a"),
 
-			&cacampaign.Campaign{
+			response: &cacampaign.Campaign{
 				ID:         uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&cacampaign.WebhookMessage{
+			expectRes: &cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
 			},
 		},
@@ -572,8 +575,8 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.response, nil)
-			mockReq.EXPECT().CampaignV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID).Return(tt.response, nil)
-			res, err := h.CampaignUpdateResourceInfo(ctx, tt.customer, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID)
+			mockReq.EXPECT().CampaignV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.response, nil)
+			res, err := h.CampaignUpdateResourceInfo(ctx, tt.customer, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

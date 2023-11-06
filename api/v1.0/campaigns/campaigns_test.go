@@ -646,9 +646,10 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 			"/v1.0/campaigns/47a64a88-c6b7-11ec-973d-1f139c4db335/resource_info",
 			request.BodyCampaignsIDResourceInfoPUT{
-				OutplanID: uuid.FromStringOrNil("60fbac4e-c6b7-11ec-869d-3bb7acd5d21a"),
-				OutdialID: uuid.FromStringOrNil("61276366-c6b7-11ec-9a5f-07c38e459ee5"),
-				QueueID:   uuid.FromStringOrNil("614def2c-c6b7-11ec-be49-f350c18391d0"),
+				OutplanID:      uuid.FromStringOrNil("60fbac4e-c6b7-11ec-869d-3bb7acd5d21a"),
+				OutdialID:      uuid.FromStringOrNil("61276366-c6b7-11ec-9a5f-07c38e459ee5"),
+				QueueID:        uuid.FromStringOrNil("614def2c-c6b7-11ec-be49-f350c18391d0"),
+				NextCampaignID: uuid.FromStringOrNil("2d21918e-7cd4-11ee-9f07-c3d4e266f6f6"),
 			},
 			&cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
@@ -681,7 +682,7 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.OutplanID, tt.reqBody.OutdialID, tt.reqBody.QueueID).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.OutplanID, tt.reqBody.OutdialID, tt.reqBody.QueueID, tt.reqBody.NextCampaignID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
