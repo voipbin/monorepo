@@ -223,15 +223,23 @@ func (h *campaignHandler) UpdateBasicInfo(
 }
 
 // UpdateResourceInfo updates campaign's resource info
-func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.Campaign, error) {
+func (h *campaignHandler) UpdateResourceInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	outplanID uuid.UUID,
+	outdialID uuid.UUID,
+	queueID uuid.UUID,
+	nextCampaignID uuid.UUID,
+) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "UpdateResourceInfo",
-		"campaign_id": id,
-		"outplan_id":  outplanID,
-		"outdial_id":  outdialID,
-		"queue_id":    queueID,
+		"func":             "UpdateResourceInfo",
+		"campaign_id":      id,
+		"outplan_id":       outplanID,
+		"outdial_id":       outdialID,
+		"queue_id":         queueID,
+		"next_campaign_id": nextCampaignID,
 	})
-	log.Debug("Updating campaign basic info.")
+	log.Debug("Updating campaign resource info.")
 
 	c, err := h.Get(ctx, id)
 	if err != nil {
@@ -239,13 +247,13 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 		return nil, err
 	}
 
-	if !h.validateResources(ctx, id, c.CustomerID, outplanID, outdialID, queueID, uuid.Nil) {
+	if !h.validateResources(ctx, id, c.CustomerID, outplanID, outdialID, queueID, nextCampaignID) {
 		log.Errorf("Could not pass the resource validation. outplan_id: %s, outdial_id: %s, queue_id: %s, nex_campaign_id: %s",
-			outplanID, outdialID, queueID, uuid.Nil)
+			outplanID, outdialID, queueID, nextCampaignID)
 		return nil, fmt.Errorf("could not pass the resource validation")
 	}
 
-	if err := h.db.CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID); err != nil {
+	if err := h.db.CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID, nextCampaignID); err != nil {
 		log.Errorf("Could not update campaign. err: %v", err)
 		return nil, err
 	}

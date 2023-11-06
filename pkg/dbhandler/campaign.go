@@ -352,18 +352,19 @@ func (h *handler) CampaignUpdateBasicInfo(
 }
 
 // CampaignUpdateResourceInfo updates campaign's resource information.
-func (h *handler) CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) error {
+func (h *handler) CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) error {
 	q := `
 	update campaigns set
 		outplan_id = ?,
 		outdial_id = ?,
 		queue_id = ?,
+		next_campaign_id = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, outplanID.Bytes(), outdialID.Bytes(), queueID.Bytes(), h.util.TimeGetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, outplanID.Bytes(), outdialID.Bytes(), queueID.Bytes(), nextCampaignID.Bytes(), h.util.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateResourceInfo. err: %v", err)
 	}
 

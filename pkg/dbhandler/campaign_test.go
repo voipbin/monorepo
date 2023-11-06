@@ -494,16 +494,17 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 		name     string
 		campaign *campaign.Campaign
 
-		outplanID uuid.UUID
-		outdialID uuid.UUID
-		queueID   uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		responseCurTime string
 		expectRes       *campaign.Campaign
 	}{
 		{
-			"normal",
-			&campaign.Campaign{
+			name: "normal",
+			campaign: &campaign.Campaign{
 				ID:             uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
 				CustomerID:     uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
 				Name:           "test name",
@@ -515,12 +516,13 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 				NextCampaignID: uuid.FromStringOrNil("2a21ba1a-b3d4-11ec-a5cf-bf03f62e70c7"),
 			},
 
-			uuid.FromStringOrNil("2a56c49e-b3d4-11ec-adfe-b38bfdbaca15"),
-			uuid.FromStringOrNil("2a8c690a-b3d4-11ec-b837-4fc7444b844f"),
-			uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
+			outplanID:      uuid.FromStringOrNil("2a56c49e-b3d4-11ec-adfe-b38bfdbaca15"),
+			outdialID:      uuid.FromStringOrNil("2a8c690a-b3d4-11ec-b837-4fc7444b844f"),
+			queueID:        uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
+			nextCampaignID: uuid.FromStringOrNil("7b753100-7ccb-11ee-a39a-5faf460167f7"),
 
-			"2020-04-18 03:22:17.995000",
-			&campaign.Campaign{
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: &campaign.Campaign{
 				ID:             uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
 				CustomerID:     uuid.FromStringOrNil("29594044-b3d4-11ec-98b2-730b7dd059bf"),
 				Name:           "test name",
@@ -529,7 +531,7 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 				OutplanID:      uuid.FromStringOrNil("2a56c49e-b3d4-11ec-adfe-b38bfdbaca15"),
 				OutdialID:      uuid.FromStringOrNil("2a8c690a-b3d4-11ec-b837-4fc7444b844f"),
 				QueueID:        uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
-				NextCampaignID: uuid.FromStringOrNil("2a21ba1a-b3d4-11ec-a5cf-bf03f62e70c7"),
+				NextCampaignID: uuid.FromStringOrNil("7b753100-7ccb-11ee-a39a-5faf460167f7"),
 				TMCreate:       "2020-04-18 03:22:17.995000",
 				TMUpdate:       "2020-04-18 03:22:17.995000",
 				TMDelete:       DefaultTimeStamp,
@@ -560,7 +562,7 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CampaignUpdateResourceInfo(ctx, tt.campaign.ID, tt.outplanID, tt.outdialID, tt.queueID); err != nil {
+			if err := h.CampaignUpdateResourceInfo(ctx, tt.campaign.ID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

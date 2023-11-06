@@ -408,7 +408,7 @@ func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *rab
 	}
 
 	// update
-	tmp, err := h.campaignHandler.UpdateResourceInfo(ctx, id, req.OutplanID, req.OutdialID, req.QueueID)
+	tmp, err := h.campaignHandler.UpdateResourceInfo(ctx, id, req.OutplanID, req.OutdialID, req.QueueID, req.NextCampaignID)
 	if err != nil {
 		log.Errorf("Could not update the campaign resource_info. err: %v", err)
 		return nil, err

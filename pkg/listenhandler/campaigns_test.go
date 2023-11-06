@@ -638,34 +638,36 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		campaignID uuid.UUID
-		outplanID  uuid.UUID
-		outdialID  uuid.UUID
-		queueID    uuid.UUID
+		campaignID     uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		responseCampaign *campaign.Campaign
 
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
-			"stopping",
-			&rabbitmqhandler.Request{
+			name: "stopping",
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/campaigns/e74223b2-c6af-11ec-9f40-1f88a3e01636/resource_info",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"outplan_id":"010e228c-c6b0-11ec-87b5-7bb69124c874","outdial_id":"013945a2-c6b0-11ec-ba93-2300004f60a7","queue_id":"0169cb32-c6b0-11ec-b616-4fe9ae9e95da"}`),
+				Data:     []byte(`{"outplan_id":"010e228c-c6b0-11ec-87b5-7bb69124c874","outdial_id":"013945a2-c6b0-11ec-ba93-2300004f60a7","queue_id":"0169cb32-c6b0-11ec-b616-4fe9ae9e95da","next_campaign_id":"0468ac9c-7cce-11ee-9d09-7feca9bc6422"}`),
 			},
 
-			uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
-			uuid.FromStringOrNil("010e228c-c6b0-11ec-87b5-7bb69124c874"),
-			uuid.FromStringOrNil("013945a2-c6b0-11ec-ba93-2300004f60a7"),
-			uuid.FromStringOrNil("0169cb32-c6b0-11ec-b616-4fe9ae9e95da"),
+			campaignID:     uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
+			outplanID:      uuid.FromStringOrNil("010e228c-c6b0-11ec-87b5-7bb69124c874"),
+			outdialID:      uuid.FromStringOrNil("013945a2-c6b0-11ec-ba93-2300004f60a7"),
+			queueID:        uuid.FromStringOrNil("0169cb32-c6b0-11ec-b616-4fe9ae9e95da"),
+			nextCampaignID: uuid.FromStringOrNil("0468ac9c-7cce-11ee-9d09-7feca9bc6422"),
 
-			&campaign.Campaign{
+			responseCampaign: &campaign.Campaign{
 				ID: uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
 			},
 
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e74223b2-c6af-11ec-9f40-1f88a3e01636","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -686,7 +688,7 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateResourceInfo(gomock.Any(), tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID).Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateResourceInfo(gomock.Any(), tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

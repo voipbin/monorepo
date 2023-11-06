@@ -324,22 +324,24 @@ func Test_UpdateResourceInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id        uuid.UUID
-		outplanID uuid.UUID
-		outdialID uuid.UUID
-		queueID   uuid.UUID
+		id             uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
 
 		response *campaign.Campaign
 	}{
 		{
-			"test normal",
+			name: "test normal",
 
-			uuid.FromStringOrNil("1951cdde-9d6f-4aeb-8e64-f56fc67a5a4e"),
-			uuid.FromStringOrNil("b4850013-42fe-4b18-9753-0e2871be2157"),
-			uuid.FromStringOrNil("bc2031d2-53eb-4ee6-982e-b08ec0ffbde6"),
-			uuid.FromStringOrNil("12f560a9-9aed-4b5a-b748-06b6fe146ae4"),
+			id:             uuid.FromStringOrNil("1951cdde-9d6f-4aeb-8e64-f56fc67a5a4e"),
+			outplanID:      uuid.FromStringOrNil("b4850013-42fe-4b18-9753-0e2871be2157"),
+			outdialID:      uuid.FromStringOrNil("bc2031d2-53eb-4ee6-982e-b08ec0ffbde6"),
+			queueID:        uuid.FromStringOrNil("12f560a9-9aed-4b5a-b748-06b6fe146ae4"),
+			nextCampaignID: uuid.FromStringOrNil("cc7a0346-7ccb-11ee-a1fb-633ebf371fc3"),
 
-			&campaign.Campaign{
+			response: &campaign.Campaign{
 				ID:         uuid.FromStringOrNil("1951cdde-9d6f-4aeb-8e64-f56fc67a5a4e"),
 				CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
 				Actions: []fmaction.Action{
@@ -382,8 +384,12 @@ func Test_UpdateResourceInfo(t *testing.T) {
 			if tt.queueID != uuid.Nil {
 				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(&qmqueue.Queue{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
 			}
+			if tt.nextCampaignID != uuid.Nil {
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(&campaign.Campaign{CustomerID: tt.response.CustomerID, TMDelete: dbhandler.DefaultTimeStamp}, nil)
 
-			mockDB.EXPECT().CampaignUpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID).Return(nil)
+			}
+
+			mockDB.EXPECT().CampaignUpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(nil)
 
 			tmpActions, err := h.createFlowActions(ctx, tt.response.Actions, tt.queueID)
 			if err != nil {
@@ -394,7 +400,7 @@ func Test_UpdateResourceInfo(t *testing.T) {
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 
-			res, err := h.UpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID)
+			res, err := h.UpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
