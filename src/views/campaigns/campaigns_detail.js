@@ -100,16 +100,6 @@ const CampaignsDetail = () => {
 
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Service Level</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_service_level}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={detailData.service_level}
-                    />
-                  </CCol>
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
                   <CCol>
                     <CFormSelect
@@ -123,9 +113,18 @@ const CampaignsDetail = () => {
                       ]}
                     />
                   </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Service Level</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_service_level}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.service_level}
+                    />
+                  </CCol>
+
                 </CRow>
-
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>End Handle</b></CFormLabel>
@@ -140,31 +139,17 @@ const CampaignsDetail = () => {
                       ]}
                     />
                   </CCol>
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Next Campaign ID</b></CFormLabel>
-                  <CCol>
-                    <CFormInput
-                      ref={ref_next_campaign_id}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={detailData.next_campaign_id}
-                    />
-                  </CCol>
                 </CRow>
 
 
 
+                <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                <br />
+                <br />
+
+
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outdial ID</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_outdial_id}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={detailData.outdial_id}
-                    />
-                  </CCol>
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outplan ID</b></CFormLabel>
                   <CCol>
@@ -175,6 +160,18 @@ const CampaignsDetail = () => {
                       defaultValue={detailData.outplan_id}
                     />
                   </CCol>
+
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outdial ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_outdial_id}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.outdial_id}
+                    />
+                  </CCol>
+
                 </CRow>
 
 
@@ -190,8 +187,21 @@ const CampaignsDetail = () => {
                     />
                   </CCol>
 
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Next Campaign ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_next_campaign_id}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.next_campaign_id}
+                    />
+                  </CCol>
                 </CRow>
 
+
+                <CButton type="submit" onClick={() => UpdateResource()}>Update Resource</CButton>
+                <br />
+                <br />
 
 
                 <CRow>
@@ -208,7 +218,7 @@ const CampaignsDetail = () => {
 
                 </CRow>
 
-                <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                <CButton type="submit" onClick={() => UpdateActions()}>Update Actions</CButton>
                 <br />
                 <br />
 
@@ -257,6 +267,19 @@ const CampaignsDetail = () => {
                   </CCol>
                 </CRow>
 
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Delete Timestamp</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.tm_delete}
+                      readOnly plainText
+                    />
+                  </CCol>
+
+                </CRow>
+
               </CCardBody>
             </CCard>
           </CCol>
@@ -287,6 +310,39 @@ const CampaignsDetail = () => {
     ProviderPut(target, body).then(() => {
       console.log("Updated info.",);
 
+    });
+  };
+
+  const UpdateResource = () => {
+    console.log("UpdateResource");
+
+    const tmpData = {
+      "outplan_id": ref_outplan_id.current.value,
+      "outdial_id": ref_outdial_id.current.value,
+      "queue_id": ref_queue_id.current.value,
+      "next_campaign_id": ref_next_campaign_id.current.value,
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "campaigns/" + ref_id.current.value + "/resource_info";
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
+    });
+  };
+
+  const UpdateActions = () => {
+    console.log("UpdateActions");
+
+    const tmpData = {
+      "actions": JSON.parse(ref_actions.current.value),
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "campaigns/" + ref_id.current.value + "/actions";
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
 
