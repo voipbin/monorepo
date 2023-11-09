@@ -78,6 +78,18 @@ const Login = () => {
     })
   };
 
+  const registerHandle = (event) => {
+    console.log("test11");
+
+
+    return (
+      <Link to='javascript:void(0)'
+        onClick={() => window.location = 'mailto:yourmail@domain.com'}>
+        Contact Me
+      </Link>
+    );
+  };
+
   return (
     <div className="bg-light min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
@@ -134,14 +146,20 @@ const Login = () => {
                   <div>
                     <h2>Sign up</h2>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
+                      The voipbin is currently operating in development mode. Kindly submit a sign-up request to the administrator for registration.
                     </p>
-                    <Link to="/register">
+
+                    <Link to='javascript:void(0)' onClick={() => window.location = 'mailto:pchero21@gmail.com'}>
                       <CButton color="primary" className="mt-3" active tabIndex={-1}>
                         Register Now!
                       </CButton>
                     </Link>
+
+                    {/* <Link to="/register">
+                      <CButton color="primary" className="mt-3" active tabIndex={-1}>
+                        Register Now!
+                      </CButton>
+                    </Link> */}
                   </div>
                 </CCardBody>
               </CCard>
