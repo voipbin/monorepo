@@ -522,6 +522,30 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "description": "Update billing account of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update billing account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the billing_account",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/account.Account"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete billing account of the given id",
                 "produces": [
@@ -558,6 +582,32 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "The ID of the billing account",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/account.Account"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/billing_accounts/{id}/payment_info": {
+            "put": {
+                "description": "Update billing account's payment info of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update billing account's payment info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the billing_account",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -901,6 +951,37 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/campaigncalls": {
+            "get": {
+                "description": "get calls of the customer",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of calls",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyCallsGET"
+                        }
                     }
                 }
             }
@@ -2012,6 +2093,37 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/conferencecalls": {
+            "get": {
+                "description": "get conferences of the customer",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of conferencecalls",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyCallsGET"
+                        }
                     }
                 }
             }
@@ -4977,6 +5089,105 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1.0/trunks": {
+            "get": {
+                "description": "Gets a list of trunks",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of trunks.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyDomainsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new trunk and returns detail created trunk info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new trunk and returns detail created trunk info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/trunk.Trunk"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/trunks/{id}": {
+            "get": {
+                "description": "Returns detail trunk info of the given trunk id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail trunk info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the trunk",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/trunk.Trunk"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a trunk and returns detail updated trunk info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a trunk and reuturns updated trunk info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/trunk.Trunk"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing trunk.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing trunk.",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1.0/ws": {
             "get": {
                 "description": "create a new queue",
@@ -5714,6 +5925,9 @@ const docTemplate = `{
                 "destination_index": {
                     "type": "integer"
                 },
+                "flow_id": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -6236,12 +6450,18 @@ const docTemplate = `{
         "customer.Customer": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "billing_account_id": {
                     "description": "default billing account id",
                     "type": "string"
                 },
                 "detail": {
                     "description": "detail",
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "id": {
@@ -6258,6 +6478,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "phone_number": {
+                    "type": "string"
                 },
                 "tm_create": {
                     "description": "Created timestamp.",
@@ -6288,12 +6511,18 @@ const docTemplate = `{
         "customer.WebhookMessage": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "billing_account_id": {
                     "description": "default billing account id",
                     "type": "string"
                 },
                 "detail": {
                     "description": "detail",
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "id": {
@@ -6310,6 +6539,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "phone_number": {
+                    "type": "string"
                 },
                 "tm_create": {
                     "description": "Created timestamp.",
@@ -6410,7 +6642,8 @@ const docTemplate = `{
                 "detail": {
                     "type": "string"
                 },
-                "domain_id": {
+                "domain_name": {
+                    "description": "same as the CustomerID. This used by the kamailio's INVITE validation",
                     "type": "string"
                 },
                 "endpoint_id": {
@@ -6436,6 +6669,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tm_update": {
+                    "type": "string"
+                },
+                "username": {
+                    "description": "same as the Extension. This used by the kamailio's INVITE validation",
                     "type": "string"
                 }
             }
@@ -7548,6 +7785,50 @@ const docTemplate = `{
                 }
             }
         },
+        "queuecall.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "description": "owner id",
+                    "type": "string"
+                },
+                "duration_service": {
+                    "description": "duration for service(ms)",
+                    "type": "integer"
+                },
+                "duration_waiting": {
+                    "description": "duration for waiting(ms)",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "service_agent_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_service": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
         "recording.Recording": {
             "type": "object",
             "properties": {
@@ -7767,7 +8048,16 @@ const docTemplate = `{
                 "detail": {
                     "type": "string"
                 },
+                "end_handle": {
+                    "type": "string"
+                },
                 "name": {
+                    "type": "string"
+                },
+                "service_level": {
+                    "type": "integer"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -7775,6 +8065,9 @@ const docTemplate = `{
         "request.BodyCampaignsIDResourceInfoPUT": {
             "type": "object",
             "properties": {
+                "next_campaign_id": {
+                    "type": "string"
+                },
                 "outdial_id": {
                     "type": "string"
                 },
@@ -7939,6 +8232,10 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -7956,6 +8253,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/action.Action"
                     }
+                },
+                "timeout": {
+                    "description": "timeout. second",
+                    "type": "integer"
                 },
                 "type": {
                     "type": "string"
@@ -7993,7 +8294,13 @@ const docTemplate = `{
         "request.BodyCustomersPOST": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "detail": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "name": {
@@ -8007,6 +8314,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "phone_number": {
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
@@ -8037,9 +8347,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "detail": {
-                    "type": "string"
-                },
-                "domain_id": {
                     "type": "string"
                 },
                 "extension": {
@@ -8394,6 +8701,28 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "routing_method": {
+                    "description": "operation info",
+                    "type": "string"
+                },
+                "service_timeout": {
+                    "type": "integer"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "wait_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "wait_timeout": {
+                    "type": "integer"
                 }
             }
         },
@@ -8412,6 +8741,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "priority": {
@@ -8772,6 +9107,20 @@ const docTemplate = `{
                 }
             }
         },
+        "response.BodyQueuecallsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/queuecall.WebhookMessage"
+                    }
+                }
+            }
+        },
         "response.BodyQueuesGET": {
             "type": "object",
             "properties": {
@@ -8834,7 +9183,13 @@ const docTemplate = `{
                 "customer_id": {
                     "type": "string"
                 },
+                "detail": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "priority": {
@@ -8865,7 +9220,13 @@ const docTemplate = `{
                 "customer_id": {
                     "type": "string"
                 },
+                "detail": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "priority": {
@@ -9121,6 +9482,57 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "trunk.Trunk": {
+            "type": "object",
+            "properties": {
+                "allowed_ips": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "auth_types": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "domain_name": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "username": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
                     "type": "string"
                 }
             }

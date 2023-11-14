@@ -503,6 +503,8 @@ definitions:
         $ref: '#/definitions/address.Address'
       destination_index:
         type: integer
+      flow_id:
+        type: string
       id:
         type: string
       outdial_id:
@@ -853,11 +855,15 @@ definitions:
     type: object
   customer.Customer:
     properties:
+      address:
+        type: string
       billing_account_id:
         description: default billing account id
         type: string
       detail:
         description: detail
+        type: string
+      email:
         type: string
       id:
         description: Customer's ID
@@ -870,6 +876,8 @@ definitions:
         items:
           type: string
         type: array
+      phone_number:
+        type: string
       tm_create:
         description: Created timestamp.
         type: string
@@ -891,11 +899,15 @@ definitions:
     type: object
   customer.WebhookMessage:
     properties:
+      address:
+        type: string
       billing_account_id:
         description: default billing account id
         type: string
       detail:
         description: detail
+        type: string
+      email:
         type: string
       id:
         description: Customer's ID
@@ -908,6 +920,8 @@ definitions:
         items:
           type: string
         type: array
+      phone_number:
+        type: string
       tm_create:
         description: Created timestamp.
         type: string
@@ -975,7 +989,8 @@ definitions:
         type: string
       detail:
         type: string
-      domain_id:
+      domain_name:
+        description: same as the CustomerID. This used by the kamailio's INVITE validation
         type: string
       endpoint_id:
         description: asterisk resources
@@ -993,6 +1008,9 @@ definitions:
       tm_delete:
         type: string
       tm_update:
+        type: string
+      username:
+        description: same as the Extension. This used by the kamailio's INVITE validation
         type: string
     type: object
   flow.Flow:
@@ -1755,6 +1773,36 @@ definitions:
         description: Updated timestamp.
         type: string
     type: object
+  queuecall.WebhookMessage:
+    properties:
+      customer_id:
+        description: owner id
+        type: string
+      duration_service:
+        description: duration for service(ms)
+        type: integer
+      duration_waiting:
+        description: duration for waiting(ms)
+        type: integer
+      id:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+      service_agent_id:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_service:
+        type: string
+      tm_update:
+        type: string
+    type: object
   recording.Recording:
     properties:
       asterisk_id:
@@ -1900,11 +1948,19 @@ definitions:
     properties:
       detail:
         type: string
+      end_handle:
+        type: string
       name:
+        type: string
+      service_level:
+        type: integer
+      type:
         type: string
     type: object
   request.BodyCampaignsIDResourceInfoPUT:
     properties:
+      next_campaign_id:
+        type: string
       outdial_id:
         type: string
       outplan_id:
@@ -2010,6 +2066,9 @@ definitions:
     type: object
   request.BodyConferencesPOST:
     properties:
+      data:
+        additionalProperties: true
+        type: object
       detail:
         type: string
       name:
@@ -2022,6 +2081,9 @@ definitions:
         items:
           $ref: '#/definitions/action.Action'
         type: array
+      timeout:
+        description: timeout. second
+        type: integer
       type:
         type: string
     required:
@@ -2047,7 +2109,11 @@ definitions:
     type: object
   request.BodyCustomersPOST:
     properties:
+      address:
+        type: string
       detail:
+        type: string
+      email:
         type: string
       name:
         type: string
@@ -2057,6 +2123,8 @@ definitions:
         items:
           type: string
         type: array
+      phone_number:
+        type: string
       username:
         type: string
       webhook_method:
@@ -2076,8 +2144,6 @@ definitions:
   request.BodyExtensionsPOST:
     properties:
       detail:
-        type: string
-      domain_id:
         type: string
       extension:
         type: string
@@ -2309,6 +2375,21 @@ definitions:
         type: string
       name:
         type: string
+      routing_method:
+        description: operation info
+        type: string
+      service_timeout:
+        type: integer
+      tag_ids:
+        items:
+          type: string
+        type: array
+      wait_actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      wait_timeout:
+        type: integer
     type: object
   request.BodyQueuesIDTagIDsPUT:
     properties:
@@ -2320,6 +2401,10 @@ definitions:
   request.BodyRoutesPOST:
     properties:
       customer_id:
+        type: string
+      detail:
+        type: string
+      name:
         type: string
       priority:
         type: integer
@@ -2551,6 +2636,15 @@ definitions:
           $ref: '#/definitions/outplan.WebhookMessage'
         type: array
     type: object
+  response.BodyQueuecallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/queuecall.WebhookMessage'
+        type: array
+    type: object
   response.BodyQueuesGET:
     properties:
       next_page_token:
@@ -2591,7 +2685,11 @@ definitions:
     properties:
       customer_id:
         type: string
+      detail:
+        type: string
       id:
+        type: string
+      name:
         type: string
       priority:
         type: integer
@@ -2612,7 +2710,11 @@ definitions:
     properties:
       customer_id:
         type: string
+      detail:
+        type: string
       id:
+        type: string
+      name:
         type: string
       priority:
         type: integer
@@ -2791,6 +2893,41 @@ definitions:
         description: transferer/transferee info
         type: string
       type:
+        type: string
+    type: object
+  trunk.Trunk:
+    properties:
+      allowed_ips:
+        items:
+          type: string
+        type: array
+      auth_types:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
+        items:
+          type: string
+        type: array
+      customer_id:
+        type: string
+      detail:
+        type: string
+      domain_name:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      username:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
         type: string
     type: object
 host: api.voipbin.net
@@ -3148,6 +3285,22 @@ paths:
           schema:
             $ref: '#/definitions/account.Account'
       summary: Get detail billing account info.
+    put:
+      description: Update billing account of the given id
+      parameters:
+      - description: The ID of the billing_account
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/account.Account'
+      summary: Update billing account
   /v1.0/billing_accounts/{id}/balance_add_force:
     post:
       description: Adds the given balance to the billing account.
@@ -3165,6 +3318,23 @@ paths:
           schema:
             $ref: '#/definitions/account.Account'
       summary: Adds the given balance to the billing account.
+  /v1.0/billing_accounts/{id}/payment_info:
+    put:
+      description: Update billing account's payment info of the given id
+      parameters:
+      - description: The ID of the billing_account
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/account.Account'
+      summary: Update billing account's payment info
   /v1.0/calls:
     get:
       description: get calls of the customer
@@ -3383,6 +3553,26 @@ paths:
         "200":
           description: OK
       summary: Talk to the call.
+  /v1.0/campaigncalls:
+    get:
+      description: get calls of the customer
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyCallsGET'
+      summary: Get list of calls
   /v1.0/campaigncalls/{id}:
     delete:
       description: Delete a existing campaign.
@@ -4116,6 +4306,26 @@ paths:
         "200":
           description: OK
       summary: Remove participant id.
+  /v1.0/conferencecalls:
+    get:
+      description: get conferences of the customer
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyCallsGET'
+      summary: Get list of conferencecalls
   /v1.0/conferencecalls/{id}:
     delete:
       description: Kicks the conferencecall.
@@ -6065,6 +6275,71 @@ paths:
           schema:
             $ref: '#/definitions/transfer.Transfer'
       summary: Start a transfer
+  /v1.0/trunks:
+    get:
+      description: Gets a list of trunks
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyDomainsGET'
+      summary: Gets a list of trunks.
+    post:
+      description: Create a new trunk and returns detail created trunk info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/trunk.Trunk'
+      summary: Create a new trunk and returns detail created trunk info.
+  /v1.0/trunks/{id}:
+    delete:
+      description: Delete a existing trunk.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete a existing trunk.
+    get:
+      description: Returns detail trunk info of the given trunk id.
+      parameters:
+      - description: The ID of the trunk
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/trunk.Trunk'
+      summary: Returns detail trunk info.
+    put:
+      description: Update a trunk and returns detail updated trunk info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/trunk.Trunk'
+      summary: Update a trunk and reuturns updated trunk info.
   /v1.0/ws:
     get:
       description: create a new queue
