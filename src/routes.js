@@ -131,7 +131,7 @@ const OutplansCreate = React.lazy(() => import('./views/outplans/outplans_create
 
 
 const routes = [
-  { path: '/', exact: true, name: 'Home' },
+  { path: '/', exact: true, name: 'Home', element: Dashboard },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
 
   { path: '/resources/calls/calls_list', name: 'CallsList', element: CallsList },
