@@ -159,7 +159,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		m.Text,
 		medias,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -257,7 +257,7 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
-// MessageGetByTransactionID returns message by the transaction_id.
+// MessageGetsByTransactionID returns message by the transaction_id.
 func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID string, token string, limit uint64) ([]*message.Message, error) {
 
 	// prepare
@@ -336,7 +336,7 @@ func (h *handler) MessageUpdateStatus(ctx context.Context, id uuid.UUID, status 
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q,
 		status,
 		ts,
@@ -363,7 +363,7 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q,
 		ts,
 		ts,

@@ -109,7 +109,7 @@ func Test_Hook(t *testing.T) {
 
 			// conversations
 			for i := 0; i < len(tt.responseConversations); i++ {
-				mocKUtil.EXPECT().CreateUUID().Return(tt.responseUUIDs[i])
+				mocKUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
 				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())
@@ -216,7 +216,7 @@ func Test_hookLine(t *testing.T) {
 
 			// conversations
 			for i := range tt.responseConversations {
-				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDs[i])
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
 				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())

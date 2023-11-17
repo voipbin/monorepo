@@ -6,8 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -21,9 +19,6 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	// common
-	GetCurTime() string
-
 	AccountCreate(ctx context.Context, ac *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*account.Account, error)
@@ -72,16 +67,4 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 		cache:       cache,
 	}
 	return h
-}
-
-func (h *handler) GetCurTime() string {
-	return GetCurTime()
-}
-
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

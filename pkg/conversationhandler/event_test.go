@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -25,21 +26,23 @@ func Test_Event(t *testing.T) {
 		data          []byte
 
 		responseEvent        []*message.Message
+		responseCurTime      string
 		responseConversation *conversation.Conversation
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			conversation.ReferenceTypeMessage,
-			[]byte(`{"id":"5e65e04e-f12d-11ec-b951-53cf815f86a4"}`),
+			referenceType: conversation.ReferenceTypeMessage,
+			data:          []byte(`{"id":"5e65e04e-f12d-11ec-b951-53cf815f86a4"}`),
 
-			[]*message.Message{
+			responseEvent: []*message.Message{
 				{
 					ID:     uuid.FromStringOrNil("c4fd2a56-f12d-11ec-b443-1f1133008bfc"),
 					Source: &commonaddress.Address{},
 				},
 			},
-			&conversation.Conversation{
+			responseCurTime: "2022-04-18 03:22:17.995000",
+			responseConversation: &conversation.Conversation{
 				ID: uuid.FromStringOrNil("f45df2d0-f12d-11ec-bd7f-2f3e6d9a6218"),
 			},
 		},
@@ -50,11 +53,13 @@ func Test_Event(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockSMS := smshandler.NewMockSMSHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			h := &conversationHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 
@@ -65,7 +70,8 @@ func Test_Event(t *testing.T) {
 			ctx := context.Background()
 
 			mockSMS.EXPECT().Event(ctx, tt.data).Return(tt.responseEvent, &commonaddress.Address{}, nil)
-			mockMessage.EXPECT().GetsByTransactionID(ctx, tt.responseEvent[0].TransactionID, gomock.Any(), uint64(10)).Return([]*message.Message{}, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockMessage.EXPECT().GetsByTransactionID(ctx, tt.responseEvent[0].TransactionID, tt.responseCurTime, uint64(10)).Return([]*message.Message{}, nil)
 			for _, tmp := range tt.responseEvent {
 
 				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, gomock.Any()).Return(tt.responseConversation, nil)
@@ -100,20 +106,22 @@ func Test_eventSMS(t *testing.T) {
 		data []byte
 
 		responseEvent        []*message.Message
+		responseCurTime      string
 		responseConversation *conversation.Conversation
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			[]byte(`{"id":"1fe68e20-f12f-11ec-84fe-03665484eeb6"}`),
+			data: []byte(`{"id":"1fe68e20-f12f-11ec-84fe-03665484eeb6"}`),
 
-			[]*message.Message{
+			responseEvent: []*message.Message{
 				{
 					ID:     uuid.FromStringOrNil("20ab5674-f12f-11ec-9809-9ba9b288fb2c"),
 					Source: &commonaddress.Address{},
 				},
 			},
-			&conversation.Conversation{
+			responseCurTime: "2022-04-18 03:22:17.995000",
+			responseConversation: &conversation.Conversation{
 				ID: uuid.FromStringOrNil("20d80048-f12f-11ec-8f8d-affa9735f9de"),
 			},
 		},
@@ -124,11 +132,13 @@ func Test_eventSMS(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockSMS := smshandler.NewMockSMSHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			h := &conversationHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 
@@ -139,6 +149,7 @@ func Test_eventSMS(t *testing.T) {
 			ctx := context.Background()
 
 			mockSMS.EXPECT().Event(ctx, tt.data).Return(tt.responseEvent, &commonaddress.Address{}, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockMessage.EXPECT().GetsByTransactionID(ctx, tt.responseEvent[0].TransactionID, gomock.Any(), uint64(10)).Return([]*message.Message{}, nil)
 
 			for _, tmp := range tt.responseEvent {

@@ -52,7 +52,7 @@ func (h *conversationHandler) Create(
 		"func": "Create",
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	tmp := &conversation.Conversation{
 		ID:            id,
 		CustomerID:    customerID,

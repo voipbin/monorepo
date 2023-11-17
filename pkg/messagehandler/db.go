@@ -36,7 +36,7 @@ func (h *messageHandler) Create(
 	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s, source_target: %s", referenceType, referenceID, source.Target)
 
 	// create a message
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	m := &message.Message{
 		ID:             id,
 		CustomerID:     customerID,
