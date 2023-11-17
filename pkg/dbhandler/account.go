@@ -102,7 +102,7 @@ func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error 
 		ac.Secret,
 		ac.Token,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -249,7 +249,7 @@ func (h *handler) AccountSet(ctx context.Context, id uuid.UUID, name string, det
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, name, detail, secret, token, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AccountSet. err: %v", err)
@@ -272,7 +272,7 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AccountDelete. err: %v", err)

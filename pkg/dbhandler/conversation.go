@@ -140,7 +140,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		source,
 		participants,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -316,7 +316,7 @@ func (h *handler) ConversationSet(ctx context.Context, id uuid.UUID, name string
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, name, detail, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConversationSet. err: %v", err)

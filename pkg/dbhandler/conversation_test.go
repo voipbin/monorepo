@@ -91,7 +91,7 @@ func Test_ConversationCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -173,7 +173,7 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any())
 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -281,7 +281,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.conversations {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any())
 				if err := h.ConversationCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -350,13 +350,13 @@ func Test_ConversationSet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.ConversationSet(ctx, tt.id, tt.conversationName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

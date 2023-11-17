@@ -24,7 +24,7 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 		"token":       len(token),
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	ac := &account.Account{
 		ID:         id,
 		CustomerID: customerID,

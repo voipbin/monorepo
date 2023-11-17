@@ -80,7 +80,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockLine.EXPECT().Setup(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)

@@ -32,6 +32,11 @@ ensure:
 
 lint:
   stage: test
+  artifacts:
+    name: $CI_COMMIT_REF_NAME"
+    expire_in: 8 hours
+    paths:
+      - cp.html
   script:
     - golint -set_exit_status $(go list ./...)
 

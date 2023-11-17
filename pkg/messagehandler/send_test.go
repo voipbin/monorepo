@@ -95,7 +95,7 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 			mockAccount.EXPECT().Get(ctx, tt.conversation.AccountID).Return(tt.responseAccount, nil)
 
 			// create
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)

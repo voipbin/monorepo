@@ -85,7 +85,7 @@ func Test_MessageCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(gomock.Any(), gomock.Any())
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -103,7 +103,7 @@ func Test_MessageCreate(t *testing.T) {
 			}
 
 			// message get by transaction_id
-			resTransaction, err := h.MessageGetsByTransactionID(ctx, tt.message.TransactionID, h.GetCurTime(), 10)
+			resTransaction, err := h.MessageGetsByTransactionID(ctx, tt.message.TransactionID, utilhandler.TimeGetCurTime(), 10)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -223,7 +223,7 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, m := range tt.messages {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().MessageSet(gomock.Any(), gomock.Any())
 				if err := h.MessageCreate(ctx, m); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -290,13 +290,13 @@ func Test_MessageUpdateStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageUpdateStatus(ctx, tt.message.ID, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -380,13 +380,13 @@ func Test_MessageDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageDelete(ctx, tt.message.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

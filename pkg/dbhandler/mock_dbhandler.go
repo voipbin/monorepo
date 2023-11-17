@@ -184,20 +184,6 @@ func (mr *MockDBHandlerMockRecorder) ConversationSet(ctx, id, name, detail inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationSet", reflect.TypeOf((*MockDBHandler)(nil).ConversationSet), ctx, id, name, detail)
 }
 
-// GetCurTime mocks base method.
-func (m *MockDBHandler) GetCurTime() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurTime")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetCurTime indicates an expected call of GetCurTime.
-func (mr *MockDBHandlerMockRecorder) GetCurTime() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTime", reflect.TypeOf((*MockDBHandler)(nil).GetCurTime))
-}
-
 // MediaCreate mocks base method.
 func (m_2 *MockDBHandler) MediaCreate(ctx context.Context, m *media.Media) error {
 	m_2.ctrl.T.Helper()

@@ -86,7 +86,7 @@ func Test_CallCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -165,13 +165,13 @@ func Test_AccountSet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.AccountSet(ctx, tt.id, tt.accountName, tt.detail, tt.secret, tt.token); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -301,7 +301,7 @@ func Test_AccountGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.accounts {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any())
 				if err := h.AccountCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)

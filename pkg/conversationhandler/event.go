@@ -9,7 +9,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 )
 
 // Event returns list of messages of the given conversation
@@ -49,7 +48,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 	log.WithField("local_address", localAddr).Debugf("Found local address. address_target: %s", localAddr.Target)
 
 	// get messages
-	transRes, err := h.messageHandler.GetsByTransactionID(ctx, tmps[0].TransactionID, dbhandler.GetCurTime(), 10)
+	transRes, err := h.messageHandler.GetsByTransactionID(ctx, tmps[0].TransactionID, h.utilHandler.TimeGetCurTime(), 10)
 	if err != nil {
 		log.Errorf("Could not get messages. err: %v", err)
 		return err
