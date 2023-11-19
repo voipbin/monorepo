@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
@@ -76,7 +77,7 @@ func (h *customerHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 
 	// create billingAccount
-	billingAccount, err := h.reqHandler.BillingV1AccountCreate(ctx, id, "basic billing account", "billing account for default use")
+	billingAccount, err := h.reqHandler.BillingV1AccountCreate(ctx, id, "basic billing account", "billing account for default use", account.PaymentTypePrepaid, account.PaymentMethodNone)
 	if err != nil {
 		log.Errorf("Could not create a billing account info. err: %v", err)
 		return nil, errors.Wrap(err, "could not create a billing account info")
