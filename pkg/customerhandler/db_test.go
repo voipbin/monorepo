@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -145,7 +146,7 @@ func Test_Create(t *testing.T) {
 
 			mockDB.EXPECT().CustomerGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.responseUUID, gomock.Any(), gomock.Any()).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.responseUUID, gomock.Any(), gomock.Any(), account.PaymentTypePrepaid, account.PaymentMethodNone).Return(tt.responseBillingAccount, nil)
 			mockHelp.EXPECT().HashGenerate(tt.password).Return(tt.responseHash, nil)
 			mockDB.EXPECT().CustomerCreate(ctx, tt.expectCustomer).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(&customer.Customer{}, nil)
