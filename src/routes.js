@@ -129,7 +129,6 @@ const OutplansList = React.lazy(() => import('./views/outplans/outplans_list'))
 const OutplansDetail = React.lazy(() => import('./views/outplans/outplans_detail'))
 const OutplansCreate = React.lazy(() => import('./views/outplans/outplans_create'))
 
-
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Dashboard },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
