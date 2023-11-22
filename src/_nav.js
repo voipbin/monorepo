@@ -34,265 +34,347 @@ import {
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
-const _nav = [
-  {
-    component: CNavItem,
-    name: 'Dashboard',
-    to: '/dashboard',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'NEW',
+const dashboard = {
+  component: CNavItem,
+  name: 'Dashboard',
+  to: '/dashboard',
+  icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  badge: {
+    color: 'info',
+    text: 'NEW',
+  }
+}
+
+const calls = {
+  component: CNavGroup,
+  name: 'Calls',
+  to: '/resources/calls',
+  icon: <CIcon icon={cilPhone} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Calls',
+      to: '/resources/calls/calls_list',
     },
-  },
+    {
+      component: CNavItem,
+      name: 'Groupcalls',
+      to: '/resources/calls/groupcalls_list',
+    }
+  ]
+};
+
+const customers = {
+  component: CNavGroup,
+  name: 'Customers',
+  icon: <CIcon icon={cilSmile} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Customers',
+      to: '/resources/customers/customers_list',
+    },
+  ]
+};
+
+const queues = {
+  component: CNavGroup,
+  name: 'Queues',
+  icon: <CIcon icon={cilEqualizer} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Queues',
+      to: '/resources/queues/queues_list',
+    },
+    {
+      component: CNavItem,
+      name: 'Queuecalls',
+      to: '/resources/queues/queuecalls_list',
+    }
+  ]
+};
+
+const numbers = {
+  component: CNavGroup,
+  name: 'Numbers',
+  icon: <CIcon icon={cilDialpad} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Active',
+      to: '/resources/numbers/active_list',
+    },
+    {
+      component: CNavItem,
+      name: 'Buy',
+      to: '/resources/numbers/buy_list',
+    }
+  ]
+};
+
+const flows = {
+  component: CNavGroup,
+  name: 'Flows',
+  icon: <CIcon icon={cilFork} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Flows',
+      to: '/resources/flows/flows_list',
+    },
+    {
+      component: CNavItem,
+      name: 'Activeflows',
+      to: '/resources/flows/activeflows_list',
+    }
+  ]
+};
+
+const agents = {
+  component: CNavGroup,
+  name: 'Agents',
+  icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Agents',
+      to: '/resources/agents/agents_list',
+    },
+  ]
+};
+
+const billing_accounts = {
+  component: CNavGroup,
+  name: 'BillingAccounts',
+  icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'BillingAccounts',
+      to: '/resources/billing_accounts/billing_accounts_list',
+    },
+  ]
+};
+
+const conferences = {
+  component: CNavGroup,
+  name: 'Conferences',
+  icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Conferences',
+      to: '/resources/conferences/conferences_list',
+    },
+    {
+      component: CNavItem,
+      name: 'Conferencecalls',
+      to: '/resources/conferences/conferencecalls_list',
+    },
+  ]
+};
+
+const chatbots = {
+  component: CNavGroup,
+  name: 'Chatbots',
+  icon: <CIcon icon={cilVideogame} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Chatbots',
+      to: '/resources/chatbots/chatbots_list',
+    },
+  ]
+};
+
+const chats = {
+  component: CNavGroup,
+  name: 'Chats',
+  icon: <CIcon icon={cilChatBubble} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Chats',
+      to: '/resources/chats/chats_list',
+    },
+  ]
+};
+
+const trunks = {
+  component: CNavGroup,
+  name: 'Trunks',
+  icon: <CIcon icon={cilRouter} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Trunks',
+      to: '/resources/trunks/trunks_list',
+    },
+  ]
+};
+
+const extensions = {
+  component: CNavGroup,
+  name: 'Extensions',
+  icon: <CIcon icon={cilMap} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Extensions',
+      to: '/resources/extensions/extensions_list',
+    },
+  ]
+};
+
+const providers = {
+  component: CNavGroup,
+  name: 'Providers',
+  icon: <CIcon icon={cilLocomotive} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Providers',
+      to: '/resources/providers/providers_list',
+    },
+  ]
+};
+
+const routes = {
+  component: CNavGroup,
+  name: 'Routes',
+  icon: <CIcon icon={cilLoopCircular} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Routes',
+      to: '/resources/routes/routes_list',
+    },
+  ]
+};
+
+const campaigns = {
+  component: CNavGroup,
+  name: 'Campaigns',
+  to: '/resources/campaigns/campaigns_list',
+  icon: <CIcon icon={cilHandPointRight} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Campaigns',
+      to: '/resources/campaigns/campaigns_list',
+    },
+    {
+      component: CNavItem,
+      name: 'Campaigncalls',
+      to: '/resources/campaigns/campaigncalls_list',
+    },
+  ]
+};
+
+const outdials = {
+  component: CNavGroup,
+  name: 'Outdials',
+  icon: <CIcon icon={cilSpreadsheet} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Outdials',
+      to: '/resources/outdials/outdials_list',
+    },
+  ]
+};
+
+const outplans = {
+  component: CNavGroup,
+  name: 'Outplans',
+  icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Outplans',
+      to: '/resources/outplans/outplans_list',
+    },
+  ]
+};
+
+
+
+const navAdmin = [
+  dashboard,
 
   // resource -----------------------------------------------------------------------
   {
     component: CNavTitle,
     name: 'Resource',
   },
-  {
-    component: CNavGroup,
-    name: 'Calls',
-    to: '/resources/calls',
-    icon: <CIcon icon={cilEqualizer} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Calls',
-        to: '/resources/calls/calls_list',
-      },
-      {
-        component: CNavItem,
-        name: 'Groupcalls',
-        to: '/resources/calls/groupcalls_list',
-      }
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Customers',
-    icon: <CIcon icon={cilSmile} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Customers',
-        to: '/resources/customers/customers_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Queues',
-    icon: <CIcon icon={cilEqualizer} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Queues',
-        to: '/resources/queues/queues_list',
-      },
-      {
-        component: CNavItem,
-        name: 'Queuecalls',
-        to: '/resources/queues/queuecalls_list',
-      }
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Numbers',
-    icon: <CIcon icon={cilDialpad} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Active',
-        to: '/resources/numbers/active_list',
-      },
-      {
-        component: CNavItem,
-        name: 'Buy',
-        to: '/resources/numbers/buy_list',
-      }
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Flows',
-    icon: <CIcon icon={cilFork} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Flows',
-        to: '/resources/flows/flows_list',
-      },
-      {
-        component: CNavItem,
-        name: 'Activeflows',
-        to: '/resources/flows/activeflows_list',
-      }
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Agents',
-    icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Agents',
-        to: '/resources/agents/agents_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'BillingAccounts',
-    icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'BillingAccounts',
-        to: '/resources/billing_accounts/billing_accounts_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Conferences',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Conferences',
-        to: '/resources/conferences/conferences_list',
-      },
-      {
-        component: CNavItem,
-        name: 'Conferencecalls',
-        to: '/resources/conferences/conferencecalls_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Chatbots',
-    icon: <CIcon icon={cilVideogame} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Chatbots',
-        to: '/resources/chatbots/chatbots_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Chats',
-    icon: <CIcon icon={cilChatBubble} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Chats',
-        to: '/resources/chats/chats_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Trunks',
-    icon: <CIcon icon={cilRouter} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Trunks',
-        to: '/resources/trunks/trunks_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Extensions',
-    icon: <CIcon icon={cilMap} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Extensions',
-        to: '/resources/extensions/extensions_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Providers',
-    icon: <CIcon icon={cilLocomotive} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Providers',
-        to: '/resources/providers/providers_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Routes',
-    icon: <CIcon icon={cilLoopCircular} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Routes',
-        to: '/resources/routes/routes_list',
-      },
-    ]
-  },
+  calls,
+  customers,
+  queues,
+  numbers,
+  flows,
+  agents,
+  billing_accounts,
+  conferences,
+  chatbots,
+  chats,
+  trunks,
+  extensions,
+  providers,
+  routes,
 
   // outbound campaign -----------------------------------------------------------------------
   {
     component: CNavTitle,
     name: 'Outbound Campaign',
   },
-  {
-    component: CNavGroup,
-    name: 'Campaigns',
-    to: '/resources/campaigns/campaigns_list',
-    icon: <CIcon icon={cilHandPointRight} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Campaigns',
-        to: '/resources/campaigns/campaigns_list',
-      },
-      {
-        component: CNavItem,
-        name: 'Campaigncalls',
-        to: '/resources/campaigns/campaigncalls_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Outdials',
-    icon: <CIcon icon={cilSpreadsheet} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Outdials',
-        to: '/resources/outdials/outdials_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Outplans',
-    icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Outplans',
-        to: '/resources/outplans/outplans_list',
-      },
-    ]
-  },
+  campaigns,
+  outdials,
+  outplans,
 ]
+
+const navNormal = [
+  dashboard,
+
+  // resource -----------------------------------------------------------------------
+  {
+    component: CNavTitle,
+    name: 'Resource',
+  },
+  calls,
+  customers,
+  queues,
+  numbers,
+  flows,
+  agents,
+  billing_accounts,
+  conferences,
+  chatbots,
+  chats,
+  trunks,
+  extensions,
+
+  // outbound campaign -----------------------------------------------------------------------
+  {
+    component: CNavTitle,
+    name: 'Outbound Campaign',
+  },
+  campaigns,
+  outdials,
+  outplans,
+]
+
+var _nav = [];
+
+const customerInfo = JSON.parse(localStorage.getItem("customer_info"));
+console.log("Checking the customer info4. customer: ", customerInfo, ", permission_ids: ", customerInfo["permission_ids"]);
+
+if (customerInfo["permission_ids"].includes("03796e14-7cb4-11ec-9dba-e72023efd1c6")) {
+  console.log("The customer has admin permission.")
+  _nav = navAdmin;
+} else {
+  console.log("The customer has no admin permission.")
+  _nav = navNormal;
+}
 
 export default _nav

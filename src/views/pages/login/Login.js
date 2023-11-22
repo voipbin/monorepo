@@ -26,6 +26,7 @@ import {
   ParseData,
   LoadResourcesAll as ProviderLoadResourcesAll,
 } from '../../../provider';
+import { Base64 } from "js-base64";
 
 const Login = () => {
 
@@ -70,6 +71,18 @@ const Login = () => {
 
         // store the token in local storage
         localStorage.setItem('token', response.token);
+
+        const splits = response.token.split('.');
+        console.log("customer info. splits: ", splits);
+
+        const customerInfo = JSON.parse(JSON.parse(Base64.decode(splits[1])).customer);
+        console.log(
+          "customer info. customerInfo: ", customerInfo,
+          "permission_ids: ", JSON.stringify(customerInfo.permission_ids),
+        );
+
+        const tmpData = JSON.stringify(customerInfo);
+        localStorage.setItem('customer_info', tmpData);
 
         // load all resources
         ProviderLoadResourcesAll();
