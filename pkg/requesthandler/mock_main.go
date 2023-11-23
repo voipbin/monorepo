@@ -186,21 +186,6 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGetsByTagIDsAndStatus(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGetsByTagIDsAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGetsByTagIDsAndStatus), ctx, customerID, tagIDs, status)
 }
 
-// AgentV1AgentLogin mocks base method.
-func (m *MockRequestHandler) AgentV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1AgentLogin", ctx, timeout, customerID, username, password)
-	ret0, _ := ret[0].(*agent.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1AgentLogin indicates an expected call of AgentV1AgentLogin.
-func (mr *MockRequestHandlerMockRecorder) AgentV1AgentLogin(ctx, timeout, customerID, username, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentLogin", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentLogin), ctx, timeout, customerID, username, password)
-}
-
 // AgentV1AgentUpdate mocks base method.
 func (m *MockRequestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
@@ -274,6 +259,21 @@ func (m *MockRequestHandler) AgentV1AgentUpdateTagIDs(ctx context.Context, id uu
 func (mr *MockRequestHandlerMockRecorder) AgentV1AgentUpdateTagIDs(ctx, id, tagIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentUpdateTagIDs", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentUpdateTagIDs), ctx, id, tagIDs)
+}
+
+// AgentV1Login mocks base method.
+func (m *MockRequestHandler) AgentV1Login(ctx context.Context, timeout int, username, password string) (*agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1Login", ctx, timeout, username, password)
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentV1Login indicates an expected call of AgentV1Login.
+func (mr *MockRequestHandlerMockRecorder) AgentV1Login(ctx, timeout, username, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1Login", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1Login), ctx, timeout, username, password)
 }
 
 // AgentV1TagCreate mocks base method.

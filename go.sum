@@ -49,6 +49,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230724184313-374908ea29b0 h1:7fEcFAuyRHK8qkZP6ZBu5D+4sc7aZmOiNvXEnZk+nZw=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230724184313-374908ea29b0/go.mod h1:6xABAH/qzLKQ/OI/3U4+nh0UJNdZ6td3z52OjI5rvW8=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20231123182623-7abdd3fc9c86 h1:THsj4WsFq6GdNH9VYHqUb8qmNl02XWxTGQqOm63Ejas=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20231123182623-7abdd3fc9c86/go.mod h1:1Zc6A2j27udA5cO6viPcDYMAN1l5zBFO/4P3X2AGRNI=
 gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285 h1:IksDab2IBvBJdwSj4JBQtWaz+vfLWT6Y2DHXrmlAnkI=
 gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285/go.mod h1:BUttjNtuIynmiulvrsoKCJwMQRgg0oDthcX1E5IgX2M=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20231005165752-434d8bc6c4b3 h1:u07nolk4Y75yid/PTJNN/3Ck2xTcLATstrqKJsyqabU=
@@ -63,6 +65,8 @@ gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231105153617-3ab0ab
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231105153617-3ab0ab8b49a1/go.mod h1:DJsM8s9ubY+/F85tikoZrI32ZYeQk0nRfps/RjApWDs=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231106181358-5406890b8074 h1:7FXO8RddZnQp7Y5PsNPnsrvYcwJ4pi57V8N4Ka5Cfvs=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231106181358-5406890b8074/go.mod h1:MMEHzt/8FhVp0ve2NC3SfzhF1mYVdCF1E7eYZDPMIIc=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231110114858-2d90ae94391a h1:fEI9Nhp2iLc7y/kP/8GRBWVTuZbmQg+QEGTx6L2RV3U=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231110114858-2d90ae94391a/go.mod h1:x/HncmlXEzA29MfTp0zMkTPziTvSAZ+gtkeZGeD8GvA=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 h1:KpWVqqS+jFjQ8wOtZSOAorO/SpOEPbuPKWD72smHrQM=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093/go.mod h1:CMWCrp4ClhtjFGbcJY/VHmLkQ/D+tX5pUCp0Rsedj4k=
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c690da h1:3JO2jmdY1z2+evUqKAisxTux1IMuUUOep6lIsXEcKkk=
@@ -71,8 +75,12 @@ gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578/go.mod h1:K9Uk44FGgS/UgDvTLAsVFqINLfhGMCrBuRMNhGZyaLE=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02 h1:w1vRshMX9V0FfH1nyJ16yOyXNDnNui4iVPsUFOoUgOo=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02/go.mod h1:jpa5pRnCqdQqbjb7+GJqnV25JGYSyHnFPE2c5I/YnKw=
+gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4 h1:/20Gi1qrErTzT1Uj0UPPYMPoC5jMCx2TsvRmy/qy3Fo=
+gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4/go.mod h1:nutTK2oYywWcDl24w1ZjW19WW8CbVmKWv3zs7OpeU64=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230903025827-abafd1d8ac83 h1:wz3H8RrDJS53MvQ6UISWQan7uK/lV4dCeR14QSBzcrI=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230903025827-abafd1d8ac83/go.mod h1:RF06E6Tipudo1i1/szi/nXrpOEnWlVge0IW2MNpno78=
+gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20231119133841-1f299dcad73a h1:CGhhGth//WvQ4/ZbSC9U+aeg+COVPs7L+uCc9jQbpp4=
+gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20231119133841-1f299dcad73a/go.mod h1:zpxiwjNNJM5EIsimnq5jv8rOMfjN+9f0xc818CmoiCA=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230728174519-d347587ee005 h1:BrougJwpUd5EMeAphMkaP2KaOdicOENrnSDxFrySWGg=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230728174519-d347587ee005/go.mod h1:rN9RTKU0TMegPI/gvpfoJh2vZww1/rgu8AUdYAFdMfM=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230830172925-7941bfb1fa8c h1:y/zbUgb0ce5aBbyhLAyF+Zb6U6pPhbYh+gcAqO7hEC8=
