@@ -157,18 +157,18 @@ func (mr *MockAgentHandlerMockRecorder) GetsByTagIDsAndStatus(ctx, customerID, t
 }
 
 // Login mocks base method.
-func (m *MockAgentHandler) Login(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
+func (m *MockAgentHandler) Login(ctx context.Context, username, password string) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Login", ctx, customerID, username, password)
+	ret := m.ctrl.Call(m, "Login", ctx, username, password)
 	ret0, _ := ret[0].(*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Login indicates an expected call of Login.
-func (mr *MockAgentHandlerMockRecorder) Login(ctx, customerID, username, password interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) Login(ctx, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAgentHandler)(nil).Login), ctx, customerID, username, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAgentHandler)(nil).Login), ctx, username, password)
 }
 
 // UpdateAddresses mocks base method.

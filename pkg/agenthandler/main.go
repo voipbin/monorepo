@@ -29,7 +29,7 @@ type AgentHandler interface {
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
 	GetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)
 	GetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
-	Login(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error)
+	Login(ctx context.Context, username, password string) (*agent.Agent, error)
 	UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)
 	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error)

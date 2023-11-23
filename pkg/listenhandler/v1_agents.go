@@ -87,11 +87,10 @@ func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *rabbitmqhan
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsIDGet",
-			"agent_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDGet",
+		"agent_id": id,
+	})
 	log.Debug("Executing processV1AgentsIDGet.")
 
 	tmp, err := h.agentHandler.Get(ctx, id)
@@ -117,10 +116,9 @@ func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *rabbitmqhan
 
 // processV1AgentsPost handles Post /v1/agents request
 func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1AgentsPost",
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1AgentsPost",
+	})
 	log.Debug("Executing processV1AgentsPost.")
 
 	var reqData request.V1DataAgentsPost
@@ -176,11 +174,10 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *rabbitmq
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsIDDelete",
-			"agent_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDDelete",
+		"agent_id": id,
+	})
 	log.Debug("Executing processV1AgentsIDDelete.")
 
 	tmp, err := h.agentHandler.Delete(ctx, id)
@@ -212,11 +209,10 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *rab
 	}
 
 	username := uriItems[3]
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsUsernameLogin",
-			"username": username,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsUsernameLogin",
+		"username": username,
+	})
 	log.Debug("Executing processV1AgentsUsernameLogin.")
 
 	var reqData request.V1DataAgentsUsernameLoginPost
@@ -225,7 +221,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *rab
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.Login(ctx, reqData.CustomerID, username, reqData.Password)
+	tmp, err := h.agentHandler.Login(ctx, username, reqData.Password)
 	if err != nil {
 		log.Errorf("Could not login the agent info. err: %v", err)
 		return simpleResponse(400), nil
@@ -254,11 +250,10 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *ra
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsIDAddressesPut",
-			"agent_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDAddressesPut",
+		"agent_id": id,
+	})
 	log.Debug("Executing processV1AgentsIDAddressesPut.")
 
 	var reqData request.V1DataAgentsIDAddressesPut
@@ -296,11 +291,10 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *rabbitmqhan
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsIDPut",
-			"agent_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDPut",
+		"agent_id": id,
+	})
 	log.Debug("Executing processV1AgentsIDPut.")
 
 	var reqData request.V1DataAgentsIDPut
@@ -338,11 +332,10 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *rabbi
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsIDStatusPut",
-			"agent_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDStatusPut",
+		"agent_id": id,
+	})
 	log.Debug("Executing processV1AgentsIDStatusPut.")
 
 	var reqData request.V1DataAgentsIDStatusPut
@@ -380,11 +373,10 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *rab
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsIDPasswordPut",
-			"agent_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDPasswordPut",
+		"agent_id": id,
+	})
 	log.Debug("Executing processV1AgentsIDPasswordPut.")
 
 	var req request.V1DataAgentsIDPasswordPut
@@ -422,11 +414,10 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *rabbi
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1AgentsIDTagIDsPut",
-			"agent_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDTagIDsPut",
+		"agent_id": id,
+	})
 	log.Debug("Executing processV1AgentsIDTagIDsPut.")
 
 	var reqData request.V1DataAgentsIDTagIDsPut

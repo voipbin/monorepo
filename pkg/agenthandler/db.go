@@ -115,7 +115,7 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 	log.Debug("Creating a new user.")
 
 	// get agent
-	tmpAgent, err := h.db.AgentGetByUsername(ctx, customerID, username)
+	tmpAgent, err := h.db.AgentGetByUsername(ctx, username)
 	if err == nil {
 		log.WithField("agent", tmpAgent).Errorf("The agent is already exist.")
 		return nil, fmt.Errorf("already exist")
@@ -192,15 +192,14 @@ func (h *agentHandler) dbDelete(ctx context.Context, id uuid.UUID) (*agent.Agent
 }
 
 // dbLogin validate the username and password.
-func (h *agentHandler) dbLogin(ctx context.Context, customerID uuid.UUID, username string, password string) (*agent.Agent, error) {
+func (h *agentHandler) dbLogin(ctx context.Context, username string, password string) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Login",
-		"customer_id":    customerID,
-		"agent_username": username,
+		"func":     "dbLogin",
+		"username": username,
 	})
 	log.Debug("Agent login.")
 
-	res, err := h.db.AgentGetByUsername(ctx, customerID, username)
+	res, err := h.db.AgentGetByUsername(ctx, username)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
 		return nil, fmt.Errorf("no agent info")

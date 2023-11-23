@@ -56,6 +56,9 @@ var (
 	regV1Tags    = regexp.MustCompile("/v1/tags$")
 	regV1TagsGet = regexp.MustCompile(`/v1/tags\?(.*)$`)
 	regV1TagsID  = regexp.MustCompile("/v1/tags/" + regUUID + "$")
+
+	// login
+	regV1Login = regexp.MustCompile("/v1/login$")
 )
 
 var (
@@ -246,6 +249,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1TagsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1TagsIDPut(ctx, m)
 		requestType = "/v1/tags"
+
+	////////////
+	// login
+	////////////
+	// POST /login
+	case regV1Login.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1Login(ctx, m)
+		requestType = "/v1/login"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

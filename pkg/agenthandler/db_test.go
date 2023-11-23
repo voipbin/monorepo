@@ -67,18 +67,16 @@ func Test_dbLogin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		username   string
-		password   string
+		username string
+		password string
 
 		responseAgents *agent.Agent
 	}{
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-			username:   "ee0b3c8c-298d-11ee-ab0f-3ba8c0a1b163",
-			password:   "ee413d32-298d-11ee-ac24-0fe74d810696",
+			username: "ee0b3c8c-298d-11ee-ab0f-3ba8c0a1b163",
+			password: "ee413d32-298d-11ee-ac24-0fe74d810696",
 
 			responseAgents: &agent.Agent{
 				PasswordHash: "$2a$12$cCNXtIMoEuEs0fKr.Ij8fuim1ZXPTtzhkBSLxmTdlC.CNqQiZSXw2",
@@ -102,8 +100,8 @@ func Test_dbLogin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customerID, tt.username).Return(tt.responseAgents, nil)
-			_, err := h.dbLogin(ctx, tt.customerID, tt.username, tt.password)
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(tt.responseAgents, nil)
+			_, err := h.dbLogin(ctx, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
