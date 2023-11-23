@@ -463,7 +463,7 @@ func Test_Create(t *testing.T) {
 			name: "normal",
 
 			customerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-			username:   "test1",
+			username:   "test1@voipbin.net",
 			password:   "test1password",
 			agentName:  "test1 name",
 			detail:     "test1 detail",
@@ -476,7 +476,7 @@ func Test_Create(t *testing.T) {
 			expectRes: &agent.Agent{
 				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
 				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-				Username:   "test1",
+				Username:   "test1@voipbin.net",
 				Name:       "test1 name",
 				Detail:     "test1 detail",
 				Permission: agent.PermissionNone,
@@ -504,7 +504,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customerID, tt.username).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.expectRes, nil)

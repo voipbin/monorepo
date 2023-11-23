@@ -258,11 +258,11 @@ func (h *handler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint
 }
 
 // AgentGetByUsername returns agent of the given username.
-func (h *handler) AgentGetByUsername(ctx context.Context, customerID uuid.UUID, username string) (*agent.Agent, error) {
+func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error) {
 	// prepare
-	q := fmt.Sprintf("%s where customer_id = ? and username = ?", agentSelect)
+	q := fmt.Sprintf("%s where username = ?", agentSelect)
 
-	row, err := h.db.Query(q, customerID.Bytes(), username)
+	row, err := h.db.Query(q, username)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGetByUsername. err: %v", err)
 	}

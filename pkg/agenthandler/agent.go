@@ -104,15 +104,14 @@ func (h *agentHandler) Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, 
 }
 
 // Login validate the username and password.
-func (h *agentHandler) Login(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
+func (h *agentHandler) Login(ctx context.Context, username string, password string) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Login",
-		"customer_id":    customerID,
-		"agent_username": username,
+		"func":     "Login",
+		"username": username,
 	})
 	log.Debug("Agent login.")
 
-	res, err := h.dbLogin(ctx, customerID, username, password)
+	res, err := h.dbLogin(ctx, username, password)
 	if err != nil {
 		log.Errorf("Could not logged in. err: %v", err)
 		return nil, errors.Wrap(err, "could not logged in")

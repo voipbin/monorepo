@@ -624,9 +624,8 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		customerID uuid.UUID
-		username   string
-		password   string
+		username string
+		password string
 
 		agent     *agent.Agent
 		expectRes *rabbitmqhandler.Response
@@ -640,7 +639,6 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","password":"password"}`),
 			},
 
-			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			"test1",
 			"password",
 
@@ -686,7 +684,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().Login(gomock.Any(), tt.customerID, tt.username, tt.password).Return(tt.agent, nil)
+			mockAgent.EXPECT().Login(gomock.Any(), tt.username, tt.password).Return(tt.agent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
