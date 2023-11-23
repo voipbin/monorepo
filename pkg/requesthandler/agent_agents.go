@@ -218,42 +218,6 @@ func (r *requestHandler) AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (
 // AgentV1AgentLogin sends a request to agent-manager
 // to login the agent
 // it returns error if something went wrong.
-// timeout: milliseconds
-func (r *requestHandler) AgentV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error) {
-	uri := fmt.Sprintf("/v1/agents/%s/login", username)
-
-	data := &amrequest.V1DataAgentsUsernameLoginPost{
-		CustomerID: customerID,
-		Password:   password,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceAgentAgents, timeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// AgentV1AgentLogin sends a request to agent-manager
-// to login the agent
-// it returns error if something went wrong.
 func (r *requestHandler) AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/addresses", id)
 
