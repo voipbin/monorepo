@@ -33,6 +33,7 @@ import {
   cilLoopCircular,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { useEffect } from 'react'
 
 const dashboard = {
   component: CNavItem,
@@ -367,9 +368,10 @@ const navNormal = [
 var _nav = [];
 
 const customerInfo = JSON.parse(localStorage.getItem("customer_info"));
-console.log("Checking the customer info4. customer: ", customerInfo, ", permission_ids: ", customerInfo["permission_ids"]);
-
-if (customerInfo["permission_ids"].includes("03796e14-7cb4-11ec-9dba-e72023efd1c6")) {
+if (customerInfo === null) {
+  _nav = navNormal;
+}
+else if (customerInfo["permission_ids"].includes("03796e14-7cb4-11ec-9dba-e72023efd1c6")) {
   console.log("The customer has admin permission.")
   _nav = navAdmin;
 } else {
