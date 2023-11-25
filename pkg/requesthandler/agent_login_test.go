@@ -32,7 +32,7 @@ func Test_AgentV1Login(t *testing.T) {
 			"test@test.com",
 			"testpassword",
 
-			"bin-manager.customer-manager.request",
+			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/login",
 				Method:   rabbitmqhandler.RequestMethodPost,
