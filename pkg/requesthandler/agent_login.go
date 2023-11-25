@@ -28,7 +28,7 @@ func (r *requestHandler) AgentV1Login(ctx context.Context, timeout int, username
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, "agent/login", timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPost, "agent/login", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
