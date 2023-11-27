@@ -85,7 +85,6 @@ type ServiceHandler interface {
 	AgentGet(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
 	AgentGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error)
 	AgentDelete(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
-	AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (string, error)
 	AgentUpdate(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
 	AgentUpdateAddresses(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error)
 	AgentUpdateStatus(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error)

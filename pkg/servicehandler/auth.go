@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -11,34 +10,39 @@ import (
 )
 
 // AuthLogin generate jwt token of an customer
-func (h *serviceHandler) AuthLogin(ctx context.Context, username, password string) (string, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "AuthLogin",
-			"username": username,
-			"password": len(password),
-		},
-	)
+func (h *serviceHandler) AuthLogin(ctx context.Context, username string, password string) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "AuthLogin",
+		"username": username,
+		"password": len(password),
+	})
 
-	c, err := h.reqHandler.CustomerV1Login(ctx, 30000, username, password)
+	// agent login
+	a, err := h.reqHandler.AgentV1Login(ctx, 30000, username, password)
 	if err != nil {
-		log.Warningf("Could not get customer info. err: %v", err)
+		log.Warningf("Could not login the agent. err: %v", err)
 		return "", err
 	}
+	log.WithField("agent", a).Debugf("Found agent info. agent_id: %s, customer_id: %s", a.ID, a.CustomerID)
 
-	// tmp := middleware.Serialize(c)
-	tmp, err := json.Marshal(c)
+	// get customer info
+	c, err := h.reqHandler.CustomerV1CustomerGet(ctx, a.CustomerID)
 	if err != nil {
-		log.Errorf("Could not marshal the customer info. err: %v", err)
+		log.Errorf("Could not get customer info. err: %v", err)
 		return "", err
 	}
-	serialize := string(tmp[:])
+	log.WithField("customer", c).Debugf("Found customer info. customer_id: %s", c.ID)
 
-	token, err := middleware.GenerateToken("customer", serialize)
+	data := map[string]interface{}{
+		"customer": c,
+		"agent":    a,
+	}
+
+	res, err := middleware.GenerateTokenWithData(data)
 	if err != nil {
 		log.Errorf("Could not create a jwt token. err: %v", err)
 		return "", fmt.Errorf("could not create a jwt token. err: %v", err)
 	}
 
-	return token, nil
+	return res, nil
 }

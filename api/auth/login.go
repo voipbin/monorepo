@@ -2,7 +2,6 @@ package auth
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -20,12 +19,10 @@ import (
 // @Success     200        {object} response.BodyLoginPOST
 // @Router      /auth/login [post]
 func loginPost(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "loginPost",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "loginPost",
+		"request_address": c.ClientIP,
+	})
 
 	var req request.BodyLoginPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -37,7 +34,7 @@ func loginPost(c *gin.Context) {
 	log = log.WithFields(logrus.Fields{
 		"username": req.Username,
 	})
-	log.Debugf("Logging in.")
+	log.Debugf("Logging in. username: %s", req.Username)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	token, err := serviceHandler.AuthLogin(c.Request.Context(), req.Username, req.Password)
@@ -57,40 +54,4 @@ func loginPost(c *gin.Context) {
 	log.Debug("User successfully logged in.")
 
 	c.JSON(200, res)
-}
-
-// Login agent
-//nolint:deadcode,unused
-func loginAgent(c *gin.Context) {
-	type RequestBody struct {
-		CustomerID uuid.UUID `json:"customer_id" binding:"required"`
-		Username   string    `json:"username" binding:"required"`
-		Password   string    `json:"password" binding:"required"`
-	}
-
-	var body RequestBody
-	if err := c.BindJSON(&body); err != nil {
-		c.AbortWithStatus(400)
-		return
-	}
-
-	log := logrus.WithFields(logrus.Fields{
-		"username": body.Username,
-	})
-	log.Debugf("Logging in.")
-
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	token, err := serviceHandler.AuthLogin(c.Request.Context(), body.Username, body.Password)
-	if err != nil {
-		log.Debugf("Login failed. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.SetCookie("token", token, 60*60*24*7, "/", "", false, true)
-	c.JSON(200, map[string]interface{}{
-		"username": body.Username,
-		"token":    token,
-	})
-
 }
