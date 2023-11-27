@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -11,8 +10,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 )
 
 // agentGet validates the agent's ownership and returns the agent info.
@@ -161,39 +158,6 @@ func (h *serviceHandler) AgentDelete(ctx context.Context, u *cscustomer.Customer
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
-}
-
-// AgentDelete sends a request to call-manager
-// to delete the agent.
-func (h *serviceHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (string, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "AgentLogin",
-		"customer_id": customerID,
-		"username":    username,
-		"password":    len(password),
-	})
-
-	// send request
-	ag, err := h.reqHandler.AgentV1AgentLogin(ctx, 30000, customerID, username, password)
-	if err != nil {
-		log.Warningf("Could not agent login. err: %v", err)
-		return "", err
-	}
-
-	tmp := ag.ConvertWebhookMessage()
-	serialized, err := json.Marshal(tmp)
-	if err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return "", err
-	}
-
-	token, err := middleware.GenerateToken("agent", string(serialized[:]))
-	if err != nil {
-		logrus.Errorf("Could not create a jwt token. err: %v", err)
-		return "", fmt.Errorf("could not create a jwt token. err: %v", err)
-	}
-
-	return token, nil
 }
 
 // AgentUpdate sends a request to agent-manager

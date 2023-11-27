@@ -493,56 +493,6 @@ func TestAgentDelete(t *testing.T) {
 	}
 }
 
-func TestAgentLogin(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customer *cscustomer.Customer
-		username string
-		password string
-
-		response *amagent.Agent
-	}{
-		{
-			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
-			},
-			"test1",
-			"password1",
-
-			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().AgentV1AgentLogin(ctx, 30000, tt.customer.ID, tt.username, tt.password).Return(tt.response, nil)
-
-			_, err := h.AgentLogin(ctx, tt.customer.ID, tt.username, tt.password)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
 func Test_AgentUpdate(t *testing.T) {
 
 	tests := []struct {
