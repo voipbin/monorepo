@@ -10,6 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/common"
@@ -22,24 +23,26 @@ func Init(key string) {
 	secretKey = []byte(key)
 }
 
-// GenerateToken generates jwt token
-func GenerateToken(key string, data string) (string, error) {
-	logrus.Debugf("Generating the token. key: %s, data: %v", key, data)
+// GenerateTokenWithData generates jwt token with the given data
+func GenerateTokenWithData(data map[string]interface{}) (string, error) {
+	logrus.Debugf("Generating the token. data: %v", data)
+
+	claims := jwt.MapClaims{}
+	for k, v := range data {
+		claims[k] = v
+	}
+
 	// token is valid for 7 days
-	date := time.Now().Add(time.Hour * 24 * 7)
+	claims["expire"] = time.Now().Add(time.Hour * 24 * 7).Unix()
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		key:   data,
-		"exp": date.Unix(),
-	})
-
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(secretKey)
 
 	return tokenString, err
 }
 
-// validateToken validates the token and return the parsed data.
-func validateToken(tokenString string) (common.JSON, error) {
+// ValidateToken validates the token and return the parsed data.
+func ValidateToken(tokenString string) (common.JSON, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// don't forget to validate the alg is what you expect
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -90,21 +93,43 @@ func JWTMiddleware() gin.HandlerFunc {
 			}
 		}
 
-		tokenData, err := validateToken(tokenString)
+		tokenData, err := ValidateToken(tokenString)
 		if err != nil {
 			c.Next()
 			return
 		}
 
+		// get customer info
+		tmpCustomer, err := json.Marshal(tokenData["customer"])
+		if err != nil {
+			logrus.Errorf("Could not marshal the token data. err: %v", err)
+			c.Next()
+			return
+		}
 		cs := cscustomer.Customer{}
-		if err := json.Unmarshal([]byte(tokenData["customer"].(string)), &cs); err != nil {
+		if err := json.Unmarshal(tmpCustomer, &cs); err != nil {
+			logrus.Errorf("Could not marshal the customer. err: %v", err)
+			c.Next()
+			return
+		}
+
+		// get agent info
+		tmpAgent, err := json.Marshal(tokenData["agent"])
+		if err != nil {
+			logrus.Errorf("Could not marshal the token data. err: %v", err)
+			c.Next()
+			return
+		}
+		a := amagent.Agent{}
+		if err := json.Unmarshal(tmpAgent, &a); err != nil {
 			logrus.Errorf("Could not marshal the customer. err: %v", err)
 			c.Next()
 			return
 		}
 
 		c.Set("customer", cs)
-		c.Set("token_expire", tokenData["exp"])
+		c.Set("agent", a)
+		c.Set("token_expire", tokenData["expire"])
 		c.Next()
 	}
 }

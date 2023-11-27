@@ -1,40 +1,43 @@
 package middleware
 
 import (
+	"reflect"
 	"testing"
 )
 
-func TestGenerateToken(t *testing.T) {
+func Test_GenerateTokenWithData(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		key  string
-		data string
+		data map[string]interface{}
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"test",
-			"test22",
+			data: map[string]interface{}{
+				"key1": "val1",
+				"key2": "val2",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := GenerateToken(tt.key, tt.data)
+			res, err := GenerateTokenWithData(tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			tmp, err := validateToken(res)
+			tmp, err := ValidateToken(res)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if tmp[tt.key] != tt.data {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.data, tmp[tt.key])
+			delete(tmp, "expire")
+			if !reflect.DeepEqual(tmp, tt.data) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.data, tmp)
 			}
 		})
 	}
