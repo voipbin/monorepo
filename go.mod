@@ -14,8 +14,8 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20231005165752-434d8bc6c4b3
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231106183136-b8d6978e5fdc
-	golang.org/x/crypto v0.15.0
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231125074622-ad630d730b13
+	golang.org/x/crypto v0.16.0
 )
 
 require (
@@ -51,7 +51,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230716174942-b6a22e86ff12 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	google.golang.org/genproto v0.0.0-20231120223509-83a465c0220f // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	google.golang.org/genproto v0.0.0-20231127180814-3a041ad873d4 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )

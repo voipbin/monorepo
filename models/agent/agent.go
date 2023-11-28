@@ -37,8 +37,14 @@ type Permission uint64
 
 // Permission
 const (
-	PermissionNone  Permission = 0x0000
-	PermissionAdmin Permission = 0x0001
+	PermissionNone Permission = 0x0000
+
+	// project level
+	PermissionProjectSuperAdmin Permission = 0x0001 // permission for voipbin project super admin.
+
+	// customer level
+	PermissionCustomerAdmin   Permission = 0x0002 // Permission for customer level admin
+	PermissionCustomerManager Permission = 0x0004 // Permission for customer level manager
 )
 
 // RingMethod type
