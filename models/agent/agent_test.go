@@ -65,6 +65,60 @@ func Test_HasPermission(t *testing.T) {
 			PermissionCustomerManager,
 			false,
 		},
+		{
+			"has 2 permissions and wants 1 permission",
+			Agent{
+				Username:   "test",
+				Permission: PermissionCustomerAdmin | PermissionCustomerManager,
+			},
+			PermissionCustomerManager,
+			true,
+		},
+		{
+			"has 2 permissions but has 1 right permission",
+			Agent{
+				Username:   "test",
+				Permission: PermissionCustomerAdmin | PermissionCustomerManager,
+			},
+			PermissionCustomerManager | PermissionProjectSuperAdmin,
+			true,
+		},
+		{
+			"has 2 permissions but has no right permission",
+			Agent{
+				Username:   "test",
+				Permission: PermissionCustomerAdmin | PermissionCustomerManager,
+			},
+			PermissionProjectSuperAdmin,
+			false,
+		},
+		{
+			"all permission",
+			Agent{
+				Username:   "test",
+				Permission: PermissionCustomerManager,
+			},
+			PermissionAll,
+			true,
+		},
+		{
+			"all permission but agent has no permission",
+			Agent{
+				Username:   "test",
+				Permission: PermissionNone,
+			},
+			PermissionAll,
+			true,
+		},
+		{
+			"none permission and agent has no permission",
+			Agent{
+				Username:   "test",
+				Permission: PermissionNone,
+			},
+			PermissionNone,
+			false,
+		},
 	}
 
 	for _, tt := range tests {

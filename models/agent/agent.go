@@ -29,6 +29,11 @@ type Agent struct {
 
 // HasPermission returns true if the user has the given permission
 func (u *Agent) HasPermission(perm Permission) bool {
+
+	if perm == PermissionAll {
+		return true
+	}
+
 	return u.Permission&perm != 0
 }
 
@@ -38,6 +43,7 @@ type Permission uint64
 // Permission
 const (
 	PermissionNone Permission = 0x0000
+	PermissionAll  Permission = 0xFFFF
 
 	// project level
 	PermissionProjectSuperAdmin Permission = 0x0001 // permission for voipbin project super admin.
