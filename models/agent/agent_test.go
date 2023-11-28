@@ -2,10 +2,10 @@ package agent
 
 import "testing"
 
-func TestHasPermission(t *testing.T) {
+func Test_HasPermission(t *testing.T) {
 	type test struct {
 		name       string
-		user       Agent
+		agent      Agent
 		permission Permission
 		expectRes  bool
 	}
@@ -15,9 +15,9 @@ func TestHasPermission(t *testing.T) {
 			"normal",
 			Agent{
 				Username:   "test",
-				Permission: PermissionAdmin,
+				Permission: PermissionProjectSuperAdmin,
 			},
-			PermissionAdmin,
+			PermissionProjectSuperAdmin,
 			true,
 		},
 		{
@@ -26,14 +26,50 @@ func TestHasPermission(t *testing.T) {
 				Username:   "test",
 				Permission: 1,
 			},
-			PermissionAdmin,
+			PermissionProjectSuperAdmin,
 			true,
+		},
+		{
+			"has super admin",
+			Agent{
+				Username:   "test",
+				Permission: PermissionProjectSuperAdmin | PermissionCustomerAdmin,
+			},
+			PermissionProjectSuperAdmin,
+			true,
+		},
+		{
+			"has admin",
+			Agent{
+				Username:   "test",
+				Permission: PermissionProjectSuperAdmin | PermissionCustomerAdmin,
+			},
+			PermissionCustomerAdmin,
+			true,
+		},
+		{
+			"has no superadmin",
+			Agent{
+				Username:   "test",
+				Permission: PermissionCustomerAdmin,
+			},
+			PermissionProjectSuperAdmin,
+			false,
+		},
+		{
+			"has no manager",
+			Agent{
+				Username:   "test",
+				Permission: PermissionCustomerAdmin,
+			},
+			PermissionCustomerManager,
+			false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := tt.user.HasPermission(tt.permission)
+			res := tt.agent.HasPermission(tt.permission)
 			if res != tt.expectRes {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
