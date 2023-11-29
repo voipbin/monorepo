@@ -39,7 +39,8 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Campaign) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID: h.ID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
 
 		Type: h.Type,
 
