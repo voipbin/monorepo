@@ -8,7 +8,8 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID uuid.UUID `json:"id"` // tag id
+	ID         uuid.UUID `json:"id"`          // tag id
+	CustomerID uuid.UUID `json:"customer_id"` // owner's id
 
 	Name   string `json:"name"`   // tag's name
 	Detail string `json:"detail"` // tag's detail
@@ -21,7 +22,8 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Tag) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID: h.ID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
 
 		Name:   h.Name,
 		Detail: h.Detail,
