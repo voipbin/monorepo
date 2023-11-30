@@ -8,7 +8,8 @@ import (
 
 // WebhookMessage struct represent record information
 type WebhookMessage struct {
-	ID uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -26,7 +27,8 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Recording) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID: h.ID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
