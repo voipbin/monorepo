@@ -45,12 +45,24 @@ const (
 	PermissionNone Permission = 0x0000
 	PermissionAll  Permission = 0xFFFF
 
-	// project level
+	// project level permission
 	PermissionProjectSuperAdmin Permission = 0x0001 // permission for voipbin project super admin.
+	// 0x0002
+	// 0x0004
+	// 0x0008
 
-	// customer level
-	PermissionCustomerAdmin   Permission = 0x0002 // Permission for customer level admin
-	PermissionCustomerManager Permission = 0x0004 // Permission for customer level manager
+	// customer level permission
+	// 0x0010
+	PermissionCustomerAdmin   Permission = 0x0020 // Permission for customer level admin
+	PermissionCustomerManager Permission = 0x0040 // Permission for customer level manager
+	// 0x0080
+	// ...
+
+	// reserved level permission
+	// 0x0100 //
+
+	// reserved level permission
+	// 0x1000 //
 )
 
 // RingMethod type
