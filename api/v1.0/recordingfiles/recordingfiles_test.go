@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -22,7 +22,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestRecordingfilesIDGET(t *testing.T) {
+func Test_RecordingfilesIDGET(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -32,7 +32,7 @@ func TestRecordingfilesIDGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		recording   recording.Recording
 		downloadURL string
 	}
@@ -40,7 +40,7 @@ func TestRecordingfilesIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			recording.Recording{
@@ -58,12 +58,12 @@ func TestRecordingfilesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/recordingfiles/%s", tt.recording.ID), nil)
-			mockSvc.EXPECT().RecordingfileGet(req.Context(), &tt.customer, tt.recording.ID).Return(tt.downloadURL, nil)
+			mockSvc.EXPECT().RecordingfileGet(req.Context(), &tt.agent, tt.recording.ID).Return(tt.downloadURL, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusTemporaryRedirect || w.Result().Header["Location"][0] != tt.downloadURL {

@@ -37,15 +37,15 @@ func (m *MockWebsockHandler) EXPECT() *MockWebsockHandlerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockWebsockHandler) Run(ctx context.Context, w http.ResponseWriter, r *http.Request, customerID uuid.UUID) error {
+func (m *MockWebsockHandler) Run(ctx context.Context, w http.ResponseWriter, r *http.Request, agentID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", ctx, w, r, customerID)
+	ret := m.ctrl.Call(m, "Run", ctx, w, r, agentID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockWebsockHandlerMockRecorder) Run(ctx, w, r, customerID interface{}) *gomock.Call {
+func (mr *MockWebsockHandlerMockRecorder) Run(ctx, w, r, agentID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockWebsockHandler)(nil).Run), ctx, w, r, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockWebsockHandler)(nil).Run), ctx, w, r, agentID)
 }

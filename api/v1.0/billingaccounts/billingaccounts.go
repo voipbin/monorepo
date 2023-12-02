@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account" // for swag use
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -27,17 +27,15 @@ func billingAccountsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	res, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := res.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyBillingAccountsPOST
@@ -51,7 +49,7 @@ func billingAccountsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create billing account
-	res, err := serviceHandler.BillingAccountCreate(c.Request.Context(), &u, req.Name, req.Detail, req.PaymentType, req.PaymentMethod)
+	res, err := serviceHandler.BillingAccountCreate(c.Request.Context(), &a, req.Name, req.Detail, req.PaymentType, req.PaymentMethod)
 	if err != nil {
 		log.Errorf("Could not create a billing account. err; %v", err)
 		c.AbortWithStatus(400)
@@ -77,17 +75,15 @@ func billingaccountsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var requestParam request.ParamBillingAccountsGET
@@ -108,7 +104,7 @@ func billingaccountsGET(c *gin.Context) {
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	tmps, err := serviceHandler.BillingAccountGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	tmps, err := serviceHandler.BillingAccountGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get billing accounts info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -143,17 +139,15 @@ func billingAccountsIDDelete(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -163,7 +157,7 @@ func billingAccountsIDDelete(c *gin.Context) {
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	res, err := serviceHandler.BillingAccountDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.BillingAccountDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -187,17 +181,15 @@ func billingAccountsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -206,7 +198,7 @@ func billingAccountsIDGET(c *gin.Context) {
 	log.Debug("Executing billingAccountsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.BillingAccountGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.BillingAccountGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a billing account. err: %v", err)
 		c.AbortWithStatus(400)
@@ -230,17 +222,15 @@ func billingAccountsIDPut(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -256,7 +246,7 @@ func billingAccountsIDPut(c *gin.Context) {
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.BillingAccountUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail)
+	res, err := serviceHandler.BillingAccountUpdateBasicInfo(c.Request.Context(), &a, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -280,17 +270,15 @@ func billingAccountsIDPaymentInfoPut(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -307,7 +295,7 @@ func billingAccountsIDPaymentInfoPut(c *gin.Context) {
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	res, err := serviceHandler.BillingAccountUpdatePaymentInfo(c.Request.Context(), &u, id, req.PaymentType, req.PaymentMethod)
+	res, err := serviceHandler.BillingAccountUpdatePaymentInfo(c.Request.Context(), &a, id, req.PaymentType, req.PaymentMethod)
 	if err != nil {
 		log.Errorf("Could not update the payment. info err: %v", err)
 		c.AbortWithStatus(400)
@@ -331,17 +319,15 @@ func billingAccountsIDBalanceAddForcePOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -357,7 +343,7 @@ func billingAccountsIDBalanceAddForcePOST(c *gin.Context) {
 	}
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.BillingAccountAddBalanceForce(c.Request.Context(), &u, id, req.Balance)
+	res, err := serviceHandler.BillingAccountAddBalanceForce(c.Request.Context(), &a, id, req.Balance)
 	if err != nil {
 		log.Errorf("Could not add the balance to the billing account. err: %v", err)
 		c.AbortWithStatus(400)
@@ -381,17 +367,15 @@ func billingAccountsIDBalanceSubtractForcePOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -407,7 +391,7 @@ func billingAccountsIDBalanceSubtractForcePOST(c *gin.Context) {
 	}
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.BillingAccountSubtractBalanceForce(c.Request.Context(), &u, id, req.Balance)
+	res, err := serviceHandler.BillingAccountSubtractBalanceForce(c.Request.Context(), &a, id, req.Balance)
 	if err != nil {
 		log.Errorf("Could not subtract the balance from the billing account. err: %v", err)
 		c.AbortWithStatus(400)

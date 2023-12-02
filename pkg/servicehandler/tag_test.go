@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -19,17 +19,19 @@ func Test_TagCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		tagName  string
-		detail   string
+		agent   *amagent.Agent
+		tagName string
+		detail  string
 
 		response  *tmtag.Tag
 		expectRes *tmtag.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"test1 name",
 			"test1 detail",
@@ -56,9 +58,9 @@ func Test_TagCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagCreate(ctx, tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagCreate(ctx, tt.agent.CustomerID, tt.tagName, tt.detail).Return(tt.response, nil)
 
-			res, err := h.TagCreate(ctx, tt.customer, tt.tagName, tt.detail)
+			res, err := h.TagCreate(ctx, tt.agent, tt.tagName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -75,17 +77,19 @@ func Test_TagGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		size     uint64
-		token    string
+		agent *amagent.Agent
+		size  uint64
+		token string
 
 		response  []tmtag.Tag
 		expectRes []*tmtag.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -103,8 +107,10 @@ func Test_TagGets(t *testing.T) {
 		},
 		{
 			"2 results",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -141,9 +147,9 @@ func Test_TagGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.response, nil)
 
-			res, err := h.TagGets(ctx, tt.customer, tt.size, tt.token)
+			res, err := h.TagGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -160,22 +166,24 @@ func Test_TagGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		tagID    uuid.UUID
+		agent *amagent.Agent
+		tagID uuid.UUID
 
 		response  *tmtag.Tag
 		expectRes *tmtag.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
 			&tmtag.Tag{
 				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&tmtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
@@ -198,7 +206,7 @@ func Test_TagGet(t *testing.T) {
 
 			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.response, nil)
 
-			res, err := h.TagGet(ctx, tt.customer, tt.tagID)
+			res, err := h.TagGet(ctx, tt.agent, tt.tagID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -215,22 +223,24 @@ func Test_TagDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		tagID    uuid.UUID
+		agent *amagent.Agent
+		tagID uuid.UUID
 
 		resTagGet *tmtag.Tag
 		expectRes *tmtag.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
 			&tmtag.Tag{
 				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&tmtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
@@ -254,7 +264,7 @@ func Test_TagDelete(t *testing.T) {
 			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
 			mockReq.EXPECT().TagV1TagDelete(ctx, tt.tagID).Return(tt.resTagGet, nil)
 
-			res, err := h.TagDelete(ctx, tt.customer, tt.tagID)
+			res, err := h.TagDelete(ctx, tt.agent, tt.tagID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -271,7 +281,7 @@ func Test_TagUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
+		customer *amagent.Agent
 		tagID    uuid.UUID
 		tagName  string
 		detail   string
@@ -281,8 +291,10 @@ func Test_TagUpdate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			"test1",
@@ -290,7 +302,7 @@ func Test_TagUpdate(t *testing.T) {
 
 			&tmtag.Tag{
 				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&tmtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),

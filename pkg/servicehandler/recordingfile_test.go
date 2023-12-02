@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -18,8 +18,8 @@ import (
 func Test_RecordingfileGet(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		id uuid.UUID
 
@@ -32,15 +32,17 @@ func Test_RecordingfileGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 
 			&cmrecording.Recording{
 				ID:         uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Filenames: []string{
 					"call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 				},
@@ -71,7 +73,7 @@ func Test_RecordingfileGet(t *testing.T) {
 			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().StorageV1RecordingGet(ctx, tt.responseRecording.ID, 300000).Return(tt.responseBucketFile, nil)
 
-			res, err := h.RecordingfileGet(ctx, tt.customer, tt.id)
+			res, err := h.RecordingfileGet(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

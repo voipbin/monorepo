@@ -25,17 +25,8 @@ func (h *serviceHandler) AuthLogin(ctx context.Context, username string, passwor
 	}
 	log.WithField("agent", a).Debugf("Found agent info. agent_id: %s, customer_id: %s", a.ID, a.CustomerID)
 
-	// get customer info
-	c, err := h.reqHandler.CustomerV1CustomerGet(ctx, a.CustomerID)
-	if err != nil {
-		log.Errorf("Could not get customer info. err: %v", err)
-		return "", err
-	}
-	log.WithField("customer", c).Debugf("Found customer info. customer_id: %s", c.ID)
-
 	data := map[string]interface{}{
-		"customer": c,
-		"agent":    a,
+		"agent": a,
 	}
 
 	res, err := middleware.GenerateTokenWithData(data)

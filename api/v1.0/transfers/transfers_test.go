@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -28,8 +28,8 @@ func setupServer(app *gin.Engine) {
 func Test_transfersPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery    string
 		requestBody request.BodyTransfersPOST
@@ -39,7 +39,7 @@ func Test_transfersPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
 			},
 
@@ -73,7 +73,7 @@ func Test_transfersPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -85,7 +85,7 @@ func Test_transfersPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TransferStart(req.Context(), &tt.customer, tt.requestBody.TransferType, tt.requestBody.TransfererCallID, tt.requestBody.TransfereeAddresses).Return(tt.trans, nil)
+			mockSvc.EXPECT().TransferStart(req.Context(), &tt.agent, tt.requestBody.TransferType, tt.requestBody.TransfererCallID, tt.requestBody.TransfereeAddresses).Return(tt.trans, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

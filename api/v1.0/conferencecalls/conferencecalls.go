@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -27,17 +27,15 @@ func conferencecallsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var requestParam request.ParamConferencecallsGET
@@ -59,7 +57,7 @@ func conferencecallsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get conferences
-	confs, err := serviceHandler.ConferencecallGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	confs, err := serviceHandler.ConferencecallGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -96,20 +94,16 @@ func conferencecallsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -117,7 +111,7 @@ func conferencecallsIDGET(c *gin.Context) {
 	log.Debug("Executing conferencecallsIDGET.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferencecallGet(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferencecallGet(c.Request.Context(), &a, id)
 	if err != nil || res == nil {
 		log.Errorf("Could not get the conferencecall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -141,20 +135,16 @@ func conferencecallsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -162,7 +152,7 @@ func conferencecallsIDDELETE(c *gin.Context) {
 	log.Debug("Executing conferencecallsIDDELETE.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferencecallKick(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferencecallKick(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not kick the conferencecall. err: %v", err)
 		c.AbortWithStatus(400)

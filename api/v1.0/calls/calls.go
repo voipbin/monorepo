@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -26,17 +26,15 @@ func callsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyCallsPOST
@@ -50,7 +48,7 @@ func callsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	tmpCalls, tmpGroupcalls, err := serviceHandler.CallCreate(c.Request.Context(), &u, req.FlowID, req.Actions, &req.Source, req.Destinations)
+	tmpCalls, tmpGroupcalls, err := serviceHandler.CallCreate(c.Request.Context(), &a, req.FlowID, req.Actions, &req.Source, req.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
@@ -79,17 +77,15 @@ func callsIDDelete(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -100,7 +96,7 @@ func callsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// hangup the call
-	res, err := serviceHandler.CallDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.CallDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -126,17 +122,15 @@ func callsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var requestParam request.ParamCallsGET
@@ -158,7 +152,7 @@ func callsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get calls
-	calls, err := serviceHandler.CallGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	calls, err := serviceHandler.CallGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -193,17 +187,15 @@ func callsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -212,7 +204,7 @@ func callsIDGET(c *gin.Context) {
 	log.Debug("Executing callsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CallGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.CallGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -236,17 +228,15 @@ func callsIDHangupPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -255,7 +245,7 @@ func callsIDHangupPOST(c *gin.Context) {
 	log.Debug("Executing callsIDHangupPOST.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CallHangup(c.Request.Context(), &u, id)
+	res, err := serviceHandler.CallHangup(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -279,17 +269,15 @@ func callsIDTalkPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -305,7 +293,7 @@ func callsIDTalkPOST(c *gin.Context) {
 	}
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallTalk(c.Request.Context(), &u, id, req.Text, req.Gender, req.Language); err != nil {
+	if err := serviceHandler.CallTalk(c.Request.Context(), &a, id, req.Text, req.Gender, req.Language); err != nil {
 		log.Errorf("Could not talk to the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -328,17 +316,15 @@ func callsIDHoldPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -347,7 +333,7 @@ func callsIDHoldPOST(c *gin.Context) {
 	log.Debug("Executing callsIDHoldPOST.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallHoldOn(c.Request.Context(), &u, id); err != nil {
+	if err := serviceHandler.CallHoldOn(c.Request.Context(), &a, id); err != nil {
 		log.Errorf("Could not hold the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -370,17 +356,15 @@ func callsIDHoldDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -389,7 +373,7 @@ func callsIDHoldDELETE(c *gin.Context) {
 	log.Debug("Executing callsIDUnholdPOST.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallHoldOff(c.Request.Context(), &u, id); err != nil {
+	if err := serviceHandler.CallHoldOff(c.Request.Context(), &a, id); err != nil {
 		log.Errorf("Could not unhold the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -412,17 +396,15 @@ func callsIDMutePOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -439,7 +421,7 @@ func callsIDMutePOST(c *gin.Context) {
 	log.Debug("Executing callsIDMutePOST.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallMuteOn(c.Request.Context(), &u, id, req.Direction); err != nil {
+	if err := serviceHandler.CallMuteOn(c.Request.Context(), &a, id, req.Direction); err != nil {
 		log.Errorf("Could not mute the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -462,17 +444,15 @@ func callsIDMuteDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -489,7 +469,7 @@ func callsIDMuteDELETE(c *gin.Context) {
 	log.Debug("Executing callsIDMuteDELETE.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallMuteOff(c.Request.Context(), &u, id, req.Direction); err != nil {
+	if err := serviceHandler.CallMuteOff(c.Request.Context(), &a, id, req.Direction); err != nil {
 		log.Errorf("Could not unmute the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -512,17 +492,15 @@ func callsIDMOHPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -531,7 +509,7 @@ func callsIDMOHPOST(c *gin.Context) {
 	log.Debug("Executing callsIDMOHPOST.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallMOHOn(c.Request.Context(), &u, id); err != nil {
+	if err := serviceHandler.CallMOHOn(c.Request.Context(), &a, id); err != nil {
 		log.Errorf("Could not moh on the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -554,17 +532,15 @@ func callsIDMOHDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -573,7 +549,7 @@ func callsIDMOHDELETE(c *gin.Context) {
 	log.Debug("Executing callsIDMOHDELETE.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallMOHOff(c.Request.Context(), &u, id); err != nil {
+	if err := serviceHandler.CallMOHOff(c.Request.Context(), &a, id); err != nil {
 		log.Errorf("Could not moh off the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -596,17 +572,15 @@ func callsIDSilencePOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -615,7 +589,7 @@ func callsIDSilencePOST(c *gin.Context) {
 	log.Debug("Executing callsIDSilencePOST.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallSilenceOn(c.Request.Context(), &u, id); err != nil {
+	if err := serviceHandler.CallSilenceOn(c.Request.Context(), &a, id); err != nil {
 		log.Errorf("Could not moh on the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
@@ -638,17 +612,15 @@ func callsIDSilenceDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -657,7 +629,7 @@ func callsIDSilenceDELETE(c *gin.Context) {
 	log.Debug("Executing callsIDSilenceDELETE.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.CallSilenceOff(c.Request.Context(), &u, id); err != nil {
+	if err := serviceHandler.CallSilenceOff(c.Request.Context(), &a, id); err != nil {
 		log.Errorf("Could not moh off the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return

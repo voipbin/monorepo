@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -26,17 +26,15 @@ func extensionsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyExtensionsPOST
@@ -48,7 +46,7 @@ func extensionsPOST(c *gin.Context) {
 
 	// create a extension
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	ext, err := serviceHandler.ExtensionCreate(c.Request.Context(), &u, req.Extension, req.Password,  req.Name, req.Detail)
+	ext, err := serviceHandler.ExtensionCreate(c.Request.Context(), &a, req.Extension, req.Password, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -74,17 +72,15 @@ func extensionsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamExtensionsGET
@@ -106,7 +102,7 @@ func extensionsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get extensions
-	exts, err := serviceHandler.ExtensionGetsByCustomerID(c.Request.Context(), &u, u.ID, pageSize, req.PageToken)
+	exts, err := serviceHandler.ExtensionGetsByCustomerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -141,17 +137,15 @@ func extensionsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -160,7 +154,7 @@ func extensionsIDGET(c *gin.Context) {
 	log.Debug("Executing extensionsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ExtensionGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ExtensionGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get the extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -186,17 +180,15 @@ func extensionsIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -213,7 +205,7 @@ func extensionsIDPUT(c *gin.Context) {
 
 	// update
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ExtensionUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.Password)
+	res, err := serviceHandler.ExtensionUpdate(c.Request.Context(), &a, id, req.Name, req.Detail, req.Password)
 	if err != nil {
 		log.Errorf("Could not update the extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -237,17 +229,15 @@ func extensionsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -257,7 +247,7 @@ func extensionsIDDELETE(c *gin.Context) {
 
 	// delete a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ExtensionDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ExtensionDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)

@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -25,8 +25,8 @@ func setupServer(app *gin.Engine) {
 func Test_chatbotcallsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery    string
 		reqBody     request.ParamChatbotsGET
@@ -37,7 +37,7 @@ func Test_chatbotcallsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -59,7 +59,7 @@ func Test_chatbotcallsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -101,12 +101,12 @@ func Test_chatbotcallsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ChatbotcallGetsByCustomerID(req.Context(), &tt.customer, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resChatbots, nil)
+			mockSvc.EXPECT().ChatbotcallGetsByCustomerID(req.Context(), &tt.agent, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resChatbots, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -124,7 +124,7 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		customer      cscustomer.Customer
+		agent         amagent.Agent
 		chatbotcallID uuid.UUID
 
 		reqQuery string
@@ -135,7 +135,7 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("f199188b-8d78-4778-8891-8f276cd56de5"),
@@ -163,12 +163,12 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ChatbotcallGet(req.Context(), &tt.customer, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
+			mockSvc.EXPECT().ChatbotcallGet(req.Context(), &tt.agent, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -185,8 +185,8 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 func Test_chatbotcallsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery      string
 		chatbotcallID uuid.UUID
@@ -197,7 +197,7 @@ func Test_chatbotcallsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -225,12 +225,12 @@ func Test_chatbotcallsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ChatbotcallDelete(req.Context(), &tt.customer, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
+			mockSvc.EXPECT().ChatbotcallDelete(req.Context(), &tt.agent, tt.chatbotcallID).Return(tt.responseChatbotcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

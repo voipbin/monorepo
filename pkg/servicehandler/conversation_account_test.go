@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cvaccount "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -18,7 +18,7 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -27,8 +27,10 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("e77e86c6-0048-11ee-b7ae-4fae8756eb1a"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
@@ -67,8 +69,8 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountGetsByCustomerID(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
-			res, err := h.ConversationAccountGetsByCustomerID(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			mockReq.EXPECT().ConversationV1AccountGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			res, err := h.ConversationAccountGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -84,7 +86,7 @@ func Test_ConversationAccountGet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		accountID uuid.UUID
 
 		response  *cvaccount.Account
@@ -92,19 +94,21 @@ func Test_ConversationAccountGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("2ace8e8a-0049-11ee-b51e-2b070dbfafef"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			accountID: uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
 
 			response: &cvaccount.Account{
 				ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
-				CustomerID: uuid.FromStringOrNil("2ace8e8a-0049-11ee-b51e-2b070dbfafef"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			expectRes: &cvaccount.WebhookMessage{
 				ID:         uuid.FromStringOrNil("2aee5ae4-0049-11ee-9204-cb301aa1dca8"),
-				CustomerID: uuid.FromStringOrNil("2ace8e8a-0049-11ee-b51e-2b070dbfafef"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -125,7 +129,7 @@ func Test_ConversationAccountGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID).Return(tt.response, nil)
-			res, err := h.ConversationAccountGet(ctx, tt.customer, tt.accountID)
+			res, err := h.ConversationAccountGet(ctx, tt.agent, tt.accountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -140,8 +144,8 @@ func Test_ConversationAccountGet(t *testing.T) {
 func Test_ConversationAccountCreate(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		accountType cvaccount.Type
 		accountName string
@@ -154,8 +158,10 @@ func Test_ConversationAccountCreate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("7da4121a-0049-11ee-bf60-c754fe324319"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			accountType: cvaccount.TypeLine,
@@ -190,8 +196,8 @@ func Test_ConversationAccountCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.customer.ID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token).Return(tt.response, nil)
-			res, err := h.ConversationAccountCreate(ctx, tt.customer, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
+			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.agent.CustomerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token).Return(tt.response, nil)
+			res, err := h.ConversationAccountCreate(ctx, tt.agent, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -208,7 +214,7 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer    *cscustomer.Customer
+		agent       *amagent.Agent
 		accountID   uuid.UUID
 		accountName string
 		detail      string
@@ -220,8 +226,10 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("d44ac280-0049-11ee-8c4a-5bdd07a7fdc7"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			accountID:   uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
 			accountName: "test name",
@@ -231,11 +239,11 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 
 			response: &cvaccount.Account{
 				ID:         uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
-				CustomerID: uuid.FromStringOrNil("d44ac280-0049-11ee-8c4a-5bdd07a7fdc7"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			expectRes: &cvaccount.WebhookMessage{
 				ID:         uuid.FromStringOrNil("d4217f6a-0049-11ee-bedc-df9b0d890304"),
-				CustomerID: uuid.FromStringOrNil("d44ac280-0049-11ee-8c4a-5bdd07a7fdc7"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -257,7 +265,7 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 
 			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID).Return(tt.response, nil)
 			mockReq.EXPECT().ConversationV1AccountUpdate(ctx, tt.accountID, tt.accountName, tt.detail, tt.secret, tt.token).Return(tt.response, nil)
-			res, err := h.ConversationAccountUpdate(ctx, tt.customer, tt.accountID, tt.accountName, tt.detail, tt.secret, tt.token)
+			res, err := h.ConversationAccountUpdate(ctx, tt.agent, tt.accountID, tt.accountName, tt.detail, tt.secret, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -274,7 +282,7 @@ func Test_ConversationAccountDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		accountID uuid.UUID
 
 		response  *cvaccount.Account
@@ -282,18 +290,20 @@ func Test_ConversationAccountDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("19895a14-004a-11ee-a03e-abcf4d9a4887"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			accountID: uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
 
 			response: &cvaccount.Account{
 				ID:         uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
-				CustomerID: uuid.FromStringOrNil("19895a14-004a-11ee-a03e-abcf4d9a4887"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			expectRes: &cvaccount.WebhookMessage{
 				ID:         uuid.FromStringOrNil("19beb18c-004a-11ee-a0fb-6325445ef551"),
-				CustomerID: uuid.FromStringOrNil("19895a14-004a-11ee-a03e-abcf4d9a4887"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -315,7 +325,7 @@ func Test_ConversationAccountDelete(t *testing.T) {
 
 			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID).Return(tt.response, nil)
 			mockReq.EXPECT().ConversationV1AccountDelete(ctx, tt.accountID).Return(tt.response, nil)
-			res, err := h.ConversationAccountDelete(ctx, tt.customer, tt.accountID)
+			res, err := h.ConversationAccountDelete(ctx, tt.agent, tt.accountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -26,8 +26,8 @@ func setupServer(app *gin.Engine) {
 func Test_ActiveflowsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -41,8 +41,8 @@ func Test_ActiveflowsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			customer: cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			agent: amagent.Agent{
+				ID: uuid.FromStringOrNil("44b678b0-8def-11ee-8112-23635969596b"),
 			},
 
 			reqQuery: "/v1.0/activeflows?page_token=2020-09-20%2003:23:20.995000&page_size=10",
@@ -59,7 +59,7 @@ func Test_ActiveflowsGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -99,12 +99,12 @@ func Test_ActiveflowsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowGets(req.Context(), &tt.customer, tt.expectPageSize, tt.expectPageToken).Return(tt.responseActiveflows, nil)
+			mockSvc.EXPECT().ActiveflowGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseActiveflows, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -121,8 +121,8 @@ func Test_ActiveflowsGET(t *testing.T) {
 func Test_ActiveflowsIDGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery      string
 		resActiveflow *fmactiveflow.WebhookMessage
@@ -133,7 +133,7 @@ func Test_ActiveflowsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -160,13 +160,13 @@ func Test_ActiveflowsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ActiveflowGet(req.Context(), &tt.customer, tt.expectActiveflowID).Return(tt.resActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowGet(req.Context(), &tt.agent, tt.expectActiveflowID).Return(tt.resActiveflow, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -187,8 +187,8 @@ func Test_ActiveflowsIDGET(t *testing.T) {
 func Test_activeflowsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		callID   uuid.UUID
@@ -199,7 +199,7 @@ func Test_activeflowsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -227,12 +227,12 @@ func Test_activeflowsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowDelete(req.Context(), &tt.customer, tt.callID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowDelete(req.Context(), &tt.agent, tt.callID).Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -249,8 +249,8 @@ func Test_activeflowsIDDELETE(t *testing.T) {
 func Test_activeflowsIDStopPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery     string
 		activeflowID uuid.UUID
@@ -261,7 +261,7 @@ func Test_activeflowsIDStopPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -289,12 +289,12 @@ func Test_activeflowsIDStopPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowStop(req.Context(), &tt.customer, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowStop(req.Context(), &tt.agent, tt.activeflowID).Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

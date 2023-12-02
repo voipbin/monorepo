@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
@@ -29,9 +30,9 @@ func setupServer(app *gin.Engine) {
 func Test_customersPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		req           request.BodyCustomersPOST
 		username      string
@@ -49,8 +50,9 @@ func Test_customersPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			amagent.Agent{
+				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers",
 
@@ -100,7 +102,7 @@ func Test_customersPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -114,7 +116,7 @@ func Test_customersPOST(t *testing.T) {
 
 			mockSvc.EXPECT().CustomerCreate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.username,
 				tt.password,
 				tt.customerName,
@@ -140,7 +142,7 @@ func Test_customersGet(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 		target   string
 
 		size  uint64
@@ -151,7 +153,7 @@ func Test_customersGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			"/v1.0/customers?page_size=20&page_token=2020-09-20%2003:23:20.995000",
@@ -187,7 +189,7 @@ func Test_customersGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -218,9 +220,9 @@ func Test_customersGet(t *testing.T) {
 func Test_customersIDGet(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		id uuid.UUID
 
@@ -228,11 +230,9 @@ func Test_customersIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			amagent.Agent{
+				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 
@@ -257,7 +257,7 @@ func Test_customersIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -265,7 +265,7 @@ func Test_customersIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.target, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.customer, tt.id).Return(tt.expectRes, nil)
+			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.id).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -287,20 +287,18 @@ func Test_customersIDGet(t *testing.T) {
 func Test_customersIDPut(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		id  uuid.UUID
 		req request.BodyCustomersIDPUT
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			amagent.Agent{
+				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 
@@ -330,7 +328,7 @@ func Test_customersIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -342,7 +340,7 @@ func Test_customersIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.customer, tt.id, tt.req.Name, tt.req.Detail, tt.req.Email, tt.req.PhoneNumber, tt.req.Address, tt.req.WebhookMethod, tt.req.WebhookURI).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.agent, tt.id, tt.req.Name, tt.req.Detail, tt.req.Email, tt.req.PhoneNumber, tt.req.Address, tt.req.WebhookMethod, tt.req.WebhookURI).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -355,19 +353,17 @@ func Test_customersIDPut(t *testing.T) {
 func Test_customersIDDelete(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		id uuid.UUID
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			amagent.Agent{
+				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
 
@@ -388,7 +384,7 @@ func Test_customersIDDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -396,7 +392,7 @@ func Test_customersIDDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.target, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerDelete(req.Context(), &tt.customer, tt.id).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerDelete(req.Context(), &tt.agent, tt.id).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -409,9 +405,9 @@ func Test_customersIDDelete(t *testing.T) {
 func Test_customersIDPermissionIDsPut(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		req request.BodyCustomersIDPermissionIDsPUT
 
@@ -419,11 +415,9 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			amagent.Agent{
+				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f/permission_ids",
 
@@ -450,7 +444,7 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -462,7 +456,7 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdatePermissionIDs(req.Context(), &tt.customer, tt.id, tt.req.PermissionIDs).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdatePermissionIDs(req.Context(), &tt.agent, tt.id, tt.req.PermissionIDs).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -475,9 +469,9 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 func Test_customersIDPasswordPut(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		req request.BodyCustomersIDPasswordPUT
 
@@ -485,11 +479,9 @@ func Test_customersIDPasswordPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			amagent.Agent{
+				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f/password",
 
@@ -514,7 +506,7 @@ func Test_customersIDPasswordPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -526,7 +518,7 @@ func Test_customersIDPasswordPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdatePassword(req.Context(), &tt.customer, tt.id, tt.req.Password).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdatePassword(req.Context(), &tt.agent, tt.id, tt.req.Password).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -539,9 +531,9 @@ func Test_customersIDPasswordPut(t *testing.T) {
 func Test_customersIDBillingAccountIDPut(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		req request.BodyCustomersIDBillingAccountIDPUT
 
@@ -550,11 +542,9 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			agent: amagent.Agent{
+				ID:         uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			target: "/v1.0/customers/cc876058-1773-11ee-9694-136fe246dd34/billing_account_id",
 
@@ -580,7 +570,7 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -592,7 +582,7 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.customer, tt.expectCustomerID, tt.expectBillingAccountID).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectBillingAccountID).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

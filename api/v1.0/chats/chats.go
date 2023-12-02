@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat" // for swag use
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -27,20 +27,16 @@ func chatsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	var req request.BodyChatsPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -52,7 +48,7 @@ func chatsPOST(c *gin.Context) {
 
 	// create
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatCreate(c.Request.Context(), &u, req.Type, req.OwnerID, req.ParticipantID, req.Name, req.Detail)
+	res, err := serviceHandler.ChatCreate(c.Request.Context(), &a, req.Type, req.OwnerID, req.ParticipantID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a chat. err: %v", err)
 		c.AbortWithStatus(400)
@@ -77,20 +73,16 @@ func chatsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	var req request.ParamChatsGET
 	if err := c.BindQuery(&req); err != nil {
@@ -111,7 +103,7 @@ func chatsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get list
-	tmps, err := serviceHandler.ChatGetsByCustomerID(c.Request.Context(), &u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.ChatGetsByCustomerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a chat list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -146,20 +138,16 @@ func chatsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -167,7 +155,7 @@ func chatsIDGET(c *gin.Context) {
 	log.Debug("Executing chatsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ChatGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a chat. err: %v", err)
 		c.AbortWithStatus(400)
@@ -191,20 +179,16 @@ func chatsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -213,7 +197,7 @@ func chatsIDDELETE(c *gin.Context) {
 
 	// delete
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ChatDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the chat. err: %v", err)
 		c.AbortWithStatus(400)
@@ -239,20 +223,16 @@ func chatsIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -268,7 +248,7 @@ func chatsIDPUT(c *gin.Context) {
 
 	// update
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail)
+	res, err := serviceHandler.ChatUpdateBasicInfo(c.Request.Context(), &a, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the chat. err: %v", err)
 		c.AbortWithStatus(400)
@@ -294,20 +274,16 @@ func chatsIDOwnerIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -323,7 +299,7 @@ func chatsIDOwnerIDPUT(c *gin.Context) {
 
 	// update
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatUpdateOwnerID(c.Request.Context(), &u, id, req.OwnerID)
+	res, err := serviceHandler.ChatUpdateOwnerID(c.Request.Context(), &a, id, req.OwnerID)
 	if err != nil {
 		log.Errorf("Could not update the owner_id. err: %v", err)
 		c.AbortWithStatus(400)
@@ -347,20 +323,16 @@ func chatsIDParticipantIDsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -376,7 +348,7 @@ func chatsIDParticipantIDsPOST(c *gin.Context) {
 
 	// create
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatAddParticipantID(c.Request.Context(), &u, id, req.ParticipantID)
+	res, err := serviceHandler.ChatAddParticipantID(c.Request.Context(), &a, id, req.ParticipantID)
 	if err != nil {
 		log.Errorf("Could not add a participant id. err: %v", err)
 		c.AbortWithStatus(400)
@@ -401,20 +373,16 @@ func chatsIDParticipantIDsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -428,7 +396,7 @@ func chatsIDParticipantIDsIDDELETE(c *gin.Context) {
 
 	// remove
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatRemoveParticipantID(c.Request.Context(), &u, id, participantID)
+	res, err := serviceHandler.ChatRemoveParticipantID(c.Request.Context(), &a, id, participantID)
 	if err != nil {
 		log.Errorf("Could not remove the participant id. err: %v", err)
 		c.AbortWithStatus(400)

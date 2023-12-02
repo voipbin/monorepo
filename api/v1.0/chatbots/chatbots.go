@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot" // for swag use
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -27,17 +27,15 @@ func chatbotsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyChatbotsPOST
@@ -50,7 +48,7 @@ func chatbotsPOST(c *gin.Context) {
 
 	// create a chatbot
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatbotCreate(c.Request.Context(), &u, req.Name, req.Detail, req.EngineType, req.InitPrompt)
+	res, err := serviceHandler.ChatbotCreate(c.Request.Context(), &a, req.Name, req.Detail, req.EngineType, req.InitPrompt)
 	if err != nil {
 		log.Errorf("Could not create a chatbot. err: %v", err)
 		c.AbortWithStatus(400)
@@ -75,17 +73,15 @@ func chatbotsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamChatbotsGET
@@ -107,7 +103,7 @@ func chatbotsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get chatbots
-	chatbots, err := serviceHandler.ChatbotGetsByCustomerID(c.Request.Context(), &u, pageSize, req.PageToken)
+	chatbots, err := serviceHandler.ChatbotGetsByCustomerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a chatbot list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -142,17 +138,15 @@ func chatbotsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -161,7 +155,7 @@ func chatbotsIDGET(c *gin.Context) {
 	log.Debug("Executing chatbotsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatbotGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ChatbotGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a chatbot. err: %v", err)
 		c.AbortWithStatus(400)
@@ -185,17 +179,15 @@ func chatbotsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -205,7 +197,7 @@ func chatbotsIDDELETE(c *gin.Context) {
 
 	// delete an chatbot
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatbotDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ChatbotDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the chatbot. err: %v", err)
 		c.AbortWithStatus(400)
@@ -229,17 +221,15 @@ func chatbotsIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyChatbotsIDPUT
@@ -256,7 +246,7 @@ func chatbotsIDPUT(c *gin.Context) {
 
 	// update the chatbot
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatbotUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.EngineType, req.InitPrompt)
+	res, err := serviceHandler.ChatbotUpdate(c.Request.Context(), &a, id, req.Name, req.Detail, req.EngineType, req.InitPrompt)
 	if err != nil {
 		log.Errorf("Could not update the chatbot. err: %v", err)
 		c.AbortWithStatus(400)

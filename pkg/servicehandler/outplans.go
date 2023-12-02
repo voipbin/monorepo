@@ -6,16 +6,36 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
+
+// outplanGet gets the outplan of the given id.
+// It returns outplan if it succeed.
+func (h *serviceHandler) outplanGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*caoutplan.Outplan, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "outplanGet",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"outplan_id":  id,
+	})
+	log.Debug("Getting an outplan.")
+
+	// get outplan
+	res, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
+	}
+
+	return res, nil
+}
 
 // OutplanCreate is a service handler for outplan creation.
 func (h *serviceHandler) OutplanCreate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	name string,
 	detail string,
 	source *commonaddress.Address,
@@ -29,12 +49,18 @@ func (h *serviceHandler) OutplanCreate(
 ) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanCreate",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"name":        name,
 	})
-
 	log.Debug("Creating a new outplan.")
-	tmp, err := h.reqHandler.CampaignV1OutplanCreate(ctx, u.ID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+
+	// permission check
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.CampaignV1OutplanCreate(ctx, a.CustomerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	if err != nil {
 		log.Errorf("Could not create a new outplan. err: %v", err)
 		return nil, err
@@ -45,26 +71,24 @@ func (h *serviceHandler) OutplanCreate(
 }
 
 // OutplanDelete deletes the outplan.
-func (h *serviceHandler) OutplanDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"outplan_id":  id,
 	})
 	log.Debug("Deleting a outplan.")
 
-	// get outplan
-	f, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
+	op, err := h.outplanGet(ctx, a, id)
 	if err != nil {
-		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find flow info. err: %v", err)
+		log.Errorf("Could not get outplan info. err: %v", err)
+		return nil, fmt.Errorf("could not get outplan info. err: %v", err)
 	}
 
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != f.CustomerID {
-		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, f.CustomerID)
-		return nil, fmt.Errorf("customer has no permission")
+	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.CampaignV1OutplanDelete(ctx, id)
@@ -79,10 +103,10 @@ func (h *serviceHandler) OutplanDelete(ctx context.Context, u *cscustomer.Custom
 
 // OutplanGetsByCustomerID gets the list of outplans of the given customer id.
 // It returns list of outplans if it succeed.
-func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -92,8 +116,13 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, u *cscusto
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	// get outplans
-	outplans, err := h.reqHandler.CampaignV1OutplanGetsByCustomerID(ctx, u.ID, token, size)
+	outplans, err := h.reqHandler.CampaignV1OutplanGetsByCustomerID(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get outplans info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplans info. err: %v", err)
@@ -111,26 +140,25 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, u *cscusto
 
 // OutplanGet gets the outplan of the given id.
 // It returns outplan if it succeed.
-func (h *serviceHandler) OutplanGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"outplan_id":  id,
 	})
 	log.Debug("Getting an outplan.")
 
 	// get outplan
-	tmp, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
+	tmp, err := h.outplanGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
 	}
 
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Errorf("The customer has no permission for this outplan. customer: %s, outplan_customer: %s", u.ID, tmp.CustomerID)
-		return nil, fmt.Errorf("customer has no permission")
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -139,26 +167,25 @@ func (h *serviceHandler) OutplanGet(ctx context.Context, u *cscustomer.Customer,
 
 // OutplanUpdateBasicInfo updates the outplan's basic info.
 // It returns updated outplan if it succeed.
-func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanUpdateBasicInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"outplan_id":  id,
 	})
 	log.Debug("Updating an outplan.")
 
 	// get outplan
-	tmpOutplan, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
+	op, err := h.outplanGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
 	}
 
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpOutplan.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
+	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.CampaignV1OutplanUpdateBasicInfo(ctx, id, name, detail)
@@ -175,7 +202,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, u *cscustom
 // It returns updated outplan if it succeed.
 func (h *serviceHandler) OutplanUpdateDialInfo(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	id uuid.UUID,
 	source *commonaddress.Address,
 	dialTimeout int,
@@ -187,24 +214,23 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 	maxTryCount4 int,
 ) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "OutplanUpdateBasicInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"func":        "OutplanUpdateDialInfo",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"outplan_id":  id,
 	})
 	log.Debug("Updating an outplan.")
 
 	// get outplan
-	tmpOutplan, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
+	op, err := h.outplanGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
 	}
 
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpOutplan.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
+	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.CampaignV1OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)

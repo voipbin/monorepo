@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -28,9 +28,9 @@ func setupServer(app *gin.Engine) {
 func Test_billingAccountsPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		req      request.BodyBillingAccountsPOST
+		name  string
+		agent amagent.Agent
+		req   request.BodyBillingAccountsPOST
 
 		responsBillingAccount *bmaccount.WebhookMessage
 		expectRes             string
@@ -39,8 +39,8 @@ func Test_billingAccountsPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			agent: amagent.Agent{
+				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			req: request.BodyBillingAccountsPOST{
 				Name:          "test name",
@@ -70,7 +70,7 @@ func Test_billingAccountsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -83,7 +83,7 @@ func Test_billingAccountsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/v1.0/billing_accounts", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountCreate(req.Context(), &tt.customer, tt.req.Name, tt.req.Detail, tt.req.PaymentType, tt.req.PaymentMethod).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountCreate(req.Context(), &tt.agent, tt.req.Name, tt.req.Detail, tt.req.PaymentType, tt.req.PaymentMethod).Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -101,9 +101,9 @@ func Test_billingAccountsPOST(t *testing.T) {
 func Test_billingaccountsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		req      request.ParamBillingAccountsGET
+		name  string
+		agent amagent.Agent
+		req   request.ParamBillingAccountsGET
 
 		resBillingAccounts []*bmaccount.WebhookMessage
 		expectRes          string
@@ -112,7 +112,7 @@ func Test_billingaccountsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.ParamBillingAccountsGET{
@@ -131,7 +131,7 @@ func Test_billingaccountsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.ParamBillingAccountsGET{
@@ -171,14 +171,14 @@ func Test_billingaccountsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/billing_accounts?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().BillingAccountGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resBillingAccounts, nil)
+			mockSvc.EXPECT().BillingAccountGets(req.Context(), &tt.agent, tt.req.PageSize, tt.req.PageToken).Return(tt.resBillingAccounts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -195,8 +195,8 @@ func Test_billingaccountsGET(t *testing.T) {
 func Test_billingAccountsIDDelete(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery         string
 		billingAccountID uuid.UUID
@@ -208,7 +208,7 @@ func Test_billingAccountsIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -235,12 +235,12 @@ func Test_billingAccountsIDDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().BillingAccountDelete(req.Context(), &tt.customer, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountDelete(req.Context(), &tt.agent, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -257,8 +257,8 @@ func Test_billingAccountsIDDelete(t *testing.T) {
 func Test_billingAccountsIDGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery         string
 		billingAccountID uuid.UUID
@@ -270,7 +270,7 @@ func Test_billingAccountsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
 			},
 
@@ -297,12 +297,12 @@ func Test_billingAccountsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().BillingAccountGet(req.Context(), &tt.customer, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountGet(req.Context(), &tt.agent, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -319,8 +319,8 @@ func Test_billingAccountsIDGET(t *testing.T) {
 func Test_billingAccountsIDPUT(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery         string
 		reqBody          request.BodyBillingAccountsIDPUT
@@ -333,7 +333,7 @@ func Test_billingAccountsIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -365,7 +365,7 @@ func Test_billingAccountsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -378,7 +378,7 @@ func Test_billingAccountsIDPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.customer, tt.billingAccountID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.agent, tt.billingAccountID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -396,8 +396,8 @@ func Test_billingAccountsIDPUT(t *testing.T) {
 func Test_billingAccountsIDPaymentInfoPut(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery         string
 		reqBody          request.BodyBillingAccountsIDPaymentInfoPUT
@@ -410,7 +410,7 @@ func Test_billingAccountsIDPaymentInfoPut(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -442,7 +442,7 @@ func Test_billingAccountsIDPaymentInfoPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -455,7 +455,7 @@ func Test_billingAccountsIDPaymentInfoPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountUpdatePaymentInfo(req.Context(), &tt.customer, tt.billingAccountID, tt.reqBody.PaymentType, tt.reqBody.PaymentMethod).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountUpdatePaymentInfo(req.Context(), &tt.agent, tt.billingAccountID, tt.reqBody.PaymentType, tt.reqBody.PaymentMethod).Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -473,8 +473,8 @@ func Test_billingAccountsIDPaymentInfoPut(t *testing.T) {
 func Test_billingAccountsIDBalanceAddForcePOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery         string
 		reqBody          request.BodyBillingAccountsIDBalanceAddForcePOST
@@ -488,7 +488,7 @@ func Test_billingAccountsIDBalanceAddForcePOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
 			},
 
@@ -519,7 +519,7 @@ func Test_billingAccountsIDBalanceAddForcePOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -530,7 +530,7 @@ func Test_billingAccountsIDBalanceAddForcePOST(t *testing.T) {
 			}
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
-			mockSvc.EXPECT().BillingAccountAddBalanceForce(req.Context(), &tt.customer, tt.billingAccountID, tt.balance).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountAddBalanceForce(req.Context(), &tt.agent, tt.billingAccountID, tt.balance).Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -547,8 +547,8 @@ func Test_billingAccountsIDBalanceAddForcePOST(t *testing.T) {
 func Test_billingAccountsIDSubtractAddForcePOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery         string
 		reqBody          request.BodyBillingAccountsIDBalanceAddForcePOST
@@ -562,7 +562,7 @@ func Test_billingAccountsIDSubtractAddForcePOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
 			},
 
@@ -593,7 +593,7 @@ func Test_billingAccountsIDSubtractAddForcePOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -604,7 +604,7 @@ func Test_billingAccountsIDSubtractAddForcePOST(t *testing.T) {
 			}
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
-			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), &tt.customer, tt.billingAccountID, tt.balance).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), &tt.agent, tt.billingAccountID, tt.balance).Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

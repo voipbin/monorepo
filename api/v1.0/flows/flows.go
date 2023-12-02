@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -27,17 +27,15 @@ func flowsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyFlowsPOST
@@ -50,7 +48,7 @@ func flowsPOST(c *gin.Context) {
 
 	// create a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowCreate(c.Request.Context(), &u, req.Name, req.Detail, req.Actions, true)
+	res, err := serviceHandler.FlowCreate(c.Request.Context(), &a, req.Name, req.Detail, req.Actions, true)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -76,17 +74,15 @@ func flowsGET(c *gin.Context) {
 		"request":         c.Request,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamFlowsGET
@@ -108,7 +104,7 @@ func flowsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get flows
-	flows, err := serviceHandler.FlowGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	flows, err := serviceHandler.FlowGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a flow list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -143,17 +139,15 @@ func flowsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -162,7 +156,7 @@ func flowsIDGET(c *gin.Context) {
 	log.Debug("Executing flowsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.FlowGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a flow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -188,17 +182,15 @@ func flowsIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -222,7 +214,7 @@ func flowsIDPUT(c *gin.Context) {
 
 	// update a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowUpdate(c.Request.Context(), &u, f)
+	res, err := serviceHandler.FlowUpdate(c.Request.Context(), &a, f)
 	if err != nil {
 		log.Errorf("Could not update the flow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -246,17 +238,15 @@ func flowsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -266,7 +256,7 @@ func flowsIDDELETE(c *gin.Context) {
 
 	// delete a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.FlowDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the flow. err: %v", err)
 		c.AbortWithStatus(400)

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -28,17 +28,15 @@ func routesGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamRoutesGET
@@ -67,9 +65,9 @@ func routesGET(c *gin.Context) {
 	if req.CustomerID != "" {
 		// get customerID
 		customerID := uuid.FromStringOrNil(req.CustomerID)
-		tmps, err = serviceHandler.RouteGetsByCustomerID(c.Request.Context(), &u, customerID, pageSize, req.PageToken)
+		tmps, err = serviceHandler.RouteGetsByCustomerID(c.Request.Context(), &a, customerID, pageSize, req.PageToken)
 	} else {
-		tmps, err = serviceHandler.RouteGets(c.Request.Context(), &u, pageSize, req.PageToken)
+		tmps, err = serviceHandler.RouteGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	}
 	if err != nil {
 		logrus.Errorf("Could not get routes info. err: %v", err)
@@ -105,17 +103,15 @@ func routesPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyRoutesPOST
@@ -131,7 +127,7 @@ func routesPOST(c *gin.Context) {
 	// create
 	res, err := serviceHandler.RouteCreate(
 		c.Request.Context(),
-		&u,
+		&a,
 		req.CustomerID,
 		req.Name,
 		req.Detail,
@@ -162,17 +158,15 @@ func routesIDDelete(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -187,7 +181,7 @@ func routesIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.RouteDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.RouteDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Infof("Could not get the delete the route info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -211,17 +205,15 @@ func routesIDGet(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -231,7 +223,7 @@ func routesIDGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.RouteGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.RouteGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Infof("Could not get the route info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -257,17 +249,15 @@ func routesIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -286,7 +276,7 @@ func routesIDPUT(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.RouteUpdate(
 		c.Request.Context(),
-		&u,
+		&a,
 		id,
 		req.Name,
 		req.Detail,

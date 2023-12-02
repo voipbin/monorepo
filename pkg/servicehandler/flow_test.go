@@ -7,19 +7,19 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestFlowCreate(t *testing.T) {
+func Test_FlowCreate(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		flowName string
 		detail   string
@@ -31,8 +31,10 @@ func TestFlowCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			"test name",
@@ -45,10 +47,12 @@ func TestFlowCreate(t *testing.T) {
 			true,
 
 			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
+				ID:         uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&fmflow.WebhookMessage{
-				ID: uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
+				ID:         uuid.FromStringOrNil("50daef5a-f2f6-11ea-9649-33c2eb34ec4c"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -67,8 +71,8 @@ func TestFlowCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
-			res, err := h.FlowCreate(ctx, tt.customer, tt.flowName, tt.detail, tt.actions, tt.persist)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
+			res, err := h.FlowCreate(ctx, tt.agent, tt.flowName, tt.detail, tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -80,36 +84,40 @@ func TestFlowCreate(t *testing.T) {
 	}
 }
 
-func TestFlowDelete(t *testing.T) {
+func Test_FlowDelete(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		flowID   uuid.UUID
+		name   string
+		agent  *amagent.Agent
+		flowID uuid.UUID
 
-		response  *fmflow.Flow
-		expectRes *fmflow.WebhookMessage
+		responseFlow *fmflow.Flow
+		expectRes    *fmflow.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
 
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
+				TMDelete:   defaultTimestamp,
 			},
 			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("00efc020-67cb-11eb-bd5e-b3c491185912"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}
@@ -128,10 +136,10 @@ func TestFlowDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.flowID).Return(tt.responseFlow, nil)
 
-			res, err := h.FlowDelete(ctx, tt.customer, tt.flowID)
+			res, err := h.FlowDelete(ctx, tt.agent, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -143,48 +151,54 @@ func TestFlowDelete(t *testing.T) {
 	}
 }
 
-func TestFlowGet(t *testing.T) {
+func Test_FlowGet(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		flowID   uuid.UUID
+		name   string
+		agent  *amagent.Agent
+		flowID uuid.UUID
 
 		response  *fmflow.Flow
 		expectRes *fmflow.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
 
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
+				TMDelete:   defaultTimestamp,
 			},
 			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("1f80baf0-0c5c-11eb-9df4-1f217b30d87c"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
 				Detail:     "test detail",
 				Actions:    []fmaction.Action{},
+				TMDelete:   defaultTimestamp,
 			},
 		},
 		{
 			"action answer",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
 
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
 				Detail:     "test detail",
 				Actions: []fmaction.Action{
@@ -193,10 +207,11 @@ func TestFlowGet(t *testing.T) {
 						Type: fmaction.TypeAnswer,
 					},
 				},
+				TMDelete: defaultTimestamp,
 			},
 			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("5ce8210a-66af-11eb-a7f4-a36a8393fce1"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "test",
 				Detail:     "test detail",
 				Actions: []fmaction.Action{
@@ -205,6 +220,7 @@ func TestFlowGet(t *testing.T) {
 						Type: "answer",
 					},
 				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -225,7 +241,7 @@ func TestFlowGet(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
 
-			res, err := h.FlowGet(ctx, tt.customer, tt.flowID)
+			res, err := h.FlowGet(ctx, tt.agent, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -237,11 +253,11 @@ func TestFlowGet(t *testing.T) {
 	}
 }
 
-func TestFlowGets(t *testing.T) {
+func Test_FlowGets(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -250,8 +266,10 @@ func TestFlowGets(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
@@ -263,6 +281,7 @@ func TestFlowGets(t *testing.T) {
 					Name:       "test1",
 					Detail:     "test detail1",
 					Actions:    []fmaction.Action{},
+					TMDelete:   defaultTimestamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
@@ -270,6 +289,7 @@ func TestFlowGets(t *testing.T) {
 					Name:       "test2",
 					Detail:     "test detail2",
 					Actions:    []fmaction.Action{},
+					TMDelete:   defaultTimestamp,
 				},
 			},
 			[]*fmflow.WebhookMessage{
@@ -279,6 +299,7 @@ func TestFlowGets(t *testing.T) {
 					Name:       "test1",
 					Detail:     "test detail1",
 					Actions:    []fmaction.Action{},
+					TMDelete:   defaultTimestamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("d950aef4-0c5c-11eb-82dd-3b31d4ba2ea4"),
@@ -286,13 +307,16 @@ func TestFlowGets(t *testing.T) {
 					Name:       "test2",
 					Detail:     "test detail2",
 					Actions:    []fmaction.Action{},
+					TMDelete:   defaultTimestamp,
 				},
 			},
 		},
 		{
 			"1 action",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
@@ -309,6 +333,7 @@ func TestFlowGets(t *testing.T) {
 							Type: fmaction.TypeAnswer,
 						},
 					},
+					TMDelete: defaultTimestamp,
 				},
 			},
 			[]*fmflow.WebhookMessage{
@@ -323,6 +348,7 @@ func TestFlowGets(t *testing.T) {
 							Type: "answer",
 						},
 					},
+					TMDelete: defaultTimestamp,
 				},
 			},
 		},
@@ -342,9 +368,9 @@ func TestFlowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.customer.ID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.FlowGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.FlowGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -356,24 +382,26 @@ func TestFlowGets(t *testing.T) {
 	}
 }
 
-func TestFlowUpdate(t *testing.T) {
+func Test_FlowUpdate(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		flowID   uuid.UUID
 		flowName string
 		detail   string
 		actions  []fmaction.Action
 
-		response  *fmflow.Flow
-		expectRes *fmflow.WebhookMessage
+		responseFlow *fmflow.Flow
+		expectRes    *fmflow.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
@@ -387,11 +415,13 @@ func TestFlowUpdate(t *testing.T) {
 
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
 			},
 			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}
@@ -417,9 +447,9 @@ func TestFlowUpdate(t *testing.T) {
 				Actions: tt.actions,
 			}
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FlowV1FlowUpdate(ctx, f).Return(tt.response, nil)
-			res, err := h.FlowUpdate(ctx, tt.customer, f)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowUpdate(ctx, f).Return(tt.responseFlow, nil)
+			res, err := h.FlowUpdate(ctx, tt.agent, f)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -434,18 +464,20 @@ func TestFlowUpdate(t *testing.T) {
 func Test_FlowUpdateActions(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		flowID   uuid.UUID
-		actions  []fmaction.Action
+		name    string
+		agent   *amagent.Agent
+		flowID  uuid.UUID
+		actions []fmaction.Action
 
 		response  *fmflow.Flow
 		expectRes *fmflow.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("1058806a-45c1-4bc0-9605-1148e20008c1"),
 			[]fmaction.Action{
@@ -456,12 +488,14 @@ func Test_FlowUpdateActions(t *testing.T) {
 
 			&fmflow.Flow{
 				ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
 			},
 
 			&fmflow.WebhookMessage{
 				ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}
@@ -482,7 +516,7 @@ func Test_FlowUpdateActions(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
 			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.flowID, tt.actions).Return(tt.response, nil)
-			res, err := h.FlowUpdateActions(ctx, tt.customer, tt.flowID, tt.actions)
+			res, err := h.FlowUpdateActions(ctx, tt.agent, tt.flowID, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

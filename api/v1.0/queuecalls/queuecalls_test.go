@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -27,7 +27,7 @@ func Test_queuecallsGet(t *testing.T) {
 
 	type test struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		req       request.ParamQueuecallsGET
 		resCalls  []*qmqueuecall.WebhookMessage
 		expectRes string
@@ -36,7 +36,7 @@ func Test_queuecallsGet(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamQueuecallsGET{
@@ -55,7 +55,7 @@ func Test_queuecallsGet(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamQueuecallsGET{
@@ -95,14 +95,14 @@ func Test_queuecallsGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/queuecalls?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
+			mockSvc.EXPECT().QueuecallGets(req.Context(), &tt.agent, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -120,7 +120,7 @@ func Test_queuecallsIDGet(t *testing.T) {
 
 	type test struct {
 		name         string
-		customer     cscustomer.Customer
+		agent        amagent.Agent
 		resQueuecall *qmqueuecall.WebhookMessage
 		expectRes    string
 	}
@@ -128,7 +128,7 @@ func Test_queuecallsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			&qmqueuecall.WebhookMessage{
@@ -152,14 +152,14 @@ func Test_queuecallsIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/queuecalls/%s", tt.resQueuecall.ID)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallGet(req.Context(), &tt.customer, tt.resQueuecall.ID).Return(tt.resQueuecall, nil)
+			mockSvc.EXPECT().QueuecallGet(req.Context(), &tt.agent, tt.resQueuecall.ID).Return(tt.resQueuecall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -176,14 +176,14 @@ func Test_queuecallsIDDelete(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		queuecallID uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("a275df90-1681-11ed-a021-c3f295fc9257"),
@@ -203,14 +203,14 @@ func Test_queuecallsIDDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/queuecalls/%s", tt.queuecallID)
 			req, _ := http.NewRequest("DELETE", reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallDelete(req.Context(), &tt.customer, tt.queuecallID).Return(&qmqueuecall.WebhookMessage{}, nil)
+			mockSvc.EXPECT().QueuecallDelete(req.Context(), &tt.agent, tt.queuecallID).Return(&qmqueuecall.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -222,8 +222,8 @@ func Test_queuecallsIDDelete(t *testing.T) {
 func Test_queuecallsIDKickPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		requQuery         string
 		expectQueuecallID uuid.UUID
@@ -232,7 +232,7 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -254,13 +254,13 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.requQuery, nil)
 
-			mockSvc.EXPECT().QueuecallKick(req.Context(), &tt.customer, tt.expectQueuecallID).Return(&qmqueuecall.WebhookMessage{}, nil)
+			mockSvc.EXPECT().QueuecallKick(req.Context(), &tt.agent, tt.expectQueuecallID).Return(&qmqueuecall.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -272,8 +272,8 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		requQuery         string
 		expectReferenceID uuid.UUID
@@ -282,7 +282,7 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -304,13 +304,13 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.requQuery, nil)
 
-			mockSvc.EXPECT().QueuecallKickByReferenceID(req.Context(), &tt.customer, tt.expectReferenceID).Return(&qmqueuecall.WebhookMessage{}, nil)
+			mockSvc.EXPECT().QueuecallKickByReferenceID(req.Context(), &tt.agent, tt.expectReferenceID).Return(&qmqueuecall.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -25,17 +25,15 @@ func trunksPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyTrunksPOST
@@ -47,7 +45,7 @@ func trunksPOST(c *gin.Context) {
 
 	// create a trunk
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	trunk, err := serviceHandler.TrunkCreate(c.Request.Context(), &u, req.Name, req.Detail, req.DomainName, req.AuthTypes, req.Username, req.Password, req.AllowedIPs)
+	trunk, err := serviceHandler.TrunkCreate(c.Request.Context(), &a, req.Name, req.Detail, req.DomainName, req.AuthTypes, req.Username, req.Password, req.AllowedIPs)
 	if err != nil {
 		log.Errorf("Could not create a trunk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -72,17 +70,15 @@ func trunksGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamTrunksGET
@@ -104,7 +100,7 @@ func trunksGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get trunks
-	trunks, err := serviceHandler.TrunkGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	trunks, err := serviceHandler.TrunkGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a trunk list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -139,17 +135,15 @@ func trunksIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -158,7 +152,7 @@ func trunksIDGET(c *gin.Context) {
 	log.Debug("Executing trunksIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.TrunkGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.TrunkGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a trunk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -182,17 +176,15 @@ func trunksIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -208,7 +200,7 @@ func trunksIDPUT(c *gin.Context) {
 
 	// update a trunk
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.TrunkUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail, req.AuthTypes, req.Username, req.Password, req.AllowedIPs)
+	res, err := serviceHandler.TrunkUpdateBasicInfo(c.Request.Context(), &a, id, req.Name, req.Detail, req.AuthTypes, req.Username, req.Password, req.AllowedIPs)
 	if err != nil {
 		log.Errorf("Could not update the trunk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -231,17 +223,15 @@ func trunksIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -251,7 +241,7 @@ func trunksIDDELETE(c *gin.Context) {
 
 	// delete a trunk
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.TrunkDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.TrunkDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the trunk. err: %v", err)
 		c.AbortWithStatus(400)

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -27,17 +27,15 @@ func providersGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamProvidersGET
@@ -61,7 +59,7 @@ func providersGET(c *gin.Context) {
 	}
 
 	// get tmps
-	tmps, err := serviceHandler.ProviderGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.ProviderGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get providers info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -96,17 +94,15 @@ func providersPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyProvidersPOST
@@ -122,7 +118,7 @@ func providersPOST(c *gin.Context) {
 	// create
 	res, err := serviceHandler.ProviderCreate(
 		c.Request.Context(),
-		&u,
+		&a,
 		req.Type,
 		req.Hostname,
 		req.TechPrefix,
@@ -154,17 +150,15 @@ func providersIDDelete(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -179,7 +173,7 @@ func providersIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.ProviderDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ProviderDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Infof("Could not get the delete the provider info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -203,17 +197,15 @@ func providersIDGet(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -223,7 +215,7 @@ func providersIDGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.ProviderGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ProviderGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Infof("Could not get the provider info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -249,17 +241,15 @@ func providersIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -278,7 +268,7 @@ func providersIDPUT(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ProviderUpdate(
 		c.Request.Context(),
-		&u,
+		&a,
 		id,
 		req.Type,
 		req.Hostname,

@@ -3,7 +3,7 @@ package availablenumbers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -34,14 +34,16 @@ func availableNumbersGET(c *gin.Context) {
 	}
 	log.Debugf("availableNumbersGET. Received request detail. page_size: %d, country_code: %s", requestParam.PageSize, requestParam.CountyCode)
 
-	// get customer
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -60,7 +62,7 @@ func availableNumbersGET(c *gin.Context) {
 
 	// get service and available numbers
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	availableNumbers, err := serviceHandler.AvailableNumberGets(c.Request.Context(), &u, pageSize, countryCode)
+	availableNumbers, err := serviceHandler.AvailableNumberGets(c.Request.Context(), &a, pageSize, countryCode)
 	if err != nil {
 		logrus.Errorf("Could not get available numbers. err: %v", err)
 		c.AbortWithStatus(400)

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag" // for swag use
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -27,17 +27,15 @@ func tagsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
-	u := tmp.(cscustomer.Customer)
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyTagsPOST
@@ -51,7 +49,7 @@ func tagsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
-	res, err := serviceHandler.TagCreate(c.Request.Context(), &u, req.Name, req.Detail)
+	res, err := serviceHandler.TagCreate(c.Request.Context(), &a, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a new tag. err: %v", err)
 		c.AbortWithStatus(400)
@@ -75,17 +73,15 @@ func tagsIDDelete(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -100,7 +96,7 @@ func tagsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.TagDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.TagDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -124,17 +120,15 @@ func tagsIDGet(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -149,7 +143,7 @@ func tagsIDGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.TagGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.TagGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Infof("Could not get the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -174,17 +168,15 @@ func tagsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamTagsGET
@@ -209,7 +201,7 @@ func tagsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get tmps
-	tmps, err := serviceHandler.TagGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.TagGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -245,18 +237,15 @@ func tagsIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	// get customer info
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -273,7 +262,7 @@ func tagsIDPUT(c *gin.Context) {
 
 	// update the tag
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.TagUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
+	res, err := serviceHandler.TagUpdate(c.Request.Context(), &a, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the tag. err: %v", err)
 		c.AbortWithStatus(400)

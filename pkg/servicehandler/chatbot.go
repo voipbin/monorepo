@@ -6,16 +6,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
 // chatbotGet validates the chatbot's ownership and returns the chatbot info.
-func (h *serviceHandler) chatbotGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.Chatbot, error) {
+func (h *serviceHandler) chatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "chatbotGet",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"chatbot_id":  id,
 	})
 
@@ -26,18 +25,13 @@ func (h *serviceHandler) chatbotGet(ctx context.Context, u *cscustomer.Customer,
 		return nil, err
 	}
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission for this resource.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	return res, nil
 }
 
 // ChatbotCreate is a service handler for chatbot creation.
 func (h *serviceHandler) ChatbotCreate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	name string,
 	detail string,
 	engineType chatbotchatbot.EngineType,
@@ -45,16 +39,21 @@ func (h *serviceHandler) ChatbotCreate(
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatbotCreate",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"name":        name,
 		"detail":      detail,
 		"engine_type": engineType,
 		"init_prompt": initPrompt,
 	})
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	tmp, err := h.reqHandler.ChatbotV1ChatbotCreate(
 		ctx,
-		u.ID,
+		a.CustomerID,
 		name,
 		detail,
 		engineType,
@@ -72,11 +71,11 @@ func (h *serviceHandler) ChatbotCreate(
 
 // ChatbotGetsByCustomerID gets the list of chatbots of the given customer id.
 // It returns list of chatbots if it succeed.
-func (h *serviceHandler) ChatbotGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*chatbotchatbot.WebhookMessage, error) {
+func (h *serviceHandler) ChatbotGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatbotGetsByCustomerID",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -85,8 +84,13 @@ func (h *serviceHandler) ChatbotGetsByCustomerID(ctx context.Context, u *cscusto
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get chatbots
-	tmps, err := h.reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get chatbots info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -104,19 +108,24 @@ func (h *serviceHandler) ChatbotGetsByCustomerID(ctx context.Context, u *cscusto
 
 // ChatbotGet gets the chatbot of the given id.
 // It returns chatbot if it succeed.
-func (h *serviceHandler) ChatbotGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error) {
+func (h *serviceHandler) ChatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatbotGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chatbot_id":  id,
 	})
 
 	// get chatbot
-	tmp, err := h.chatbotGet(ctx, u, id)
+	tmp, err := h.chatbotGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chatbot info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -124,20 +133,25 @@ func (h *serviceHandler) ChatbotGet(ctx context.Context, u *cscustomer.Customer,
 }
 
 // ChatbotDelete deletes the chatbot.
-func (h *serviceHandler) ChatbotDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error) {
+func (h *serviceHandler) ChatbotDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatbotDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chatbot_id":  id,
 	})
 	log.Debug("Deleting a chatbot.")
 
 	// get chat
-	_, err := h.chatbotGet(ctx, u, id)
+	c, err := h.chatbotGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chatbot info from the chatbot-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatbotV1ChatbotDelete(ctx, id)
@@ -153,7 +167,7 @@ func (h *serviceHandler) ChatbotDelete(ctx context.Context, u *cscustomer.Custom
 // ChatbotUpdate is a service handler for chatbot update.
 func (h *serviceHandler) ChatbotUpdate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	id uuid.UUID,
 	name string,
 	detail string,
@@ -162,7 +176,7 @@ func (h *serviceHandler) ChatbotUpdate(
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatbotUpdate",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"id":          id,
 		"name":        name,
 		"detail":      detail,
@@ -171,10 +185,15 @@ func (h *serviceHandler) ChatbotUpdate(
 	})
 
 	// get chat
-	_, err := h.chatbotGet(ctx, u, id)
+	c, err := h.chatbotGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chatbot info from the chatbot-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatbotV1ChatbotUpdate(

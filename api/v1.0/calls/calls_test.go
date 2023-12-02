@@ -12,10 +12,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -32,9 +32,9 @@ func setupServer(app *gin.Engine) {
 func Test_CallsPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		req      request.BodyCallsPOST
+		name  string
+		agent amagent.Agent
+		req   request.BodyCallsPOST
 
 		responseCalls      []*cmcall.WebhookMessage
 		responseGroupcalls []*cmgroupcall.WebhookMessage
@@ -44,7 +44,7 @@ func Test_CallsPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			req: request.BodyCallsPOST{
@@ -89,7 +89,7 @@ func Test_CallsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -103,7 +103,7 @@ func Test_CallsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallCreate(req.Context(), &tt.customer, tt.req.FlowID, tt.req.Actions, &tt.req.Source, tt.req.Destinations).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockSvc.EXPECT().CallCreate(req.Context(), &tt.agent, tt.req.FlowID, tt.req.Actions, &tt.req.Source, tt.req.Destinations).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -122,7 +122,7 @@ func Test_CallsGET(t *testing.T) {
 
 	type test struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		req       request.ParamCallsGET
 		resCalls  []*cmcall.WebhookMessage
 		expectRes string
@@ -131,7 +131,7 @@ func Test_CallsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.ParamCallsGET{
@@ -150,7 +150,7 @@ func Test_CallsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.ParamCallsGET{
@@ -190,14 +190,14 @@ func Test_CallsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/calls?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().CallGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
+			mockSvc.EXPECT().CallGets(req.Context(), &tt.agent, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -214,15 +214,15 @@ func Test_CallsGET(t *testing.T) {
 func Test_CallsIDGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		resCall  *cmcall.WebhookMessage
+		name    string
+		agent   amagent.Agent
+		resCall *cmcall.WebhookMessage
 	}
 
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			&cmcall.WebhookMessage{
@@ -245,14 +245,14 @@ func Test_CallsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/calls/%s", tt.resCall.ID)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().CallGet(req.Context(), &tt.customer, tt.resCall.ID).Return(tt.resCall, nil)
+			mockSvc.EXPECT().CallGet(req.Context(), &tt.agent, tt.resCall.ID).Return(tt.resCall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -273,8 +273,8 @@ func Test_CallsIDGET(t *testing.T) {
 func Test_callsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		callID   uuid.UUID
@@ -285,7 +285,7 @@ func Test_callsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -313,12 +313,12 @@ func Test_callsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().CallDelete(req.Context(), &tt.customer, tt.callID).Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallDelete(req.Context(), &tt.agent, tt.callID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -335,8 +335,8 @@ func Test_callsIDDELETE(t *testing.T) {
 func Test_callsIDHangupPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		callID   uuid.UUID
@@ -347,7 +347,7 @@ func Test_callsIDHangupPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -375,12 +375,12 @@ func Test_callsIDHangupPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().CallHangup(req.Context(), &tt.customer, tt.callID).Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallHangup(req.Context(), &tt.agent, tt.callID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -397,8 +397,8 @@ func Test_callsIDHangupPOST(t *testing.T) {
 func Test_CallsIDTalkPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyCallsIDTalkPOST
@@ -409,7 +409,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -437,7 +437,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -450,7 +450,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallTalk(req.Context(), &tt.customer, tt.expectCallID, tt.reqBody.Text, tt.reqBody.Gender, tt.reqBody.Language).Return(nil)
+			mockSvc.EXPECT().CallTalk(req.Context(), &tt.agent, tt.expectCallID, tt.reqBody.Text, tt.reqBody.Gender, tt.reqBody.Language).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -463,8 +463,8 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 func Test_CallsIDHoldPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -474,7 +474,7 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -497,14 +497,14 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallHoldOn(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallHoldOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -517,8 +517,8 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 func Test_CallsIDHoldDELETE(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -528,7 +528,7 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -551,14 +551,14 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallHoldOff(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallHoldOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -571,8 +571,8 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 func Test_CallsIDMutePOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqBody  []byte
 		reqQuery string
@@ -584,7 +584,7 @@ func Test_CallsIDMutePOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -609,14 +609,14 @@ func Test_CallsIDMutePOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMuteOn(req.Context(), &tt.customer, tt.expectCallID, tt.expectDirection).Return(nil)
+			mockSvc.EXPECT().CallMuteOn(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -629,8 +629,8 @@ func Test_CallsIDMutePOST(t *testing.T) {
 func Test_CallsIDMuteDELETE(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqBody  []byte
@@ -642,7 +642,7 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -667,14 +667,14 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMuteOff(req.Context(), &tt.customer, tt.expectCallID, tt.expectDirection).Return(nil)
+			mockSvc.EXPECT().CallMuteOff(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -687,8 +687,8 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 func Test_CallsIDMOHPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -698,7 +698,7 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -721,14 +721,14 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMOHOn(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallMOHOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -741,8 +741,8 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 func Test_CallsIDMOHDELETE(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -752,7 +752,7 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -775,14 +775,14 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMOHOff(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallMOHOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -795,8 +795,8 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 func Test_CallsIDSilencePOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -806,7 +806,7 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -829,14 +829,14 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallSilenceOn(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallSilenceOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -849,8 +849,8 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 func Test_CallsIDSilenceDELETE(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -860,7 +860,7 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 
@@ -883,14 +883,14 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallSilenceOff(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+			mockSvc.EXPECT().CallSilenceOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

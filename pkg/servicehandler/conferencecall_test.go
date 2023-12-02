@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -18,7 +18,7 @@ func Test_ConferencecallGet(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		customer         *cscustomer.Customer
+		agent            *amagent.Agent
 		conferencecallID uuid.UUID
 
 		responseConferencecall *cfconferencecall.Conferencecall
@@ -27,19 +27,21 @@ func Test_ConferencecallGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("54df63a2-15ad-11ed-9309-b3fd99910cf5"),
 
 			&cfconferencecall.Conferencecall{
 				ID:         uuid.FromStringOrNil("54df63a2-15ad-11ed-9309-b3fd99910cf5"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			&cfconferencecall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("54df63a2-15ad-11ed-9309-b3fd99910cf5"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -59,7 +61,7 @@ func Test_ConferencecallGet(t *testing.T) {
 
 			mockReq.EXPECT().ConferenceV1ConferencecallGet(ctx, tt.conferencecallID).Return(tt.responseConferencecall, nil)
 
-			res, err := h.ConferencecallGet(ctx, tt.customer, tt.conferencecallID)
+			res, err := h.ConferencecallGet(ctx, tt.agent, tt.conferencecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -75,7 +77,7 @@ func Test_ConferencecallGets(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		token     string
 		limit     uint64
 		response  []cfconferencecall.Conferencecall
@@ -83,21 +85,21 @@ func Test_ConferencecallGets(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-09-20T03:23:20.995000",
 			10,
 			[]cfconferencecall.Conferencecall{
 				{
-					ID:         uuid.FromStringOrNil("7fc9cf36-50ca-11ee-9003-c76f7d344275"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+					ID: uuid.FromStringOrNil("7fc9cf36-50ca-11ee-9003-c76f7d344275"),
 				},
 			},
 			[]*cfconferencecall.WebhookMessage{
 				{
-					ID:         uuid.FromStringOrNil("7fc9cf36-50ca-11ee-9003-c76f7d344275"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+					ID: uuid.FromStringOrNil("7fc9cf36-50ca-11ee-9003-c76f7d344275"),
 				},
 			},
 		},
@@ -117,8 +119,8 @@ func Test_ConferencecallGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferencecallGets(ctx, tt.customer.ID, tt.token, tt.limit).Return(tt.response, nil)
-			res, err := h.ConferencecallGets(ctx, tt.customer, tt.limit, tt.token)
+			mockReq.EXPECT().ConferenceV1ConferencecallGets(ctx, tt.agent.CustomerID, tt.token, tt.limit).Return(tt.response, nil)
+			res, err := h.ConferencecallGets(ctx, tt.agent, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -134,7 +136,7 @@ func Test_ConferencecallKick(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		customer         *cscustomer.Customer
+		agent            *amagent.Agent
 		conferencecallID uuid.UUID
 
 		responseConferencecall *cfconferencecall.Conferencecall
@@ -143,19 +145,21 @@ func Test_ConferencecallKick(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("c5291d7e-15ad-11ed-97e7-239ea4fba3e3"),
 
 			&cfconferencecall.Conferencecall{
 				ID:         uuid.FromStringOrNil("c5291d7e-15ad-11ed-97e7-239ea4fba3e3"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			&cfconferencecall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("c5291d7e-15ad-11ed-97e7-239ea4fba3e3"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -176,7 +180,7 @@ func Test_ConferencecallKick(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ConferencecallGet(ctx, tt.conferencecallID).Return(tt.responseConferencecall, nil)
 			mockReq.EXPECT().ConferenceV1ConferencecallKick(ctx, tt.conferencecallID).Return(tt.responseConferencecall, nil)
 
-			res, err := h.ConferencecallKick(ctx, tt.customer, tt.conferencecallID)
+			res, err := h.ConferencecallKick(ctx, tt.agent, tt.conferencecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
