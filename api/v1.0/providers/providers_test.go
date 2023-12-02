@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -29,7 +29,7 @@ func Test_providersGet(t *testing.T) {
 	type test struct {
 		name string
 
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		reqQuery  string
 		pageSize  uint64
 		pageToken string
@@ -42,7 +42,7 @@ func Test_providersGet(t *testing.T) {
 		{
 			"1 item",
 
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/providers?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -59,7 +59,7 @@ func Test_providersGet(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/providers?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -97,13 +97,13 @@ func Test_providersGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderGets(req.Context(), &tt.customer, tt.pageSize, tt.pageToken).Return(tt.resProviders, nil)
+			mockSvc.EXPECT().ProviderGets(req.Context(), &tt.agent, tt.pageSize, tt.pageToken).Return(tt.resProviders, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -120,8 +120,8 @@ func Test_providersGet(t *testing.T) {
 func Test_providersPost(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery    string
 		reqBody     request.BodyProvidersPOST
@@ -131,7 +131,7 @@ func Test_providersPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -167,7 +167,7 @@ func Test_providersPost(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -182,7 +182,7 @@ func Test_providersPost(t *testing.T) {
 
 			mockSvc.EXPECT().ProviderCreate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.reqBody.Type,
 				tt.reqBody.Hostname,
 				tt.reqBody.TechPrefix,
@@ -204,8 +204,8 @@ func Test_providersPost(t *testing.T) {
 func Test_providersIDGet(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery   string
 		providerID uuid.UUID
@@ -218,7 +218,7 @@ func Test_providersIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -246,13 +246,13 @@ func Test_providersIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderGet(req.Context(), &tt.customer, tt.providerID).Return(tt.resProvider, nil)
+			mockSvc.EXPECT().ProviderGet(req.Context(), &tt.agent, tt.providerID).Return(tt.resProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -269,8 +269,8 @@ func Test_providersIDGet(t *testing.T) {
 func Test_providersIDDelete(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery   string
 		providerID uuid.UUID
@@ -283,7 +283,7 @@ func Test_providersIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
 			},
 
@@ -311,13 +311,13 @@ func Test_providersIDDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderDelete(req.Context(), &tt.customer, tt.providerID).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderDelete(req.Context(), &tt.agent, tt.providerID).Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -334,8 +334,8 @@ func Test_providersIDDelete(t *testing.T) {
 func Test_providersIDPut(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqBody  []byte
@@ -355,7 +355,7 @@ func Test_providersIDPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -395,13 +395,13 @@ func Test_providersIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ProviderUpdate(req.Context(), &tt.customer, tt.providerID, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderUpdate(req.Context(), &tt.agent, tt.providerID, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail).Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

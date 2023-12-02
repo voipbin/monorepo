@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
@@ -19,7 +19,7 @@ func Test_QueueGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -30,8 +30,10 @@ func Test_QueueGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
@@ -63,17 +65,11 @@ func Test_QueueGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.QueueGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.QueueGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			for _, num := range res {
-				num.TMCreate = ""
-				num.TMUpdate = ""
-				num.TMDelete = ""
 			}
 
 			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
@@ -86,9 +82,9 @@ func Test_QueueGets(t *testing.T) {
 func Test_QueueGet(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		response  *qmqueue.Queue
 		expectRes *qmqueue.WebhookMessage
@@ -97,18 +93,20 @@ func Test_QueueGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -129,7 +127,7 @@ func Test_QueueGet(t *testing.T) {
 
 			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.QueueGet(ctx, tt.customer, tt.id)
+			res, err := h.QueueGet(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -146,7 +144,7 @@ func Test_QueueCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer       *cscustomer.Customer
+		agent          *amagent.Agent
 		queueName      string
 		detail         string
 		routingMethod  qmqueue.RoutingMethod
@@ -163,8 +161,10 @@ func Test_QueueCreate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"name",
 			"detail",
@@ -182,11 +182,11 @@ func Test_QueueCreate(t *testing.T) {
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -207,7 +207,7 @@ func Test_QueueCreate(t *testing.T) {
 
 			mockReq.EXPECT().QueueV1QueueCreate(
 				ctx,
-				tt.customer.ID,
+				tt.agent.CustomerID,
 				tt.queueName,
 				tt.detail,
 				tt.routingMethod,
@@ -219,7 +219,7 @@ func Test_QueueCreate(t *testing.T) {
 
 			res, err := h.QueueCreate(
 				ctx,
-				tt.customer,
+				tt.agent,
 				tt.queueName,
 				tt.detail,
 				tt.routingMethod,
@@ -244,7 +244,7 @@ func Test_QueueDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		customer *amagent.Agent
 		queueID  uuid.UUID
 
 		response  *qmqueue.Queue
@@ -255,18 +255,20 @@ func Test_QueueDelete(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -306,7 +308,7 @@ func Test_QueueUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer       *cscustomer.Customer
+		agent          *amagent.Agent
 		queueID        uuid.UUID
 		queueName      string
 		detail         string
@@ -324,8 +326,10 @@ func Test_QueueUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
 			"name",
@@ -345,11 +349,11 @@ func Test_QueueUpdate(t *testing.T) {
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -383,7 +387,7 @@ func Test_QueueUpdate(t *testing.T) {
 
 			res, err := h.QueueUpdate(
 				ctx,
-				tt.customer,
+				tt.agent,
 				tt.queueID,
 				tt.queueName,
 				tt.detail,
@@ -409,9 +413,9 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
-		queueID  uuid.UUID
-		tagIDs   []uuid.UUID
+		agent   *amagent.Agent
+		queueID uuid.UUID
+		tagIDs  []uuid.UUID
 
 		response  *qmqueue.Queue
 		expectRes *qmqueue.WebhookMessage
@@ -421,8 +425,10 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
 			[]uuid.UUID{
@@ -431,18 +437,20 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 		{
 			"2 items",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
 			[]uuid.UUID{
@@ -452,11 +460,11 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -478,7 +486,7 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QueueV1QueueUpdateTagIDs(ctx, tt.queueID, tt.tagIDs).Return(tt.response, nil)
 
-			res, err := h.QueueUpdateTagIDs(ctx, tt.customer, tt.queueID, tt.tagIDs)
+			res, err := h.QueueUpdateTagIDs(ctx, tt.agent, tt.queueID, tt.tagIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -496,7 +504,7 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 	type test struct {
 		name string
 
-		customer      *cscustomer.Customer
+		agent         *amagent.Agent
 		queueID       uuid.UUID
 		routingMethod qmqueue.RoutingMethod
 
@@ -508,37 +516,41 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 		{
 			"routing method random",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
 			qmqueue.RoutingMethodRandom,
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 		{
 			"routing method none",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
 			qmqueue.RoutingMethodNone,
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -560,7 +572,7 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QueueV1QueueUpdateRoutingMethod(ctx, tt.queueID, tt.routingMethod).Return(tt.response, nil)
 
-			res, err := h.QueueUpdateRoutingMethod(ctx, tt.customer, tt.queueID, tt.routingMethod)
+			res, err := h.QueueUpdateRoutingMethod(ctx, tt.agent, tt.queueID, tt.routingMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -577,7 +589,7 @@ func Test_QueueUpdateActions(t *testing.T) {
 	type test struct {
 		name string
 
-		customer       *cscustomer.Customer
+		agent          *amagent.Agent
 		queueID        uuid.UUID
 		waitActions    []fmaction.Action
 		timeoutWait    int
@@ -591,8 +603,10 @@ func Test_QueueUpdateActions(t *testing.T) {
 		{
 			"routing method random",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
 			[]fmaction.Action{
@@ -605,11 +619,11 @@ func Test_QueueUpdateActions(t *testing.T) {
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&qmqueue.WebhookMessage{
 				ID:         uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -631,7 +645,7 @@ func Test_QueueUpdateActions(t *testing.T) {
 			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QueueV1QueueUpdateActions(ctx, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(tt.response, nil)
 
-			res, err := h.QueueUpdateActions(ctx, tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			res, err := h.QueueUpdateActions(ctx, tt.agent, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

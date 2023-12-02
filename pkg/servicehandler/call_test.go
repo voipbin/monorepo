@@ -8,11 +8,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -24,20 +24,22 @@ func Test_callGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		callID   uuid.UUID
+		agent  *amagent.Agent
+		callID uuid.UUID
 
 		responseCall *cmcall.Call
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -59,7 +61,7 @@ func Test_callGet(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 
-			res, err := h.callGet(ctx, tt.customer, tt.callID)
+			res, err := h.callGet(ctx, tt.agent, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -76,16 +78,18 @@ func Test_callGet_error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		callID   uuid.UUID
+		agent  *amagent.Agent
+		callID uuid.UUID
 
 		responseCall      *cmcall.Call
 		responseCallError error
 	}{
 		{
 			name: "call get returns an error",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			callID: uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
 
@@ -93,8 +97,10 @@ func Test_callGet_error(t *testing.T) {
 		},
 		{
 			name: "deleted call info",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			callID: uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
 
@@ -102,19 +108,6 @@ func Test_callGet_error(t *testing.T) {
 				ID:         uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				TMDelete:   "2020-09-20 03:23:20.995000",
-			},
-		},
-		{
-			name: "user has no permission",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("bf255b00-8f37-11ed-8505-ebf5b5e2e761"),
-			},
-			callID: uuid.FromStringOrNil("bf41540e-8f37-11ed-8355-4be7200818a7"),
-
-			responseCall: &cmcall.Call{
-				ID:         uuid.FromStringOrNil("bf41540e-8f37-11ed-8355-4be7200818a7"),
-				CustomerID: uuid.FromStringOrNil("d4c81cfe-8f37-11ed-9504-9f06f39cf4f0"),
-				TMDelete:   defaultTimestamp,
 			},
 		},
 	}
@@ -135,7 +128,7 @@ func Test_callGet_error(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, tt.responseCallError)
 
-			_, err := h.callGet(ctx, tt.customer, tt.callID)
+			_, err := h.callGet(ctx, tt.agent, tt.callID)
 			if err == nil {
 				t.Error("Wrong match. expect: error, got: nil")
 			}
@@ -148,7 +141,7 @@ func Test_CallCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer     *cscustomer.Customer
+		agent        *amagent.Agent
 		flowID       uuid.UUID
 		actions      []fmaction.Action
 		source       *commonaddress.Address
@@ -163,8 +156,10 @@ func Test_CallCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			flowID:  uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
 			actions: []fmaction.Action{},
@@ -204,8 +199,10 @@ func Test_CallCreate(t *testing.T) {
 		{
 			name: "with actions only",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			flowID: uuid.Nil,
 			actions: []fmaction.Action{
@@ -249,8 +246,10 @@ func Test_CallCreate(t *testing.T) {
 		{
 			name: "if both has given, flowid has more priority",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			flowID: uuid.FromStringOrNil("2ca43d36-8df9-11ec-846a-ebf271da36c8"),
 			actions: []fmaction.Action{
@@ -310,11 +309,11 @@ func Test_CallCreate(t *testing.T) {
 			targetFlowID := tt.flowID
 			if targetFlowID == uuid.Nil {
 				targetFlowID = uuid.Must(uuid.NewV4())
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
 			}
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
-			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.customer, tt.flowID, tt.actions, tt.source, tt.destinations)
+			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.agent, tt.flowID, tt.actions, tt.source, tt.destinations)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -334,9 +333,9 @@ func Test_CallCreate(t *testing.T) {
 func Test_CallDelete(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		callID   uuid.UUID
+		name   string
+		agent  *amagent.Agent
+		callID uuid.UUID
 
 		responseCall *cmcall.Call
 
@@ -344,19 +343,21 @@ func Test_CallDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("eccc7bf4-8926-11ed-b638-0fcef48a97d2"),
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("eccc7bf4-8926-11ed-b638-0fcef48a97d2"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 
 			&cmcall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("eccc7bf4-8926-11ed-b638-0fcef48a97d2"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -379,7 +380,7 @@ func Test_CallDelete(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1CallDelete(ctx, tt.callID).Return(tt.responseCall, nil)
 
-			res, err := h.CallDelete(ctx, tt.customer, tt.callID)
+			res, err := h.CallDelete(ctx, tt.agent, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -394,9 +395,9 @@ func Test_CallDelete(t *testing.T) {
 func Test_CallHangup(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		callID   uuid.UUID
+		name   string
+		agent  *amagent.Agent
+		callID uuid.UUID
 
 		responseCall *cmcall.Call
 
@@ -404,19 +405,21 @@ func Test_CallHangup(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 
 			&cmcall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -439,7 +442,7 @@ func Test_CallHangup(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1CallHangup(ctx, tt.callID).Return(tt.responseCall, nil)
 
-			res, err := h.CallHangup(ctx, tt.customer, tt.callID)
+			res, err := h.CallHangup(ctx, tt.agent, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -455,7 +458,7 @@ func Test_CallTalk(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer *cscustomer.Customer
+		agent    *amagent.Agent
 		callID   uuid.UUID
 		text     string
 		gender   string
@@ -465,8 +468,10 @@ func Test_CallTalk(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("89f97b66-a4b6-11ed-b3a8-9732500c39be"),
 			"hello world",
@@ -475,7 +480,7 @@ func Test_CallTalk(t *testing.T) {
 
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("89f97b66-a4b6-11ed-b3a8-9732500c39be"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -498,7 +503,7 @@ func Test_CallTalk(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, 10000).Return(nil)
 
-			if err := h.CallTalk(ctx, tt.customer, tt.callID, tt.text, tt.gender, tt.language); err != nil {
+			if err := h.CallTalk(ctx, tt.agent, tt.callID, tt.text, tt.gender, tt.language); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -509,22 +514,24 @@ func Test_CallTalk(t *testing.T) {
 func Test_CallHoldOn(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		callID   uuid.UUID
+		name   string
+		agent  *amagent.Agent
+		callID uuid.UUID
 
 		responseCall *cmcall.Call
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("4db40768-cef8-11ed-bb96-8fbbe25ae0fa"),
 
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("4db40768-cef8-11ed-bb96-8fbbe25ae0fa"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -547,7 +554,7 @@ func Test_CallHoldOn(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1CallHoldOn(ctx, tt.callID).Return(nil)
 
-			if err := h.CallHoldOn(ctx, tt.customer, tt.callID); err != nil {
+			if err := h.CallHoldOn(ctx, tt.agent, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -558,22 +565,24 @@ func Test_CallHoldOn(t *testing.T) {
 func Test_CallHoldOff(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		callID   uuid.UUID
+		name   string
+		agent  *amagent.Agent
+		callID uuid.UUID
 
 		responseCall *cmcall.Call
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("7079cc38-cef8-11ed-9410-b35f9ccb992c"),
 
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("7079cc38-cef8-11ed-9410-b35f9ccb992c"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -596,7 +605,7 @@ func Test_CallHoldOff(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1CallHoldOff(ctx, tt.callID).Return(nil)
 
-			if err := h.CallHoldOff(ctx, tt.customer, tt.callID); err != nil {
+			if err := h.CallHoldOff(ctx, tt.agent, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -608,7 +617,7 @@ func Test_CallMuteOn(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		callID    uuid.UUID
 		direction cmcall.MuteDirection
 
@@ -616,15 +625,17 @@ func Test_CallMuteOn(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("70a879e8-cef8-11ed-a112-13d831e46695"),
 			cmcall.MuteDirectionBoth,
 
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("70a879e8-cef8-11ed-a112-13d831e46695"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -647,7 +658,7 @@ func Test_CallMuteOn(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1CallMuteOn(ctx, tt.callID, tt.direction).Return(nil)
 
-			if err := h.CallMuteOn(ctx, tt.customer, tt.callID, tt.direction); err != nil {
+			if err := h.CallMuteOn(ctx, tt.agent, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -658,7 +669,7 @@ func Test_CallMuteOff(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		callID    uuid.UUID
 		direction cmcall.MuteDirection
 
@@ -666,15 +677,17 @@ func Test_CallMuteOff(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("70d6557a-cef8-11ed-95b3-0b608cbf435e"),
 			cmcall.MuteDirectionBoth,
 
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("70d6557a-cef8-11ed-95b3-0b608cbf435e"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -697,7 +710,7 @@ func Test_CallMuteOff(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1CallMuteOff(ctx, tt.callID, tt.direction).Return(nil)
 
-			if err := h.CallMuteOff(ctx, tt.customer, tt.callID, tt.direction); err != nil {
+			if err := h.CallMuteOff(ctx, tt.agent, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

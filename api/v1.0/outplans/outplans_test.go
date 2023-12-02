@@ -11,10 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -31,18 +30,15 @@ func Test_outplansPOST(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		requestBody request.BodyOutplansPOST
 
 		response *caoutplan.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			request.BodyOutplansPOST{
 				Name:   "test name",
@@ -79,7 +75,7 @@ func Test_outplansPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -93,7 +89,7 @@ func Test_outplansPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().OutplanCreate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.requestBody.Name,
 				tt.requestBody.Detail,
 				tt.requestBody.Source,
@@ -118,7 +114,7 @@ func Test_outplansGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		req         request.ParamOutplansGET
 		resOutplans []*caoutplan.WebhookMessage
 		expectRes   string
@@ -127,7 +123,7 @@ func Test_outplansGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamOutplansGET{
@@ -146,7 +142,7 @@ func Test_outplansGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamOutplansGET{
@@ -186,14 +182,14 @@ func Test_outplansGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/outplans?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().OutplanGetsByCustomerID(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutplans, nil)
+			mockSvc.EXPECT().OutplanGetsByCustomerID(req.Context(), &tt.agent, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutplans, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -211,14 +207,14 @@ func Test_outplansIDGET(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		outplanID uuid.UUID
 
 		response *caoutplan.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("1b27088c-c64c-11ec-b7df-b37c8b4c4c13"),
@@ -242,12 +238,12 @@ func Test_outplansIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/outplans/%s", tt.outplanID), nil)
-			mockSvc.EXPECT().OutplanGet(req.Context(), &tt.customer, tt.outplanID).Return(tt.response, nil)
+			mockSvc.EXPECT().OutplanGet(req.Context(), &tt.agent, tt.outplanID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -261,14 +257,14 @@ func Test_outplansIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		outplanID uuid.UUID
 
 		response *caoutplan.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("3b58765e-c64c-11ec-a2c1-03acafdff2d7"),
@@ -291,12 +287,12 @@ func Test_outplansIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/outplans/%s", tt.outplanID), nil)
-			mockSvc.EXPECT().OutplanDelete(req.Context(), &tt.customer, tt.outplanID).Return(tt.response, nil)
+			mockSvc.EXPECT().OutplanDelete(req.Context(), &tt.agent, tt.outplanID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -310,18 +306,15 @@ func Test_outplansIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		outplanID   uuid.UUID
 		requestBody request.BodyOutplansIDPUT
 		response    *caoutplan.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("5ad57130-c64c-11ec-b131-a787ac641f8a"),
 			request.BodyOutplansIDPUT{
@@ -347,7 +340,7 @@ func Test_outplansIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -359,7 +352,7 @@ func Test_outplansIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", "/v1.0/outplans/"+tt.outplanID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutplanUpdateBasicInfo(req.Context(), &tt.customer, tt.outplanID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
+			mockSvc.EXPECT().OutplanUpdateBasicInfo(req.Context(), &tt.agent, tt.outplanID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -373,18 +366,15 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		outplanID   uuid.UUID
 		requestBody request.BodyOutplansIDDialInfoPUT
 		response    *caoutplan.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("d94e07e8-c64c-11ec-9e9d-8b700336c5ef"),
 			request.BodyOutplansIDDialInfoPUT{
@@ -419,7 +409,7 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -433,7 +423,7 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().OutplanUpdateDialInfo(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.outplanID,
 				tt.requestBody.Source,
 				tt.requestBody.DialTimeout,

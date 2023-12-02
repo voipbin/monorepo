@@ -8,9 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -25,8 +24,8 @@ func setupServer(app *gin.Engine) {
 func Test_conferencecallsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery  string
 		pageSize  uint64
@@ -39,7 +38,7 @@ func Test_conferencecallsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -57,7 +56,7 @@ func Test_conferencecallsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -96,13 +95,13 @@ func Test_conferencecallsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferencecallGets(req.Context(), &tt.customer, tt.pageSize, tt.pageToken).Return(tt.responseConferencecalls, nil)
+			mockSvc.EXPECT().ConferencecallGets(req.Context(), &tt.agent, tt.pageSize, tt.pageToken).Return(tt.responseConferencecalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -116,13 +115,13 @@ func Test_conferencecallsGET(t *testing.T) {
 	}
 }
 
-func TestConferencesIDGET(t *testing.T) {
+func Test_ConferencesIDGET(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customer cscustomer.Customer
-		id       uuid.UUID
+		agent amagent.Agent
+		id    uuid.UUID
 
 		requestURI string
 
@@ -131,11 +130,8 @@ func TestConferencesIDGET(t *testing.T) {
 		{
 			"normal",
 
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
 
@@ -159,13 +155,13 @@ func TestConferencesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.requestURI, nil)
 
-			mockSvc.EXPECT().ConferencecallGet(req.Context(), &tt.customer, tt.id).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferencecallGet(req.Context(), &tt.agent, tt.id).Return(tt.conference, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -178,8 +174,8 @@ func TestConferencesIDGET(t *testing.T) {
 func Test_conferencecallsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		id uuid.UUID
 
@@ -189,11 +185,8 @@ func Test_conferencecallsIDDELETE(t *testing.T) {
 	}{
 		{
 			"simple test",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
 			"/v1.0/conferencecalls/23d576b4-15b4-11ed-b6f4-fbfaed3df462",
@@ -217,13 +210,13 @@ func Test_conferencecallsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
 
-			mockSvc.EXPECT().ConferencecallKick(req.Context(), &tt.customer, tt.id).Return(tt.responseConferencecall, nil)
+			mockSvc.EXPECT().ConferencecallKick(req.Context(), &tt.agent, tt.id).Return(tt.responseConferencecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

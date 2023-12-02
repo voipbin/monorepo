@@ -8,7 +8,6 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -21,8 +20,7 @@ func Test_AuthLogin(t *testing.T) {
 		username string
 		password string
 
-		responseAgent    *amagent.Agent
-		responseCustomer *cscustomer.Customer
+		responseAgent *amagent.Agent
 	}{
 		{
 			name: "normal",
@@ -33,9 +31,6 @@ func Test_AuthLogin(t *testing.T) {
 			responseAgent: &amagent.Agent{
 				ID:         uuid.FromStringOrNil("6bc342d0-8aed-11ee-a07d-7bc7fee5a336"),
 				CustomerID: uuid.FromStringOrNil("6c0ff198-8aed-11ee-8a04-474584947e03"),
-			},
-			responseCustomer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("6c0ff198-8aed-11ee-8a04-474584947e03"),
 			},
 		},
 	}
@@ -54,7 +49,6 @@ func Test_AuthLogin(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().AgentV1Login(ctx, gomock.Any(), tt.username, tt.password).Return(tt.responseAgent, nil)
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseAgent.CustomerID).Return(tt.responseCustomer, nil)
 
 			_, err := h.AuthLogin(ctx, tt.username, tt.password)
 			if err != nil {

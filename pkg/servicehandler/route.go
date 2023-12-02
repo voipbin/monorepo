@@ -6,65 +6,64 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 )
 
 // routeGet validates the route's ownership and returns the route info.
-func (h *serviceHandler) routeGet(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "routeGet",
-			"customer_id": u.ID,
-			"route_id":    routeID,
-		},
-	)
+func (h *serviceHandler) routeGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "routeGet",
+		"customer_id": a.CustomerID,
+		"route_id":    routeID,
+	})
 
 	// send request
-	tmp, err := h.reqHandler.RouteV1RouteGet(ctx, routeID)
+	res, err := h.reqHandler.RouteV1RouteGet(ctx, routeID)
 	if err != nil {
 		log.Errorf("Could not get the route info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("route", tmp).Debug("Received result.")
-
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
-		log.Info("The user has no permission for this route.")
-		return nil, fmt.Errorf("user has no permission")
-	}
+	log.WithField("route", res).Debug("Received result.")
 
 	// create result
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // RouteGet sends a request to route-manager
 // to getting the route.
-func (h *serviceHandler) RouteGet(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"agent_id":    routeID,
 	})
 
-	res, err := h.routeGet(ctx, u, routeID)
+	// permission check
+	// only project admin allowed
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.routeGet(ctx, a, routeID)
 	if err != nil {
 		log.Errorf("Could not validate the route info. err: %v", err)
 		return nil, err
 	}
 
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // RouteGets sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "RouteGets",
-		"username": u.Username,
+		"username": a.Username,
 		"size":     size,
 		"token":    token,
 	})
@@ -73,9 +72,11 @@ func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, 
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
-		log.Info("The user has no permission for this route.")
-		return nil, fmt.Errorf("user has no permission")
+	// permission check
+	// only project admin allowed
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, token, size)
@@ -96,11 +97,11 @@ func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, 
 // RouteGetsByCustomerID sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteGetsByCustomerID",
 		"customer_id": customerID,
-		"username":    u.Username,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -109,9 +110,11 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, u *cscustome
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
-		log.Info("The user has no permission for this route.")
-		return nil, fmt.Errorf("user has no permission")
+	// permission check
+	// only project admin allowed
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmps, err := h.reqHandler.RouteV1RouteGetsByCustomerID(ctx, customerID, token, size)
@@ -134,7 +137,7 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, u *cscustome
 // it returns created route info if it succeed.
 func (h *serviceHandler) RouteCreate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	customerID uuid.UUID,
 	name string,
 	detail string,
@@ -145,13 +148,15 @@ func (h *serviceHandler) RouteCreate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteCreate",
 		"customer_id": customerID,
-		"username":    u.Username,
+		"username":    a.Username,
 		"provider_id": providerID,
 	})
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
-		log.Info("The user has no permission for this route.")
-		return nil, fmt.Errorf("user has no permission")
+	// permission check
+	// only project admin allowed
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.RouteV1RouteCreate(
@@ -176,15 +181,22 @@ func (h *serviceHandler) RouteCreate(
 // RouteDelete sends a request to route-manager
 // to deleting the route.
 // it returns error if it failed.
-func (h *serviceHandler) RouteDelete(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteDelete(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"route_id":    routeID,
 	})
 
-	_, err := h.routeGet(ctx, u, routeID)
+	// permission check
+	// only project admin allowed
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	_, err := h.routeGet(ctx, a, routeID)
 	if err != nil {
 		log.Errorf("Could not get route. err: %v", err)
 		return nil, err
@@ -206,7 +218,7 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, u *cscustomer.Customer
 // it returns error if it failed.
 func (h *serviceHandler) RouteUpdate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	routeID uuid.UUID,
 	name string,
 	detail string,
@@ -216,11 +228,18 @@ func (h *serviceHandler) RouteUpdate(
 ) (*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteUpdate",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 	})
 
-	_, err := h.routeGet(ctx, u, routeID)
+	// permission check
+	// only project admin allowed
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	_, err := h.routeGet(ctx, a, routeID)
 	if err != nil {
 		log.Errorf("Could not get route. err: %v", err)
 		return nil, err

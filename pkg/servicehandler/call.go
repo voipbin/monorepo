@@ -6,19 +6,18 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // callGet validates the call's ownership and returns the call info.
-func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.Call, error) {
+func (h *serviceHandler) callGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "callGet",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
 
@@ -35,22 +34,17 @@ func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, ca
 		return nil, fmt.Errorf("not found")
 	}
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	return res, nil
 }
 
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created calls and groupcalls info if it succeed.
-func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(ctx context.Context, a *amagent.Agent, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallCreate",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"flow_id":     flowID,
 		"actions":     actions,
 		"source":      source,
@@ -58,10 +52,14 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 	})
 	log.Debug("Creating a new call.")
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		return nil, nil, fmt.Errorf("user has no permission")
+	}
+
 	targetFlowID := flowID
 	if targetFlowID == uuid.Nil {
 		log.Debugf("The flowID is null. Creating a new temp flow for call dialing.")
-		f, err := h.FlowCreate(ctx, u, "tmp", "tmp outbound flow", actions, false)
+		f, err := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow", actions, false)
 		if err != nil {
 			log.Errorf("Could not create a flow for outoing call. err: %v", err)
 			return nil, nil, err
@@ -71,7 +69,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 		targetFlowID = f.ID
 	}
 
-	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations, false, false)
+	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, nil, err
@@ -95,36 +93,39 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"call_id":     callID,
 	})
 
 	// get call
-	c, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return nil, err
 	}
 
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// convert
 	res := c.ConvertWebhookMessage()
-
 	return res, nil
 }
 
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -133,8 +134,13 @@ func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, s
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	// get calls
-	tmps, err := h.reqHandler.CallV1CallGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.CallV1CallGets(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -153,19 +159,24 @@ func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, s
 // CallDelete sends a request to call-manager
 // to delete the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -185,19 +196,24 @@ func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer,
 // CallHangup sends a request to call-manager
 // to hangup the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallHangup(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallHangup(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallHangup",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -217,19 +233,24 @@ func (h *serviceHandler) CallHangup(ctx context.Context, u *cscustomer.Customer,
 // CallTalk sends a request to call-manager
 // to talk to the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallTalk(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, text string, gender string, language string) error {
+func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID uuid.UUID, text string, gender string, language string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallTalk",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -245,18 +266,23 @@ func (h *serviceHandler) CallTalk(ctx context.Context, u *cscustomer.Customer, c
 // CallHoldOn sends a request to call-manager
 // to hold the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallHoldOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+func (h *serviceHandler) CallHoldOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallHoldOn",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallHoldOn",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -272,18 +298,23 @@ func (h *serviceHandler) CallHoldOn(ctx context.Context, u *cscustomer.Customer,
 // CallHoldOff sends a request to call-manager
 // to unhold the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallHoldOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+func (h *serviceHandler) CallHoldOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallHoldOff",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallHoldOff",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -299,18 +330,23 @@ func (h *serviceHandler) CallHoldOff(ctx context.Context, u *cscustomer.Customer
 // CallMuteOn sends a request to call-manager
 // to mute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMuteOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, direction cmcall.MuteDirection) error {
+func (h *serviceHandler) CallMuteOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID, direction cmcall.MuteDirection) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallMuteOn",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallMuteOn",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -326,18 +362,23 @@ func (h *serviceHandler) CallMuteOn(ctx context.Context, u *cscustomer.Customer,
 // CallMuteOff sends a request to call-manager
 // to unmute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMuteOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, direction cmcall.MuteDirection) error {
+func (h *serviceHandler) CallMuteOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID, direction cmcall.MuteDirection) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallMuteOff",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallMuteOff",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -353,18 +394,23 @@ func (h *serviceHandler) CallMuteOff(ctx context.Context, u *cscustomer.Customer
 // CallMOHOn sends a request to call-manager
 // to mute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMOHOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+func (h *serviceHandler) CallMOHOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallMOHOn",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallMOHOn",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -380,18 +426,23 @@ func (h *serviceHandler) CallMOHOn(ctx context.Context, u *cscustomer.Customer, 
 // CallMOHOff sends a request to call-manager
 // to unmute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallMOHOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+func (h *serviceHandler) CallMOHOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallMOHOff",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallMOHOff",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -407,18 +458,23 @@ func (h *serviceHandler) CallMOHOff(ctx context.Context, u *cscustomer.Customer,
 // CallSilenceOn sends a request to call-manager
 // to mute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallSilenceOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallSilenceOn",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallSilenceOn",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request
@@ -434,18 +490,23 @@ func (h *serviceHandler) CallSilenceOn(ctx context.Context, u *cscustomer.Custom
 // CallSilenceOff sends a request to call-manager
 // to unmute the call.
 // it returns error if it failed.
-func (h *serviceHandler) CallSilenceOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "CallSilenceOff",
-		"customer": u,
-		"call_id":  callID,
+		"func":        "CallSilenceOff",
+		"customer_id": a.CustomerID,
+		"call_id":     callID,
 	})
 
-	_, err := h.callGet(ctx, u, callID)
+	c, err := h.callGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
 	}
 
 	// send request

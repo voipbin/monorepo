@@ -7,16 +7,16 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
 // billingAccountGet validates the billing account's ownership and returns the billing account info.
-func (h *serviceHandler) billingAccountGet(ctx context.Context, u *cscustomer.Customer, accountID uuid.UUID) (*bmaccount.Account, error) {
+func (h *serviceHandler) billingAccountGet(ctx context.Context, a *amagent.Agent, accountID uuid.UUID) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "billingAccountGet",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"account_id":  accountID,
 	})
 
@@ -33,54 +33,56 @@ func (h *serviceHandler) billingAccountGet(ctx context.Context, u *cscustomer.Cu
 		return nil, fmt.Errorf("not found")
 	}
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	return res, nil
 }
 
 // BillingAccountGet sends a request to billing-manager
 // to getting a billing account.
 // it returns billing account if it succeed.
-func (h *serviceHandler) BillingAccountGet(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountGet",
-		"customer_id":        u.ID,
-		"username":           u.Username,
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
 		"billing_account_id": billingAccountID,
 	})
 
 	// get billing account
-	b, err := h.billingAccountGet(ctx, u, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
 	}
 
-	// convert
-	res := b.ConvertWebhookMessage()
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
+	}
 
+	// convert
+	res := ba.ConvertWebhookMessage()
 	return res, nil
 }
 
 // BillingAccountDelete sends a request to billing-manager
 // to deleting a billing account.
 // it returns billing account if it succeed.
-func (h *serviceHandler) BillingAccountDelete(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountDelete(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountDelete",
-		"customer_id":        u.ID,
-		"username":           u.Username,
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
 		"billing_account_id": billingAccountID,
 	})
 
 	// get billing account
-	_, err := h.billingAccountGet(ctx, u, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	tmp, err := h.reqHandler.BillingV1AccountDelete(ctx, billingAccountID)
@@ -95,11 +97,11 @@ func (h *serviceHandler) BillingAccountDelete(ctx context.Context, u *cscustomer
 // BillingAccountGets sends a request to billing-manager
 // to getting a list of billing accounts.
 // it returns list of billing accounts if it succeed.
-func (h *serviceHandler) BillingAccountGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -108,8 +110,12 @@ func (h *serviceHandler) BillingAccountGets(ctx context.Context, u *cscustomer.C
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get billing accounts
-	tmps, err := h.reqHandler.BillingV1AccountGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.BillingV1AccountGets(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
@@ -128,15 +134,19 @@ func (h *serviceHandler) BillingAccountGets(ctx context.Context, u *cscustomer.C
 // BillingAccountCreate sends a request to billing-manager
 // to create a new billing accounts.
 // it returns created billing account if it succeed.
-func (h *serviceHandler) BillingAccountCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountCreate(ctx context.Context, a *amagent.Agent, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountCreate",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 	})
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get billing accounts
-	tmp, err := h.reqHandler.BillingV1AccountCreate(ctx, u.ID, name, detail, paymentType, paymentMethod)
+	tmp, err := h.reqHandler.BillingV1AccountCreate(ctx, a.CustomerID, name, detail, paymentType, paymentMethod)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
@@ -149,18 +159,22 @@ func (h *serviceHandler) BillingAccountCreate(ctx context.Context, u *cscustomer
 // BillingAccountUpdateBasicInfo sends a request to billing-manager
 // to update the billing account's basic info.
 // it returns updated billing account if it succeed.
-func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountUpdateBasicInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 	})
 
 	// get billing account
-	_, err := h.billingAccountGet(ctx, u, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// get billing accounts
@@ -177,18 +191,22 @@ func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, u *c
 // BillingAccountUpdateBasicInfo sends a request to billing-manager
 // to update the billing account's basic info.
 // it returns updated billing account if it succeed.
-func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountUpdatePaymentInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 	})
 
 	// get billing account
-	_, err := h.billingAccountGet(ctx, u, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// get billing accounts
@@ -204,18 +222,17 @@ func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, u 
 
 // BillingAccountAddBalanceForce sends a request to billing-manager
 // to add the given billing account's balance.
-func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountAddBalanceForce",
-		"customer_id":        u.ID,
-		"username":           u.Username,
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
 		"billing_account_id": billingAccountID,
 		"balance":            balance,
 	})
 
-	// need a admin permission
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
-		log.Info("The user has no permission.")
+	// need a project super admin permission
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -231,18 +248,17 @@ func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, u *c
 
 // BillingAccountSubtractBalanceForce sends a request to billing-manager
 // to subtract the given billing account's balance.
-func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountSubtractBalanceForce",
-		"customer_id":        u.ID,
-		"username":           u.Username,
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
 		"billing_account_id": billingAccountID,
 		"balance":            balance,
 	})
 
-	// need a admin permission
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
-		log.Info("The user has no permission.")
+	// need a project super admin permission
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 

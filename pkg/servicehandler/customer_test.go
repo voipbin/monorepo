@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -20,7 +21,7 @@ func Test_CustomerCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer      *cscustomer.Customer
+		agent         *amagent.Agent
 		username      string
 		password      string
 		customerName  string
@@ -40,11 +41,10 @@ func Test_CustomerCreate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"test",
 			"testpassword",
@@ -85,7 +85,7 @@ func Test_CustomerCreate(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerCreate(ctx, tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
+			res, err := h.CustomerCreate(ctx, tt.agent, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -102,7 +102,7 @@ func TestCustomerGet(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		customer *amagent.Agent
 		id       uuid.UUID
 
 		responseCustomer *cscustomer.Customer
@@ -113,19 +113,18 @@ func TestCustomerGet(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 
 			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("ade4707c-837d-11ec-a600-f30a3ccf56ae"),
+				ID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 			},
 			&cscustomer.WebhookMessage{
-				ID: uuid.FromStringOrNil("ade4707c-837d-11ec-a600-f30a3ccf56ae"),
+				ID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
 			},
 		},
 	}
@@ -159,14 +158,14 @@ func TestCustomerGet(t *testing.T) {
 	}
 }
 
-func TestCustomerGets(t *testing.T) {
+func Test_CustomerGets(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
-		size     uint64
-		token    string
+		agent *amagent.Agent
+		size  uint64
+		token string
 
 		responseCustomers []cscustomer.Customer
 		expectRes         []*cscustomer.WebhookMessage
@@ -176,11 +175,9 @@ func TestCustomerGets(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			10,
@@ -216,7 +213,7 @@ func TestCustomerGets(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerGets(ctx, tt.customer, tt.size, tt.token)
+			res, err := h.CustomerGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -228,11 +225,11 @@ func TestCustomerGets(t *testing.T) {
 	}
 }
 
-func TestCustomerUpdate(t *testing.T) {
+func Test_CustomerUpdate(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		id            uuid.UUID
 		customerName  string
@@ -251,13 +248,12 @@ func TestCustomerUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
+			uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
 			"name new",
 			"detail new",
 			"test@test.com",
@@ -293,7 +289,7 @@ func TestCustomerUpdate(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
 			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerUpdate(ctx, tt.customer, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			res, err := h.CustomerUpdate(ctx, tt.agent, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -305,13 +301,13 @@ func TestCustomerUpdate(t *testing.T) {
 	}
 }
 
-func TestCustomerDelete(t *testing.T) {
+func Test_CustomerDelete(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		responseCustomers *cscustomer.Customer
 		expectRes         *cscustomer.WebhookMessage
@@ -321,11 +317,9 @@ func TestCustomerDelete(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
 
@@ -356,7 +350,7 @@ func TestCustomerDelete(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
 			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, tt.id).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerDelete(ctx, tt.customer, tt.id)
+			res, err := h.CustomerDelete(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -368,12 +362,12 @@ func TestCustomerDelete(t *testing.T) {
 	}
 }
 
-func TestCustomerUpdatePassword(t *testing.T) {
+func Test_CustomerUpdatePassword(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent    *amagent.Agent
 		id       uuid.UUID
 		password string
 
@@ -385,20 +379,19 @@ func TestCustomerUpdatePassword(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
 			"new password",
 
 			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
+				ID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
 			},
 			&cscustomer.WebhookMessage{
-				ID: uuid.FromStringOrNil("8ffa19a2-837f-11ec-b57e-9f3906006c0a"),
+				ID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
 			},
 		},
 	}
@@ -421,7 +414,7 @@ func TestCustomerUpdatePassword(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
 			mockReq.EXPECT().CustomerV1CustomerUpdatePassword(ctx, 30000, tt.id, tt.password).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerUpdatePassword(ctx, tt.customer, tt.id, tt.password)
+			res, err := h.CustomerUpdatePassword(ctx, tt.agent, tt.id, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -433,12 +426,12 @@ func TestCustomerUpdatePassword(t *testing.T) {
 	}
 }
 
-func TestCustomerUpdatePermissionIDs(t *testing.T) {
+func Test_CustomerUpdatePermissionIDs(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customer      *cscustomer.Customer
+		agent         *amagent.Agent
 		id            uuid.UUID
 		permissionIDs []uuid.UUID
 
@@ -450,11 +443,9 @@ func TestCustomerUpdatePermissionIDs(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
 			[]uuid.UUID{
@@ -487,7 +478,7 @@ func TestCustomerUpdatePermissionIDs(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerUpdatePermissionIDs(ctx, tt.customer, tt.id, tt.permissionIDs)
+			res, err := h.CustomerUpdatePermissionIDs(ctx, tt.agent, tt.id, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -504,7 +495,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		customerID       uuid.UUID
 		billingAccountID uuid.UUID
@@ -518,11 +509,10 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			customerID:       uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
@@ -532,8 +522,9 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 			},
 			responseBillingAccount: &bmaccount.Account{
-				ID:       uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
-				TMDelete: defaultTimestamp,
+				ID:         uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
+				CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+				TMDelete:   defaultTimestamp,
 			},
 			expectRes: &cscustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
@@ -559,7 +550,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customerID, tt.billingAccountID).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerUpdateBillingAccountID(ctx, tt.customer, tt.customerID, tt.billingAccountID)
+			res, err := h.CustomerUpdateBillingAccountID(ctx, tt.agent, tt.customerID, tt.billingAccountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

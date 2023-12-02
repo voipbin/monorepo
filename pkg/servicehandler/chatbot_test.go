@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -19,7 +19,7 @@ func Test_ChatbotCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer    *cscustomer.Customer
+		agent       *amagent.Agent
 		chatbotName string
 		detail      string
 		engineType  chatbotchatbot.EngineType
@@ -31,8 +31,10 @@ func Test_ChatbotCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("f0d20d08-376f-11ed-9a7a-dbc21a700b21"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			chatbotName: "test name",
 			detail:      "test detail",
@@ -62,9 +64,9 @@ func Test_ChatbotCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ChatbotCreate(ctx, tt.customer.ID, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotCreate(ctx, tt.agent.CustomerID, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt).Return(tt.response, nil)
 
-			res, err := h.ChatbotCreate(ctx, tt.customer, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
+			res, err := h.ChatbotCreate(ctx, tt.agent, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -81,17 +83,19 @@ func Test_ChatbotGetsByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		size     uint64
-		token    string
+		agent *amagent.Agent
+		size  uint64
+		token string
 
 		response  []chatbotchatbot.Chatbot
 		expectRes []*chatbotchatbot.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("040422b6-3771-11ed-801b-27518c703c82"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
@@ -124,9 +128,9 @@ func Test_ChatbotGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ChatbotGetsByCustomerID(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotGetsByCustomerID(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.response, nil)
 
-			res, err := h.ChatbotGetsByCustomerID(ctx, tt.customer, tt.size, tt.token)
+			res, err := h.ChatbotGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -143,7 +147,7 @@ func Test_ChatbotGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		chatbotID uuid.UUID
 
 		response  *chatbotchatbot.Chatbot
@@ -151,18 +155,20 @@ func Test_ChatbotGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("539c78aa-3771-11ed-ab19-379f45ca7efc"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
 
 			&chatbotchatbot.Chatbot{
 				ID:         uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
-				CustomerID: uuid.FromStringOrNil("539c78aa-3771-11ed-ab19-379f45ca7efc"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&chatbotchatbot.WebhookMessage{
 				ID:         uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
-				CustomerID: uuid.FromStringOrNil("539c78aa-3771-11ed-ab19-379f45ca7efc"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -182,7 +188,7 @@ func Test_ChatbotGet(t *testing.T) {
 
 			mockReq.EXPECT().ChatbotV1ChatbotGet(ctx, tt.chatbotID).Return(tt.response, nil)
 
-			res, err := h.ChatbotGet(ctx, tt.customer, tt.chatbotID)
+			res, err := h.ChatbotGet(ctx, tt.agent, tt.chatbotID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -199,7 +205,7 @@ func Test_ChatbotDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		chatbotID uuid.UUID
 
 		responseChat *chatbotchatbot.Chatbot
@@ -207,18 +213,20 @@ func Test_ChatbotDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 
 			&chatbotchatbot.Chatbot{
 				ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
-				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&chatbotchatbot.WebhookMessage{
 				ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
-				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -241,7 +249,7 @@ func Test_ChatbotDelete(t *testing.T) {
 			mockReq.EXPECT().ChatbotV1ChatbotGet(ctx, tt.chatbotID).Return(tt.responseChat, nil)
 			mockReq.EXPECT().ChatbotV1ChatbotDelete(ctx, tt.chatbotID).Return(tt.responseChat, nil)
 
-			res, err := h.ChatbotDelete(ctx, tt.customer, tt.chatbotID)
+			res, err := h.ChatbotDelete(ctx, tt.agent, tt.chatbotID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

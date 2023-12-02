@@ -7,31 +7,33 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestRecordingGets(t *testing.T) {
+func Test_RecordingGets(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		size  uint64
 		token string
 
-		response  []cmrecording.Recording
-		expectRes []*cmrecording.WebhookMessage
+		responseRecording []cmrecording.Recording
+		expectRes         []*cmrecording.WebhookMessage
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
 			"2020-10-20 01:00:00.995000",
@@ -39,14 +41,14 @@ func TestRecordingGets(t *testing.T) {
 			[]cmrecording.Recording{
 				{
 					ID:         uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 					Filenames: []string{
 						"call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 					},
 				},
 				{
 					ID:         uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 					Filenames: []string{
 						"call_2f167946-b2b4-4370-94fa-d6c2c57c84da_2020-12-04T18:48:03Z",
 					},
@@ -55,12 +57,12 @@ func TestRecordingGets(t *testing.T) {
 
 			[]*cmrecording.WebhookMessage{
 				{
-					ID:          uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
-					ReferenceID: uuid.Nil,
+					ID:         uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				{
-					ID:          uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
-					ReferenceID: uuid.Nil,
+					ID:         uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
 		},
@@ -80,9 +82,9 @@ func TestRecordingGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.customer.ID, tt.size, tt.token).Return(tt.response, nil)
+			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.agent.CustomerID, tt.size, tt.token).Return(tt.responseRecording, nil)
 
-			res, err := h.RecordingGets(ctx, tt.customer, tt.size, tt.token)
+			res, err := h.RecordingGets(ctx, tt.agent, tt.size, tt.token)
 
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -100,7 +102,7 @@ func Test_RecordingDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer    *cscustomer.Customer
+		agent       *amagent.Agent
 		recordingID uuid.UUID
 
 		responseRecording *cmrecording.Recording
@@ -109,20 +111,23 @@ func Test_RecordingDelete(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
 
 			&cmrecording.Recording{
 				ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 
 			&cmrecording.WebhookMessage{
-				ID:       uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
-				TMDelete: defaultTimestamp,
+				ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}
@@ -144,7 +149,7 @@ func Test_RecordingDelete(t *testing.T) {
 			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().CallV1RecordingDelete(ctx, tt.recordingID).Return(tt.responseRecording, nil)
 
-			res, err := h.RecordingDelete(ctx, tt.customer, tt.recordingID)
+			res, err := h.RecordingDelete(ctx, tt.agent, tt.recordingID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

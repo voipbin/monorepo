@@ -11,11 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -32,9 +31,9 @@ func setupServer(app *gin.Engine) {
 func Test_conversationsGet(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		size  uint64
 		token string
@@ -46,7 +45,7 @@ func Test_conversationsGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			"/v1.0/conversations?page_size=20&page_token=2020-09-20%2003:23:20.995000",
@@ -82,7 +81,7 @@ func Test_conversationsGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -91,7 +90,7 @@ func Test_conversationsGet(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), &tt.customer, tt.size, tt.token).Return(tt.resCustomers, nil)
+			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), &tt.agent, tt.size, tt.token).Return(tt.resCustomers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -113,9 +112,9 @@ func Test_conversationsGet(t *testing.T) {
 func Test_conversationsIDGet(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		id uuid.UUID
 
@@ -125,11 +124,8 @@ func Test_conversationsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			"/v1.0/conversations/4d9ae3d4-ed2e-11ec-a384-1b8e70bb589d",
 
@@ -154,7 +150,7 @@ func Test_conversationsIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -162,7 +158,7 @@ func Test_conversationsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.target, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationGet(req.Context(), &tt.customer, tt.id).Return(tt.expectRes, nil)
+			mockSvc.EXPECT().ConversationGet(req.Context(), &tt.agent, tt.id).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -184,9 +180,9 @@ func Test_conversationsIDGet(t *testing.T) {
 func Test_conversationsIDMessagesGet(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		id    uuid.UUID
 		size  uint64
@@ -199,7 +195,7 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			"/v1.0/conversations/a09b01e0-ed2e-11ec-bdf1-8fa58d1092ad/messages?page_size=20&page_token=2020-09-20%2003:23:20.995000",
@@ -236,7 +232,7 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -245,7 +241,7 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationMessageGetsByConversationID(req.Context(), &tt.customer, tt.id, tt.size, tt.token).Return(tt.resMessages, nil)
+			mockSvc.EXPECT().ConversationMessageGetsByConversationID(req.Context(), &tt.agent, tt.id, tt.size, tt.token).Return(tt.resMessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -267,9 +263,9 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 func Test_conversationsIDMessagesPost(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		id  uuid.UUID
 		req request.BodyConversationsIDMessagesPOST
@@ -280,7 +276,7 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			"/v1.0/conversations/5950b02c-ed2f-11ec-9093-d3dcc91a72fa/messages",
@@ -309,7 +305,7 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -321,7 +317,7 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.customer, tt.id, tt.req.Text, []cvmedia.Media{}).Return(tt.expectRes, nil)
+			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.agent, tt.id, tt.req.Text, []cvmedia.Media{}).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -335,9 +331,9 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 func Test_conversationsIDPut(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
+		name   string
+		agent  amagent.Agent
+		target string
 
 		id  uuid.UUID
 		req request.BodyConversationsIDPUT
@@ -348,7 +344,7 @@ func Test_conversationsIDPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			"/v1.0/conversations/0e288b58-007d-11ee-b0ac-8be49d249ca9",
@@ -378,7 +374,7 @@ func Test_conversationsIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -390,7 +386,7 @@ func Test_conversationsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.customer, tt.id, tt.req.Name, tt.req.Detail).Return(tt.expectRes, nil)
+			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.agent, tt.id, tt.req.Name, tt.req.Detail).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

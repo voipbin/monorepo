@@ -11,8 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -29,8 +28,8 @@ func setupServer(app *gin.Engine) {
 func TestExtensionsPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		ext      string
 		password string
@@ -43,11 +42,8 @@ func TestExtensionsPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			"test",
@@ -77,7 +73,7 @@ func TestExtensionsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -89,7 +85,7 @@ func TestExtensionsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", "/v1.0/extensions", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().ExtensionCreate(req.Context(), &tt.customer, tt.ext, tt.password, tt.extName, tt.detail).Return(&rmextension.WebhookMessage{}, nil)
+			mockSvc.EXPECT().ExtensionCreate(req.Context(), &tt.agent, tt.ext, tt.password, tt.extName, tt.detail).Return(&rmextension.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -102,8 +98,8 @@ func TestExtensionsPOST(t *testing.T) {
 func Test_ExtensionsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -113,7 +109,7 @@ func Test_ExtensionsGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -139,12 +135,12 @@ func Test_ExtensionsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionGetsByCustomerID(req.Context(), &tt.customer, tt.customer.ID, uint64(10), "").Return(tt.expectExt, nil)
+			mockSvc.EXPECT().ExtensionGetsByCustomerID(req.Context(), &tt.agent, uint64(10), "").Return(tt.expectExt, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -157,9 +153,9 @@ func Test_ExtensionsGET(t *testing.T) {
 func Test_ExtensionsIDGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		ext      *rmextension.Extension
+		name  string
+		agent amagent.Agent
+		ext   *rmextension.Extension
 
 		expectExt *rmextension.WebhookMessage
 	}
@@ -167,7 +163,7 @@ func Test_ExtensionsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			&rmextension.Extension{
@@ -200,12 +196,12 @@ func Test_ExtensionsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/extensions/%s", tt.ext.ID), nil)
-			mockSvc.EXPECT().ExtensionGet(req.Context(), &tt.customer, tt.ext.ID).Return(tt.expectExt, nil)
+			mockSvc.EXPECT().ExtensionGet(req.Context(), &tt.agent, tt.ext.ID).Return(tt.expectExt, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -218,8 +214,8 @@ func Test_ExtensionsIDGET(t *testing.T) {
 func TestExtensionsIDPUT(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		extID    uuid.UUID
 		extName  string
@@ -232,11 +228,8 @@ func TestExtensionsIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df"),
@@ -265,7 +258,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -277,7 +270,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", "/v1.0/extensions/"+tt.extID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.customer, tt.extID, tt.extName, tt.detail, tt.password).Return(&rmextension.WebhookMessage{}, nil)
+			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.agent, tt.extID, tt.extName, tt.detail, tt.password).Return(&rmextension.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -290,15 +283,15 @@ func TestExtensionsIDPUT(t *testing.T) {
 func TestExtensionsIDDELETE(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		extID    uuid.UUID
+		name  string
+		agent amagent.Agent
+		extID uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("be0c2b70-6fb0-11eb-849d-3f923b334d3b"),
@@ -318,12 +311,12 @@ func TestExtensionsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/extensions/%s", tt.extID), nil)
-			mockSvc.EXPECT().ExtensionDelete(req.Context(), &tt.customer, tt.extID).Return(&rmextension.WebhookMessage{}, nil)
+			mockSvc.EXPECT().ExtensionDelete(req.Context(), &tt.agent, tt.extID).Return(&rmextension.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -12,7 +12,7 @@ import (
 
 // WebsockHandler defines
 type WebsockHandler interface {
-	Run(ctx context.Context, w http.ResponseWriter, r *http.Request, customerID uuid.UUID) error
+	Run(ctx context.Context, w http.ResponseWriter, r *http.Request, agentID uuid.UUID) error
 }
 
 var upgrader = websocket.Upgrader{

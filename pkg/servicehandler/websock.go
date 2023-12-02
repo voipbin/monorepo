@@ -5,19 +5,17 @@ import (
 	"net/http"
 
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // WebsockCreate validates the tag's ownership and returns the message info.
-func (h *serviceHandler) WebsockCreate(ctx context.Context, u *cscustomer.Customer, w http.ResponseWriter, r *http.Request) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "WebsockCreate",
-			"customer_id": u.ID,
-		},
-	)
+func (h *serviceHandler) WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "WebsockCreate",
+		"agent_id": a.ID,
+	})
 
-	if errRun := h.websockHandler.Run(ctx, w, r, u.ID); errRun != nil {
+	if errRun := h.websockHandler.Run(ctx, w, r, a.ID); errRun != nil {
 		log.Errorf("Could not run the websock handler correctly. err: %v", errRun)
 		return errRun
 	}

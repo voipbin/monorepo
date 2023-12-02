@@ -37,13 +37,13 @@ func (h *websockHandler) runZMQSub(
 func (h *websockHandler) runWebsock(
 	ctx context.Context,
 	cancel context.CancelFunc,
-	customerID uuid.UUID,
+	agentID uuid.UUID,
 	ws *websocket.Conn,
 	sock zmqsubhandler.ZMQSubHandler,
 ) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "runWebsock",
-		"customer_id": customerID,
+		"func":     "runWebsock",
+		"agent_id": agentID,
 	})
 
 	chanWS := make(chan hook.Hook)
@@ -68,7 +68,7 @@ main:
 			case hook.TypeSubscribe:
 				for _, t := range m.Topics {
 					// subscribe
-					topic := fmt.Sprintf("%s:%s", customerID, t)
+					topic := fmt.Sprintf("%s:%s", agentID, t)
 					if errSub := sock.Subscribe(topic); errSub != nil {
 						log.Errorf("Could not subscribe the topic. topic: %s, err: %v", topic, errSub)
 						continue
@@ -79,7 +79,7 @@ main:
 			case hook.TypeUnsubscribe:
 				for _, t := range m.Topics {
 					// unsubscribe
-					topic := fmt.Sprintf("%s:%s", customerID, t)
+					topic := fmt.Sprintf("%s:%s", agentID, t)
 					if errSub := sock.Unsubscribe(topic); errSub != nil {
 						log.Errorf("Could not unsubscribe the topic. topic: %s, err: %v", topic, errSub)
 						continue

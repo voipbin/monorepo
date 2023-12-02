@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -20,7 +20,7 @@ func Test_OutplanCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		outplanName string
 		detail      string
@@ -41,8 +41,10 @@ func Test_OutplanCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"test name",
 			"test detail",
@@ -80,8 +82,8 @@ func Test_OutplanCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanCreate(ctx, tt.customer.ID, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
-			res, err := h.OutplanCreate(ctx, tt.customer, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount4)
+			mockReq.EXPECT().CampaignV1OutplanCreate(ctx, tt.agent.CustomerID, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
+			res, err := h.OutplanCreate(ctx, tt.agent, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -98,26 +100,28 @@ func Test_OutplanDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		responseOutplan *caoutplan.Outplan
 		expectRes       *caoutplan.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
 
 			&caoutplan.Outplan{
-				ID:         uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:         uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&caoutplan.WebhookMessage{
-				ID:         uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:         uuid.FromStringOrNil("bcbcffb4-c640-11ec-bdab-03b1d679601d"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -138,7 +142,7 @@ func Test_OutplanDelete(t *testing.T) {
 
 			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.id).Return(tt.responseOutplan, nil)
 			mockReq.EXPECT().CampaignV1OutplanDelete(ctx, tt.id).Return(tt.responseOutplan, nil)
-			res, err := h.OutplanDelete(ctx, tt.customer, tt.id)
+			res, err := h.OutplanDelete(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -154,7 +158,7 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -163,8 +167,10 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
@@ -202,8 +208,8 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanGetsByCustomerID(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
-			res, err := h.OutplanGetsByCustomerID(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			mockReq.EXPECT().CampaignV1OutplanGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			res, err := h.OutplanGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -219,7 +225,7 @@ func Test_OutplanGet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		outplanID uuid.UUID
 
 		response  *caoutplan.Outplan
@@ -227,19 +233,21 @@ func Test_OutplanGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
 
 			&caoutplan.Outplan{
 				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&caoutplan.WebhookMessage{
 				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -259,7 +267,7 @@ func Test_OutplanGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID).Return(tt.response, nil)
-			res, err := h.OutplanGet(ctx, tt.customer, tt.outplanID)
+			res, err := h.OutplanGet(ctx, tt.agent, tt.outplanID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -275,7 +283,7 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    *cscustomer.Customer
+		agent       *amagent.Agent
 		outplanID   uuid.UUID
 		outplanName string
 		detail      string
@@ -285,8 +293,10 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
@@ -295,11 +305,11 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 
 			&caoutplan.Outplan{
 				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&caoutplan.WebhookMessage{
 				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -320,7 +330,7 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 
 			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID).Return(tt.response, nil)
 			mockReq.EXPECT().CampaignV1OutplanUpdateBasicInfo(ctx, tt.outplanID, tt.outplanName, tt.detail).Return(tt.response, nil)
-			res, err := h.OutplanUpdateBasicInfo(ctx, tt.customer, tt.outplanID, tt.outplanName, tt.detail)
+			res, err := h.OutplanUpdateBasicInfo(ctx, tt.agent, tt.outplanID, tt.outplanName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -336,7 +346,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		customer     *cscustomer.Customer
+		agent        *amagent.Agent
 		outplanID    uuid.UUID
 		source       *commonaddress.Address
 		dialTimeout  int
@@ -352,8 +362,10 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
@@ -370,12 +382,12 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			5,
 
 			&caoutplan.Outplan{
-				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&caoutplan.WebhookMessage{
-				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -396,7 +408,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 
 			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID).Return(tt.response, nil)
 			mockReq.EXPECT().CampaignV1OutplanUpdateDialInfo(ctx, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
-			res, err := h.OutplanUpdateDialInfo(ctx, tt.customer, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
+			res, err := h.OutplanUpdateDialInfo(ctx, tt.agent, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

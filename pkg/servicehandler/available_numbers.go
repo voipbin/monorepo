@@ -2,25 +2,31 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 // AvailableNumberGets sends a handles available number get
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
-func (h *serviceHandler) AvailableNumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error) {
+func (h *serviceHandler) AvailableNumberGets(ctx context.Context, a *amagent.Agent, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"customer_id":  u.ID,
-		"username":     u.Username,
+		"func":         "AvailableNumberGets",
+		"customer_id":  a.CustomerID,
+		"username":     a.Username,
 		"size":         size,
 		"country_code": countryCode,
 	})
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get available numbers
-	tmps, err := h.reqHandler.NumberV1AvailableNumberGets(ctx, u.ID, size, countryCode)
+	tmps, err := h.reqHandler.NumberV1AvailableNumberGets(ctx, a.CustomerID, size, countryCode)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err

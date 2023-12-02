@@ -7,10 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -20,20 +19,22 @@ func Test_billingAccountGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer         *cscustomer.Customer
+		agent            *amagent.Agent
 		billingAccountID uuid.UUID
 
 		responseBillingAccount *bmaccount.Account
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
 			&bmaccount.Account{
 				ID:         uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
-				CustomerID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -55,7 +56,7 @@ func Test_billingAccountGet(t *testing.T) {
 
 			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.billingAccountGet(ctx, tt.customer, tt.billingAccountID)
+			res, err := h.billingAccountGet(ctx, tt.agent, tt.billingAccountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -72,7 +73,7 @@ func Test_BillingAccountDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer         *cscustomer.Customer
+		agent            *amagent.Agent
 		billingAccountID uuid.UUID
 
 		responseBillingAccount *bmaccount.Account
@@ -81,19 +82,21 @@ func Test_BillingAccountDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("f7269f7a-105e-11ee-87aa-ab1cc9b7e913"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			billingAccountID: uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
 
 			responseBillingAccount: &bmaccount.Account{
 				ID:         uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
-				CustomerID: uuid.FromStringOrNil("f7269f7a-105e-11ee-87aa-ab1cc9b7e913"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 			expectRes: &bmaccount.WebhookMessage{
 				ID:         uuid.FromStringOrNil("f7685000-105e-11ee-a7b9-fb7f3da1cef4"),
-				CustomerID: uuid.FromStringOrNil("f7269f7a-105e-11ee-87aa-ab1cc9b7e913"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -116,7 +119,7 @@ func Test_BillingAccountDelete(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 			mockReq.EXPECT().BillingV1AccountDelete(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.BillingAccountDelete(ctx, tt.customer, tt.billingAccountID)
+			res, err := h.BillingAccountDelete(ctx, tt.agent, tt.billingAccountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -133,17 +136,19 @@ func Test_BillingAccountGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		size     uint64
-		token    string
+		agent *amagent.Agent
+		size  uint64
+		token string
 
 		responseBillingAcounts []bmaccount.Account
 		expectRes              []*bmaccount.WebhookMessage
 	}{
 		{
 			name: "normal",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("149aaf9e-105d-11ee-aeae-4b0e41ee0cf6"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			size:  10,
 			token: "2020-09-20 03:23:20.995000",
@@ -182,9 +187,9 @@ func Test_BillingAccountGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.responseBillingAcounts, nil)
+			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.responseBillingAcounts, nil)
 
-			res, err := h.BillingAccountGets(ctx, tt.customer, tt.size, tt.token)
+			res, err := h.BillingAccountGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -201,7 +206,7 @@ func Test_BillingAccountCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer           *cscustomer.Customer
+		agent              *amagent.Agent
 		billingAccountName string
 		detail             string
 		paymentType        bmaccount.PaymentType
@@ -213,8 +218,10 @@ func Test_BillingAccountCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("64d9d8d8-1060-11ee-9c69-b3b4496d13c7"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			billingAccountName: "test name",
 			detail:             "test detail",
@@ -244,9 +251,9 @@ func Test_BillingAccountCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.customer.ID, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.agent.CustomerID, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.BillingAccountCreate(ctx, tt.customer, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod)
+			res, err := h.BillingAccountCreate(ctx, tt.agent, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -263,7 +270,7 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer           *cscustomer.Customer
+		agent              *amagent.Agent
 		billingAccountID   uuid.UUID
 		billingAccountName string
 		detail             string
@@ -274,8 +281,10 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("8bee3b82-4cdb-11ee-811d-2ba7c3dd1800"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			billingAccountID:   uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
 			billingAccountName: "test name",
@@ -283,12 +292,12 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 
 			responseBillingAccount: &bmaccount.Account{
 				ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
-				CustomerID: uuid.FromStringOrNil("8bee3b82-4cdb-11ee-811d-2ba7c3dd1800"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 			expectRes: &bmaccount.WebhookMessage{
 				ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
-				CustomerID: uuid.FromStringOrNil("8bee3b82-4cdb-11ee-811d-2ba7c3dd1800"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -311,7 +320,7 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 			mockReq.EXPECT().BillingV1AccountUpdateBasicInfo(ctx, tt.billingAccountID, tt.billingAccountName, tt.detail).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.BillingAccountUpdateBasicInfo(ctx, tt.customer, tt.billingAccountID, tt.billingAccountName, tt.detail)
+			res, err := h.BillingAccountUpdateBasicInfo(ctx, tt.agent, tt.billingAccountID, tt.billingAccountName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -328,7 +337,7 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer         *cscustomer.Customer
+		agent            *amagent.Agent
 		billingAccountID uuid.UUID
 		paymentType      bmaccount.PaymentType
 		paymentMethod    bmaccount.PaymentMethod
@@ -339,8 +348,10 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("09e36eb8-4cdc-11ee-a84e-3f5f663dd1a3"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			billingAccountID: uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
 			paymentType:      bmaccount.PaymentTypePrepaid,
@@ -348,12 +359,12 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 
 			responseBillingAccount: &bmaccount.Account{
 				ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
-				CustomerID: uuid.FromStringOrNil("09e36eb8-4cdc-11ee-a84e-3f5f663dd1a3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 			expectRes: &bmaccount.WebhookMessage{
 				ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
-				CustomerID: uuid.FromStringOrNil("09e36eb8-4cdc-11ee-a84e-3f5f663dd1a3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -376,7 +387,7 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 			mockReq.EXPECT().BillingV1AccountUpdatePaymentInfo(ctx, tt.billingAccountID, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.BillingAccountUpdatePaymentInfo(ctx, tt.customer, tt.billingAccountID, tt.paymentType, tt.paymentMethod)
+			res, err := h.BillingAccountUpdatePaymentInfo(ctx, tt.agent, tt.billingAccountID, tt.paymentType, tt.paymentMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -393,7 +404,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		accountID uuid.UUID
 		balance   float32
 
@@ -403,11 +414,10 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("45b20ace-4cd9-11ee-a7d9-1b34ef4752f9"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			accountID: uuid.FromStringOrNil("55867314-4cd8-11ee-b465-73c0486f35ff"),
 			balance:   32.21,
@@ -437,7 +447,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 
 			mockReq.EXPECT().BillingV1AccountAddBalanceForce(ctx, tt.accountID, tt.balance).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.BillingAccountAddBalanceForce(ctx, tt.customer, tt.accountID, tt.balance)
+			res, err := h.BillingAccountAddBalanceForce(ctx, tt.agent, tt.accountID, tt.balance)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

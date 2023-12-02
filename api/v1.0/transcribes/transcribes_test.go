@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -27,8 +27,8 @@ func setupServer(app *gin.Engine) {
 func Test_transcribesPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery    string
 		requestBody request.BodyTranscribesPOST
@@ -38,7 +38,7 @@ func Test_transcribesPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
 			},
 
@@ -68,7 +68,7 @@ func Test_transcribesPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -80,7 +80,7 @@ func Test_transcribesPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TranscribeStart(req.Context(), &tt.customer, tt.requestBody.ReferenceType, tt.requestBody.ReferenceID, tt.requestBody.Language, tt.requestBody.Direction).Return(tt.trans, nil)
+			mockSvc.EXPECT().TranscribeStart(req.Context(), &tt.agent, tt.requestBody.ReferenceType, tt.requestBody.ReferenceID, tt.requestBody.Language, tt.requestBody.Direction).Return(tt.trans, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -94,7 +94,7 @@ func Test_transcribesGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		reqQuery    string
 		requestBody request.ParamTranscribesGET
 
@@ -105,7 +105,7 @@ func Test_transcribesGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
 			},
 
@@ -139,7 +139,7 @@ func Test_transcribesGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -151,7 +151,7 @@ func Test_transcribesGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TranscribeGets(req.Context(), &tt.customer, tt.requestBody.PageSize, tt.requestBody.PageToken).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeGets(req.Context(), &tt.agent, tt.requestBody.PageSize, tt.requestBody.PageToken).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -168,8 +168,8 @@ func Test_transcribesGET(t *testing.T) {
 func Test_transcribesIDGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -180,7 +180,7 @@ func Test_transcribesIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("c7631adc-828a-11ed-bfb9-87aeb6847454"),
 			},
 
@@ -206,13 +206,13 @@ func Test_transcribesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TranscribeGet(req.Context(), &tt.customer, tt.responseTranscribes.ID).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeGet(req.Context(), &tt.agent, tt.responseTranscribes.ID).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -229,8 +229,8 @@ func Test_transcribesIDGET(t *testing.T) {
 func Test_transcribesIDDelete(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -241,7 +241,7 @@ func Test_transcribesIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("9534352c-828b-11ed-985f-5b1e2478a83f"),
 			},
 
@@ -267,13 +267,13 @@ func Test_transcribesIDDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TranscribeDelete(req.Context(), &tt.customer, tt.responseTranscribes.ID).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeDelete(req.Context(), &tt.agent, tt.responseTranscribes.ID).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -290,8 +290,8 @@ func Test_transcribesIDDelete(t *testing.T) {
 func Test_transcribesIDStopPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -302,7 +302,7 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("c5e620e0-828b-11ed-ba7c-4be64b7a1acc"),
 			},
 
@@ -328,13 +328,13 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TranscribeStop(req.Context(), &tt.customer, tt.responseTranscribes.ID).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeStop(req.Context(), &tt.agent, tt.responseTranscribes.ID).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

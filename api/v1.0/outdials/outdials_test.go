@@ -11,9 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
@@ -32,7 +31,7 @@ func Test_outdialsGET(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		req         request.ParamOutdialsGET
 		resOutdials []*omoutdial.WebhookMessage
 		expectRes   string
@@ -41,7 +40,7 @@ func Test_outdialsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamOutdialsGET{
@@ -60,7 +59,7 @@ func Test_outdialsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.ParamOutdialsGET{
@@ -99,14 +98,14 @@ func Test_outdialsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := fmt.Sprintf("/v1.0/outdials?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().OutdialGetsByCustomerID(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
+			mockSvc.EXPECT().OutdialGetsByCustomerID(req.Context(), &tt.agent, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -124,18 +123,15 @@ func Test_outdialsPOST(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		requestBody request.BodyOutdialsPOST
 
 		response *omoutdial.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			request.BodyOutdialsPOST{
 				CampaignID: uuid.FromStringOrNil("5770a50e-1a94-45fc-9ba1-79064573cf06"),
@@ -163,7 +159,7 @@ func Test_outdialsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -175,7 +171,7 @@ func Test_outdialsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", "/v1.0/outdials", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialCreate(req.Context(), &tt.customer, tt.requestBody.CampaignID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialCreate(req.Context(), &tt.agent, tt.requestBody.CampaignID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -189,14 +185,14 @@ func Test_outdialsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		outdialID uuid.UUID
 
 		response *omoutdial.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("3bb463ed-aa6e-4b64-9fc5-b1fc62096b67"),
@@ -220,12 +216,12 @@ func Test_outdialsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/outdials/%s", tt.outdialID), nil)
-			mockSvc.EXPECT().OutdialGet(req.Context(), &tt.customer, tt.outdialID).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialGet(req.Context(), &tt.agent, tt.outdialID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -239,14 +235,14 @@ func Test_outdialsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		outdialID uuid.UUID
 
 		response *omoutdial.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("37877e5d-ebe3-492d-be8c-54d62e98b4db"),
@@ -269,12 +265,12 @@ func Test_outdialsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/outdials/%s", tt.outdialID), nil)
-			mockSvc.EXPECT().OutdialDelete(req.Context(), &tt.customer, tt.outdialID).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialDelete(req.Context(), &tt.agent, tt.outdialID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -288,18 +284,15 @@ func Test_outdialsIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		outdialID   uuid.UUID
 		requestBody request.BodyOutdialsIDPUT
 		response    *omoutdial.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("38114323-144a-499c-bfde-f3d8af114a7a"),
 			request.BodyOutdialsIDPUT{
@@ -325,7 +318,7 @@ func Test_outdialsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -337,7 +330,7 @@ func Test_outdialsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", "/v1.0/outdials/"+tt.outdialID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialUpdateBasicInfo(req.Context(), &tt.agent, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -351,18 +344,15 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		outdialID   uuid.UUID
 		requestBody request.BodyOutdialsIDCampaignIDPUT
 		response    *omoutdial.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("607ea822-121d-4a52-ad3f-3f5320445ec8"),
 			request.BodyOutdialsIDCampaignIDPUT{
@@ -387,7 +377,7 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -399,7 +389,7 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", "/v1.0/outdials/"+tt.outdialID.String()+"/campaign_id", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialUpdateCampaignID(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.CampaignID).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialUpdateCampaignID(req.Context(), &tt.agent, tt.outdialID, tt.requestBody.CampaignID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -413,18 +403,15 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		outdialID   uuid.UUID
 		requestBody request.BodyOutdialsIDDataPUT
 		response    *omoutdial.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("056eefbd-8afa-402a-8c9e-681040ec8803"),
 			request.BodyOutdialsIDDataPUT{
@@ -449,7 +436,7 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -461,7 +448,7 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", "/v1.0/outdials/"+tt.outdialID.String()+"/data", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialUpdateData(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.Data).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialUpdateData(req.Context(), &tt.agent, tt.outdialID, tt.requestBody.Data).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -475,7 +462,7 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		outdialID uuid.UUID
 
 		requestBody request.BodyOutdialsIDTargetsPOST
@@ -484,11 +471,8 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("726d6b88-2028-44fe-a415-a58067d98acf"),
 			request.BodyOutdialsIDTargetsPOST{
@@ -536,7 +520,7 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -548,7 +532,7 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", "/v1.0/outdials/"+tt.outdialID.String()+"/targets", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialtargetCreate(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data, tt.requestBody.Destination0, tt.requestBody.Destination1, tt.requestBody.Destination2, tt.requestBody.Destination3, tt.requestBody.Destination4).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialtargetCreate(req.Context(), &tt.agent, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data, tt.requestBody.Destination0, tt.requestBody.Destination1, tt.requestBody.Destination2, tt.requestBody.Destination3, tt.requestBody.Destination4).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -562,7 +546,7 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		customer        cscustomer.Customer
+		agent           amagent.Agent
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 
@@ -570,11 +554,8 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("112950f8-e3d3-4585-b858-125a59f8f51f"),
 			uuid.FromStringOrNil("86a52dde-c523-11ec-a8b0-53d9628a5d7f"),
@@ -598,13 +579,13 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", "/v1.0/outdials/"+tt.outdialID.String()+"/targets/"+tt.outdialtargetID.String(), nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialtargetGet(req.Context(), &tt.customer, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialtargetGet(req.Context(), &tt.agent, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -618,7 +599,7 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		customer        cscustomer.Customer
+		agent           amagent.Agent
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 
@@ -626,11 +607,8 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("112950f8-e3d3-4585-b858-125a59f8f51f"),
 			uuid.FromStringOrNil("0adb2487-eea7-4ec9-bb7f-b2b2aa5af49e"),
@@ -654,13 +632,13 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", "/v1.0/outdials/"+tt.outdialID.String()+"/targets/"+tt.outdialtargetID.String(), nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialtargetDelete(req.Context(), &tt.customer, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
+			mockSvc.EXPECT().OutdialtargetDelete(req.Context(), &tt.agent, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -674,7 +652,7 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 	type test struct {
 		name string
 
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		reqQuery  string
 		reqBody   request.ParamOutdialsIDTargetsGET
 		outdialID uuid.UUID
@@ -686,7 +664,7 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/outdials/fe7a06b6-c82c-11ec-89fd-f741623099f0/targets?page_size=10&page_token=2020-09-20%2003:23:21.995000",
@@ -708,7 +686,7 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/outdials/33d8b93c-c82e-11ec-b630-f304b7d48448/targets?page_size=15&page_token=2020-09-20%2003:23:21.995000",
@@ -750,13 +728,13 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().OutdialtargetGetsByOutdialID(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdialtargets, nil)
+			mockSvc.EXPECT().OutdialtargetGetsByOutdialID(req.Context(), &tt.agent, tt.outdialID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdialtargets, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

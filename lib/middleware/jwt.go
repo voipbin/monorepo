@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/common"
 )
@@ -99,20 +98,6 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// get customer info
-		tmpCustomer, err := json.Marshal(tokenData["customer"])
-		if err != nil {
-			logrus.Errorf("Could not marshal the token data. err: %v", err)
-			c.Next()
-			return
-		}
-		cs := cscustomer.Customer{}
-		if err := json.Unmarshal(tmpCustomer, &cs); err != nil {
-			logrus.Errorf("Could not marshal the customer. err: %v", err)
-			c.Next()
-			return
-		}
-
 		// get agent info
 		tmpAgent, err := json.Marshal(tokenData["agent"])
 		if err != nil {
@@ -127,7 +112,6 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("customer", cs)
 		c.Set("agent", a)
 		c.Set("token_expire", tokenData["expire"])
 		c.Next()

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -26,16 +26,15 @@ func transcribesPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmpAgent, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"agent": a,
 	})
 
 	var req request.BodyTranscribesPOST
@@ -50,7 +49,7 @@ func transcribesPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create a transcribe
-	res, err := serviceHandler.TranscribeStart(c.Request.Context(), &u, req.ReferenceType, req.ReferenceID, req.Language, req.Direction)
+	res, err := serviceHandler.TranscribeStart(c.Request.Context(), &a, req.ReferenceType, req.ReferenceID, req.Language, req.Direction)
 	if err != nil {
 		log.Errorf("Could not create a transcribe. err: %v", err)
 		c.AbortWithStatus(400)
@@ -75,20 +74,16 @@ func transcribesGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmpAgent, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	var requestParam request.ParamTranscribesGET
 	if err := c.BindQuery(&requestParam); err != nil {
@@ -109,7 +104,7 @@ func transcribesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get tmps
-	tmps, err := serviceHandler.TranscribeGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	tmps, err := serviceHandler.TranscribeGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get transcribes info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -144,20 +139,16 @@ func transcribesIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmpAgent, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -165,7 +156,7 @@ func transcribesIDGET(c *gin.Context) {
 	log.Debug("Executing transcribesIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.TranscribeGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.TranscribeGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a transcribe. err: %v", err)
 		c.AbortWithStatus(400)
@@ -190,20 +181,16 @@ func transcribesIDDelete(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmpAgent, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -213,7 +200,7 @@ func transcribesIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.TranscribeDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.TranscribeDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the transcribe. err: %v", err)
 		c.AbortWithStatus(400)
@@ -237,16 +224,15 @@ func transcribesIDStopPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmpAgent, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"agent": a,
 	})
 
 	// get id
@@ -257,7 +243,7 @@ func transcribesIDStopPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create a transcribe
-	res, err := serviceHandler.TranscribeStop(c.Request.Context(), &u, id)
+	res, err := serviceHandler.TranscribeStop(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not stop the transcribe. err: %v", err)
 		c.AbortWithStatus(400)

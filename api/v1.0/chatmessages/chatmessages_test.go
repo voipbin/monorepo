@@ -10,11 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -30,8 +29,8 @@ func setupServer(app *gin.Engine) {
 func Test_chatmessagesPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyChatmessagesPOST
@@ -40,11 +39,8 @@ func Test_chatmessagesPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			"/v1.0/chatmessages",
@@ -78,7 +74,7 @@ func Test_chatmessagesPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -93,7 +89,7 @@ func Test_chatmessagesPOST(t *testing.T) {
 
 			mockSvc.EXPECT().ChatmessageCreate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.reqBody.ChatID,
 				tt.reqBody.Source,
 				tt.reqBody.Type,
@@ -112,8 +108,8 @@ func Test_chatmessagesPOST(t *testing.T) {
 func Test_chatmessagesGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery  string
 		chatID    uuid.UUID
@@ -127,7 +123,7 @@ func Test_chatmessagesGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -146,7 +142,7 @@ func Test_chatmessagesGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -186,13 +182,13 @@ func Test_chatmessagesGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatmessageGetsByChatID(req.Context(), &tt.customer, tt.chatID, tt.pageSize, tt.pageToken).Return(tt.responseChatmessages, nil)
+			mockSvc.EXPECT().ChatmessageGetsByChatID(req.Context(), &tt.agent, tt.chatID, tt.pageSize, tt.pageToken).Return(tt.responseChatmessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -209,8 +205,8 @@ func Test_chatmessagesGET(t *testing.T) {
 func Test_chatmessagesIDGET(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery      string
 		chatmessageID uuid.UUID
@@ -221,7 +217,7 @@ func Test_chatmessagesIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -249,13 +245,13 @@ func Test_chatmessagesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatmessageGet(req.Context(), &tt.customer, tt.chatmessageID).Return(tt.responseChatmessage, nil)
+			mockSvc.EXPECT().ChatmessageGet(req.Context(), &tt.agent, tt.chatmessageID).Return(tt.responseChatmessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -272,8 +268,8 @@ func Test_chatmessagesIDGET(t *testing.T) {
 func Test_chatmessagesIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery      string
 		chatmessageID uuid.UUID
@@ -284,7 +280,7 @@ func Test_chatmessagesIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -312,13 +308,13 @@ func Test_chatmessagesIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatmessageDelete(req.Context(), &tt.customer, tt.chatmessageID).Return(tt.responseChatmessage, nil)
+			mockSvc.EXPECT().ChatmessageDelete(req.Context(), &tt.agent, tt.chatmessageID).Return(tt.responseChatmessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
