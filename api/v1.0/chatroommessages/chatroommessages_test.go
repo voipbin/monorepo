@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -24,8 +24,8 @@ func setupServer(app *gin.Engine) {
 func Test_chatmessagesGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery   string
 		chatroomID uuid.UUID
@@ -39,7 +39,7 @@ func Test_chatmessagesGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -58,7 +58,7 @@ func Test_chatmessagesGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -98,13 +98,13 @@ func Test_chatmessagesGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroommessageGetsByChatroomID(req.Context(), &tt.customer, tt.chatroomID, tt.pageSize, tt.pageToken).Return(tt.responseChatroommessages, nil)
+			mockSvc.EXPECT().ChatroommessageGetsByChatroomID(req.Context(), &tt.agent, tt.chatroomID, tt.pageSize, tt.pageToken).Return(tt.responseChatroommessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -121,8 +121,8 @@ func Test_chatmessagesGET(t *testing.T) {
 func Test_chatroommessagesIDGET(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery          string
 		chatroommessageID uuid.UUID
@@ -133,7 +133,7 @@ func Test_chatroommessagesIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -161,13 +161,13 @@ func Test_chatroommessagesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroommessageGet(req.Context(), &tt.customer, tt.chatroommessageID).Return(tt.responseChatroommessage, nil)
+			mockSvc.EXPECT().ChatroommessageGet(req.Context(), &tt.agent, tt.chatroommessageID).Return(tt.responseChatroommessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -184,8 +184,8 @@ func Test_chatroommessagesIDGET(t *testing.T) {
 func Test_chatroommessagesIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery          string
 		chatroommessageID uuid.UUID
@@ -196,7 +196,7 @@ func Test_chatroommessagesIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -224,13 +224,13 @@ func Test_chatroommessagesIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroommessageDelete(req.Context(), &tt.customer, tt.chatroommessageID).Return(tt.responseChatroommessage, nil)
+			mockSvc.EXPECT().ChatroommessageDelete(req.Context(), &tt.agent, tt.chatroommessageID).Return(tt.responseChatroommessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

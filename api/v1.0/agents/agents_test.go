@@ -12,7 +12,6 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -25,12 +24,12 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestAgentsPOST(t *testing.T) {
+func Test_AgentsPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		req      request.BodyAgentsPOST
+		name  string
+		agent amagent.Agent
+		req   request.BodyAgentsPOST
 
 		username   string
 		password   string
@@ -45,8 +44,8 @@ func TestAgentsPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("580a7a44-7ff8-11ec-916e-d35fe5e74591"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("7cb6256c-8df4-11ee-bc2b-476ff1dc3eb8"),
 			},
 			request.BodyAgentsPOST{
 				Username:   "test1",
@@ -74,8 +73,8 @@ func TestAgentsPOST(t *testing.T) {
 		},
 		{
 			"have webhook",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("580a7a44-7ff8-11ec-916e-d35fe5e74591"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("7cf444aa-8df4-11ee-abd9-b762d225dc87"),
 			},
 			request.BodyAgentsPOST{
 				Username:   "test1",
@@ -115,7 +114,7 @@ func TestAgentsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -128,7 +127,7 @@ func TestAgentsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/v1.0/agents", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(req.Context(), &tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
+			mockSvc.EXPECT().AgentCreate(req.Context(), &tt.agent, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -138,11 +137,11 @@ func TestAgentsPOST(t *testing.T) {
 	}
 }
 
-func TestAgentsGET(t *testing.T) {
+func Test_AgentsGET(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		agent    amagent.Agent
 		reqQuery string
 
 		pageSize  uint64
@@ -154,8 +153,8 @@ func TestAgentsGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("b045eb94-8002-11ec-a30e-ab41a9c5ed95"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("7d2835bc-8df4-11ee-bde2-377a8d7b62a2"),
 			},
 			"/v1.0/agents?page_size=11&page_token=2020-09-20T03:23:20.995000",
 
@@ -173,8 +172,8 @@ func TestAgentsGET(t *testing.T) {
 		},
 		{
 			"1 tag id and status",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("b045eb94-8002-11ec-a30e-ab41a9c5ed95"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("7d5c0be4-8df4-11ee-866d-e7d040a2316f"),
 			},
 			"/v1.0/agents?page_size=10&page_token=&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3&status=available",
 
@@ -194,8 +193,8 @@ func TestAgentsGET(t *testing.T) {
 		},
 		{
 			"more than 2 tag ids",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("b045eb94-8002-11ec-a30e-ab41a9c5ed95"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 			},
 			"/v1.0/agents?tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c",
 
@@ -231,13 +230,13 @@ func TestAgentsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().AgentGets(req.Context(), &tt.customer, tt.pageSize, tt.pageToken, tt.tagIDs, tt.status).Return(tt.resAgents, nil)
+			mockSvc.EXPECT().AgentGets(req.Context(), &tt.agent, tt.pageSize, tt.pageToken, tt.tagIDs, tt.status).Return(tt.resAgents, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -247,12 +246,12 @@ func TestAgentsGET(t *testing.T) {
 	}
 }
 
-func TestAgentsIDStatusPUT(t *testing.T) {
+func Test_AgentsIDStatusPUT(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customer cscustomer.Customer
+		agent    amagent.Agent
 		reqQuery string
 		reqBody  []byte
 
@@ -261,8 +260,8 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("09e38a62-8003-11ec-8085-7f8bfbbc02de"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 			},
 			"/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/status",
 			[]byte(`{"status":"available"}`),
@@ -285,13 +284,13 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().AgentUpdateStatus(req.Context(), &tt.customer, tt.agentID, tt.status).Return(&amagent.WebhookMessage{}, nil)
+			mockSvc.EXPECT().AgentUpdateStatus(req.Context(), &tt.agent, tt.agentID, tt.status).Return(&amagent.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

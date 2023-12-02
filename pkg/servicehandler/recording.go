@@ -6,20 +6,17 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
 // recordingGet validates the recording's ownership and returns the recording info.
-func (h *serviceHandler) recordingGet(ctx context.Context, u *cscustomer.Customer, recordingID uuid.UUID) (*cmrecording.Recording, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "recordingGet",
-			"customer_id":   u.ID,
-			"transcribe_id": recordingID,
-		},
-	)
+func (h *serviceHandler) recordingGet(ctx context.Context, a *amagent.Agent, recordingID uuid.UUID) (*cmrecording.Recording, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "recordingGet",
+		"customer_id":   a.CustomerID,
+		"transcribe_id": recordingID,
+	})
 
 	// send request
 	res, err := h.reqHandler.CallV1RecordingGet(ctx, recordingID)
@@ -28,11 +25,6 @@ func (h *serviceHandler) recordingGet(ctx context.Context, u *cscustomer.Custome
 		return nil, err
 	}
 	log.WithField("recording", res).Debug("Received result.")
-
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
 
 	if res.TMDelete < defaultTimestamp {
 		log.Debugf("Deleted recording. recording_id: %s", res.ID)
@@ -43,20 +35,24 @@ func (h *serviceHandler) recordingGet(ctx context.Context, u *cscustomer.Custome
 }
 
 // RecordingGet returns downloadable url for recording
-func (h *serviceHandler) RecordingGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"customer_id": u.ID,
-			"recording":   id,
-		},
-	)
+func (h *serviceHandler) RecordingGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RecordingGet",
+		"customer_id": a.CustomerID,
+		"recording":   id,
+	})
 
 	// get recording info from call-manager
-	rec, err := h.recordingGet(ctx, u, id)
+	rec, err := h.recordingGet(ctx, a, id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get recording info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, rec.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	res := rec.ConvertWebhookMessage()
@@ -66,10 +62,11 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, u *cscustomer.Custome
 // RecordingGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) RecordingGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {
+func (h *serviceHandler) RecordingGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"func":        "RecordingGets",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -78,7 +75,12 @@ func (h *serviceHandler) RecordingGets(ctx context.Context, u *cscustomer.Custom
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	tmp, err := h.reqHandler.CallV1RecordingGets(ctx, u.ID, size, token)
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.CallV1RecordingGets(ctx, a.CustomerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err
@@ -96,20 +98,25 @@ func (h *serviceHandler) RecordingGets(ctx context.Context, u *cscustomer.Custom
 // RecordingDelete sends a request to call-manager
 // to deleting a recording.
 // it returns deleted recording info if it succeed.
-func (h *serviceHandler) RecordingDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
+func (h *serviceHandler) RecordingDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "RecordingDelete",
-		"customer_id":  u.ID,
-		"username":     u.Username,
+		"customer_id":  a.CustomerID,
+		"username":     a.Username,
 		"recording_id": id,
 	})
 
-	r, err := h.recordingGet(ctx, u, id)
+	r, err := h.recordingGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
 		return nil, err
 	}
 	log.WithField("recording", r).Debugf("Validated recording info. recording_id: %s", r.ID)
+
+	if !h.hasPermission(ctx, a, r.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
 
 	tmp, err := h.reqHandler.CallV1RecordingDelete(ctx, id)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -24,15 +24,9 @@ func setupServer(app *gin.Engine) {
 
 func TestAvailableNumbersGET(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		pageSize    uint64
 		countryCode string
 
@@ -42,8 +36,8 @@ func TestAvailableNumbersGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("09e38a62-8003-11ec-8085-7f8bfbbc02de"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("f111bf46-8df6-11ee-8b96-df7d1f63d9d2"),
 			},
 			10,
 			"US",
@@ -60,18 +54,23 @@ func TestAvailableNumbersGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/available_numbers?page_size=%d&customer_id=%s&country_code=%s", tt.pageSize, tt.customer.ID, tt.countryCode), nil)
-			mockSvc.EXPECT().AvailableNumberGets(req.Context(), &tt.customer, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/available_numbers?page_size=%d&customer_id=%s&country_code=%s", tt.pageSize, tt.agent.CustomerID, tt.countryCode), nil)
+			mockSvc.EXPECT().AvailableNumberGets(req.Context(), &tt.agent, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

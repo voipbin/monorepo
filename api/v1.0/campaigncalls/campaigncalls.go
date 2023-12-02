@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall" // for sweg use.
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -29,17 +29,15 @@ func campaigncallsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var requestParam request.ParamCampaigncallsGET
@@ -61,7 +59,7 @@ func campaigncallsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get tmps
-	tmps, err := serviceHandler.CampaigncallGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	tmps, err := serviceHandler.CampaigncallGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get campaigncalls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -96,20 +94,16 @@ func campaigncallsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -117,7 +111,7 @@ func campaigncallsIDGET(c *gin.Context) {
 	log.Debug("Executing campaignsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaigncallGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.CampaigncallGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -141,20 +135,16 @@ func campaigncallsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -163,7 +153,7 @@ func campaigncallsIDDELETE(c *gin.Context) {
 
 	// delete an campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaigncallDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.CampaigncallDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the campaigncall. err: %v", err)
 		c.AbortWithStatus(400)

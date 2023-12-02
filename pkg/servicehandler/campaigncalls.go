@@ -6,46 +6,36 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
 // campaigncallGet validates the campaigncall's ownership and returns the campaigncall info.
-func (h *serviceHandler) campaigncallGet(ctx context.Context, u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "campaigncallGet",
-			"customer_id": u.ID,
-			"agent_id":    campaigncallID,
-		},
-	)
+func (h *serviceHandler) campaigncallGet(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.Campaigncall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "campaigncallGet",
+		"customer_id":     a.CustomerID,
+		"campaigncall_id": campaigncallID,
+	})
 
 	// send request
-	tmp, err := h.reqHandler.CampaignV1CampaigncallGet(ctx, campaigncallID)
+	res, err := h.reqHandler.CampaignV1CampaigncallGet(ctx, campaigncallID)
 	if err != nil {
 		log.Errorf("Could not get the campaign info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("campaign", tmp).Debug("Received result.")
+	log.WithField("campaign", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	// create result
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // CampaigncallGets gets the list of campaigncalls.
 // It returns list of campaigncalls if it succeed.
-func (h *serviceHandler) CampaigncallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaigncallGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -55,8 +45,12 @@ func (h *serviceHandler) CampaigncallGets(ctx context.Context, u *cscustomer.Cus
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get campaigncalls
-	tmps, err := h.reqHandler.CampaignV1CampaigncallGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.CampaignV1CampaigncallGets(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
@@ -74,11 +68,11 @@ func (h *serviceHandler) CampaigncallGets(ctx context.Context, u *cscustomer.Cus
 
 // CampaigncallGetsByCampaignID gets the list of campaigncalls of the given campaign id.
 // It returns list of campaigncalls if it succeed.
-func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cscustomer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *amagent.Agent, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaigncallGetsByCampaignID",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -89,14 +83,18 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cs
 	}
 
 	// get campaign
-	_, err := h.campaignGet(ctx, u, campaignID)
+	c, err := h.campaignGet(ctx, a, campaignID)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get campaigncalls
-	campaigns, err := h.reqHandler.CampaignV1CampaigncallGetsByCampaignID(ctx, campaignID, token, size)
+	ccs, err := h.reqHandler.CampaignV1CampaigncallGetsByCampaignID(ctx, campaignID, token, size)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
@@ -104,7 +102,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cs
 
 	// create result
 	res := []*cacampaigncall.WebhookMessage{}
-	for _, f := range campaigns {
+	for _, f := range ccs {
 		tmp := f.ConvertWebhookMessage()
 		res = append(res, tmp)
 	}
@@ -114,39 +112,48 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cs
 
 // CampaigncallGet gets the campaigncall of the given id.
 // It returns campaigncall if it succeed.
-func (h *serviceHandler) CampaigncallGet(ctx context.Context, u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CampaigncallGet",
-		"customer_id":     u.ID,
-		"username":        u.Username,
+		"customer_id":     a.CustomerID,
+		"username":        a.Username,
 		"campaigncall_id": campaigncallID,
 	})
 	log.Debug("Getting campaigncall.")
 
-	res, err := h.campaigncallGet(ctx, u, campaigncallID)
+	tmp, err := h.campaigncallGet(ctx, a, campaigncallID)
 	if err != nil {
 		log.Errorf("Could not get campaigncall info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigncall info. err: %v", err)
 	}
 
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // CampaigncallDelete deletes the campaigncall.
-func (h *serviceHandler) CampaigncallDelete(ctx context.Context, u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CampaigncallDelete",
-		"customer_id":     u.ID,
-		"username":        u.Username,
+		"customer_id":     a.CustomerID,
+		"username":        a.Username,
 		"campaigncall_id": campaigncallID,
 	})
 	log.Debug("Deleting a campaigncall.")
 
 	// get campaign
-	_, err := h.campaigncallGet(ctx, u, campaigncallID)
+	c, err := h.campaigncallGet(ctx, a, campaigncallID)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaigncallDelete(ctx, campaigncallID)

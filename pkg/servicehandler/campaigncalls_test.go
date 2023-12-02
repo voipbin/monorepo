@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -20,17 +20,19 @@ func Test_CampaigncallGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		size     uint64
-		token    string
+		agent *amagent.Agent
+		size  uint64
+		token string
 
 		responseCampaigncalls []cacampaigncall.Campaigncall
 		expectRes             []*cacampaigncall.WebhookMessage
 	}{
 		{
 			name: "normal",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("149aaf9e-105d-11ee-aeae-4b0e41ee0cf6"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			size:  10,
 			token: "2020-09-20 03:23:20.995000",
@@ -69,9 +71,9 @@ func Test_CampaigncallGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaigncallGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.responseCampaigncalls, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.responseCampaigncalls, nil)
 
-			res, err := h.CampaigncallGets(ctx, tt.customer, tt.size, tt.token)
+			res, err := h.CampaigncallGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -87,24 +89,30 @@ func Test_campaigncallGetsByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		customer   *cscustomer.Customer
+		agent      *amagent.Agent
 		campaignID uuid.UUID
 		pageToken  string
 		pageSize   uint64
 
-		response         []cacampaigncall.Campaigncall
-		responseCampaign *cacampaign.Campaign
-		expectRes        []*cacampaigncall.WebhookMessage
+		responseCampaign      *cacampaign.Campaign
+		responseCampaigncalls []cacampaigncall.Campaigncall
+		expectRes             []*cacampaigncall.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("8ac37eee-c86a-11ec-ba1f-9bdb87f79ae6"),
 			"2020-10-20T01:00:00.995000",
 			10,
 
+			&cacampaign.Campaign{
+				ID:         uuid.FromStringOrNil("8ac37eee-c86a-11ec-ba1f-9bdb87f79ae6"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+			},
 			[]cacampaigncall.Campaigncall{
 				{
 					ID: uuid.FromStringOrNil("8b1cff64-c86a-11ec-87e0-e7907d8f52c9"),
@@ -112,10 +120,6 @@ func Test_campaigncallGetsByCampaignID(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("8b4beac2-c86a-11ec-b1d9-6fdb61e23bd6"),
 				},
-			},
-			&cacampaign.Campaign{
-				ID:         uuid.FromStringOrNil("8ac37eee-c86a-11ec-ba1f-9bdb87f79ae6"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			[]*cacampaigncall.WebhookMessage{
 				{
@@ -144,8 +148,8 @@ func Test_campaigncallGetsByCampaignID(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.responseCampaign, nil)
-			mockReq.EXPECT().CampaignV1CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
-			res, err := h.CampaigncallGetsByCampaignID(ctx, tt.customer, tt.campaignID, tt.pageSize, tt.pageToken)
+			mockReq.EXPECT().CampaignV1CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.pageToken, tt.pageSize).Return(tt.responseCampaigncalls, nil)
+			res, err := h.CampaigncallGetsByCampaignID(ctx, tt.agent, tt.campaignID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -161,7 +165,7 @@ func Test_CampaigncallGet(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		customer       *cscustomer.Customer
+		agent          *amagent.Agent
 		campaigncallID uuid.UUID
 
 		response  *cacampaigncall.Campaigncall
@@ -169,18 +173,20 @@ func Test_CampaigncallGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("33a06e3c-c86b-11ec-85e5-27fb8fd8a197"),
 
 			&cacampaigncall.Campaigncall{
 				ID:         uuid.FromStringOrNil("33a06e3c-c86b-11ec-85e5-27fb8fd8a197"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&cacampaigncall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("33a06e3c-c86b-11ec-85e5-27fb8fd8a197"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -201,7 +207,7 @@ func Test_CampaigncallGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1CampaigncallGet(ctx, tt.campaigncallID).Return(tt.response, nil)
-			res, err := h.CampaigncallGet(ctx, tt.customer, tt.campaigncallID)
+			res, err := h.CampaigncallGet(ctx, tt.agent, tt.campaigncallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -218,26 +224,28 @@ func Test_CampaigncallDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		responseCampaigncall *cacampaigncall.Campaigncall
 		expectRes            *cacampaigncall.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("779eb134-c86b-11ec-bf08-0301553a89c1"),
 
 			&cacampaigncall.Campaigncall{
 				ID:         uuid.FromStringOrNil("779eb134-c86b-11ec-bf08-0301553a89c1"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&cacampaigncall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("779eb134-c86b-11ec-bf08-0301553a89c1"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -259,7 +267,7 @@ func Test_CampaigncallDelete(t *testing.T) {
 
 			mockReq.EXPECT().CampaignV1CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
 			mockReq.EXPECT().CampaignV1CampaigncallDelete(ctx, tt.id).Return(tt.responseCampaigncall, nil)
-			res, err := h.CampaigncallDelete(ctx, tt.customer, tt.id)
+			res, err := h.CampaigncallDelete(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

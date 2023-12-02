@@ -6,22 +6,19 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // groupcallGet validates the call's ownership and returns the call info.
-func (h *serviceHandler) groupcallGet(ctx context.Context, u *cscustomer.Customer, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "groupcallGet",
-			"customer_id":  u.ID,
-			"groupcall_id": groupcallID,
-		},
-	)
+func (h *serviceHandler) groupcallGet(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "groupcallGet",
+		"customer_id":  a.CustomerID,
+		"groupcall_id": groupcallID,
+	})
 
 	// send request
 	res, err := h.reqHandler.CallV1GroupcallGet(ctx, groupcallID)
@@ -31,22 +28,17 @@ func (h *serviceHandler) groupcallGet(ctx context.Context, u *cscustomer.Custome
 	}
 	log.WithField("groupcall", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	return res, nil
 }
 
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) GroupcallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GroupcallGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -55,8 +47,13 @@ func (h *serviceHandler) GroupcallGets(ctx context.Context, u *cscustomer.Custom
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get calls
-	tmps, err := h.reqHandler.CallV1GroupcallGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.CallV1GroupcallGets(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -75,36 +72,40 @@ func (h *serviceHandler) GroupcallGets(ctx context.Context, u *cscustomer.Custom
 // GroupcallGet sends a request to call-manager
 // to getting a groupcall.
 // it returns groupcall if it succeed.
-func (h *serviceHandler) GroupcallGet(ctx context.Context, u *cscustomer.Customer, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallGet(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "GroupcallGet",
-		"customer_id":  u.ID,
-		"username":     u.Username,
+		"customer_id":  a.CustomerID,
+		"username":     a.Username,
 		"groupcall_id": groupcallID,
 	})
 
 	// get call
-	c, err := h.groupcallGet(ctx, u, groupcallID)
+	c, err := h.groupcallGet(ctx, a, groupcallID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return nil, err
 	}
 
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// convert
 	res := c.ConvertWebhookMessage()
-
 	return res, nil
 }
 
 // GroupcallCreate sends a request to call-manager
 // to creating a groupcall.
 // it returns created groupcall info if it succeed.
-func (h *serviceHandler) GroupcallCreate(ctx context.Context, u *cscustomer.Customer, source commonaddress.Address, destinations []commonaddress.Address, flowID uuid.UUID, actions []fmaction.Action, ringMethod cmgroupcall.RingMethod, answerMethod cmgroupcall.AnswerMethod) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *amagent.Agent, source commonaddress.Address, destinations []commonaddress.Address, flowID uuid.UUID, actions []fmaction.Action, ringMethod cmgroupcall.RingMethod, answerMethod cmgroupcall.AnswerMethod) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "GroupcallCreate",
-		"customer_id":   u.ID,
-		"username":      u.Username,
+		"customer_id":   a.CustomerID,
+		"username":      a.Username,
 		"flow_id":       flowID,
 		"actions":       actions,
 		"source":        source,
@@ -112,14 +113,17 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, u *cscustomer.Cust
 		"ring_method":   ringMethod,
 		"answer_method": answerMethod,
 	})
-
-	// send request
 	log.Debug("Creating a new groupcall.")
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
 
 	targetFlowID := flowID
 	if targetFlowID == uuid.Nil {
 		log.Debugf("The flowID is null. Creating a new temp flow for call dialing.")
-		f, err := h.FlowCreate(ctx, u, "tmp", "tmp outbound flow", actions, false)
+		f, err := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow", actions, false)
 		if err != nil {
 			log.Errorf("Could not create a flow for outoing call. err: %v", err)
 			return nil, err
@@ -129,7 +133,7 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, u *cscustomer.Cust
 		targetFlowID = f.ID
 	}
 
-	tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, uuid.Nil, u.ID, targetFlowID, source, destinations, uuid.Nil, uuid.Nil, ringMethod, answerMethod)
+	tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, uuid.Nil, a.CustomerID, targetFlowID, source, destinations, uuid.Nil, uuid.Nil, ringMethod, answerMethod)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -142,19 +146,24 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, u *cscustomer.Cust
 // GroupcallHangup sends a request to groupcall-manager
 // to hangup the groupcall.
 // it returns groupcall if it succeed.
-func (h *serviceHandler) GroupcallHangup(ctx context.Context, u *cscustomer.Customer, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallHangup(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "GroupcallHangup",
-		"customer_id":  u.ID,
-		"username":     u.Username,
+		"customer_id":  a.CustomerID,
+		"username":     a.Username,
 		"groupcall_id": groupcallID,
 	})
 
-	_, err := h.groupcallGet(ctx, u, groupcallID)
+	gc, err := h.groupcallGet(ctx, a, groupcallID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get groupcall info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, gc.CustomerID, amagent.PermissionAll) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// send request
@@ -174,19 +183,24 @@ func (h *serviceHandler) GroupcallHangup(ctx context.Context, u *cscustomer.Cust
 // GroupcallDelete sends a request to groupcall-manager
 // to delete the groupcall.
 // it returns groupcall if it succeed.
-func (h *serviceHandler) GroupcallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GroupcallDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"call_id":     callID,
 	})
 
-	_, err := h.groupcallGet(ctx, u, callID)
+	gc, err := h.groupcallGet(ctx, a, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get groupcall info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, gc.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// send request

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -25,8 +25,8 @@ func setupServer(app *gin.Engine) {
 func Test_transcriptsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery    string
 		requestBody request.ParamTranscriptsGET
@@ -38,7 +38,7 @@ func Test_transcriptsGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("83f82e1a-828d-11ed-89ea-9f7ac48ae9b8"),
 			},
 
@@ -73,13 +73,13 @@ func Test_transcriptsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TranscriptGets(req.Context(), &tt.customer, uuid.FromStringOrNil(tt.requestBody.TranscribeID)).Return(tt.responseTranscripts, nil)
+			mockSvc.EXPECT().TranscriptGets(req.Context(), &tt.agent, uuid.FromStringOrNil(tt.requestBody.TranscribeID)).Return(tt.responseTranscripts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

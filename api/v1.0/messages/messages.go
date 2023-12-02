@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/message-manager.git/models/message" // for swag use
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -28,17 +28,15 @@ func messagesGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamMessagesGET
@@ -60,7 +58,7 @@ func messagesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get messages
-	messages, err := serviceHandler.MessageGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	messages, err := serviceHandler.MessageGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get messages list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -95,17 +93,15 @@ func messagesPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyMessagesPOST
@@ -117,7 +113,7 @@ func messagesPOST(c *gin.Context) {
 
 	// create a message
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.MessageSend(c.Request.Context(), &u, req.Source, req.Destinations, req.Text)
+	res, err := serviceHandler.MessageSend(c.Request.Context(), &a, req.Source, req.Destinations, req.Text)
 	if err != nil {
 		log.Errorf("Could not send the message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -141,17 +137,15 @@ func messagesIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -161,7 +155,7 @@ func messagesIDDELETE(c *gin.Context) {
 
 	// delete message
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.MessageDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.MessageDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete a message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -185,17 +179,15 @@ func messagesIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -205,7 +197,7 @@ func messagesIDGET(c *gin.Context) {
 
 	// get message
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.MessageGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.MessageGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get an message. err: %v", err)
 		c.AbortWithStatus(400)

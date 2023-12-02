@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -24,13 +24,13 @@ func Test_wsGet(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 	}
 
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 		},
@@ -49,7 +49,7 @@ func Test_wsGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 

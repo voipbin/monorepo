@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
@@ -26,17 +26,15 @@ func recordingfilesIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmpAgent, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -45,7 +43,7 @@ func recordingfilesIDGET(c *gin.Context) {
 	log.Debug("Executing recordingfilesIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	url, err := serviceHandler.RecordingfileGet(c.Request.Context(), &u, id)
+	url, err := serviceHandler.RecordingfileGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a recordingfile. err: %v", err)
 		c.AbortWithStatus(400)

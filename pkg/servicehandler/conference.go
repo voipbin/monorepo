@@ -6,66 +6,64 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // conferenceGet vaildates the customer's ownership and returns the conference info.
-func (h *serviceHandler) conferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) conferenceGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "conferenceGet",
-		"customer_id":   u.ID,
+		"customer_id":   a.CustomerID,
 		"conference_id": id,
 	})
 
 	// send request
-	tmp, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, id)
+	res, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the conference. err: %v", err)
 		return nil, err
 	}
-	log.WithField("conference", tmp).Debug("Received result.")
+	log.WithField("conference", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Info("The customer has no permission for this conference.")
-		return nil, fmt.Errorf("customer has no permission")
-	}
-
-	// create result
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
-func (h *serviceHandler) ConferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ConferenceGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
-		"conference":  id,
+		"func":          "ConferenceGet",
+		"customer_id":   a.CustomerID,
+		"username":      a.Username,
+		"conference_id": id,
 	})
 	log.Debugf("Get conference. conference: %s", id)
 
 	// get conference
-	res, err := h.conferenceGet(ctx, u, id)
+	tmp, err := h.conferenceGet(ctx, a, id)
 	if err != nil {
 		log.Infof("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
-func (h *serviceHandler) ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConferenceGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -74,8 +72,13 @@ func (h *serviceHandler) ConferenceGets(ctx context.Context, u *cscustomer.Custo
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	// get conferences
-	tmps, err := h.reqHandler.ConferenceV1ConferenceGets(ctx, u.ID, token, size, "conference")
+	tmps, err := h.reqHandler.ConferenceV1ConferenceGets(ctx, a.CustomerID, token, size, "conference")
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
@@ -94,7 +97,7 @@ func (h *serviceHandler) ConferenceGets(ctx context.Context, u *cscustomer.Custo
 // ConferenceCreate is a service handler for conference creating.
 func (h *serviceHandler) ConferenceCreate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	confType cfconference.Type,
 	name string,
 	detail string,
@@ -105,8 +108,8 @@ func (h *serviceHandler) ConferenceCreate(
 ) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ConferenceCreate",
-		"customer_id":  u.ID,
-		"username":     u.Username,
+		"customer_id":  a.CustomerID,
+		"username":     a.Username,
 		"type":         confType,
 		"name":         name,
 		"detail":       detail,
@@ -117,7 +120,12 @@ func (h *serviceHandler) ConferenceCreate(
 	})
 	log.Debugf("Creating a conference.")
 
-	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, u.ID, confType, name, detail, timeout, data, preActions, postActions)
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, a.CustomerID, confType, name, detail, timeout, data, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
@@ -128,23 +136,28 @@ func (h *serviceHandler) ConferenceCreate(
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
+func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceDelete",
-		"customer":      u,
-		"conference_id": confID,
+		"agent":         a,
+		"conference_id": conferenceID,
 	})
+	log.Debug("Destroying conference.")
 
 	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, confID)
+	c, err := h.conferenceGet(ctx, a, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	// destroy
-	log.Debug("Destroying conference.")
-	tmp, err := h.reqHandler.ConferenceV1ConferenceDelete(ctx, confID)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceDelete(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		return nil, err
@@ -157,7 +170,7 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Cus
 // ConferenceUpdate is a service handler for conference updating.
 func (h *serviceHandler) ConferenceUpdate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	cfID uuid.UUID,
 	name string,
 	detail string,
@@ -165,20 +178,23 @@ func (h *serviceHandler) ConferenceUpdate(
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "ConferenceUpdate",
-			"customer_id": u.ID,
-			"username":    u.Username,
-			"conference":  cfID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ConferenceUpdate",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"conference":  cfID,
+	})
 
 	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, cfID)
+	c, err := h.conferenceGet(ctx, a, cfID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ConferenceV1ConferenceUpdate(
@@ -200,21 +216,24 @@ func (h *serviceHandler) ConferenceUpdate(
 }
 
 // ConferenceRecordingStart is a service handler for conference recording start.
-func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "ConferenceRecordingStart",
-			"customer_id":   u.ID,
-			"username":      u.Username,
-			"conference_id": confID,
-		},
-	)
+func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ConferenceRecordingStart",
+		"customer_id":   a.CustomerID,
+		"username":      a.Username,
+		"conference_id": confID,
+	})
 
 	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, confID)
+	c, err := h.conferenceGet(ctx, a, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// recording
@@ -229,21 +248,24 @@ func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, u *cscust
 }
 
 // ConferenceRecordingStop is a service handler for conference recording stop.
-func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "ConferenceRecordingStop",
-			"customer_id":   u.ID,
-			"username":      u.Username,
-			"conference_id": confID,
-		},
-	)
+func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ConferenceRecordingStop",
+		"customer_id":   a.CustomerID,
+		"username":      a.Username,
+		"conference_id": confID,
+	})
 
 	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, confID)
+	c, err := h.conferenceGet(ctx, a, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// recording
@@ -258,21 +280,24 @@ func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, u *cscusto
 }
 
 // ConferenceTranscribeStart is a service handler for conference transcribe start.
-func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "ConferenceTranscribeStart",
-			"customer_id":   u.ID,
-			"username":      u.Username,
-			"conference_id": conferenceID,
-		},
-	)
+func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ConferenceTranscribeStart",
+		"customer_id":   a.CustomerID,
+		"username":      a.Username,
+		"conference_id": conferenceID,
+	})
 
 	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, conferenceID)
+	c, err := h.conferenceGet(ctx, a, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ConferenceV1ConferenceTranscribeStart(ctx, conferenceID, language)
@@ -286,21 +311,24 @@ func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, u *cscus
 }
 
 // ConferenceTranscribeStop is a service handler for conference transcribe stop.
-func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "ConferenceTranscribeStop",
-			"customer_id":   u.ID,
-			"username":      u.Username,
-			"conference_id": conferenceID,
-		},
-	)
+func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ConferenceTranscribeStop",
+		"customer_id":   a.CustomerID,
+		"username":      a.Username,
+		"conference_id": conferenceID,
+	})
 
 	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, conferenceID)
+	c, err := h.conferenceGet(ctx, a, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// recording

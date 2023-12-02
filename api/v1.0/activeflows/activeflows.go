@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -28,15 +28,16 @@ func activeflowsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer": u,
+		"agent":    a,
+		"username": a.Username,
 	})
 
 	var requestParam request.ParamActiveflowsGET
@@ -58,7 +59,7 @@ func activeflowsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get activeflows
-	activeflows, err := serviceHandler.ActiveflowGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	activeflows, err := serviceHandler.ActiveflowGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -93,17 +94,16 @@ func activeflowsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent":    a,
+		"username": a.Username,
 	})
 
 	// get id
@@ -112,7 +112,7 @@ func activeflowsIDGET(c *gin.Context) {
 	log.Debug("Executing activeflowsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ActiveflowGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ActiveflowGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a activeflow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -136,17 +136,16 @@ func activeflowsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent":    a,
+		"username": a.Username,
 	})
 
 	// get id
@@ -155,7 +154,7 @@ func activeflowsIDDELETE(c *gin.Context) {
 	log.Debug("Executing activeflowsIDDELETE.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ActiveflowDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ActiveflowDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the activeflow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -179,17 +178,16 @@ func activeflowsIDStopPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		logrus.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent":    a,
+		"username": a.Username,
 	})
 
 	// get id
@@ -198,7 +196,7 @@ func activeflowsIDStopPOST(c *gin.Context) {
 	log.Debug("Executing activeflowsIDStopPOST.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ActiveflowStop(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ActiveflowStop(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not stop the activeflow. err: %v", err)
 		c.AbortWithStatus(400)

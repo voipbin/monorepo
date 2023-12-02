@@ -10,10 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -30,8 +29,8 @@ func setupServer(app *gin.Engine) {
 func Test_campaignsPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyCampaignsPOST
@@ -42,11 +41,8 @@ func Test_campaignsPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			"/v1.0/campaigns",
@@ -88,7 +84,7 @@ func Test_campaignsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -102,7 +98,7 @@ func Test_campaignsPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().CampaignCreate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.reqBody.Name,
 				tt.reqBody.Detail,
 				tt.reqBody.Type,
@@ -130,8 +126,8 @@ func Test_campaignsPOST(t *testing.T) {
 func Test_campaignsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery    string
 		reqBody     request.ParamCampaignsGET
@@ -142,7 +138,7 @@ func Test_campaignsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -164,7 +160,7 @@ func Test_campaignsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -206,12 +202,12 @@ func Test_campaignsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignGetsByCustomerID(req.Context(), &tt.customer, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
+			mockSvc.EXPECT().CampaignGetsByCustomerID(req.Context(), &tt.agent, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -229,7 +225,7 @@ func Test_campaignsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		customer   cscustomer.Customer
+		agent      amagent.Agent
 		campaignID uuid.UUID
 
 		reqQuery string
@@ -240,7 +236,7 @@ func Test_campaignsIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
@@ -268,12 +264,12 @@ func Test_campaignsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignGet(req.Context(), &tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignGet(req.Context(), &tt.agent, tt.campaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -290,8 +286,8 @@ func Test_campaignsIDGET(t *testing.T) {
 func Test_campaignsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery   string
 		campaignID uuid.UUID
@@ -302,7 +298,7 @@ func Test_campaignsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -330,12 +326,12 @@ func Test_campaignsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignDelete(req.Context(), &tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignDelete(req.Context(), &tt.agent, tt.campaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -352,8 +348,8 @@ func Test_campaignsIDDELETE(t *testing.T) {
 func Test_campaignsIDPUT(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery  string
 		outdialID uuid.UUID
@@ -363,11 +359,8 @@ func Test_campaignsIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			reqQuery:  "/v1.0/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
@@ -399,7 +392,7 @@ func Test_campaignsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -411,7 +404,7 @@ func Test_campaignsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.Type, tt.reqBody.ServiceLevel, tt.reqBody.EndHandle).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.agent, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.Type, tt.reqBody.ServiceLevel, tt.reqBody.EndHandle).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -425,7 +418,7 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		customer   cscustomer.Customer
+		agent      amagent.Agent
 		campaignID uuid.UUID
 
 		reqQuery string
@@ -434,11 +427,8 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855"),
 
@@ -465,7 +455,7 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -477,7 +467,7 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateStatus(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.Status).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateStatus(req.Context(), &tt.agent, tt.campaignID, tt.reqBody.Status).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -491,7 +481,7 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		customer   cscustomer.Customer
+		agent      amagent.Agent
 		campaignID uuid.UUID
 
 		reqQuery string
@@ -500,11 +490,8 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("40460ace-c68c-11ec-9694-830803c448f7"),
 
@@ -531,7 +518,7 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -543,7 +530,7 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateServiceLevel(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.ServiceLevel).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateServiceLevel(req.Context(), &tt.agent, tt.campaignID, tt.reqBody.ServiceLevel).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -557,7 +544,7 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		outdialID uuid.UUID
 
 		reqQuery string
@@ -566,11 +553,8 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("79027712-c68c-11ec-b75e-27bce33a22a8"),
 
@@ -601,7 +585,7 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -613,7 +597,7 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateActions(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Actions).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateActions(req.Context(), &tt.agent, tt.outdialID, tt.reqBody.Actions).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -627,7 +611,7 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		customer   cscustomer.Customer
+		agent      amagent.Agent
 		campaignID uuid.UUID
 
 		reqQuery string
@@ -636,11 +620,8 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
 
@@ -670,7 +651,7 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -682,7 +663,7 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.OutplanID, tt.reqBody.OutdialID, tt.reqBody.QueueID, tt.reqBody.NextCampaignID).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.agent, tt.campaignID, tt.reqBody.OutplanID, tt.reqBody.OutdialID, tt.reqBody.QueueID, tt.reqBody.NextCampaignID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -696,7 +677,7 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		customer   cscustomer.Customer
+		agent      amagent.Agent
 		campaignID uuid.UUID
 
 		reqQuery    string
@@ -705,11 +686,8 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
 
@@ -736,7 +714,7 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -748,7 +726,7 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), &tt.customer, tt.campaignID, tt.requestBody.NextCampaignID).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), &tt.agent, tt.campaignID, tt.requestBody.NextCampaignID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -762,7 +740,7 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 
 	type test struct {
 		name       string
-		customer   cscustomer.Customer
+		agent      amagent.Agent
 		campaignID uuid.UUID
 
 		reqQuery    string
@@ -774,7 +752,7 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("571e5aa6-c86e-11ec-a62f-d7989ff2e4dd"),
@@ -796,7 +774,7 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("ef319a88-c86e-11ec-a8b2-abe87e962b9b"),
@@ -839,13 +817,13 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CampaigncallGetsByCampaignID(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
+			mockSvc.EXPECT().CampaigncallGetsByCampaignID(req.Context(), &tt.agent, tt.campaignID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

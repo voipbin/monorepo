@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -27,20 +27,16 @@ func conferencesGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	var requestParam request.ParamConferencesGET
 	if err := c.BindQuery(&requestParam); err != nil {
@@ -61,7 +57,7 @@ func conferencesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get conferences
-	confs, err := serviceHandler.ConferenceGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	confs, err := serviceHandler.ConferenceGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -97,20 +93,16 @@ func conferencesPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	var req request.BodyConferencesPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -122,7 +114,7 @@ func conferencesPOST(c *gin.Context) {
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := servicehandler.ConferenceCreate(
 		c.Request.Context(),
-		&u,
+		&a,
 		req.Type,
 		req.Name,
 		req.Detail,
@@ -155,20 +147,16 @@ func conferencesIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -176,7 +164,7 @@ func conferencesIDGET(c *gin.Context) {
 	log.Debug("Executing conferencesIDGET.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceGet(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceGet(c.Request.Context(), &a, id)
 	if err != nil || res == nil {
 		log.Errorf("Could not get the conference. err: %v", err)
 		c.AbortWithStatus(400)
@@ -201,20 +189,16 @@ func conferencesIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -229,7 +213,7 @@ func conferencesIDPUT(c *gin.Context) {
 	}
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.Tiemout, req.PreActions, req.PostActions)
+	res, err := servicehandler.ConferenceUpdate(c.Request.Context(), &a, id, req.Name, req.Detail, req.Tiemout, req.PreActions, req.PostActions)
 	if err != nil || res == nil {
 		log.Errorf("Could not update the conference. err: %v", err)
 		c.AbortWithStatus(400)
@@ -253,20 +237,16 @@ func conferencesIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -274,7 +254,7 @@ func conferencesIDDELETE(c *gin.Context) {
 	log.Debug("Executing conferencesIDDELETE.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceDelete(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		c.AbortWithStatus(400)
@@ -298,20 +278,16 @@ func conferencesIDRecordingStartPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -319,7 +295,7 @@ func conferencesIDRecordingStartPOST(c *gin.Context) {
 	log.Debug("Executing conferencesIDDELETE.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceRecordingStart(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceRecordingStart(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
@@ -343,20 +319,16 @@ func conferencesIDRecordingStopPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -364,7 +336,7 @@ func conferencesIDRecordingStopPOST(c *gin.Context) {
 	log.Debug("Executing conferencesIDRecordingStopPOST.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceRecordingStop(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceRecordingStop(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not stop the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
@@ -388,20 +360,16 @@ func conferencesIDTranscribeStartPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -417,7 +385,7 @@ func conferencesIDTranscribeStartPOST(c *gin.Context) {
 	log.Debug("Executing conferencesIDTranscribeStartPOST.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceTranscribeStart(c.Request.Context(), &u, id, req.Language)
+	res, err := servicehandler.ConferenceTranscribeStart(c.Request.Context(), &a, id, req.Language)
 	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
@@ -441,20 +409,16 @@ func conferencesIDTranscribeStopPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -462,7 +426,7 @@ func conferencesIDTranscribeStopPOST(c *gin.Context) {
 	log.Debug("Executing conferencesIDTranscribeStopPOST.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceTranscribeStop(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceTranscribeStop(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not stop the conference transcribe. err: %v", err)
 		c.AbortWithStatus(400)

@@ -6,16 +6,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
 // trunkGet validates the trunk's ownership and returns the trunk info.
-func (h *serviceHandler) trunkGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmtrunk.Trunk, error) {
+func (h *serviceHandler) trunkGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmtrunk.Trunk, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "trunkGet",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"domain_id":   id,
 	})
 
@@ -27,25 +26,26 @@ func (h *serviceHandler) trunkGet(ctx context.Context, u *cscustomer.Customer, i
 	}
 	log.WithField("trunk", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission for this trunk.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	return res, nil
 }
 
 // TrunkCreate is a service handler for trunk creation.
-func (h *serviceHandler) TrunkCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string, domainName string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkCreate(ctx context.Context, a *amagent.Agent, name string, detail string, domainName string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TrunkCreate",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"domain_name": domainName,
 		"name":        name,
 	})
 	log.Debug("Creating a new trunk.")
 
-	tmp, err := h.reqHandler.RegistrarV1TrunkCreate(ctx, u.ID, name, detail, domainName, authTypes, username, password, allowedIPs)
+	// permission check
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmp, err := h.reqHandler.RegistrarV1TrunkCreate(ctx, a.CustomerID, name, detail, domainName, authTypes, username, password, allowedIPs)
 	if err != nil {
 		log.Errorf("Could not create a new trunk. err: %v", err)
 		return nil, err
@@ -56,19 +56,25 @@ func (h *serviceHandler) TrunkCreate(ctx context.Context, u *cscustomer.Customer
 }
 
 // TrunkDelete deletes the trunk of the given id.
-func (h *serviceHandler) TrunkDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TrunkDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"trunk_id":    id,
 	})
 	log.Debug("Deleting the domain.")
 
-	_, err := h.trunkGet(ctx, u, id)
+	t, err := h.trunkGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get the domain info. err: %v", err)
 		return nil, fmt.Errorf("could not get domain info. err: %v", err)
+	}
+
+	// permission check
+	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// delete
@@ -83,20 +89,26 @@ func (h *serviceHandler) TrunkDelete(ctx context.Context, u *cscustomer.Customer
 
 // TrunkGet gets the trunk of the given id.
 // It returns trunk if it succeed.
-func (h *serviceHandler) TrunkGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TrunkGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"domain_id":   id,
 	})
 	log.Debug("Getting a trunk.")
 
 	// get trunk
-	tmp, err := h.trunkGet(ctx, u, id)
+	tmp, err := h.trunkGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get trunk info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get trunk info. err: %v", err)
+	}
+
+	// permission check
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -105,11 +117,11 @@ func (h *serviceHandler) TrunkGet(ctx context.Context, u *cscustomer.Customer, i
 
 // TrunkGets gets the list of trunks of the given customer id.
 // It returns list of trunks if it succeed.
-func (h *serviceHandler) TrunkGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"fucn":        "TrunkGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -119,8 +131,14 @@ func (h *serviceHandler) TrunkGets(ctx context.Context, u *cscustomer.Customer, 
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	// permission check
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	// get tmps
-	tmps, err := h.reqHandler.RegistrarV1TrunkGetsByCustomerID(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.RegistrarV1TrunkGetsByCustomerID(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get trunks info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find trunks info. err: %v", err)
@@ -138,20 +156,26 @@ func (h *serviceHandler) TrunkGets(ctx context.Context, u *cscustomer.Customer, 
 
 // TrunkUpdateBasicInfo updates the trunk info.
 // It returns updated trunk if it succeed.
-func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name string, detail string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TrunkUpdateBasicInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"trunk_id":    id,
 	})
-	log.Debug("Updating a domain.")
+	log.Debug("Updating a trunk.")
 
 	// get
-	_, err := h.trunkGet(ctx, u, id)
+	t, err := h.trunkGet(ctx, a, id)
 	if err != nil {
-		log.Errorf("Could not get domain info from the registrar-manager. err: %v", err)
+		log.Errorf("Could not get trunk info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find domain info. err: %v", err)
+	}
+
+	// permission check
+	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// update

@@ -6,20 +6,17 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // transcribeGet validates the transcribe's ownership and returns the transcribe info.
-func (h *serviceHandler) transcribeGet(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "transcribeGet",
-			"customer_id":   u.ID,
-			"transcribe_id": transcribeID,
-		},
-	)
+func (h *serviceHandler) transcribeGet(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "transcribeGet",
+		"customer_id":   a.CustomerID,
+		"transcribe_id": transcribeID,
+	})
 
 	// send request
 	res, err := h.reqHandler.TranscribeV1TranscribeGet(ctx, transcribeID)
@@ -29,28 +26,28 @@ func (h *serviceHandler) transcribeGet(ctx context.Context, u *cscustomer.Custom
 	}
 	log.WithField("transcribe", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	return res, nil
 }
 
 // TranscribeGet sends a request to transcribe-manager
 // to getting the transcribe.
-func (h *serviceHandler) TranscribeGet(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeGet(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "TranscribeGet",
-		"customer_id":   u.ID,
-		"username":      u.Username,
+		"customer_id":   a.CustomerID,
+		"username":      a.Username,
 		"transcribe_id": transcribeID,
 	})
 
-	tmp, err := h.transcribeGet(ctx, u, transcribeID)
+	tmp, err := h.transcribeGet(ctx, a, transcribeID)
 	if err != nil {
 		log.Errorf("Could not get transcribe info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -60,11 +57,11 @@ func (h *serviceHandler) TranscribeGet(ctx context.Context, u *cscustomer.Custom
 // TranscribeGets sends a request to transcribe-manager
 // to getting a list of transcribes.
 // it returns list of transcribe info if it succeed.
-func (h *serviceHandler) TranscribeGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TranscribeGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -73,7 +70,12 @@ func (h *serviceHandler) TranscribeGets(ctx context.Context, u *cscustomer.Custo
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	tmps, err := h.reqHandler.TranscribeV1TranscribeGets(ctx, u.ID, token, size)
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmps, err := h.reqHandler.TranscribeV1TranscribeGets(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get transcribes. err: %v", err)
 		return nil, err
@@ -91,22 +93,41 @@ func (h *serviceHandler) TranscribeGets(ctx context.Context, u *cscustomer.Custo
 // TranscribeStart sends a request to transcribe-manager
 // to start a transcribe.
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeStart(ctx context.Context, u *cscustomer.Customer, referenceType tmtranscribe.ReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType tmtranscribe.ReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
+		"func":           "TranscribeStart",
+		"customer_id":    a.CustomerID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"language":       language,
 	})
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	// check the ownership
 	var err error
+	var customerID uuid.UUID
 	switch referenceType {
 	case tmtranscribe.ReferenceTypeCall:
-		_, err = h.callGet(ctx, u, referenceID)
+		tmpResource, tmpErr := h.callGet(ctx, a, referenceID)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		} else {
+			customerID = tmpResource.CustomerID
+		}
 
 	case tmtranscribe.ReferenceTypeRecording:
-		_, err = h.recordingGet(ctx, u, referenceID)
+		tmpResource, tmpErr := h.recordingGet(ctx, a, referenceID)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		} else {
+			customerID = tmpResource.CustomerID
+		}
 
 	default:
 		err = fmt.Errorf("unsupported reference type")
@@ -116,7 +137,12 @@ func (h *serviceHandler) TranscribeStart(ctx context.Context, u *cscustomer.Cust
 		return nil, fmt.Errorf("could not pass the reference validation. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, u.ID, referenceType, referenceID, language, direction)
+	if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, a.CustomerID, referenceType, referenceID, language, direction)
 	if err != nil {
 		log.Errorf("Could not start the transcribe. err: %v", err)
 		return nil, err
@@ -129,17 +155,23 @@ func (h *serviceHandler) TranscribeStart(ctx context.Context, u *cscustomer.Cust
 // TranscribeStop sends a request to transcribe-manager
 // to stop a transcribe.
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeStop(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeStop(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"customer_id":   u.ID,
+		"func":          "TranscribeStop",
+		"customer_id":   a.CustomerID,
 		"transcribe_id": transcribeID,
 	})
 
 	// check the transcribe info
-	_, err := h.transcribeGet(ctx, u, transcribeID)
+	t, err := h.transcribeGet(ctx, a, transcribeID)
 	if err != nil {
 		log.Errorf("Could not get transcribe info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, transcribeID)
@@ -155,18 +187,23 @@ func (h *serviceHandler) TranscribeStop(ctx context.Context, u *cscustomer.Custo
 // TranscribeDelete sends a request to tramscribe-manager
 // to delete the transcribe.
 // it returns transcribe info if it succeed.
-func (h *serviceHandler) TranscribeDelete(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeDelete(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "CallDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"func":        "TranscribeDelete",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"call_id":     transcribeID,
 	})
 
-	_, err := h.transcribeGet(ctx, u, transcribeID)
+	t, err := h.transcribeGet(ctx, a, transcribeID)
 	if err != nil {
 		log.Infof("Could not get transcribe info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// send request

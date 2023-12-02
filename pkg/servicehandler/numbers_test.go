@@ -7,9 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -19,7 +18,7 @@ func TestOrderNumberGets(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -28,8 +27,10 @@ func TestOrderNumberGets(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
@@ -61,17 +62,11 @@ func TestOrderNumberGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.NumberGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.NumberGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			for _, num := range res {
-				num.TMCreate = ""
-				num.TMUpdate = ""
-				num.TMDelete = ""
 			}
 
 			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
@@ -81,31 +76,33 @@ func TestOrderNumberGets(t *testing.T) {
 	}
 }
 
-func TestOrderNumberGet(t *testing.T) {
+func Test_OrderNumberGet(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		response  *nmnumber.Number
 		expectRes *nmnumber.WebhookMessage
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&nmnumber.Number{
 				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 			&nmnumber.WebhookMessage{
 				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -127,7 +124,7 @@ func TestOrderNumberGet(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.NumberGet(ctx, tt.customer, tt.id)
+			res, err := h.NumberGet(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -139,28 +136,30 @@ func TestOrderNumberGet(t *testing.T) {
 	}
 }
 
-func TestOrderNumberGetError(t *testing.T) {
+func Test_OrderNumberGetError(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent *amagent.Agent
+		id    uuid.UUID
 
-		response *nmnumber.Number
+		responseNumber *nmnumber.Number
 	}
 
 	tests := []test{
 		{
 			"deleted item",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
+				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -185,9 +184,9 @@ func TestOrderNumberGetError(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
 
-			_, err := h.NumberGet(ctx, tt.customer, tt.id)
+			_, err := h.NumberGet(ctx, tt.agent, tt.id)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
@@ -195,11 +194,11 @@ func TestOrderNumberGetError(t *testing.T) {
 	}
 }
 
-func TestNumberCreate(t *testing.T) {
+func Test_NumberCreate(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		num           string
 		callFlowID    uuid.UUID
@@ -212,8 +211,10 @@ func TestNumberCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			"+821021656521",
@@ -245,8 +246,8 @@ func TestNumberCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.customer.ID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
-			res, err := h.NumberCreate(ctx, tt.customer, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.agent.CustomerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
+			res, err := h.NumberCreate(ctx, tt.agent, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -258,12 +259,12 @@ func TestNumberCreate(t *testing.T) {
 	}
 }
 
-func TestNumberDelete(t *testing.T) {
+func Test_NumberDelete(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		responseGet    *nmnumber.Number
 		responseDelete *nmnumber.Number
@@ -272,15 +273,17 @@ func TestNumberDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
+				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -290,8 +293,8 @@ func TestNumberDelete(t *testing.T) {
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
+				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusDeleted,
@@ -321,7 +324,7 @@ func TestNumberDelete(t *testing.T) {
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
 			mockReq.EXPECT().NumberV1NumberDelete(ctx, tt.id).Return(tt.responseDelete, nil)
 
-			res, err := h.NumberDelete(ctx, tt.customer, tt.id)
+			res, err := h.NumberDelete(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -333,11 +336,11 @@ func TestNumberDelete(t *testing.T) {
 	}
 }
 
-func TestNumberUpdate(t *testing.T) {
+func Test_NumberUpdate(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		id            uuid.UUID
 		callFlowID    uuid.UUID
@@ -352,8 +355,10 @@ func TestNumberUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
@@ -364,8 +369,8 @@ func TestNumberUpdate(t *testing.T) {
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -375,9 +380,9 @@ func TestNumberUpdate(t *testing.T) {
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				CallFlowID:          uuid.FromStringOrNil("7e46cf4a-7c5d-11eb-8aa3-17a63e21c25f"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -405,7 +410,7 @@ func TestNumberUpdate(t *testing.T) {
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
 			mockReq.EXPECT().NumberV1NumberUpdate(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
 
-			res, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			res, err := h.NumberUpdate(ctx, tt.agent, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -420,8 +425,8 @@ func TestNumberUpdate(t *testing.T) {
 func Test_NumberUpdateError(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		id            uuid.UUID
 		callFlowID    uuid.UUID
@@ -435,8 +440,10 @@ func Test_NumberUpdateError(t *testing.T) {
 	tests := []test{
 		{
 			"deleted item",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
@@ -447,8 +454,8 @@ func Test_NumberUpdateError(t *testing.T) {
 
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+				CustomerID:          uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -475,7 +482,7 @@ func Test_NumberUpdateError(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
 
-			_, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			_, err := h.NumberUpdate(ctx, tt.agent, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
@@ -486,8 +493,8 @@ func Test_NumberUpdateError(t *testing.T) {
 func Test_NumberRenew(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		tmRenew string
 
@@ -498,11 +505,10 @@ func Test_NumberRenew(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			tmRenew: "2021-03-02 01:00:00.995000",
@@ -542,7 +548,7 @@ func Test_NumberRenew(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1NumberRenewByTmRenew(ctx, tt.tmRenew).Return(tt.responseNumbers, nil)
 
-			res, err := h.NumberRenew(ctx, tt.customer, tt.tmRenew)
+			res, err := h.NumberRenew(ctx, tt.agent, tt.tmRenew)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

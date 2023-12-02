@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -29,7 +29,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer   cscustomer.Customer
+		customer   amagent.Agent
 		customerID uuid.UUID
 		reqQuery   string
 		pageSize   uint64
@@ -41,7 +41,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 		{
 			"1 item",
 
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("de748080-7939-4625-a929-459c09a08448"),
@@ -59,7 +59,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260"),
@@ -98,7 +98,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -123,7 +123,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer  cscustomer.Customer
+		customer  amagent.Agent
 		reqQuery  string
 		pageSize  uint64
 		pageToken string
@@ -134,7 +134,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 		{
 			"1 item",
 
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -151,7 +151,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -189,7 +189,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -213,7 +213,7 @@ func Test_routesPost(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyRoutesPOST
@@ -221,7 +221,7 @@ func Test_routesPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -253,7 +253,7 @@ func Test_routesPost(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -290,7 +290,7 @@ func Test_routesIDGet(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 		routeID  uuid.UUID
@@ -301,7 +301,7 @@ func Test_routesIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -329,7 +329,7 @@ func Test_routesIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -353,7 +353,7 @@ func Test_routesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 		routeID  uuid.UUID
@@ -364,7 +364,7 @@ func Test_routesIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("4d1e5ab0-5167-11ed-98ff-f7ff08fc0833"),
 			},
 
@@ -392,7 +392,7 @@ func Test_routesIDDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -416,7 +416,7 @@ func Test_routesIDPut(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 		reqBody  []byte
@@ -434,7 +434,7 @@ func Test_routesIDPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -469,7 +469,7 @@ func Test_routesIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 

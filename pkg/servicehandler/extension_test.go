@@ -7,18 +7,18 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestExtensionCreate(t *testing.T) {
+func Test_ExtensionCreate(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		ext      string
 		password string
@@ -32,8 +32,10 @@ func TestExtensionCreate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			"test",
@@ -43,11 +45,11 @@ func TestExtensionCreate(t *testing.T) {
 
 			&rmextension.Extension{
 				ID:         uuid.FromStringOrNil("4037dd90-6fa4-11eb-b51b-771a2747271b"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&rmextension.WebhookMessage{
 				ID:         uuid.FromStringOrNil("4037dd90-6fa4-11eb-b51b-771a2747271b"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -66,9 +68,9 @@ func TestExtensionCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionCreate(ctx, tt.customer.ID, tt.ext, tt.password, tt.extName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionCreate(ctx, tt.agent.CustomerID, tt.ext, tt.password, tt.extName, tt.detail).Return(tt.response, nil)
 
-			res, err := h.ExtensionCreate(ctx, tt.customer, tt.ext, tt.password, tt.extName, tt.detail)
+			res, err := h.ExtensionCreate(ctx, tt.agent, tt.ext, tt.password, tt.extName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -83,23 +85,25 @@ func TestExtensionCreate(t *testing.T) {
 func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		id       uuid.UUID
 		extName  string
 		detail   string
 		password string
 
-		response  *rmextension.Extension
-		expectRes *rmextension.WebhookMessage
+		responseExtension *rmextension.Extension
+		expectRes         *rmextension.WebhookMessage
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
@@ -109,7 +113,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 			&rmextension.Extension{
 				ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "update name",
 				Detail:     "update detail",
 				Extension:  "test",
@@ -119,7 +123,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 			},
 			&rmextension.WebhookMessage{
 				ID:         uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Name:       "update name",
 				Detail:     "update detail",
 				Extension:  "test",
@@ -143,9 +147,9 @@ func Test_ExtensionUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.id).Return(&rmextension.Extension{CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988")}, nil)
-			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password).Return(tt.response, nil)
-			res, err := h.ExtensionUpdate(ctx, tt.customer, tt.id, tt.extName, tt.detail, tt.password)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password).Return(tt.responseExtension, nil)
+			res, err := h.ExtensionUpdate(ctx, tt.agent, tt.id, tt.extName, tt.detail, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -161,7 +165,7 @@ func Test_ExtensionDelete(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    *cscustomer.Customer
+		agent       *amagent.Agent
 		extensionID uuid.UUID
 
 		response  *rmextension.Extension
@@ -171,14 +175,16 @@ func Test_ExtensionDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
 
 			&rmextension.Extension{
 				ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 
 				Name:   "test",
 				Detail: "test detail",
@@ -188,7 +194,7 @@ func Test_ExtensionDelete(t *testing.T) {
 			},
 			&rmextension.WebhookMessage{
 				ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 
 				Name:   "test",
 				Detail: "test detail",
@@ -216,7 +222,7 @@ func Test_ExtensionDelete(t *testing.T) {
 			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID).Return(tt.response, nil)
 			mockReq.EXPECT().RegistrarV1ExtensionDelete(ctx, tt.extensionID).Return(tt.response, nil)
 
-			res, err := h.ExtensionDelete(ctx, tt.customer, tt.extensionID)
+			res, err := h.ExtensionDelete(ctx, tt.agent, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -228,11 +234,11 @@ func Test_ExtensionDelete(t *testing.T) {
 	}
 }
 
-func TestExtensionGet(t *testing.T) {
+func Test_ExtensionGet(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    *cscustomer.Customer
+		agent       *amagent.Agent
 		extensionID uuid.UUID
 
 		response  *rmextension.Extension
@@ -242,21 +248,23 @@ func TestExtensionGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
 
 			&rmextension.Extension{
 				ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 
 				Name:   "test",
 				Detail: "test detail",
 			},
 			&rmextension.WebhookMessage{
 				ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 
 				Name:   "test",
 				Detail: "test detail",
@@ -279,7 +287,7 @@ func TestExtensionGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID).Return(tt.response, nil)
-			res, err := h.ExtensionGet(ctx, tt.customer, tt.extensionID)
+			res, err := h.ExtensionGet(ctx, tt.agent, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -294,11 +302,10 @@ func TestExtensionGet(t *testing.T) {
 func Test_ExtensionGetsByCustomerID(t *testing.T) {
 
 	type test struct {
-		name       string
-		customer   *cscustomer.Customer
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		name      string
+		agent     *amagent.Agent
+		pageToken string
+		pageSize  uint64
 
 		response  []rmextension.Extension
 		expectRes []*rmextension.WebhookMessage
@@ -307,10 +314,11 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
-			uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			"2020-10-20T01:00:00.995000",
 			10,
 
@@ -347,9 +355,9 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.ExtensionGetsByCustomerID(ctx, tt.customer, tt.customerID, tt.pageSize, tt.pageToken)
+			res, err := h.ExtensionGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

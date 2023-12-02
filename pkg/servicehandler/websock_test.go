@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
@@ -23,16 +23,18 @@ func (h *mockResponseWriter) WriteHeader(statusCode int) {}
 func Test_WebsockCreate(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		writer  http.ResponseWriter
 		request *http.Request
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			&mockResponseWriter{},
@@ -59,9 +61,9 @@ func Test_WebsockCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockWebsock.EXPECT().Run(ctx, gomock.Any(), gomock.Any(), tt.customer.ID).Return(nil)
+			mockWebsock.EXPECT().Run(ctx, gomock.Any(), gomock.Any(), tt.agent.ID).Return(nil)
 
-			if err := h.WebsockCreate(ctx, tt.customer, tt.writer, tt.request); err != nil {
+			if err := h.WebsockCreate(ctx, tt.agent, tt.writer, tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

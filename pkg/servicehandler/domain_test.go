@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -17,8 +17,8 @@ import (
 func Test_DomainCreate(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		DomainName      string
 		DomainTmpName   string
@@ -31,8 +31,10 @@ func Test_DomainCreate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"test.sip.voipbin.net",
 			"test name",
@@ -40,14 +42,14 @@ func Test_DomainCreate(t *testing.T) {
 
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
 			},
 			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -70,9 +72,9 @@ func Test_DomainCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1DomainCreate(ctx, tt.customer.ID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainCreate(ctx, tt.agent.CustomerID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
 
-			res, err := h.DomainCreate(ctx, tt.customer, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail)
+			res, err := h.DomainCreate(ctx, tt.agent, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -84,25 +86,27 @@ func Test_DomainCreate(t *testing.T) {
 	}
 }
 
-func TestDomainUpdate(t *testing.T) {
+func Test_DomainUpdate(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer *cscustomer.Customer
+		name  string
+		agent *amagent.Agent
 
 		id      uuid.UUID
 		domainN string
 		detail  string
 
-		response  *rmdomain.Domain
-		expectRes *rmdomain.WebhookMessage
+		responseDomain *rmdomain.Domain
+		expectRes      *rmdomain.WebhookMessage
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
@@ -111,14 +115,14 @@ func TestDomainUpdate(t *testing.T) {
 
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
 				Detail:     "update detail",
 			},
 			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
 				Detail:     "update detail",
@@ -140,9 +144,9 @@ func TestDomainUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1DomainGet(ctx, tt.id).Return(&rmdomain.Domain{CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3")}, nil)
-			mockReq.EXPECT().RegistrarV1DomainUpdate(ctx, tt.id, tt.domainN, tt.detail).Return(tt.response, nil)
-			res, err := h.DomainUpdate(ctx, tt.customer, tt.id, tt.domainN, tt.detail)
+			mockReq.EXPECT().RegistrarV1DomainGet(ctx, tt.id).Return(tt.responseDomain, nil)
+			mockReq.EXPECT().RegistrarV1DomainUpdate(ctx, tt.id, tt.domainN, tt.detail).Return(tt.responseDomain, nil)
+			res, err := h.DomainUpdate(ctx, tt.agent, tt.id, tt.domainN, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -154,32 +158,34 @@ func TestDomainUpdate(t *testing.T) {
 	}
 }
 
-func TestDomainDelete(t *testing.T) {
+func Test_DomainDelete(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer *cscustomer.Customer
+		agent    *amagent.Agent
 		domainID uuid.UUID
 
-		response  *rmdomain.Domain
-		expectRes *rmdomain.WebhookMessage
+		responseDomain *rmdomain.Domain
+		expectRes      *rmdomain.WebhookMessage
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
 
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -198,10 +204,10 @@ func TestDomainDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1DomainGet(ctx, tt.domainID).Return(tt.response, nil)
-			mockReq.EXPECT().RegistrarV1DomainDelete(ctx, tt.domainID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainGet(ctx, tt.domainID).Return(tt.responseDomain, nil)
+			mockReq.EXPECT().RegistrarV1DomainDelete(ctx, tt.domainID).Return(tt.responseDomain, nil)
 
-			res, err := h.DomainDelete(ctx, tt.customer, tt.domainID)
+			res, err := h.DomainDelete(ctx, tt.agent, tt.domainID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -213,11 +219,11 @@ func TestDomainDelete(t *testing.T) {
 	}
 }
 
-func TestDomainGet(t *testing.T) {
+func Test_DomainGet(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer *cscustomer.Customer
+		agent    *amagent.Agent
 		DomainID uuid.UUID
 
 		response  *rmdomain.Domain
@@ -227,21 +233,23 @@ func TestDomainGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
 
 			&rmdomain.Domain{
 				ID:         uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
 			},
 			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
-				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -265,7 +273,7 @@ func TestDomainGet(t *testing.T) {
 
 			mockReq.EXPECT().RegistrarV1DomainGet(ctx, tt.DomainID).Return(tt.response, nil)
 
-			res, err := h.DomainGet(ctx, tt.customer, tt.DomainID)
+			res, err := h.DomainGet(ctx, tt.agent, tt.DomainID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -277,11 +285,11 @@ func TestDomainGet(t *testing.T) {
 	}
 }
 
-func TestDomainGets(t *testing.T) {
+func Test_DomainGets(t *testing.T) {
 
 	type test struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -292,8 +300,10 @@ func TestDomainGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
@@ -301,14 +311,14 @@ func TestDomainGets(t *testing.T) {
 			[]rmdomain.Domain{
 				{
 					ID:         uuid.FromStringOrNil("cbd2f846-6eda-11eb-a1b5-c39b7ed749b1"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 					DomainName: "test.sip.voipbin.net",
 					Name:       "test1",
 					Detail:     "test detail1",
 				},
 				{
 					ID:         uuid.FromStringOrNil("cf9ee9a8-6eda-11eb-8961-3b8e36c03336"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 					DomainName: "test2.sip.voipbin.net",
 					Name:       "test2",
 					Detail:     "test detail2",
@@ -317,14 +327,14 @@ func TestDomainGets(t *testing.T) {
 			[]*rmdomain.WebhookMessage{
 				{
 					ID:         uuid.FromStringOrNil("cbd2f846-6eda-11eb-a1b5-c39b7ed749b1"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 					DomainName: "test.sip.voipbin.net",
 					Name:       "test1",
 					Detail:     "test detail1",
 				},
 				{
 					ID:         uuid.FromStringOrNil("cf9ee9a8-6eda-11eb-8961-3b8e36c03336"),
-					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 					DomainName: "test2.sip.voipbin.net",
 					Name:       "test2",
 					Detail:     "test detail2",
@@ -347,9 +357,9 @@ func TestDomainGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1DomainGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.DomainGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.DomainGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

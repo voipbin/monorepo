@@ -10,10 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -29,8 +28,8 @@ func setupServer(app *gin.Engine) {
 func Test_chatbotsPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyChatbotsPOST
@@ -41,11 +40,8 @@ func Test_chatbotsPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			"/v1.0/chatbots",
@@ -77,7 +73,7 @@ func Test_chatbotsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -91,7 +87,7 @@ func Test_chatbotsPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().ChatbotCreate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.reqBody.Name,
 				tt.reqBody.Detail,
 				tt.reqBody.EngineType,
@@ -113,8 +109,8 @@ func Test_chatbotsPOST(t *testing.T) {
 func Test_chatbotsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery    string
 		reqBody     request.ParamChatbotsGET
@@ -125,7 +121,7 @@ func Test_chatbotsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -147,7 +143,7 @@ func Test_chatbotsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -189,12 +185,12 @@ func Test_chatbotsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ChatbotGetsByCustomerID(req.Context(), &tt.customer, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resChatbots, nil)
+			mockSvc.EXPECT().ChatbotGetsByCustomerID(req.Context(), &tt.agent, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resChatbots, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -212,7 +208,7 @@ func Test_chatbotsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		customer  cscustomer.Customer
+		agent     amagent.Agent
 		chatbotID uuid.UUID
 
 		reqQuery string
@@ -223,7 +219,7 @@ func Test_chatbotsIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("07f52215-8366-4060-902f-a86857243351"),
@@ -251,12 +247,12 @@ func Test_chatbotsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ChatbotGet(req.Context(), &tt.customer, tt.chatbotID).Return(tt.responseChatbot, nil)
+			mockSvc.EXPECT().ChatbotGet(req.Context(), &tt.agent, tt.chatbotID).Return(tt.responseChatbot, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -273,8 +269,8 @@ func Test_chatbotsIDGET(t *testing.T) {
 func Test_chatbotsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery  string
 		chatbotID uuid.UUID
@@ -285,7 +281,7 @@ func Test_chatbotsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -313,12 +309,12 @@ func Test_chatbotsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ChatbotDelete(req.Context(), &tt.customer, tt.chatbotID).Return(tt.responseChatbot, nil)
+			mockSvc.EXPECT().ChatbotDelete(req.Context(), &tt.agent, tt.chatbotID).Return(tt.responseChatbot, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -335,8 +331,8 @@ func Test_chatbotsIDDELETE(t *testing.T) {
 func Test_chatbotsIDPUT(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqID    uuid.UUID
@@ -348,11 +344,8 @@ func Test_chatbotsIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			reqQuery: "/v1.0/chatbots/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
@@ -385,7 +378,7 @@ func Test_chatbotsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -399,7 +392,7 @@ func Test_chatbotsIDPUT(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().ChatbotUpdate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.reqID,
 				tt.reqBody.Name,
 				tt.reqBody.Detail,

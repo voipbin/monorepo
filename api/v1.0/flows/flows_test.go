@@ -10,8 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -29,8 +28,8 @@ func setupServer(app *gin.Engine) {
 func Test_flowsPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyFlowsPOST
@@ -38,11 +37,8 @@ func Test_flowsPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			"/v1.0/flows",
@@ -82,7 +78,7 @@ func Test_flowsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -94,7 +90,7 @@ func Test_flowsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.customer, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.Actions, true).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.agent, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.Actions, true).Return(tt.resFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -107,8 +103,8 @@ func Test_flowsPOST(t *testing.T) {
 func Test_flowsIDGET(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 
@@ -117,7 +113,7 @@ func Test_flowsIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -150,12 +146,12 @@ func Test_flowsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().FlowGet(req.Context(), &tt.customer, tt.responseFlow.ID).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowGet(req.Context(), &tt.agent, tt.responseFlow.ID).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -173,7 +169,7 @@ func Test_flowsIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		customer     cscustomer.Customer
+		agent        amagent.Agent
 		expectFlowID uuid.UUID
 
 		reqQuery string
@@ -186,11 +182,8 @@ func Test_flowsIDPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
@@ -236,7 +229,7 @@ func Test_flowsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -248,7 +241,7 @@ func Test_flowsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().FlowUpdate(req.Context(), &tt.customer, tt.expectFlow).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowUpdate(req.Context(), &tt.agent, tt.expectFlow).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -265,8 +258,8 @@ func Test_flowsIDPUT(t *testing.T) {
 func Test_flowsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery     string
 		responseFlow *fmflow.WebhookMessage
@@ -276,7 +269,7 @@ func Test_flowsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -303,12 +296,12 @@ func Test_flowsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().FlowDelete(req.Context(), &tt.customer, tt.expectFlowID).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowDelete(req.Context(), &tt.agent, tt.expectFlowID).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

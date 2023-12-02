@@ -3,7 +3,7 @@ package transfers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -24,16 +24,15 @@ func transfersPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmpAgent, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"agent": a,
 	})
 
 	var req request.BodyTransfersPOST
@@ -48,7 +47,7 @@ func transfersPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// start a transfer
-	res, err := serviceHandler.TransferStart(c.Request.Context(), &u, req.TransferType, req.TransfererCallID, req.TransfereeAddresses)
+	res, err := serviceHandler.TransferStart(c.Request.Context(), &a, req.TransferType, req.TransfererCallID, req.TransfereeAddresses)
 	if err != nil {
 		log.Errorf("Could not create a transcribe. err: %v", err)
 		c.AbortWithStatus(400)

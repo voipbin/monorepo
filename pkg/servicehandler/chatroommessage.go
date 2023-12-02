@@ -6,67 +6,64 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
 // chatroommessageGet validates the chatroommessage's ownership and returns the chatroommessage info.
-func (h *serviceHandler) chatroommessageGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":               "chatroommessageGet",
-			"customer_id":        u.ID,
-			"chatroommessage_id": id,
-		},
-	)
+func (h *serviceHandler) chatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.Messagechatroom, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":               "chatroommessageGet",
+		"customer_id":        a.CustomerID,
+		"chatroommessage_id": id,
+	})
 
 	// send request
-	tmp, err := h.reqHandler.ChatV1MessagechatroomGet(ctx, id)
+	res, err := h.reqHandler.ChatV1MessagechatroomGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the chatroommessage info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("messagechatroom", tmp).Debug("Received result.")
-
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Info("The user has no permission for this customer.")
-		return nil, fmt.Errorf("user has no permission")
-	}
+	log.WithField("messagechatroom", res).Debug("Received result.")
 
 	// create result
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ChatroommessageGet gets the chatroommessage of the given id.
 // It returns chatroommessage if it succeed.
-func (h *serviceHandler) ChatroommessageGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
+func (h *serviceHandler) ChatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatroommessageGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chat_id":     id,
 	})
 	log.Debug("Getting a chatroommessage.")
 
 	// get chat
-	res, err := h.chatroommessageGet(ctx, u, id)
+	tmp, err := h.chatroommessageGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chatroommessage info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
 	}
 
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ChatroommessageGetsByChatroomID gets the list of chatroommessages of the given owner id.
 // It returns list of chatroommessages if it succeed.
-func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, u *cscustomer.Customer, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error) {
+func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatroommessageGetsByChatroomID",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chatroom_id": chatroomID,
 		"size":        size,
 		"token":       token,
@@ -77,13 +74,17 @@ func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, u 
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// get owner
-	tmp, err := h.chatroomGet(ctx, u, chatroomID)
+	tmp, err := h.chatroomGet(ctx, a, chatroomID)
 	if err != nil {
 		log.Errorf("Could not get owner info. err: %v", err)
 		return nil, err
 	}
 	log.WithField("chatroom", tmp).Debugf("Found chatroom info. chatroom_id: %s", chatroomID)
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
 
 	// get chats
 	tmps, err := h.reqHandler.ChatV1MessagechatroomGetsByChatroomID(ctx, chatroomID, token, size)
@@ -103,20 +104,25 @@ func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, u 
 }
 
 // ChatroommessageDelete deletes the chatroom.
-func (h *serviceHandler) ChatroommessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
+func (h *serviceHandler) ChatroommessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "ChatroommessageDelete",
-		"customer_id":        u.ID,
-		"username":           u.Username,
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
 		"chatroommessage_id": id,
 	})
 	log.Debug("Deleting a chatroommessage.")
 
 	// get chatroommessage
-	_, err := h.chatroommessageGet(ctx, u, id)
+	cr, err := h.chatroommessageGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chatroommessage info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, cr.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatV1MessagechatroomDelete(ctx, id)
