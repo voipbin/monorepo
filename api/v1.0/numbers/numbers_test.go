@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -29,16 +29,16 @@ func setupServer(app *gin.Engine) {
 func TestNumbersGET(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		uri      string
-		req      request.ParamNumbersGET
+		name  string
+		agent amagent.Agent
+		uri   string
+		req   request.ParamNumbersGET
 
 		resNumbers []*nmnumber.WebhookMessage
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
@@ -69,12 +69,12 @@ func TestNumbersGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.uri, nil)
-			mockSvc.EXPECT().NumberGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
+			mockSvc.EXPECT().NumberGets(req.Context(), &tt.agent, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -88,7 +88,7 @@ func Test_NumbersIDGET(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		agent    amagent.Agent
 		numberID uuid.UUID
 		uri      string
 
@@ -97,7 +97,7 @@ func Test_NumbersIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
@@ -122,12 +122,12 @@ func Test_NumbersIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.uri, nil)
-			mockSvc.EXPECT().NumberGet(req.Context(), &tt.customer, tt.numberID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberGet(req.Context(), &tt.agent, tt.numberID).Return(tt.resNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -150,7 +150,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		agent    amagent.Agent
 		numberID uuid.UUID
 		uri      string
 
@@ -160,7 +160,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
@@ -184,12 +184,12 @@ func TestNumbersIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.uri, nil)
-			mockSvc.EXPECT().NumberDelete(req.Context(), &tt.customer, tt.numberID).Return(tt.responseNumber, nil)
+			mockSvc.EXPECT().NumberDelete(req.Context(), &tt.agent, tt.numberID).Return(tt.responseNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -203,7 +203,7 @@ func TestNumbersPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		uri         string
 		requestBody request.BodyNumbersPOST
 	}
@@ -211,7 +211,7 @@ func TestNumbersPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers",
@@ -237,7 +237,7 @@ func TestNumbersPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -248,7 +248,7 @@ func TestNumbersPOST(t *testing.T) {
 			}
 			req, _ := http.NewRequest("POST", tt.uri, bytes.NewBuffer(body))
 
-			mockSvc.EXPECT().NumberCreate(req.Context(), &tt.customer, tt.requestBody.Number, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail)
+			mockSvc.EXPECT().NumberCreate(req.Context(), &tt.agent, tt.requestBody.Number, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -260,9 +260,9 @@ func TestNumbersPOST(t *testing.T) {
 func TestNumbersIDPUT(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		uri      string
+		name  string
+		agent amagent.Agent
+		uri   string
 
 		id          uuid.UUID
 		requestBody request.BodyNumbersIDPUT
@@ -272,7 +272,7 @@ func TestNumbersIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
@@ -303,7 +303,7 @@ func TestNumbersIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -314,7 +314,7 @@ func TestNumbersIDPUT(t *testing.T) {
 			}
 			req, _ := http.NewRequest("PUT", tt.uri, bytes.NewBuffer(body))
 
-			mockSvc.EXPECT().NumberUpdate(req.Context(), &tt.customer, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberUpdate(req.Context(), &tt.agent, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.resNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -326,9 +326,9 @@ func TestNumbersIDPUT(t *testing.T) {
 func TestNumbersIDFlowIDPUT(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		uri      string
+		name  string
+		agent amagent.Agent
+		uri   string
 
 		id          uuid.UUID
 		requestBody request.BodyNumbersIDFlowIDPUT
@@ -338,7 +338,7 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/numbers/a440c6b8-94cd-11ec-a524-af82f0c3ee68/flow_ids",
@@ -367,7 +367,7 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -378,7 +378,7 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 			}
 			req, _ := http.NewRequest("PUT", tt.uri, bytes.NewBuffer(body))
 
-			mockSvc.EXPECT().NumberUpdateFlowIDs(req.Context(), &tt.customer, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberUpdateFlowIDs(req.Context(), &tt.agent, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID).Return(tt.resNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -390,9 +390,9 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 func Test_NumbersRenewPOST(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		uri      string
+		name  string
+		agent amagent.Agent
+		uri   string
 
 		requestBody     request.BodyNumbersRenewPOST
 		responseNumbers []*nmnumber.WebhookMessage
@@ -404,7 +404,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uri: "/v1.0/numbers/renew",
@@ -440,7 +440,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -451,7 +451,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 			}
 			req, _ := http.NewRequest("POST", tt.uri, bytes.NewBuffer(body))
 
-			mockSvc.EXPECT().NumberRenew(req.Context(), &tt.customer, tt.expectTMRenew).Return(tt.responseNumbers, nil)
+			mockSvc.EXPECT().NumberRenew(req.Context(), &tt.agent, tt.expectTMRenew).Return(tt.responseNumbers, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

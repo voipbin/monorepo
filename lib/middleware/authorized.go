@@ -10,7 +10,7 @@ import (
 func Authorized(c *gin.Context) {
 	logrus.Debugf("Auth info: %v", c.Keys)
 
-	_, exists := c.Get("customer")
+	_, exists := c.Get("agent")
 	if !exists {
 		c.AbortWithStatus(401)
 		return

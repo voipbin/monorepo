@@ -10,8 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -29,7 +28,7 @@ func Test_trunksPOST(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyTrunksPOST
@@ -38,11 +37,8 @@ func Test_trunksPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			customer: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			reqQuery: "/v1.0/trunks",
@@ -73,7 +69,7 @@ func Test_trunksPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -99,7 +95,7 @@ func Test_trunksGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 
@@ -112,11 +108,8 @@ func Test_trunksGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			customer: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			reqQuery: "/v1.0/trunks?page_size=20&page_token=2020-09-20%2003:23:20.995000",
@@ -150,7 +143,7 @@ func Test_trunksGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -176,7 +169,7 @@ func Test_TrunksIDGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 
@@ -188,7 +181,7 @@ func Test_TrunksIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			customer: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -216,7 +209,7 @@ func Test_TrunksIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -235,7 +228,7 @@ func Test_TrunksIDPUT(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery string
 		reqBody  request.BodyTrunksIDPUT
@@ -246,11 +239,8 @@ func Test_TrunksIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			customer: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			reqQuery: "/v1.0/trunks/6019ea72-5589-11ee-8b45-13603ef0a2d4",
@@ -279,7 +269,7 @@ func Test_TrunksIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -305,7 +295,7 @@ func Test_trunksIDDELETE(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery      string
 		expectTrunkID uuid.UUID
@@ -314,7 +304,7 @@ func Test_trunksIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			customer: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -336,7 +326,7 @@ func Test_trunksIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 

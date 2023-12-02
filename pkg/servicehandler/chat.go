@@ -6,43 +6,33 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
 // chatGet validates the chat's ownership and returns the chat info.
-func (h *serviceHandler) chatGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatchat.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "chatGet",
-			"customer_id": u.ID,
-			"chat_id":     id,
-		},
-	)
+func (h *serviceHandler) chatGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.Chat, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chatGet",
+		"customer_id": a.CustomerID,
+		"chat_id":     id,
+	})
 
 	// send request
-	tmp, err := h.reqHandler.ChatV1ChatGet(ctx, id)
+	res, err := h.reqHandler.ChatV1ChatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the chat info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("chat", tmp).Debug("Received result.")
+	log.WithField("chat", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	// create result
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ChatCreate is a service handler for chat creation.
 func (h *serviceHandler) ChatCreate(
 	ctx context.Context,
-	u *cscustomer.Customer,
+	a *amagent.Agent,
 	chatType chatchat.Type,
 	ownerID uuid.UUID,
 	participantIDs []uuid.UUID,
@@ -51,14 +41,18 @@ func (h *serviceHandler) ChatCreate(
 ) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatCreate",
-		"customer_id": u.ID,
+		"customer_id": a.CustomerID,
 		"name":        name,
 	})
-
 	log.Debug("Creating a new chat.")
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	tmp, err := h.reqHandler.ChatV1ChatCreate(
 		ctx,
-		u.ID,
+		a.CustomerID,
 		chatType,
 		ownerID,
 		participantIDs,
@@ -76,11 +70,11 @@ func (h *serviceHandler) ChatCreate(
 
 // ChatGetsByCustomerID gets the list of chats of the given customer id.
 // It returns list of chats if it succeed.
-func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatGetsByCustomerID",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       token,
 	})
@@ -90,8 +84,12 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, u *cscustomer
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
 	// get chats
-	tmps, err := h.reqHandler.ChatV1ChatGetsByCustomerID(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.ChatV1ChatGetsByCustomerID(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -109,40 +107,49 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, u *cscustomer
 
 // ChatGet gets the chat of the given id.
 // It returns chat if it succeed.
-func (h *serviceHandler) ChatGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chat_id":     id,
 	})
 	log.Debug("Getting a chat.")
 
 	// get chat
-	res, err := h.chatGet(ctx, u, id)
+	tmp, err := h.chatGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
 	}
 
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
 // ChatDelete deletes the chat.
-func (h *serviceHandler) ChatDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chat_id":     id,
 	})
 	log.Debug("Deleting a chat.")
 
 	// get chat
-	_, err := h.chatGet(ctx, u, id)
+	c, err := h.chatGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatV1ChatDelete(ctx, id)
@@ -157,20 +164,24 @@ func (h *serviceHandler) ChatDelete(ctx context.Context, u *cscustomer.Customer,
 
 // ChatUpdateBasicInfo updates the chat's basic info.
 // It returns updated chat if it succeed.
-func (h *serviceHandler) ChatUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatUpdateBasicInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chat_id":     id,
 	})
 	log.Debug("Updating a chat.")
 
 	// get chat
-	_, err := h.chatGet(ctx, u, id)
+	c, err := h.chatGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatV1ChatUpdateBasicInfo(ctx, id, name, detail)
@@ -185,20 +196,24 @@ func (h *serviceHandler) ChatUpdateBasicInfo(ctx context.Context, u *cscustomer.
 
 // ChatUpdateOwnerID updates the chat's status.
 // It returns updated chat if it succeed.
-func (h *serviceHandler) ChatUpdateOwnerID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, ownerID uuid.UUID) (*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatUpdateOwnerID(ctx context.Context, a *amagent.Agent, id uuid.UUID, ownerID uuid.UUID) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatUpdateOwnerID",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chat_id":     id,
 	})
 	log.Debug("Updating an chat.")
 
 	// get chat
-	_, err := h.chatGet(ctx, u, id)
+	c, err := h.chatGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatV1ChatUpdateOwnerID(ctx, id, ownerID)
@@ -213,20 +228,24 @@ func (h *serviceHandler) ChatUpdateOwnerID(ctx context.Context, u *cscustomer.Cu
 
 // ChatAddParticipantID add the given participant id to the chat.
 // It returns updated chat if it succeed.
-func (h *serviceHandler) ChatAddParticipantID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatAddParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatAddParticipantID",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chat_id":     id,
 	})
 	log.Debug("Adding the participant id to the chat.")
 
 	// get chat
-	_, err := h.chatGet(ctx, u, id)
+	c, err := h.chatGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatV1ChatAddParticipantID(ctx, id, participantID)
@@ -241,20 +260,24 @@ func (h *serviceHandler) ChatAddParticipantID(ctx context.Context, u *cscustomer
 
 // ChatRemoveParticipantID removes the given participant id from the chat.
 // It returns updated chat if it succeed.
-func (h *serviceHandler) ChatRemoveParticipantID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatRemoveParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatRemoveParticipantID",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"chat_id":     id,
 	})
 	log.Debug("Removing the participant id from the chat.")
 
 	// get chat
-	_, err := h.chatGet(ctx, u, id)
+	c, err := h.chatGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	tmp, err := h.reqHandler.ChatV1ChatRemoveParticipantID(ctx, id, participantID)

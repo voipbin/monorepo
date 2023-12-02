@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -25,17 +25,15 @@ func domainsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyDomainsPOST
@@ -47,7 +45,7 @@ func domainsPOST(c *gin.Context) {
 
 	// create a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	domain, err := serviceHandler.DomainCreate(c.Request.Context(), &u, req.DomainName, req.Name, req.Detail)
+	domain, err := serviceHandler.DomainCreate(c.Request.Context(), &a, req.DomainName, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a domain. err: %v", err)
 		c.AbortWithStatus(400)
@@ -72,17 +70,15 @@ func domainsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamDomainsGET
@@ -104,7 +100,7 @@ func domainsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get domains
-	domains, err := serviceHandler.DomainGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	domains, err := serviceHandler.DomainGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a domain list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -139,17 +135,15 @@ func domainsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -158,7 +152,7 @@ func domainsIDGET(c *gin.Context) {
 	log.Debug("Executing domainsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.DomainGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.DomainGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a domain. err: %v", err)
 		c.AbortWithStatus(400)
@@ -182,17 +176,15 @@ func domainsIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -208,7 +200,7 @@ func domainsIDPUT(c *gin.Context) {
 
 	// update a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.DomainUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
+	res, err := serviceHandler.DomainUpdate(c.Request.Context(), &a, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the domain. err: %v", err)
 		c.AbortWithStatus(400)
@@ -231,17 +223,15 @@ func domainsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -251,7 +241,7 @@ func domainsIDDELETE(c *gin.Context) {
 
 	// delete a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.DomainDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.DomainDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the domain. err: %v", err)
 		c.AbortWithStatus(400)

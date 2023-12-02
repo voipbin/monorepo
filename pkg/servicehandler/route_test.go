@@ -7,9 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -20,8 +19,8 @@ func Test_RouteGet(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		responseRoute *rmroute.Route
 		expectRes     *rmroute.WebhookMessage
@@ -31,9 +30,10 @@ func Test_RouteGet(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("19dd98af-0e61-4735-909f-e0da0873ef44"),
 
@@ -65,7 +65,7 @@ func Test_RouteGet(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.id).Return(tt.responseRoute, nil)
 
-			res, err := h.RouteGet(ctx, tt.customer, tt.id)
+			res, err := h.RouteGet(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -82,7 +82,7 @@ func Test_RouteGets(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		pageToken string
 		pageSize  uint64
@@ -95,9 +95,10 @@ func Test_RouteGets(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			"2021-03-01 01:00:00.995000",
@@ -132,7 +133,7 @@ func Test_RouteGets(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
 
-			res, err := h.RouteGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.RouteGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -149,7 +150,7 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		customerID uuid.UUID
 		pageToken  string
@@ -163,9 +164,10 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			uuid.FromStringOrNil("3ebe976f-ecca-436a-a2d3-bc0c75501882"),
@@ -201,7 +203,7 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1RouteGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
 
-			res, err := h.RouteGetsByCustomerID(ctx, tt.customer, tt.customerID, tt.pageSize, tt.pageToken)
+			res, err := h.RouteGetsByCustomerID(ctx, tt.agent, tt.customerID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -218,7 +220,7 @@ func Test_RouteCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		customerID uuid.UUID
 		routeName  string
@@ -235,9 +237,10 @@ func Test_RouteCreate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			uuid.FromStringOrNil("cf7339a3-fb3b-44ff-aedd-2b999f89fd7b"),
@@ -283,7 +286,7 @@ func Test_RouteCreate(t *testing.T) {
 
 			res, err := h.RouteCreate(
 				ctx,
-				tt.customer,
+				tt.agent,
 				tt.customerID,
 				tt.routeName,
 				tt.detail,
@@ -307,8 +310,8 @@ func Test_RouteDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
-		routeID  uuid.UUID
+		agent   *amagent.Agent
+		routeID uuid.UUID
 
 		responseRoute *rmroute.Route
 		expectRes     *rmroute.WebhookMessage
@@ -318,9 +321,10 @@ func Test_RouteDelete(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("15700708-0f25-4d46-b72e-1d489abc2cea"),
 
@@ -353,7 +357,7 @@ func Test_RouteDelete(t *testing.T) {
 			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.routeID).Return(tt.responseRoute, nil)
 			mockReq.EXPECT().RouteV1RouteDelete(ctx, tt.routeID).Return(tt.responseRoute, nil)
 
-			res, err := h.RouteDelete(ctx, tt.customer, tt.routeID)
+			res, err := h.RouteDelete(ctx, tt.agent, tt.routeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -370,7 +374,7 @@ func Test_RouteUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		routeID    uuid.UUID
 		routeName  string
@@ -387,9 +391,10 @@ func Test_RouteUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			uuid.FromStringOrNil("88c8938c-8dd3-4fcf-887f-c0e026912a6b"),
@@ -438,7 +443,7 @@ func Test_RouteUpdate(t *testing.T) {
 
 			res, err := h.RouteUpdate(
 				ctx,
-				tt.customer,
+				tt.agent,
 				tt.routeID,
 				tt.routeName,
 				tt.detail,

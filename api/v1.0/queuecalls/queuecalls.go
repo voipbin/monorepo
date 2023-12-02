@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -27,17 +27,15 @@ func queuecallsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamQueuecallsGET
@@ -61,7 +59,7 @@ func queuecallsGET(c *gin.Context) {
 	}
 
 	// get tmps
-	tmps, err := serviceHandler.QueuecallGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.QueuecallGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get queuecalls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -97,18 +95,15 @@ func queuecallsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -116,7 +111,7 @@ func queuecallsIDGET(c *gin.Context) {
 	log = log.WithField("queuecall_id", id)
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.QueuecallGet(c.Request.Context(), &u, id)
+	res, err := servicehandler.QueuecallGet(c.Request.Context(), &a, id)
 	if err != nil || res == nil {
 		log.Errorf("Could not get the conferencecall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -140,18 +135,15 @@ func queuecallsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -159,7 +151,7 @@ func queuecallsIDDELETE(c *gin.Context) {
 	log = log.WithField("queuecall_id", id)
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.QueuecallDelete(c.Request.Context(), &u, id)
+	res, err := servicehandler.QueuecallDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -182,18 +174,15 @@ func queuecallsIDKickPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -201,7 +190,7 @@ func queuecallsIDKickPOST(c *gin.Context) {
 	log = log.WithField("queuecall_id", id)
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.QueuecallKick(c.Request.Context(), &u, id)
+	res, err := servicehandler.QueuecallKick(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -224,18 +213,15 @@ func queuecallsReferenceIDIDKickPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get referenceID
@@ -243,7 +229,7 @@ func queuecallsReferenceIDIDKickPOST(c *gin.Context) {
 	log = log.WithField("queuecall_id", referenceID)
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.QueuecallKickByReferenceID(c.Request.Context(), &u, referenceID)
+	res, err := servicehandler.QueuecallKickByReferenceID(c.Request.Context(), &a, referenceID)
 	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		c.AbortWithStatus(400)

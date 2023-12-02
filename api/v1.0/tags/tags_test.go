@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -28,7 +28,7 @@ func Test_TagsPOST(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 		reqBody  request.BodyTagsPOST
 		reqQuery string
 
@@ -41,7 +41,7 @@ func Test_TagsPOST(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			request.BodyTagsPOST{
@@ -72,7 +72,7 @@ func Test_TagsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -98,7 +98,7 @@ func TestTagsGET(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 		reqQuery string
 
 		pageSize  uint64
@@ -111,7 +111,7 @@ func TestTagsGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/tags?page_size=11&page_token=2020-09-20T03:23:20.995000",
@@ -129,7 +129,7 @@ func TestTagsGET(t *testing.T) {
 		},
 		{
 			"more than 2 results",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/tags?page_size=10&page_token=2020-09-20T03:23:20.995000",
@@ -165,7 +165,7 @@ func TestTagsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -187,7 +187,7 @@ func TestTagsDelete(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 		agentID  uuid.UUID
 		reqQuery string
 	}
@@ -195,7 +195,7 @@ func TestTagsDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
@@ -216,7 +216,7 @@ func TestTagsDelete(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -237,7 +237,7 @@ func TestTagsIDGet(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 		agentID  uuid.UUID
 		reqQuery string
 
@@ -247,7 +247,7 @@ func TestTagsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
@@ -272,7 +272,7 @@ func TestTagsIDGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -293,7 +293,7 @@ func Test_TagsIDPut(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 		id       uuid.UUID
 		reqBody  []byte
 		reqQuery string
@@ -305,7 +305,7 @@ func Test_TagsIDPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
@@ -330,7 +330,7 @@ func Test_TagsIDPut(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 

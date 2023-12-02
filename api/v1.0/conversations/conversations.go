@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	_ "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message" // for swag use
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -29,20 +29,16 @@ func conversationsGet(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	var req request.ParamConversationsGET
 	if err := c.BindQuery(&req); err != nil {
@@ -63,7 +59,7 @@ func conversationsGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get tmpRes
-	tmpRes, err := serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), &u, pageSize, req.PageToken)
+	tmpRes, err := serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -98,20 +94,16 @@ func conversationsIDGet(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -119,7 +111,7 @@ func conversationsIDGet(c *gin.Context) {
 	log.Debug("Executing customersIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ConversationGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.ConversationGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -143,17 +135,15 @@ func conversationsIDPut(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyConversationsIDPUT
@@ -168,7 +158,7 @@ func conversationsIDPut(c *gin.Context) {
 	log = log.WithField("target_id", id)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ConversationUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
+	res, err := serviceHandler.ConversationUpdate(c.Request.Context(), &a, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the conversation. err: %v", err)
 		c.AbortWithStatus(400)
@@ -193,20 +183,16 @@ func conversationsIDMessagesGet(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
 
 	var req request.ParamConversationsIDMessagesGET
 	if err := c.BindQuery(&req); err != nil {
@@ -230,7 +216,7 @@ func conversationsIDMessagesGet(c *gin.Context) {
 
 	// get tmpRes
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	tmpRes, err := serviceHandler.ConversationMessageGetsByConversationID(c.Request.Context(), &u, id, pageSize, req.PageToken)
+	tmpRes, err := serviceHandler.ConversationMessageGetsByConversationID(c.Request.Context(), &a, id, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation message list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -265,17 +251,15 @@ func conversationsIDMessagesPost(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyConversationsIDMessagesPOST
@@ -292,7 +276,7 @@ func conversationsIDMessagesPost(c *gin.Context) {
 	log.Debug("Executing customersIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ConversationMessageSend(c.Request.Context(), &u, id, req.Text, []cvmedia.Media{})
+	res, err := serviceHandler.ConversationMessageSend(c.Request.Context(), &a, id, req.Text, []cvmedia.Media{})
 	if err != nil {
 		log.Errorf("Could not create a customer. err: %v", err)
 		c.AbortWithStatus(400)

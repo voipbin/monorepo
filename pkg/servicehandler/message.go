@@ -6,21 +6,18 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 )
 
 // messageGet validates the tag's ownership and returns the message info.
-func (h *serviceHandler) messageGet(ctx context.Context, u *cscustomer.Customer, messageID uuid.UUID) (*mmmessage.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "messageGet",
-			"customer_id": u.ID,
-			"tag_id":      messageID,
-		},
-	)
+func (h *serviceHandler) messageGet(ctx context.Context, a *amagent.Agent, messageID uuid.UUID) (*mmmessage.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "messageGet",
+		"customer_id": a.CustomerID,
+		"tag_id":      messageID,
+	})
 
 	// send request
 	res, err := h.reqHandler.MessageV1MessageGet(ctx, messageID)
@@ -30,11 +27,6 @@ func (h *serviceHandler) messageGet(ctx context.Context, u *cscustomer.Customer,
 	}
 	log.WithField("tag", res).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	// create result
 	return res, nil
 }
@@ -42,17 +34,22 @@ func (h *serviceHandler) messageGet(ctx context.Context, u *cscustomer.Customer,
 // MessageGets sends a request to getting a list of messages
 // It sends a request to the message-manager to getting a list of messages.
 // it returns list of messages if it succeed.
-func (h *serviceHandler) MessageGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageGets",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"size":        size,
 		"token":       "token",
 	})
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// get messages
-	tmps, err := h.reqHandler.MessageV1MessageGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.MessageV1MessageGets(ctx, a.CustomerID, token, size)
 	if err != nil {
 		log.Infof("Could not get messages info. err: %v", err)
 		return nil, err
@@ -71,11 +68,11 @@ func (h *serviceHandler) MessageGets(ctx context.Context, u *cscustomer.Customer
 // MessageSend handles message send request.
 // It sends a request to the message-manager to create(send) a new message.
 // it returns created message information if it succeed.
-func (h *serviceHandler) MessageSend(ctx context.Context, u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageSend(ctx context.Context, a *amagent.Agent, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageSend",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 	})
 
 	if len(destinations) <= 0 {
@@ -83,8 +80,13 @@ func (h *serviceHandler) MessageSend(ctx context.Context, u *cscustomer.Customer
 		return nil, fmt.Errorf("destination is empty")
 	}
 
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	// send message
-	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, u.ID, source, destinations, text)
+	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, a.CustomerID, source, destinations, text)
 	if err != nil {
 		log.Infof("Could not get send a message info. err: %v", err)
 		return nil, err
@@ -97,19 +99,24 @@ func (h *serviceHandler) MessageSend(ctx context.Context, u *cscustomer.Customer
 // MessageGet handles message get request.
 // It sends a request to the message-manager to get a existed message.
 // it returns a message information if it succeed.
-func (h *serviceHandler) MessageGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageGet",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"message_id":  id,
 	})
 
 	// get message info
-	tmp, err := h.messageGet(ctx, u, id)
+	tmp, err := h.messageGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get message info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	if tmp.TMDelete != defaultTimestamp {
@@ -125,19 +132,24 @@ func (h *serviceHandler) MessageGet(ctx context.Context, u *cscustomer.Customer,
 // MessageDelete handles message delete request.
 // It sends a request to the message-manager to get a existed message.
 // it returns a message information if it succeed.
-func (h *serviceHandler) MessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageDelete",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
 		"message_id":  id,
 	})
 
 	// get message info
-	_, err := h.messageGet(ctx, u, id)
+	m, err := h.messageGet(ctx, a, id)
 	if err != nil {
 		log.Errorf("Could not get message info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, m.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// delete message info

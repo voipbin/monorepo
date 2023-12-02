@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
 func Test_ProviderGet(t *testing.T) {
@@ -19,8 +19,8 @@ func Test_ProviderGet(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
-		id       uuid.UUID
+		agent *amagent.Agent
+		id    uuid.UUID
 
 		response  *rmprovider.Provider
 		expectRes *rmprovider.WebhookMessage
@@ -30,9 +30,10 @@ func Test_ProviderGet(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("0c6f3dd3-929e-4d3b-8231-5e8c10db6c21"),
 
@@ -62,7 +63,7 @@ func Test_ProviderGet(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.ProviderGet(ctx, tt.customer, tt.id)
+			res, err := h.ProviderGet(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -79,7 +80,7 @@ func Test_ProviderGets(t *testing.T) {
 	type test struct {
 		name string
 
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -91,9 +92,10 @@ func Test_ProviderGets(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
@@ -127,7 +129,7 @@ func Test_ProviderGets(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1ProviderGets(ctx, tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
 
-			res, err := h.ProviderGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.ProviderGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -144,7 +146,7 @@ func Test_ProviderCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer     *cscustomer.Customer
+		agent        *amagent.Agent
 		providerType rmprovider.Type
 		hostname     string
 		techPrefix   string
@@ -161,9 +163,10 @@ func Test_ProviderCreate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			rmprovider.TypeSIP,
 			"test.com",
@@ -213,7 +216,7 @@ func Test_ProviderCreate(t *testing.T) {
 
 			res, err := h.ProviderCreate(
 				ctx,
-				tt.customer,
+				tt.agent,
 				tt.providerType,
 				tt.hostname,
 				tt.techPrefix,
@@ -238,7 +241,7 @@ func Test_ProviderDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		customer   *cscustomer.Customer
+		agent      *amagent.Agent
 		providerID uuid.UUID
 
 		responseProvider *rmprovider.Provider
@@ -249,9 +252,10 @@ func Test_ProviderDelete(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			uuid.FromStringOrNil("3b889381-8944-49fa-8220-1a3b8b4d0894"),
 
@@ -282,7 +286,7 @@ func Test_ProviderDelete(t *testing.T) {
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.providerID).Return(tt.responseProvider, nil)
 			mockReq.EXPECT().RouteV1ProviderDelete(ctx, tt.providerID).Return(tt.responseProvider, nil)
 
-			res, err := h.ProviderDelete(ctx, tt.customer, tt.providerID)
+			res, err := h.ProviderDelete(ctx, tt.agent, tt.providerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -299,7 +303,7 @@ func Test_ProviderUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		providerID   uuid.UUID
 		providerType rmprovider.Type
@@ -318,9 +322,10 @@ func Test_ProviderUpdate(t *testing.T) {
 		{
 			"normal",
 
-			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
 			uuid.FromStringOrNil("9d4a55e6-f197-497a-a359-06d1858de39e"),
@@ -374,7 +379,7 @@ func Test_ProviderUpdate(t *testing.T) {
 
 			res, err := h.ProviderUpdate(
 				ctx,
-				tt.customer,
+				tt.agent,
 				tt.providerID,
 				tt.providerType,
 				tt.hostname,

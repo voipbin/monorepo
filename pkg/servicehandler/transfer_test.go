@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -21,7 +21,7 @@ func Test_TransferStart(t *testing.T) {
 	type test struct {
 		name string
 
-		customer            *cscustomer.Customer
+		agent               *amagent.Agent
 		transferType        tmtransfer.Type
 		transfererCallID    uuid.UUID
 		transfereeAddresses []commonaddress.Address
@@ -36,8 +36,10 @@ func Test_TransferStart(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("9e84e358-8284-11ed-b722-2fa228151282"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			transferType:     tmtransfer.TypeAttended,
 			transfererCallID: uuid.FromStringOrNil("00d773d4-dd3b-11ed-bcad-d3c44f5b7491"),
@@ -50,15 +52,17 @@ func Test_TransferStart(t *testing.T) {
 
 			responseTransfererCall: &cmcall.Call{
 				ID:         uuid.FromStringOrNil("00d773d4-dd3b-11ed-bcad-d3c44f5b7491"),
-				CustomerID: uuid.FromStringOrNil("9e84e358-8284-11ed-b722-2fa228151282"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				TMDelete:   defaultTimestamp,
 			},
 			responseTransfer: &tmtransfer.Transfer{
-				ID: uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
+				ID:         uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			expectRes: &tmtransfer.WebhookMessage{
-				ID: uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
+				ID:         uuid.FromStringOrNil("00ff06ba-dd3b-11ed-944c-bf71648b5aaa"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -80,7 +84,7 @@ func Test_TransferStart(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.transfererCallID).Return(tt.responseTransfererCall, nil)
 			mockReq.EXPECT().TransferV1TransferStart(ctx, tt.transferType, tt.transfererCallID, tt.transfereeAddresses).Return(tt.responseTransfer, nil)
 
-			res, err := h.TransferStart(ctx, tt.customer, tt.transferType, tt.transfererCallID, tt.transfereeAddresses)
+			res, err := h.TransferStart(ctx, tt.agent, tt.transferType, tt.transfererCallID, tt.transfereeAddresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

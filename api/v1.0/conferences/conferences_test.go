@@ -9,9 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -27,8 +26,8 @@ func setupServer(app *gin.Engine) {
 func Test_conferencesPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		conferenceType cfconference.Type
 		conferenceName string
@@ -41,7 +40,7 @@ func Test_conferencesPOST(t *testing.T) {
 	}{
 		{
 			"conference type",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -61,7 +60,7 @@ func Test_conferencesPOST(t *testing.T) {
 		},
 		{
 			"pre/post actions",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -111,7 +110,7 @@ func Test_conferencesPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -119,7 +118,7 @@ func Test_conferencesPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().ConferenceCreate(
 				req.Context(),
-				&tt.customer,
+				&tt.agent,
 				tt.conference.Type,
 				tt.conference.Name,
 				tt.conference.Detail,
@@ -141,9 +140,9 @@ func Test_conferencesPOST(t *testing.T) {
 func TestConferencesIDGET(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent amagent.Agent
+		id    uuid.UUID
 
 		requestURI string
 
@@ -151,11 +150,8 @@ func TestConferencesIDGET(t *testing.T) {
 	}{
 		{
 			"simple test",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
 
@@ -179,12 +175,12 @@ func TestConferencesIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.requestURI, nil)
-			mockSvc.EXPECT().ConferenceGet(req.Context(), &tt.customer, tt.id).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferenceGet(req.Context(), &tt.agent, tt.id).Return(tt.conference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -198,8 +194,8 @@ func TestConferencesIDGET(t *testing.T) {
 func Test_conferencesIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery string
 		id       uuid.UUID
@@ -208,11 +204,8 @@ func Test_conferencesIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			customer: cscustomer.Customer{
+			agent: amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			reqQuery: "/v1.0/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
@@ -237,12 +230,12 @@ func Test_conferencesIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.customer, tt.id).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.agent, tt.id).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -257,7 +250,7 @@ func Test_conferencesIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		customer      cscustomer.Customer
+		agent         amagent.Agent
 		requestTarget string
 		request       []byte
 
@@ -272,7 +265,7 @@ func Test_conferencesIDPUT(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
@@ -312,13 +305,13 @@ func Test_conferencesIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("PUT", tt.requestTarget, bytes.NewBuffer(tt.request))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().ConferenceUpdate(req.Context(), &tt.customer, tt.expectID, tt.expectName, tt.expectDetail, tt.expectTimeout, tt.expectPreActions, tt.expectPostActions).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceUpdate(req.Context(), &tt.agent, tt.expectID, tt.expectName, tt.expectDetail, tt.expectTimeout, tt.expectPreActions, tt.expectPostActions).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -332,9 +325,9 @@ func Test_conferencesIDPUT(t *testing.T) {
 func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent amagent.Agent
+		id    uuid.UUID
 
 		requestURI string
 
@@ -342,11 +335,8 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
 			"/v1.0/conferences/d2f603ce-910c-11ed-a360-0356e6882c63/recording_start",
@@ -370,13 +360,13 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.requestURI, nil)
 
-			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.customer, tt.id).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.id).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -390,9 +380,9 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent amagent.Agent
+		id    uuid.UUID
 
 		requestURI string
 
@@ -400,11 +390,8 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("f1f4d55c-910c-11ed-ad67-8768a5ad30d8"),
 			"/v1.0/conferences/f1f4d55c-910c-11ed-ad67-8768a5ad30d8/recording_stop",
@@ -428,13 +415,13 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.requestURI, nil)
 
-			mockSvc.EXPECT().ConferenceRecordingStop(req.Context(), &tt.customer, tt.id).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStop(req.Context(), &tt.agent, tt.id).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -449,7 +436,7 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		agent    amagent.Agent
 		id       uuid.UUID
 		language string
 
@@ -460,11 +447,8 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("af60d8b6-98ec-11ed-9e1b-ab94ae0c68d9"),
 			"en-US",
@@ -491,13 +475,13 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.requestURI, bytes.NewBuffer(tt.requestBody))
 
-			mockSvc.EXPECT().ConferenceTranscribeStart(req.Context(), &tt.customer, tt.id, tt.language).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceTranscribeStart(req.Context(), &tt.agent, tt.id, tt.language).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -511,9 +495,9 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		id       uuid.UUID
+		name  string
+		agent amagent.Agent
+		id    uuid.UUID
 
 		requestURI string
 
@@ -521,11 +505,8 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			uuid.FromStringOrNil("af8db78c-98ec-11ed-9d8c-ffdf26e9202d"),
 			"/v1.0/conferences/af8db78c-98ec-11ed-9d8c-ffdf26e9202d/transcribe_stop",
@@ -549,13 +530,13 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("POST", tt.requestURI, nil)
 
-			mockSvc.EXPECT().ConferenceTranscribeStop(req.Context(), &tt.customer, tt.id).Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceTranscribeStop(req.Context(), &tt.agent, tt.id).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -24,8 +24,8 @@ func setupServer(app *gin.Engine) {
 func Test_chatroomsGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		reqQuery  string
 		ownerID   uuid.UUID
@@ -39,8 +39,8 @@ func Test_chatroomsGET(t *testing.T) {
 	tests := []test{
 		{
 			"1 item",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
 			},
 
 			"/v1.0/chatrooms?owner_id=f3974fc6-38a0-11ed-a40b-6fc6c6ec606e&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -58,8 +58,8 @@ func Test_chatroomsGET(t *testing.T) {
 		},
 		{
 			"more than 2 items",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
 			},
 
 			"/v1.0/chatrooms?owner_id=20c40fac-38a1-11ed-83d3-93d4a1e51688&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -98,13 +98,13 @@ func Test_chatroomsGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroomGetsByOwnerID(req.Context(), &tt.customer, tt.ownerID, tt.pageSize, tt.pageToken).Return(tt.responseChatrooms, nil)
+			mockSvc.EXPECT().ChatroomGetsByOwnerID(req.Context(), &tt.agent, tt.ownerID, tt.pageSize, tt.pageToken).Return(tt.responseChatrooms, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -122,7 +122,7 @@ func Test_chatroomsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery          string
 		chatroommessageID uuid.UUID
@@ -133,7 +133,7 @@ func Test_chatroomsIDGET(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -161,7 +161,7 @@ func Test_chatroomsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 
@@ -185,7 +185,7 @@ func Test_chatroomsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer cscustomer.Customer
+		customer amagent.Agent
 
 		reqQuery   string
 		chatroomID uuid.UUID
@@ -196,7 +196,7 @@ func Test_chatroomsIDDELETE(t *testing.T) {
 	}{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
@@ -224,7 +224,7 @@ func Test_chatroomsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.customer)
 			})
 			setupServer(r)
 

@@ -11,10 +11,10 @@ import (
 )
 
 // Run creates a new websocket and starts socket message listen.
-func (h *websockHandler) Run(ctx context.Context, w http.ResponseWriter, r *http.Request, customerID uuid.UUID) error {
+func (h *websockHandler) Run(ctx context.Context, w http.ResponseWriter, r *http.Request, agentID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Run",
-		"customer_id": customerID,
+		"func":     "Run",
+		"agent_id": agentID,
 	})
 
 	// create a websock
@@ -36,7 +36,7 @@ func (h *websockHandler) Run(ctx context.Context, w http.ResponseWriter, r *http
 	log.Debugf("Created a new subscribe socket correctly.")
 
 	newCtx, newCancel := context.WithCancel(context.Background())
-	go h.runWebsock(newCtx, newCancel, customerID, ws, sock)
+	go h.runWebsock(newCtx, newCancel, agentID, ws, sock)
 	go h.runZMQSub(newCtx, newCancel, ws, sock)
 
 	<-newCtx.Done()

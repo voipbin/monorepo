@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/number-manager.git/models/number" // for swag use
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -28,17 +28,15 @@ func numbersGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamNumbersGET
@@ -60,7 +58,7 @@ func numbersGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get numbers
-	numbers, err := serviceHandler.NumberGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	numbers, err := serviceHandler.NumberGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a order number list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -95,17 +93,15 @@ func numbersIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -115,7 +111,7 @@ func numbersIDGET(c *gin.Context) {
 
 	// get order number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.NumberGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.NumberGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get an order number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -139,17 +135,15 @@ func numbersPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyNumbersPOST
@@ -161,7 +155,7 @@ func numbersPOST(c *gin.Context) {
 
 	// create a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberCreate(c.Request.Context(), &u, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
+	numb, err := serviceHandler.NumberCreate(c.Request.Context(), &a, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create the number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -185,17 +179,15 @@ func numbersIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -205,7 +197,7 @@ func numbersIDDELETE(c *gin.Context) {
 
 	// delete order number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.NumberDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.NumberDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete an order number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -229,17 +221,15 @@ func numbersIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -256,7 +246,7 @@ func numbersIDPUT(c *gin.Context) {
 
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberUpdate(c.Request.Context(), &u, id, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
+	numb, err := serviceHandler.NumberUpdate(c.Request.Context(), &a, id, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -280,17 +270,15 @@ func numbersIDFlowIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -307,7 +295,7 @@ func numbersIDFlowIDPUT(c *gin.Context) {
 
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberUpdateFlowIDs(c.Request.Context(), &u, id, req.CallFlowID, req.MessageFlowID)
+	numb, err := serviceHandler.NumberUpdateFlowIDs(c.Request.Context(), &a, id, req.CallFlowID, req.MessageFlowID)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -331,17 +319,15 @@ func numbersRenewPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyNumbersRenewPOST
@@ -354,7 +340,7 @@ func numbersRenewPOST(c *gin.Context) {
 
 	// renew a numbers
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.NumberRenew(c.Request.Context(), &u, req.TMRenew)
+	res, err := serviceHandler.NumberRenew(c.Request.Context(), &a, req.TMRenew)
 	if err != nil {
 		log.Errorf("Could not renew the numbers. err: %v", err)
 		c.AbortWithStatus(400)

@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
@@ -21,7 +21,7 @@ func Test_OutdialtargetCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		outdialID         uuid.UUID
 		outdialtargetName string
@@ -40,8 +40,10 @@ func Test_OutdialtargetCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("410fa394-8764-4300-a8b0-a6e6108c4208"),
@@ -72,7 +74,7 @@ func Test_OutdialtargetCreate(t *testing.T) {
 
 			&omoutdial.Outdial{
 				ID:         uuid.FromStringOrNil("410fa394-8764-4300-a8b0-a6e6108c4208"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("5e602408-e819-4aa0-aac6-24072a224dff"),
@@ -83,8 +85,10 @@ func Test_OutdialtargetCreate(t *testing.T) {
 		},
 		{
 			"has 1 address",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("7aff596d-1db2-4456-95b4-bdab04296cd8"),
@@ -103,7 +107,7 @@ func Test_OutdialtargetCreate(t *testing.T) {
 
 			&omoutdial.Outdial{
 				ID:         uuid.FromStringOrNil("7aff596d-1db2-4456-95b4-bdab04296cd8"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("895b86d9-4e58-4778-af61-d389dbeb9cf7"),
@@ -130,7 +134,7 @@ func Test_OutdialtargetCreate(t *testing.T) {
 
 			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			mockReq.EXPECT().OutdialV1OutdialtargetCreate(ctx, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4).Return(tt.response, nil)
-			res, err := h.OutdialtargetCreate(ctx, tt.customer, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4)
+			res, err := h.OutdialtargetCreate(ctx, tt.agent, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -146,7 +150,7 @@ func Test_OutdialtargetGet(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		customer        *cscustomer.Customer
+		agent           *amagent.Agent
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 
@@ -156,16 +160,17 @@ func Test_OutdialtargetGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
-
 			uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
 			uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
 
 			&omoutdial.Outdial{
 				ID:         uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID:        uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
@@ -194,7 +199,7 @@ func Test_OutdialtargetGet(t *testing.T) {
 
 			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			mockReq.EXPECT().OutdialV1OutdialtargetGet(ctx, tt.outdialtargetID).Return(tt.response, nil)
-			res, err := h.OutdialtargetGet(ctx, tt.customer, tt.outdialID, tt.outdialtargetID)
+			res, err := h.OutdialtargetGet(ctx, tt.agent, tt.outdialID, tt.outdialtargetID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -210,7 +215,7 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 
 	type test struct {
 		name      string
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		outdialID uuid.UUID
 		pageToken string
 		pageSize  uint64
@@ -223,8 +228,10 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
 			"2021-03-01 01:00:00.995000",
@@ -232,7 +239,7 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 
 			&omoutdial.Outdial{
 				ID:         uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			[]omoutdialtarget.OutdialTarget{
 				{
@@ -264,7 +271,7 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			mockReq.EXPECT().OutdialV1OutdialtargetGetsByOutdialID(ctx, tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.OutdialtargetGetsByOutdialID(ctx, tt.customer, tt.outdialID, tt.pageSize, tt.pageToken)
+			res, err := h.OutdialtargetGetsByOutdialID(ctx, tt.agent, tt.outdialID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -286,7 +293,7 @@ func Test_OutdialtargetDelete(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		customer        *cscustomer.Customer
+		agent           *amagent.Agent
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 
@@ -296,8 +303,10 @@ func Test_OutdialtargetDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
@@ -305,7 +314,7 @@ func Test_OutdialtargetDelete(t *testing.T) {
 
 			&omoutdial.Outdial{
 				ID:         uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			&omoutdialtarget.OutdialTarget{
 				ID:        uuid.FromStringOrNil("f814109a-c62e-4cc3-8c8b-616fd91314a6"),
@@ -335,7 +344,7 @@ func Test_OutdialtargetDelete(t *testing.T) {
 			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			mockReq.EXPECT().OutdialV1OutdialtargetGet(ctx, tt.outdialtargetID).Return(tt.response, nil)
 			mockReq.EXPECT().OutdialV1OutdialtargetDelete(ctx, tt.outdialtargetID).Return(tt.response, nil)
-			res, err := h.OutdialtargetDelete(ctx, tt.customer, tt.outdialID, tt.outdialtargetID)
+			res, err := h.OutdialtargetDelete(ctx, tt.agent, tt.outdialID, tt.outdialtargetID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

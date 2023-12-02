@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -26,17 +26,15 @@ func groupcallsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyGroupcallsPOST
@@ -48,7 +46,7 @@ func groupcallsPOST(c *gin.Context) {
 
 	// create a groupcall
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.GroupcallCreate(c.Request.Context(), &u, req.Source, req.Destinations, req.FlowID, req.Actions, req.RingMethod, req.AnswerMethod)
+	res, err := serviceHandler.GroupcallCreate(c.Request.Context(), &a, req.Source, req.Destinations, req.FlowID, req.Actions, req.RingMethod, req.AnswerMethod)
 	if err != nil {
 		log.Errorf("Could not create a groupcall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -74,17 +72,15 @@ func groupcallsGET(c *gin.Context) {
 		"request":         c.Request,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamGroupcallsGET
@@ -106,7 +102,7 @@ func groupcallsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get groupcalls
-	tmps, err := serviceHandler.GroupcallGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.GroupcallGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a groupcall list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -141,17 +137,15 @@ func groupcallsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -159,7 +153,7 @@ func groupcallsIDGET(c *gin.Context) {
 	log = log.WithField("groupcall_id", id)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.GroupcallGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.GroupcallGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a groupcall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -183,17 +177,15 @@ func groupcallsIDHangupPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -201,7 +193,7 @@ func groupcallsIDHangupPOST(c *gin.Context) {
 	log = log.WithField("groupcall_id", id)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.GroupcallHangup(c.Request.Context(), &u, id)
+	res, err := serviceHandler.GroupcallHangup(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not hangup the groupcall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -225,17 +217,15 @@ func groupcallsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -243,7 +233,7 @@ func groupcallsIDDELETE(c *gin.Context) {
 	log = log.WithField("groupcall_id", id)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.GroupcallDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.GroupcallDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the groupcall. err: %v", err)
 		c.AbortWithStatus(400)

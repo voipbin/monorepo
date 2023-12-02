@@ -7,11 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -22,7 +21,7 @@ func Test_TranscribeGet(t *testing.T) {
 	type test struct {
 		name string
 
-		customer     *cscustomer.Customer
+		agent        *amagent.Agent
 		transcribeID uuid.UUID
 
 		responseTranscribe *tmtranscribe.Transcribe
@@ -33,20 +32,22 @@ func Test_TranscribeGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("80546666-826f-11ed-a410-ebc3c048d175"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
 
 			&tmtranscribe.Transcribe{
 				ID:         uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
-				CustomerID: uuid.FromStringOrNil("80546666-826f-11ed-a410-ebc3c048d175"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			&tmtranscribe.WebhookMessage{
 				ID:         uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
-				CustomerID: uuid.FromStringOrNil("80546666-826f-11ed-a410-ebc3c048d175"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -67,7 +68,7 @@ func Test_TranscribeGet(t *testing.T) {
 
 			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
 
-			res, err := h.TranscribeGet(ctx, tt.customer, tt.transcribeID)
+			res, err := h.TranscribeGet(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -84,7 +85,7 @@ func Test_TranscribeGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer  *cscustomer.Customer
+		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
 
@@ -93,8 +94,10 @@ func Test_TranscribeGets(t *testing.T) {
 	}{
 		{
 			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("defbf0e8-8270-11ed-bd6a-23cb6665a292"),
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-10-20 01:00:00.995000",
 			10,
@@ -132,8 +135,8 @@ func Test_TranscribeGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
-			res, err := h.TranscribeGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			res, err := h.TranscribeGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -150,7 +153,7 @@ func Test_TranscribeStart(t *testing.T) {
 	type test struct {
 		name string
 
-		customer      *cscustomer.Customer
+		agent         *amagent.Agent
 		referenceType tmtranscribe.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -167,8 +170,10 @@ func Test_TranscribeStart(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			referenceType: tmtranscribe.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
@@ -177,16 +182,18 @@ func Test_TranscribeStart(t *testing.T) {
 
 			responseCall: &cmcall.Call{
 				ID:         uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Status:     cmcall.StatusProgressing,
 				TMDelete:   defaultTimestamp,
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
-				ID: uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
+				ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			expectRes: &tmtranscribe.WebhookMessage{
-				ID: uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
+				ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -206,15 +213,15 @@ func Test_TranscribeStart(t *testing.T) {
 			ctx := context.Background()
 
 			switch tt.referenceType {
-			case transcribe.ReferenceTypeCall:
+			case tmtranscribe.ReferenceTypeCall:
 				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 
-			case transcribe.ReferenceTypeRecording:
+			case tmtranscribe.ReferenceTypeRecording:
 				mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID).Return(tt.responseRecording, nil)
 			}
-			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.customer.ID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.agent.CustomerID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)
 
-			res, err := h.TranscribeStart(ctx, tt.customer, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -231,7 +238,7 @@ func Test_TranscribeStop(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		transcribeID uuid.UUID
 
@@ -244,19 +251,21 @@ func Test_TranscribeStop(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("d83aff44-8282-11ed-851f-1f49a32483fb"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			transcribeID: uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{
 				ID:         uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
-				CustomerID: uuid.FromStringOrNil("d83aff44-8282-11ed-851f-1f49a32483fb"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			expectRes: &tmtranscribe.WebhookMessage{
 				ID:         uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
-				CustomerID: uuid.FromStringOrNil("d83aff44-8282-11ed-851f-1f49a32483fb"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -280,7 +289,7 @@ func Test_TranscribeStop(t *testing.T) {
 
 			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
 
-			res, err := h.TranscribeStop(ctx, tt.customer, tt.transcribeID)
+			res, err := h.TranscribeStop(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -297,7 +306,7 @@ func Test_TranscribeDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *cscustomer.Customer
+		agent *amagent.Agent
 
 		transcribeID uuid.UUID
 
@@ -310,19 +319,21 @@ func Test_TranscribeDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("7176ea4c-8283-11ed-95d3-a72987927819"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 			transcribeID: uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{
 				ID:         uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
-				CustomerID: uuid.FromStringOrNil("7176ea4c-8283-11ed-95d3-a72987927819"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			expectRes: &tmtranscribe.WebhookMessage{
 				ID:         uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
-				CustomerID: uuid.FromStringOrNil("7176ea4c-8283-11ed-95d3-a72987927819"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 		},
 	}
@@ -346,7 +357,7 @@ func Test_TranscribeDelete(t *testing.T) {
 
 			mockReq.EXPECT().TranscribeV1TranscribeDelete(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
 
-			res, err := h.TranscribeDelete(ctx, tt.customer, tt.transcribeID)
+			res, err := h.TranscribeDelete(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

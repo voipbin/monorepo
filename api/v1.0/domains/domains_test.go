@@ -11,8 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -26,22 +25,19 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestDomainsPOST(t *testing.T) {
+func Test_DomainsPOST(t *testing.T) {
 
 	type test struct {
 		name        string
-		customer    cscustomer.Customer
+		agent       amagent.Agent
 		requestBody request.BodyDomainsPOST
 	}
 
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			request.BodyDomainsPOST{
 				Name:       "test name",
@@ -64,7 +60,7 @@ func TestDomainsPOST(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -76,7 +72,7 @@ func TestDomainsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", "/v1.0/domains", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().DomainCreate(req.Context(), &tt.customer, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&rmdomain.WebhookMessage{}, nil)
+			mockSvc.EXPECT().DomainCreate(req.Context(), &tt.agent, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&rmdomain.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -86,12 +82,12 @@ func TestDomainsPOST(t *testing.T) {
 	}
 }
 
-func TestDomainsIDGET(t *testing.T) {
+func Test_DomainsIDGET(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
-		domain   *rmdomain.Domain
+		name   string
+		agent  amagent.Agent
+		domain *rmdomain.Domain
 
 		expectDomain *rmdomain.WebhookMessage
 	}
@@ -99,7 +95,7 @@ func TestDomainsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			&rmdomain.Domain{
@@ -131,12 +127,12 @@ func TestDomainsIDGET(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/domains/%s", tt.domain.ID), nil)
-			mockSvc.EXPECT().DomainGet(req.Context(), &tt.customer, tt.domain.ID).Return(tt.expectDomain, nil)
+			mockSvc.EXPECT().DomainGet(req.Context(), &tt.agent, tt.domain.ID).Return(tt.expectDomain, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -146,11 +142,11 @@ func TestDomainsIDGET(t *testing.T) {
 	}
 }
 
-func TestDomainsIDPUT(t *testing.T) {
+func Test_DomainsIDPUT(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer cscustomer.Customer
+		name  string
+		agent amagent.Agent
 
 		domainID uuid.UUID
 		domainN  string
@@ -162,11 +158,8 @@ func TestDomainsIDPUT(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 
 			uuid.FromStringOrNil("91f5852a-6edb-11eb-86c9-f3e5fc2d3a80"),
@@ -193,7 +186,7 @@ func TestDomainsIDPUT(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
@@ -205,7 +198,7 @@ func TestDomainsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", "/v1.0/domains/"+tt.domainID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().DomainUpdate(req.Context(), &tt.customer, tt.domainID, tt.domainN, tt.detail).Return(&rmdomain.WebhookMessage{}, nil)
+			mockSvc.EXPECT().DomainUpdate(req.Context(), &tt.agent, tt.domainID, tt.domainN, tt.detail).Return(&rmdomain.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -215,18 +208,18 @@ func TestDomainsIDPUT(t *testing.T) {
 	}
 }
 
-func TestDomainsIDDELETE(t *testing.T) {
+func Test_DomainsIDDELETE(t *testing.T) {
 
 	type test struct {
 		name     string
-		customer cscustomer.Customer
+		agent    amagent.Agent
 		domainID uuid.UUID
 	}
 
 	tests := []test{
 		{
 			"normal",
-			cscustomer.Customer{
+			amagent.Agent{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("5d41b834-6edc-11eb-8d71-f7a08bdfd253"),
@@ -246,12 +239,12 @@ func TestDomainsIDDELETE(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/domains/%s", tt.domainID), nil)
-			mockSvc.EXPECT().DomainDelete(req.Context(), &tt.customer, tt.domainID).Return(&rmdomain.WebhookMessage{}, nil)
+			mockSvc.EXPECT().DomainDelete(req.Context(), &tt.agent, tt.domainID).Return(&rmdomain.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

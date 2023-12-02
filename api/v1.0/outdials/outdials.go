@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	_ "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial" // for swag use
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -27,17 +27,15 @@ func outdialsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.BodyOutdialsPOST
@@ -50,7 +48,7 @@ func outdialsPOST(c *gin.Context) {
 
 	// create a outdial
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialCreate(c.Request.Context(), &u, req.CampaignID, req.Name, req.Detail, req.Data)
+	res, err := serviceHandler.OutdialCreate(c.Request.Context(), &a, req.CampaignID, req.Name, req.Detail, req.Data)
 	if err != nil {
 		log.Errorf("Could not create a outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -75,17 +73,15 @@ func outdialsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	var req request.ParamOutdialsGET
@@ -107,7 +103,7 @@ func outdialsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get outdial
-	outdials, err := serviceHandler.OutdialGetsByCustomerID(c.Request.Context(), &u, pageSize, req.PageToken)
+	outdials, err := serviceHandler.OutdialGetsByCustomerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a outdial list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -142,17 +138,15 @@ func outdialsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -161,7 +155,7 @@ func outdialsIDGET(c *gin.Context) {
 	log.Debug("Executing outdialsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialGet(c.Request.Context(), &u, id)
+	res, err := serviceHandler.OutdialGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -185,17 +179,15 @@ func outdialsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -205,7 +197,7 @@ func outdialsIDDELETE(c *gin.Context) {
 
 	// delete an outdial
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.OutdialDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -231,17 +223,15 @@ func outdialsIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -258,7 +248,7 @@ func outdialsIDPUT(c *gin.Context) {
 
 	// update a outdial
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail)
+	res, err := serviceHandler.OutdialUpdateBasicInfo(c.Request.Context(), &a, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -284,17 +274,15 @@ func outdialsIDCampaignIDPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -311,7 +299,7 @@ func outdialsIDCampaignIDPUT(c *gin.Context) {
 
 	// update a outdial
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialUpdateCampaignID(c.Request.Context(), &u, id, req.CampaignID)
+	res, err := serviceHandler.OutdialUpdateCampaignID(c.Request.Context(), &a, id, req.CampaignID)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -337,17 +325,15 @@ func outdialsIDDataPUT(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -364,7 +350,7 @@ func outdialsIDDataPUT(c *gin.Context) {
 
 	// update a outdial
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialUpdateData(c.Request.Context(), &u, id, req.Data)
+	res, err := serviceHandler.OutdialUpdateData(c.Request.Context(), &a, id, req.Data)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -390,17 +376,15 @@ func outdialsIDTargetsPOST(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -417,7 +401,7 @@ func outdialsIDTargetsPOST(c *gin.Context) {
 
 	// create a target
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialtargetCreate(c.Request.Context(), &u, id, req.Name, req.Detail, req.Data, req.Destination0, req.Destination1, req.Destination2, req.Destination3, req.Destination4)
+	res, err := serviceHandler.OutdialtargetCreate(c.Request.Context(), &a, id, req.Name, req.Detail, req.Data, req.Destination0, req.Destination1, req.Destination2, req.Destination3, req.Destination4)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
 		c.AbortWithStatus(400)
@@ -442,17 +426,15 @@ func outdialsIDTargetsIDGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -466,7 +448,7 @@ func outdialsIDTargetsIDGET(c *gin.Context) {
 
 	// get an outdial target
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialtargetGet(c.Request.Context(), &u, id, targetID)
+	res, err := serviceHandler.OutdialtargetGet(c.Request.Context(), &a, id, targetID)
 	if err != nil {
 		log.Errorf("Could not get the outdial target. err: %v", err)
 		c.AbortWithStatus(400)
@@ -491,17 +473,15 @@ func outdialsIDTargetsIDDELETE(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -515,7 +495,7 @@ func outdialsIDTargetsIDDELETE(c *gin.Context) {
 
 	// delete an outdial target
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutdialtargetDelete(c.Request.Context(), &u, id, targetID)
+	res, err := serviceHandler.OutdialtargetDelete(c.Request.Context(), &a, id, targetID)
 	if err != nil {
 		log.Errorf("Could not delete the outdial target. err: %v", err)
 		c.AbortWithStatus(400)
@@ -539,17 +519,15 @@ func outdialsIDTargetsGET(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("customer")
+	tmp, exists := c.Get("agent")
 	if !exists {
-		log.Errorf("Could not find customer info.")
+		log.Errorf("Could not find agent info.")
 		c.AbortWithStatus(400)
 		return
 	}
-	u := tmp.(cscustomer.Customer)
+	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"customer_id":    u.ID,
-		"username":       u.Username,
-		"permission_ids": u.PermissionIDs,
+		"agent": a,
 	})
 
 	// get id
@@ -578,7 +556,7 @@ func outdialsIDTargetsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get outdial
-	outdialtargets, err := serviceHandler.OutdialtargetGetsByOutdialID(c.Request.Context(), &u, id, pageSize, req.PageToken)
+	outdialtargets, err := serviceHandler.OutdialtargetGetsByOutdialID(c.Request.Context(), &a, id, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a outdial list. err: %v", err)
 		c.AbortWithStatus(400)

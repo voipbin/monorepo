@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 
@@ -20,7 +20,7 @@ func Test_TranscriptGets(t *testing.T) {
 	type test struct {
 		name string
 
-		customer     *cscustomer.Customer
+		agent        *amagent.Agent
 		transcribeID uuid.UUID
 
 		responseTranscribe  *tmtranscribe.Transcribe
@@ -33,15 +33,17 @@ func Test_TranscriptGets(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &cscustomer.Customer{
-				ID: uuid.FromStringOrNil("9e84e358-8284-11ed-b722-2fa228151282"),
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
 			},
 
 			transcribeID: uuid.FromStringOrNil("9eafc870-8284-11ed-92de-d74d9e2342cb"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{
 				ID:         uuid.FromStringOrNil("9eafc870-8284-11ed-92de-d74d9e2342cb"),
-				CustomerID: uuid.FromStringOrNil("9e84e358-8284-11ed-b722-2fa228151282"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 			responseTranscripts: []tmtranscript.Transcript{
 				{
@@ -80,7 +82,7 @@ func Test_TranscriptGets(t *testing.T) {
 			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
 			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, tt.transcribeID).Return(tt.responseTranscripts, nil)
 
-			res, err := h.TranscriptGets(ctx, tt.customer, tt.transcribeID)
+			res, err := h.TranscriptGets(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
