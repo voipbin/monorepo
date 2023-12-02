@@ -43,20 +43,19 @@ type Permission uint64
 // Permission
 const (
 	PermissionNone Permission = 0x0000
-	PermissionAll  Permission = 0xFFFF
+	PermissionAll  Permission = 0xFFFF // 65535
 
 	// project level permission
-	PermissionProjectSuperAdmin Permission = 0x0001 // permission for voipbin project super admin.
-	// 0x0002
-	// 0x0004
-	// 0x0008
+	PermissionProjectSuperAdmin Permission = 0x0001 // 1. permission for voipbin project super admin.
+	// 0x0002	// 2. reserved.
+	// 0x0004	// 4. reserved.
+	// 0x0008	// 8. reserved.
 
 	// customer level permission
-	// 0x0010
-	PermissionCustomerAdmin   Permission = 0x0020 // Permission for customer level admin
-	PermissionCustomerManager Permission = 0x0040 // Permission for customer level manager
+	PermissionCustomerAgent   Permission = 0x0010 // 16. Permission for customer level agent
+	PermissionCustomerAdmin   Permission = 0x0020 // 32. Permission for customer level admin
+	PermissionCustomerManager Permission = 0x0040 // 64. Permission for customer level manager
 	// 0x0080
-	// ...
 
 	// reserved level permission
 	// 0x0100 //
