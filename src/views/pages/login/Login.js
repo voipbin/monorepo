@@ -75,14 +75,16 @@ const Login = () => {
         const splits = response.token.split('.');
         console.log("customer info. splits: ", splits);
 
-        const customerInfo = JSON.parse(JSON.parse(Base64.decode(splits[1])).customer);
-        console.log(
-          "customer info. customerInfo: ", customerInfo,
-          "permission_ids: ", JSON.stringify(customerInfo.permission_ids),
-        );
+        const customerInfo = JSON.parse(Base64.decode(splits[1])).customer;
+        const agentInfo = JSON.parse(Base64.decode(splits[1])).agent;
+        console.log("Customer detail info. customerInfo: ", customerInfo);
+        console.log("Agent detail info. agent_info: ", agentInfo);
 
-        const tmpData = JSON.stringify(customerInfo);
-        localStorage.setItem('customer_info', tmpData);
+        const tmpCustomer = JSON.stringify(customerInfo);
+        localStorage.setItem('customer_info', tmpCustomer);
+
+        const tmpAgent = JSON.stringify(agentInfo);
+        localStorage.setItem('agent_info', tmpAgent);
 
         // load all resources
         ProviderLoadResourcesAll();
