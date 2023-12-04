@@ -301,7 +301,7 @@ const outplans = {
 
 
 
-const navAdmin = [
+const navProjectAdmin = [
   dashboard,
 
   // resource -----------------------------------------------------------------------
@@ -334,7 +334,7 @@ const navAdmin = [
   outplans,
 ]
 
-const navNormal = [
+const navCustomerAdmin = [
   dashboard,
 
   // resource -----------------------------------------------------------------------
@@ -343,7 +343,6 @@ const navNormal = [
     name: 'Resource',
   },
   calls,
-  customers,
   queues,
   numbers,
   flows,
@@ -365,18 +364,69 @@ const navNormal = [
   outplans,
 ]
 
+const navCustomerManager = [
+  dashboard,
+
+  // resource -----------------------------------------------------------------------
+  {
+    component: CNavTitle,
+    name: 'Resource',
+  },
+  calls,
+  queues,
+  flows,
+  agents,
+  conferences,
+  chatbots,
+  chats,
+  trunks,
+  extensions,
+
+  // outbound campaign -----------------------------------------------------------------------
+  {
+    component: CNavTitle,
+    name: 'Outbound Campaign',
+  },
+  campaigns,
+  outdials,
+  outplans,
+]
+
+const navCustomerAgent = [
+  dashboard,
+
+  // resource -----------------------------------------------------------------------
+  {
+    component: CNavTitle,
+    name: 'Resource',
+  },
+  calls,
+  conferences,
+  chats,
+]
+
+
 var _nav = [];
 
-const customerInfo = JSON.parse(localStorage.getItem("customer_info"));
-if (customerInfo === null) {
-  _nav = navNormal;
-}
-else if (customerInfo["permission_ids"].includes("03796e14-7cb4-11ec-9dba-e72023efd1c6")) {
-  console.log("The customer has admin permission.")
-  _nav = navAdmin;
+const agentInfo = JSON.parse(localStorage.getItem("agent_info"));
+if (agentInfo === null) {
+  console.log("The customer has no agent info.");
+  _nav = navCustomerAgent;
+} else if (agentInfo["permission"] & 0x0001) {  // project super admin
+  console.log("The customer has project admin permission." + 0x0001);
+  _nav = navProjectAdmin;
+} else if (agentInfo["permission"] & 0x0010) {
+  console.log("The customer has customer agent permission.");
+  _nav = navCustomerAgent;
+} else if (agentInfo["permission"] & 0x0020) {
+  console.log("The customer has customer admin permission.");
+  _nav = navCustomerAdmin;
+} else if (agentInfo["permission"] & 0x0040) {
+  console.log("The customer has customer manager permission.");
+  _nav = navCustomerManager;
 } else {
-  console.log("The customer has no admin permission.")
-  _nav = navNormal;
+  console.log("The customer has no permission.");
+  _nav = navCustomerAgent;
 }
 
 export default _nav
