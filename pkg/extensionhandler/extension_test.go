@@ -69,7 +69,7 @@ func Test_Create(t *testing.T) {
 				AuthType: getStringPointer("userpass"),
 				Username: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4"),
 				Password: getStringPointer("cf6917ba-6ec1-11eb-8810-e3829c2dfab8"),
-				Realm:    getStringPointer("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Realm:    getStringPointer("0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 			},
 			expectEndpoint: &astendpoint.AstEndpoint{
 				ID:   getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),

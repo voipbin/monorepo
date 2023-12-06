@@ -31,7 +31,7 @@ func (h *extensionHandler) Create(
 	})
 
 	// create realm
-	realm := customerID.String()
+	realm := common.GenerateRealm(customerID)
 
 	// create aor id
 	aorID := common.GenerateEndpoint(customerID, ext)
