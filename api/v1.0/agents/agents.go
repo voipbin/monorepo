@@ -430,3 +430,54 @@ func agentsIDStatusPUT(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// agentsIDPermissionPUT handles PUT /agents/{id}/permission request.
+// It updates a agent's permission info with the given info.
+// @Summary     Update an agent's permission info.
+// @Description Update an agent permission info.
+// @Produce     json
+// @Param       id          path string                        true "The ID of the agent"
+// @Param       update_info body request.agentsIDPermissionPUT true "Agent's update info"
+// @Success     200
+// @Router      /v1.0/agents/{id}/permission [put]
+func agentsIDPermissionPUT(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "agentsIDPermissionPUT",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent":    a,
+		"username": a.Username,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("agent_id", id)
+	log.Debug("Executing agentsIDStatusPUT.")
+
+	var req request.BodyAgentsIDPermissionPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// update the agent
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.AgentUpdatePermission(c.Request.Context(), &a, id, req.Permission)
+	if err != nil {
+		log.Errorf("Could not update the agent's permission. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

@@ -299,3 +299,57 @@ func Test_AgentsIDStatusPUT(t *testing.T) {
 		})
 	}
 }
+
+func Test_agentsIDPermissionPUT(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent    amagent.Agent
+		reqQuery string
+		reqBody  []byte
+
+		agentID    uuid.UUID
+		permission amagent.Permission
+	}{
+		{
+			"normal",
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+			},
+			"/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/permission",
+			[]byte(`{"permission":32}`),
+
+			uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
+			amagent.PermissionCustomerAdmin,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("agent", tt.agent)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+
+			mockSvc.EXPECT().AgentUpdatePermission(req.Context(), &tt.agent, tt.agentID, tt.permission).Return(&amagent.WebhookMessage{}, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
