@@ -50,12 +50,14 @@ const (
 	// 0x0002	// 2. reserved.
 	// 0x0004	// 4. reserved.
 	// 0x0008	// 8. reserved.
+	PermissionProjectAll Permission = 0x000F // 15. permission for project level
 
 	// customer level permission
 	PermissionCustomerAgent   Permission = 0x0010 // 16. Permission for customer level agent
 	PermissionCustomerAdmin   Permission = 0x0020 // 32. Permission for customer level admin
 	PermissionCustomerManager Permission = 0x0040 // 64. Permission for customer level manager
 	// 0x0080
+	PermissionCustomerAll Permission = 0x00F0 // 240. Permission for customer level
 
 	// reserved level permission
 	// 0x0100 //

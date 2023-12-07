@@ -242,7 +242,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *rab
 	return res, nil
 }
 
-// processV1AgentsIDAddressesPut handles Post /v1/agents/<agent_id>/addresses request
+// processV1AgentsIDAddressesPut handles Put /v1/agents/<agent_id>/addresses request
 func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -283,7 +283,7 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *ra
 	return res, nil
 }
 
-// processV1AgentsIDPut handles Post /v1/agents/<agent_id> request
+// processV1AgentsIDPut handles Put /v1/agents/<agent_id> request
 func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -324,7 +324,7 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *rabbitmqhan
 	return res, nil
 }
 
-// processV1AgentsIDStatusPut handles Post /v1/agents/<agent_id>/status request
+// processV1AgentsIDStatusPut handles Put /v1/agents/<agent_id>/status request
 func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -365,7 +365,7 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *rabbi
 	return res, nil
 }
 
-// processV1AgentsIDPasswordPut handles Post /v1/agents/<agent_id>/password request
+// processV1AgentsIDPasswordPut handles Put /v1/agents/<agent_id>/password request
 func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -406,7 +406,7 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *rab
 	return res, nil
 }
 
-// processV1AgentsIDTagIDsPut handles Post /v1/agents/<agent_id>/tag_ids request
+// processV1AgentsIDTagIDsPut handles Put /v1/agents/<agent_id>/tag_ids request
 func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -429,6 +429,47 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *rabbi
 	tmp, err := h.agentHandler.UpdateTagIDs(ctx, id, reqData.TagIDs)
 	if err != nil {
 		log.Errorf("Could not update the agent's tag_ids info. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AgentsIDPermissionPut handles Put /v1/agents/<agent_id>/permission request
+func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDPermissionPut",
+		"agent_id": id,
+	})
+	log.Debug("Executing processV1AgentsIDPermissionPut.")
+
+	var reqData request.V1DataAgentsIDPermissionPut
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.agentHandler.UpdatePermission(ctx, id, agent.Permission(reqData.Permission))
+	if err != nil {
+		log.Errorf("Could not update the agent's permission info. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

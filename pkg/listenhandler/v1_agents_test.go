@@ -1141,3 +1141,65 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1AgentsIDPermissionPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id         uuid.UUID
+		permission agent.Permission
+
+		responseAgent *agent.Agent
+		expectRes     *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/agents/f1ba04b0-951e-11ee-a0a2-7b8600a1ee45/permission",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"permission":32}`),
+			},
+
+			uuid.FromStringOrNil("f1ba04b0-951e-11ee-a0a2-7b8600a1ee45"),
+			agent.PermissionCustomerAdmin,
+
+			&agent.Agent{
+				ID: uuid.FromStringOrNil("f1ba04b0-951e-11ee-a0a2-7b8600a1ee45"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"f1ba04b0-951e-11ee-a0a2-7b8600a1ee45","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
+
+			mockAgent.EXPECT().UpdatePermission(gomock.Any(), tt.id, tt.permission).Return(tt.responseAgent, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
