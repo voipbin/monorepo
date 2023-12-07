@@ -102,7 +102,7 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *amagent.Agent, id 
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
