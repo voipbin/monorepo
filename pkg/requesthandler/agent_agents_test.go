@@ -849,3 +849,67 @@ func Test_AgentV1AgentUpdateStatus(t *testing.T) {
 		})
 	}
 }
+
+func Test_AgentV1AgentUpdatePermission(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id         uuid.UUID
+		permission amagent.Permission
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+
+		response  *rabbitmqhandler.Response
+		expectRes *amagent.Agent
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("405fe0fa-9522-11ee-af15-8b79b78b62c2"),
+			amagent.PermissionCustomerAdmin,
+
+			"bin-manager.agent-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/agents/405fe0fa-9522-11ee-af15-8b79b78b62c2/permission",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"permission":32}`),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"405fe0fa-9522-11ee-af15-8b79b78b62c2"}`),
+			},
+			&amagent.Agent{
+				ID: uuid.FromStringOrNil("405fe0fa-9522-11ee-af15-8b79b78b62c2"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AgentV1AgentUpdatePermission(ctx, tt.id, tt.permission)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

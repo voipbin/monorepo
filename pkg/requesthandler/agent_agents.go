@@ -387,3 +387,37 @@ func (r *requestHandler) AgentV1AgentUpdateStatus(ctx context.Context, id uuid.U
 
 	return &res, nil
 }
+
+// AgentV1AgentUpdatePermission sends a request to agent-manager
+// to update the agent permission
+// it returns error if something went wrong.
+func (r *requestHandler) AgentV1AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission amagent.Permission) (*amagent.Agent, error) {
+	uri := fmt.Sprintf("/v1/agents/%s/permission", id)
+
+	data := &amrequest.V1DataAgentsIDPermissionPut{
+		Permission: uint64(permission),
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents/<agent-id>/permission", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
