@@ -228,6 +228,21 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateAddresses(ctx, a, agentID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdateAddresses", reflect.TypeOf((*MockServiceHandler)(nil).AgentUpdateAddresses), ctx, a, agentID, addresses)
 }
 
+// AgentUpdatePermission mocks base method.
+func (m *MockServiceHandler) AgentUpdatePermission(ctx context.Context, a *agent.Agent, agentID uuid.UUID, permission agent.Permission) (*agent.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentUpdatePermission", ctx, a, agentID, permission)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentUpdatePermission indicates an expected call of AgentUpdatePermission.
+func (mr *MockServiceHandlerMockRecorder) AgentUpdatePermission(ctx, a, agentID, permission interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdatePermission", reflect.TypeOf((*MockServiceHandler)(nil).AgentUpdatePermission), ctx, a, agentID, permission)
+}
+
 // AgentUpdateStatus mocks base method.
 func (m *MockServiceHandler) AgentUpdateStatus(ctx context.Context, a *agent.Agent, agentID uuid.UUID, status agent.Status) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()

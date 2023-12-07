@@ -291,3 +291,40 @@ func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *amagent.Agent
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
+
+// AgentUpdatePermission sends a request to agent-manager
+// to update the agent permission info.
+func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, permission amagent.Permission) (*amagent.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "AgentUpdatePermission",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"agent_id":    agentID,
+	})
+
+	af, err := h.agentGet(ctx, a, agentID)
+	if err != nil {
+		log.Errorf("Could not validate the agent info. err: %v", err)
+		return nil, err
+	}
+
+	if permission&amagent.PermissionProjectAll != 0 {
+		if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionNone) {
+			return nil, fmt.Errorf("user has no permission")
+		}
+	} else {
+		if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission")
+		}
+	}
+
+	// send request
+	tmp, err := h.reqHandler.AgentV1AgentUpdatePermission(ctx, agentID, permission)
+	if err != nil {
+		log.Infof("Could not update the agent addresses. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
