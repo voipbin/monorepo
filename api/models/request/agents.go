@@ -53,3 +53,9 @@ type BodyAgentsIDTagIDsPUT struct {
 type BodyAgentsIDStatusPUT struct {
 	Status amagent.Status `json:"status" binding:"required"`
 }
+
+// BodyAgentsIDPermissionPUT is rquest body define for
+// PUT /v1.0/agents/<agent-id>/permission
+type BodyAgentsIDPermissionPUT struct {
+	Permission amagent.Permission `json:"permission" binding:"required"`
+}

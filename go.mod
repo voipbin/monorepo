@@ -21,10 +21,10 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.2
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20231130142821-0d377dc837c5
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231125074622-ad630d730b13
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231207170822-5576e863cd8c
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230728174519-d347587ee005
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230728171820-cdbeafa2cf1c
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231005165516-1c0255c49028
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231206180144-5fd8f608cf0d
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
 	golang.org/x/crypto v0.16.0 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/pebbe/zmq4 v1.2.10
 	github.com/pkg/errors v0.9.1
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20231201025803-cbb8d2994a0c
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20231207165247-9473a009e809
 	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231129031206-5f69dfb5e088
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093
@@ -53,7 +53,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20230727164950-43d37418e642
 	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61
-	golang.org/x/exp v0.0.0-20231127185646-65229373498e
+	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
 )
 
 require (
@@ -67,7 +67,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
-	github.com/go-openapi/spec v0.20.9 // indirect
+	github.com/go-openapi/spec v0.20.11 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

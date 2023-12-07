@@ -776,3 +776,65 @@ func Test_AgentUpdateStatus(t *testing.T) {
 		})
 	}
 }
+
+func Test_AgentUpdatePermission(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent      *amagent.Agent
+		agentID    uuid.UUID
+		permission amagent.Permission
+
+		responseAgent *amagent.Agent
+		expectRes     *amagent.WebhookMessage
+	}{
+		{
+			"normal",
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
+				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
+			amagent.PermissionCustomerAdmin,
+
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+			},
+			&amagent.WebhookMessage{
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdatePermission(ctx, tt.agentID, tt.permission).Return(tt.responseAgent, nil)
+
+			res, err := h.AgentUpdatePermission(ctx, tt.agent, tt.agentID, tt.permission)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
