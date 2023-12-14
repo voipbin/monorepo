@@ -20,6 +20,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -121,9 +122,9 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			expectArgs:        "context_type=call,context=call-out,call_id=f1afa9ce-ecb2-11ea-ab94-a768ab787da0,transport=udp",
 			expectEndpointDst: "pjsip/call-out/sip:testoutgoing@test.com",
 			expectVariables: map[string]string{
-				"CALLERID(name)":                        "test",
-				"CALLERID(num)":                         "testsrc@test.com",
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"CALLERID(name)": "test",
+				"CALLERID(num)":  "testsrc@test.com",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
 	}
@@ -300,9 +301,9 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			expectArgs:        "context_type=call,context=call-out,call_id=b7c40962-07fb-11eb-bb82-a3bd16bf1bd9,transport=udp",
 			expectEndpointDst: "pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
 			expectVariables: map[string]string{
-				"CALLERID(name)":                        "test",
-				"CALLERID(num)":                         "+99999888",
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"CALLERID(name)": "test",
+				"CALLERID(num)":  "+99999888",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
 	}
@@ -774,9 +775,9 @@ func Test_createChannel(t *testing.T) {
 			expectArgs:       "context_type=call,context=call-out,call_id=7e0a846a-5d96-11ed-9005-07794a4f93cb,transport=udp",
 			expectDialURI:    "pjsip/call-out/sip:+821100000001@test.com;transport=udp",
 			expectVariables: map[string]string{
-				"CALLERID(name)":                        "",
-				"CALLERID(num)":                         "+821100000002",
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"CALLERID(name)": "",
+				"CALLERID(num)":  "+821100000002",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
 	}
@@ -894,9 +895,9 @@ func Test_createFailoverChannel(t *testing.T) {
 			"context_type=call,context=call-out,call_id=25c7a29a-5f7d-11ed-86cc-bb999f3cccaf,transport=udp",
 			"pjsip/call-out/sip:+821100000001@test.com;transport=udp",
 			map[string]string{
-				"CALLERID(name)":                        "",
-				"CALLERID(num)":                         "+821100000002",
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"CALLERID(name)": "",
+				"CALLERID(num)":  "+821100000002",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 
 			&call.Call{
@@ -1456,7 +1457,7 @@ func Test_setChannelVariableTransport(t *testing.T) {
 			transport: channel.SIPTransportWS,
 
 			expectRes: map[string]string{
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "UDP/TLS/RTP/SAVPF",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "UDP/TLS/RTP/SAVPF",
 			},
 		},
 		{
@@ -1466,7 +1467,7 @@ func Test_setChannelVariableTransport(t *testing.T) {
 			transport: channel.SIPTransportWSS,
 
 			expectRes: map[string]string{
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "UDP/TLS/RTP/SAVPF",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "UDP/TLS/RTP/SAVPF",
 			},
 		},
 		{
@@ -1476,7 +1477,7 @@ func Test_setChannelVariableTransport(t *testing.T) {
 			transport: channel.SIPTransportTCP,
 
 			expectRes: map[string]string{
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
 		{
@@ -1486,7 +1487,7 @@ func Test_setChannelVariableTransport(t *testing.T) {
 			transport: channel.SIPTransportTLS,
 
 			expectRes: map[string]string{
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
 		{
@@ -1496,7 +1497,7 @@ func Test_setChannelVariableTransport(t *testing.T) {
 			transport: channel.SIPTransportUDP,
 
 			expectRes: map[string]string{
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
 		{
@@ -1506,7 +1507,7 @@ func Test_setChannelVariableTransport(t *testing.T) {
 			transport: channel.SIPTransportNone,
 
 			expectRes: map[string]string{
-				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
 	}
@@ -1518,6 +1519,122 @@ func Test_setChannelVariableTransport(t *testing.T) {
 			if !reflect.DeepEqual(tt.variables, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.variables)
 			}
+		})
+	}
+}
+
+func Test_getDialURISIP(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call *call.Call
+
+		expectRes string
+	}{
+		{
+			name: "normal",
+
+			call: &call.Call{
+				Destination: commonaddress.Address{
+					Target: "sip:3000@211.200.20.28:49699^3Btransport=udp^3Balias=211.200.20.28~49699~1",
+				},
+			},
+
+			expectRes: "pjsip/call-out/sip:3000@211.200.20.28:49699^3Btransport=udp^3Balias=211.200.20.28~49699~1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+
+			h := &callHandler{
+				utilHandler:      mockUtil,
+				reqHandler:       mockReq,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				channelHandler:   mockChannel,
+				groupcallHandler: mockGroupcall,
+			}
+			ctx := context.Background()
+
+			res, err := h.getDialURISIP(ctx, tt.call)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_getDialURISIPDirect(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call *call.Call
+
+		expectRes string
+	}{
+		{
+			name: "normal",
+
+			call: &call.Call{
+				Destination: commonaddress.Address{
+					Target: "sip:ind5v09k@3kssqpaa87pe.invalid;transport=ws;alias=35.204.215.63~36432~5;outbound_proxy=10.164.0.9",
+				},
+			},
+
+			expectRes: "pjsip/call-out-direct-10.164.0.9/sip:ind5v09k@3kssqpaa87pe.invalid;transport=ws;alias=35.204.215.63~36432~5;outbound_proxy=10.164.0.9",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+
+			h := &callHandler{
+				utilHandler:      mockUtil,
+				reqHandler:       mockReq,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				channelHandler:   mockChannel,
+				groupcallHandler: mockGroupcall,
+			}
+			ctx := context.Background()
+
+			res, err := h.getDialURISIPDirect(ctx, tt.call)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }

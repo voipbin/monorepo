@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
 
@@ -74,8 +75,8 @@ func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.
 
 	// create variables
 	variables := map[string]string{
-		"PJSIP_HEADER(add,VB-CALL-ID)":       c.ID.String(),
-		"PJSIP_HEADER(add,VB-CONFBRIDGE-ID)": cb.ID.String(),
+		"PJSIP_HEADER(add," + common.SIPHeaderCallID + ")":       c.ID.String(),
+		"PJSIP_HEADER(add," + common.SIPHeaderConfbridgeID + ")": cb.ID.String(),
 	}
 
 	// create a another channel with joining context

@@ -18,6 +18,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 )
 
@@ -269,6 +270,36 @@ func (h *callHandler) getDialURISIP(ctx context.Context, c *call.Call) (string, 
 	return res, nil
 }
 
+// getDialURISIP returns dial uri of the given sip type destination.
+func (h *callHandler) getDialURISIPDirect(ctx context.Context, c *call.Call) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":               "getDialURISIPDirect",
+		"destination_target": c.Destination.Target,
+	})
+
+	endpointTarget := c.Destination.Target
+	if !strings.HasPrefix(c.Destination.Target, "sip:") && !strings.HasPrefix(c.Destination.Target, "sips:") {
+		endpointTarget = "sip:" + endpointTarget
+	}
+
+	tmpTargets := strings.Split(endpointTarget, ";")
+	if len(tmpTargets) < 1 {
+		return "", fmt.Errorf("wrong destination uri")
+	}
+
+	// get target host/port
+	porxyHost := ""
+	for _, tmp := range tmpTargets {
+		if strings.HasPrefix(tmp, "outbound_proxy=") {
+			porxyHost, _ = strings.CutPrefix(tmp, "outbound_proxy=")
+		}
+	}
+	log.Debugf("Found outbound proxy host info. outbound_proxy: %s", porxyHost)
+
+	res := fmt.Sprintf("pjsip/%s%s/%s", pjsipEndpointOutgoingDirect, porxyHost, endpointTarget)
+	return res, nil
+}
+
 // getDialURI returns the given destination address's dial URI for Asterisk's dialing
 func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, error) {
 
@@ -277,6 +308,10 @@ func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, err
 		return h.getDialURITel(ctx, c)
 
 	case commonaddress.TypeSIP:
+		if strings.Contains(c.Destination.Target, "transport=ws") {
+			// websocket transport(WebRTC)
+			return h.getDialURISIPDirect(ctx, c)
+		}
 		return h.getDialURISIP(ctx, c)
 
 	default:
@@ -489,11 +524,11 @@ func setChannelVariableTransport(variables map[string]string, transport channel.
 
 	switch transport {
 	case channel.SIPTransportWS, channel.SIPTransportWSS:
-		variables["PJSIP_HEADER(add,VBOUT-SDP_Transport)"] = "UDP/TLS/RTP/SAVPF"
+		variables["PJSIP_HEADER(add,"+common.SIPHeaderSDPTransport+")"] = "UDP/TLS/RTP/SAVPF"
 		return
 
 	default:
-		variables["PJSIP_HEADER(add,VBOUT-SDP_Transport)"] = "RTP/AVP"
+		variables["PJSIP_HEADER(add,"+common.SIPHeaderSDPTransport+")"] = "RTP/AVP"
 		return
 	}
 }

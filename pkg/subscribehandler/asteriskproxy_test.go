@@ -7,6 +7,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
 )
 
@@ -610,7 +611,7 @@ func Test_processEvent_AsteriskProxy_ChannelVarset(t *testing.T) {
 						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77",
 					},
 				},
-				Variable: "VB-DIRECTION",
+				Variable: common.SIPHeaderDirection,
 				Value:    "",
 			},
 		},

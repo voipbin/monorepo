@@ -37,7 +37,8 @@ const (
 
 // pjsip endpoints
 const (
-	pjsipEndpointOutgoing = "call-out"
+	pjsipEndpointOutgoing       = "call-out"
+	pjsipEndpointOutgoingDirect = "call-out-direct-"
 )
 
 // default sip service option variables
