@@ -27,6 +27,7 @@ import {
   LoadResourcesAll as ProviderLoadResourcesAll,
 } from '../../../provider';
 import { Base64 } from "js-base64";
+import { NewPhone } from "../../../phone";
 
 const Login = () => {
 
@@ -73,21 +74,20 @@ const Login = () => {
         localStorage.setItem('token', response.token);
 
         const splits = response.token.split('.');
-        console.log("customer info. splits: ", splits);
+        console.log("Login info. splits: ", splits);
 
-        const customerInfo = JSON.parse(Base64.decode(splits[1])).customer;
+        // agent
         const agentInfo = JSON.parse(Base64.decode(splits[1])).agent;
-        console.log("Customer detail info. customerInfo: ", customerInfo);
-        console.log("Agent detail info. agent_info: ", agentInfo);
-
-        const tmpCustomer = JSON.stringify(customerInfo);
-        localStorage.setItem('customer_info', tmpCustomer);
-
         const tmpAgent = JSON.stringify(agentInfo);
         localStorage.setItem('agent_info', tmpAgent);
+        console.log("Agent info. splits: ", tmpAgent);
 
         // load all resources
         ProviderLoadResourcesAll();
+
+        NewPhone();
+        const phone = localStorage.getItem("phone");
+        console.log("Detailed phone info. phone: ", phone)
 
         navigate('/');
     })

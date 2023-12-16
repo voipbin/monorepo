@@ -61,6 +61,11 @@ const calls = {
       component: CNavItem,
       name: 'Groupcalls',
       to: '/resources/calls/groupcalls_list',
+    },
+    {
+      component: CNavItem,
+      name: 'Currentcall',
+      to: '/resources/calls/currentcall_detail',
     }
   ]
 };
