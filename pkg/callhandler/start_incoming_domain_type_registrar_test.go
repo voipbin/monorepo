@@ -77,7 +77,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"","name":"","detail":""},"destinations":[{"type":"agent","target":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b","target_name":"","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
+					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"test-exten","name":"","detail":""},"destinations":[{"type":"agent","target":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b","target_name":"","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
 				},
 			},
 		},
@@ -279,7 +279,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
+					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"test-exten","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
 				},
 			},
 		},
@@ -376,7 +376,7 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"","name":"","detail":""},"destinations":[{"type":"extension","target":"test-destination","target_name":"","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
+					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"test-exten","name":"","detail":""},"destinations":[{"type":"extension","target":"test-destination","target_name":"test-destination","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
 				},
 			},
 		},

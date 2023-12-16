@@ -23,7 +23,9 @@ func (h *callHandler) startIncomingDomainTypeRegistrar(ctx context.Context, cn *
 		"channel_id": cn.ID,
 	})
 
+	// get default source/destination info
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeExtension)
+	source.TargetName = source.Target
 	destination := h.channelHandler.AddressGetDestinationWithoutSpecificType(cn)
 
 	// get customer
@@ -93,11 +95,15 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 		return nil
 	}
 
+	// create destination
+	tmpDestination := *destination
+	tmpDestination.TargetName = a.Name
+
 	// create tmp flow for connect
 	option := fmaction.OptionConnect{
 		Source: *source,
 		Destinations: []commonaddress.Address{
-			*destination,
+			tmpDestination,
 		},
 		EarlyMedia:  false,
 		RelayReason: false,
@@ -288,11 +294,15 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 		"destination": destination,
 	})
 
+	// create Destination
+	tmpDestination := *destination
+	tmpDestination.TargetName = tmpDestination.Target
+
 	// create tmp flow for connect
 	option := fmaction.OptionConnect{
 		Source: *source,
 		Destinations: []commonaddress.Address{
-			*destination,
+			tmpDestination,
 		},
 		EarlyMedia:  false,
 		RelayReason: false,
