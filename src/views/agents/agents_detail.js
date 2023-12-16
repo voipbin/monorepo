@@ -79,17 +79,21 @@ const AgentsDetail = () => {
 
                   <CFormLabel className="col-sm-2 col-form-label"><b>Status</b></CFormLabel>
                   <CCol>
-                    <CFormInput
+                    <CFormSelect
                       ref={ref_status}
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={detailData.status}
-                      readOnly plainText
+                      options={[
+                        { label: 'available', value: 'available' },
+                        { label: 'away', value: 'away' },
+                        { label: 'busy', value: 'busy' },
+                        { label: 'offline', value: 'offline' },
+                        { label: 'ringing', value: 'ringing' },
+                      ]}
                     />
                   </CCol>
                 </CRow>
-
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
@@ -126,7 +130,13 @@ const AgentsDetail = () => {
                       ]}
                     />
                   </CCol>
+                </CRow>
 
+                <CButton type="submit" onClick={() => UpdateBasic()}>Update</CButton>
+                <br />
+                <br/>
+
+                <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Permission</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
@@ -136,9 +146,11 @@ const AgentsDetail = () => {
                       defaultValue={detailData.permission}
                     />
                   </CCol>
-
                 </CRow>
 
+                <CButton type="submit" onClick={() => UpdatePermission()}>Update Permission</CButton>
+                <br />
+                <br/>
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Addresses</b></CFormLabel>
@@ -151,8 +163,13 @@ const AgentsDetail = () => {
                       rows={15}
                     />
                   </CCol>
+                </CRow>
 
+                <CButton type="submit" onClick={() => UpdateAddresse()}>Update Addresses</CButton>
+                <br />
+                <br/>
 
+                <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Tag IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
@@ -163,13 +180,11 @@ const AgentsDetail = () => {
                       rows={15}
                     />
                   </CCol>
-
                 </CRow>
 
-
-
-
-
+                <CButton type="submit" onClick={() => UpdateTagIDs()}>Update Tag IDs</CButton>
+                <br />
+                <br/>
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
@@ -193,8 +208,6 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => Update()}>Update</CButton>
-
               </CCardBody>
             </CCard>
           </CCol>
@@ -203,7 +216,7 @@ const AgentsDetail = () => {
     )
   };
 
-  const Update = () => {
+  const UpdateBasic = () => {
     console.log("Update info");
 
     const tmpData = {
@@ -222,6 +235,53 @@ const AgentsDetail = () => {
       console.log("Updated info.");
     });
   };
+
+
+  const UpdateAddresse = () => {
+    console.log("Update addresses info");
+
+    const tmpData = {
+      "addresses": JSON.parse(ref_addresses.current.value),
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "agents/" + ref_id.current.value + "/addresses";
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then(() => {
+      console.log("Updated info.");
+    });
+  };
+
+  const UpdateTagIDs = () => {
+    console.log("Update tag ids info");
+
+    const tmpData = {
+      "tag_ids": JSON.parse(ref_tag_ids.current.value),
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "agents/" + ref_id.current.value + "/tag_ids";
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then(() => {
+      console.log("Updated info.");
+    });
+  };
+
+  const UpdatePermission = () => {
+    console.log("Update permission info");
+
+    const tmpData = {
+      "permission": JSON.parse(ref_permission.current.value),
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "agents/" + ref_id.current.value + "/permission";
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then(() => {
+      console.log("Updated info.");
+    });
+  };
+
 
   return (
     <>

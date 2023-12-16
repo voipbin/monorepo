@@ -14,6 +14,9 @@ const CallsList = React.lazy(() => import('./views/calls/calls_list'))
 const CallsDetail = React.lazy(() => import('./views/calls/calls_detail'))
 const CallsCreate = React.lazy(() => import('./views/calls/calls_create'))
 
+// currentcall
+const CurrentcallDetail = React.lazy(() => import('./views/calls/currentcall_detail'))
+
 // groupcalls
 const GroupcallsList = React.lazy(() => import('./views/calls/groupcalls_list'))
 const GroupcallsDetail = React.lazy(() => import('./views/calls/groupcalls_detail'))
@@ -139,6 +142,7 @@ const routes = [
   { path: '/resources/calls/groupcalls_list', name: 'GroupcallsList', element: GroupcallsList },
   { path: '/resources/calls/groupcalls_detail/:id', name: 'GroupcallsDetail', element: GroupcallsDetail },
   { path: '/resources/calls/groupcalls_create', name: 'GroupcallsCreate', element: GroupcallsCreate },
+  { path: '/resources/calls/currentcall_detail', name: 'CurrentcallDetail', element: CurrentcallDetail },
 
   { path: '/resources/customers/customers_list', name: 'CustomersList', element: CustomersList },
   { path: '/resources/customers/customers_create', name: 'CustomersCreate', element: CustomersCreate },
