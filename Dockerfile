@@ -1,8 +1,7 @@
 FROM debian:stable-slim
 
-# ARG ASTERISK_GIT=https://github.com/asterisk/asterisk.git
-ARG ASTERISK_GIT=https://github.com/pchero/asterisk.git
-ARG ASTERISK_VERSION=5865060c5540007f3d00d13338d6dbc197f03700
+ARG ASTERISK_GIT=https://github.com/asterisk/asterisk.git
+ARG ASTERISK_VERSION=21.0.1
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 ARG CGSFUSE_VERSION=0.42.3
 
