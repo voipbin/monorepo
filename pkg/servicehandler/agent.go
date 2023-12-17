@@ -307,13 +307,19 @@ func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *amagent.A
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
 	}
+	log.Debugf("Updating agent permission. agent_id: %s, permission: %d", agentID, permission)
 
 	if permission&amagent.PermissionProjectAll != 0 {
+		// the agent trying to set the project level permission.
+		// the only project level permission owned agent can set the project level permission.
 		if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionNone) {
+			log.Debugf("The agent has no project level permission.")
 			return nil, fmt.Errorf("user has no permission")
 		}
 	} else {
+		// customer level permission set.
 		if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			log.Debugf("The agent has no customer level permission.")
 			return nil, fmt.Errorf("user has no permission")
 		}
 	}
