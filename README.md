@@ -80,3 +80,10 @@ Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/m
 Asterisk database.
 Fixed alembic table name.
 alembic_version_config -> alembic_version
+
+Get newest version of asterisk db scheme.
+```
+$ cd /home/pchero/gittmp/asterisk
+$ git pull
+$ cp /home/pchero/gittmp/asterisk/contrib/ast-db-manage/config/versions/* /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/asterisk_config/config/versions
+```
