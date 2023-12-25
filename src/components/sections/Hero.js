@@ -69,11 +69,14 @@ const Hero = ({
               </p>
               <div className="reveal-from-bottom" data-reveal-delay="600">
                 <ButtonGroup>
-                  <Button tag="a" color="primary" wideMobile href="https://meet.voipbin.net/" target="_blank">
+                  <Button tag="a" color="dark" wideMobile href="https://meet.voipbin.net/" target="_blank">
                     Conference
                   </Button>
-                  <Button tag="a" color="dark" wideMobile href="https://api.voipbin.net/docs/" target="_blank">
-                    Documentation
+                  <Button tag="a" color="primary" wideMobile href="https://api.voipbin.net/docs/" target="_blank">
+                    API Documents
+                  </Button>
+                  <Button tag="a" color="primary" wideMobile href="https://admin.voipbin.net" target="_blank">
+                    Console
                   </Button>
                 </ButtonGroup>
               </div>

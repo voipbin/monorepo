@@ -129,10 +129,21 @@ const Header = ({
                       className="list-reset header-nav-right"
                     >
                       <li>
-                        <Link to={{ pathname: "https://api.voipbin.net/docs/" }} target="_blank" className="button button-primary button-wide-mobile button-sm" onClick={closeMenu}>Documentation</Link>
+                        <Link to={{ pathname: "https://api.voipbin.net/docs/" }} target="_blank" className="button button-primary button-wide-mobile button-sm" onClick={closeMenu}>API Documents</Link>
                         {/* <Link to="#0" className="button button-primary button-wide-mobile button-sm" onClick={closeMenu}>Sign up</Link> */}
                       </li>
-                    </ul>}
+                  </ul>}
+
+                  {!hideSignin &&
+                    <ul
+                      className="list-reset header-nav-right"
+                    >
+                      <li>
+                        <Link to={{ pathname: "https://admin.voipbin.net" }} target="_blank" className="button button-primary button-wide-mobile button-sm" onClick={closeMenu}>Console</Link>
+                        {/* <Link to="#0" className="button button-primary button-wide-mobile button-sm" onClick={closeMenu}>Sign up</Link> */}
+                      </li>
+                  </ul>}
+
                 </div>
               </nav>
             </>}
