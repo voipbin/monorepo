@@ -54,7 +54,7 @@ export const NewPhone = () => {
 
     JsSIP.debug.enable('JsSIP:*');
 
-    const websocketDomain = 'ws://' + registDomain
+    const websocketDomain = 'wss://' + registDomain
     var socket = new JsSIP.WebSocketInterface(websocketDomain);
     var configuration = {
       sockets: [socket],
