@@ -18,7 +18,3 @@ spec:
     port: 443
     targetPort: 443
     protocol: TCP
-  - name: http
-    port: 80
-    targetPort: 3000
-    protocol: TCP

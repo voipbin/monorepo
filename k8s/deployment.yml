@@ -31,9 +31,9 @@ spec:
             - name: metrics
               protocol: "TCP"
               containerPort: 2112
-            - name: http
+            - name: https
               protocol: "TCP"
-              containerPort: 3000
+              containerPort: 443
           resources:
             limits:
               cpu: "300m"
