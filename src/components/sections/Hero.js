@@ -73,7 +73,7 @@ const Hero = ({
                     Conference
                   </Button>
                   <Button tag="a" color="primary" wideMobile href="https://api.voipbin.net/docs/" target="_blank">
-                    API Documents
+                    Documentation
                   </Button>
                   <Button tag="a" color="primary" wideMobile href="https://admin.voipbin.net" target="_blank">
                     Console
