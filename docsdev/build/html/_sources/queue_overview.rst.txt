@@ -12,7 +12,7 @@ Call queueing is intended to prevent callers from being turned away in the case 
 
 Flow Execution
 ---------------
-The call queued to the queue will go through the queue's waiting actions until finding available agents. The waiting actions can include playing pre-recorded music, messages, or custom actions while the call is in the queue.
+A call placed in the queue will progress through the queue's waiting actions, continuing through pre-defined steps until an available agent is located. These waiting actions may involve playing pre-recorded music, messages, or custom actions, enhancing the caller's experience while awaiting assistance in the queue.
 
 .. image:: _static/images/queue_overview_flow.png
 
