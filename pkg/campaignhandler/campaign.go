@@ -96,7 +96,7 @@ func (h *campaignHandler) Create(
 	log.WithField("campaign", res).Debugf("Created a new campaign. campaign_id: %s", res.ID)
 
 	// update resource
-	if !h.updateResources(ctx, res.ID, res.OutplanID, res.OutdialID, res.QueueID, res.NextCampaignID) {
+	if !h.updateReferencedResources(ctx, res) {
 		log.Errorf("Could not update the resources info.")
 		return nil, fmt.Errorf("could not update the resources info")
 	}
@@ -281,7 +281,7 @@ func (h *campaignHandler) UpdateResourceInfo(
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignUpdated, res)
 
 	// update resources
-	if !h.updateResources(ctx, res.ID, res.OutplanID, res.OutdialID, res.QueueID, res.NextCampaignID) {
+	if !h.updateReferencedResources(ctx, res) {
 		log.Errorf("Could not update the resources")
 		return nil, fmt.Errorf("could not update the resources")
 	}
@@ -491,9 +491,11 @@ func (h *campaignHandler) isValidOutdialID(ctx context.Context, outdialID uuid.U
 		"func":        "isValidOutdialID",
 		"campaign_id": campaignID,
 		"outdial_id":  outdialID,
+		"customer_id": customerID,
 	})
 
 	if outdialID == uuid.Nil {
+		// no outdial id has given. nothing to verify.
 		return true
 	}
 
@@ -505,6 +507,11 @@ func (h *campaignHandler) isValidOutdialID(ctx context.Context, outdialID uuid.U
 	}
 	log.WithField("outdial", od).Debugf("Checking outdial info. outdial_id: %s", od.ID)
 
+	if od.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", od.CustomerID)
+		return false
+	}
+
 	if od.CampaignID != uuid.Nil && od.CampaignID != campaignID {
 		log.Debugf("The outdial is used by other campaign already. campaign_id: %s", od.CampaignID)
 		return false
@@ -512,11 +519,6 @@ func (h *campaignHandler) isValidOutdialID(ctx context.Context, outdialID uuid.U
 
 	if od.TMDelete != dbhandler.DefaultTimeStamp {
 		log.Debugf("The outdial is already deleted.")
-		return false
-	}
-
-	if od.CustomerID != customerID {
-		log.Debugf("The customer id does not match. customer_id: %s", od.CustomerID)
 		return false
 	}
 
@@ -543,13 +545,13 @@ func (h *campaignHandler) isValidOutplanID(ctx context.Context, outplanID uuid.U
 	}
 	log.WithField("outplan", op).Debugf("Checking outdial info. outplan_id: %s", op.ID)
 
-	if op.TMDelete != dbhandler.DefaultTimeStamp {
-		log.Debugf("The outdial is already deleted.")
+	if op.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", op.CustomerID)
 		return false
 	}
 
-	if op.CustomerID != customerID {
-		log.Debugf("The customer id does not match. customer_id: %s", op.CustomerID)
+	if op.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The outdial is already deleted.")
 		return false
 	}
 
@@ -576,13 +578,13 @@ func (h *campaignHandler) isValidQueueID(ctx context.Context, queueID uuid.UUID,
 	}
 	log.WithField("queue", q).Debugf("Checking outdial info. queue_id: %s", q.ID)
 
-	if q.TMDelete != dbhandler.DefaultTimeStamp {
-		log.Debugf("The queue is already deleted.")
+	if q.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", q.CustomerID)
 		return false
 	}
 
-	if q.CustomerID != customerID {
-		log.Debugf("The customer id does not match. customer_id: %s", q.CustomerID)
+	if q.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The queue is already deleted.")
 		return false
 	}
 
@@ -608,40 +610,36 @@ func (h *campaignHandler) isValidNextCampaignID(ctx context.Context, nextCampaig
 	}
 	log.WithField("campaign", c).Debugf("Checking campaign info. campaign_id: %s", c.ID)
 
-	if c.TMDelete != dbhandler.DefaultTimeStamp {
-		log.Debugf("The campaign is already deleted.")
+	if c.CustomerID != customerID {
+		log.Debugf("The customer id does not match. customer_id: %s", c.CustomerID)
 		return false
 	}
 
-	if c.CustomerID != customerID {
-		log.Debugf("The customer id does not match. customer_id: %s", c.CustomerID)
+	if c.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The campaign is already deleted.")
 		return false
 	}
 
 	return true
 }
 
-// updateResources updates the related resources
-func (h *campaignHandler) updateResources(
+// updateReferencedResources updates the referenced resources.
+// campaign has referenced resources which has to be updated if the campaign info updated.
+// this function updates the referenced resource info
+// TODO: maybe in the future, this function will be removed because the referenced resource will listen the
+// campaign's update notification to updates their resources info.
+func (h *campaignHandler) updateReferencedResources(
 	ctx context.Context,
-	id uuid.UUID,
-	outplanID uuid.UUID,
-	outdialID uuid.UUID,
-	queueID uuid.UUID,
-	nextCampaignID uuid.UUID,
+	c *campaign.Campaign,
 ) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func":             "updateResources",
-		"id":               id,
-		"outplan_id":       outplanID,
-		"outdial_id":       outdialID,
-		"queue_id":         queueID,
-		"next_campaign_id": nextCampaignID,
+		"func":     "updateReferencedResources",
+		"campaign": c,
 	})
 
 	// outdial id
-	if outdialID != uuid.Nil {
-		_, errUpdate := h.reqHandler.OutdialV1OutdialUpdateCampaignID(ctx, outdialID, id)
+	if c.OutdialID != uuid.Nil {
+		_, errUpdate := h.reqHandler.OutdialV1OutdialUpdateCampaignID(ctx, c.OutdialID, c.ID)
 		if errUpdate != nil {
 			log.Errorf("Could not update the campaign id to the outdial. err: %v", errUpdate)
 			return false

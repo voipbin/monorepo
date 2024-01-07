@@ -1074,27 +1074,25 @@ func Test_isValidNextCampaignID(t *testing.T) {
 	}
 }
 
-func Test_updateResources(t *testing.T) {
+func Test_updateReferencedResources(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id             uuid.UUID
-		outplanID      uuid.UUID
-		outdialID      uuid.UUID
-		queueID        uuid.UUID
-		nextCampaignID uuid.UUID
+		campaign *campaign.Campaign
 
 		responseOutdial *omoutdial.Outdial
 	}{
 		{
 			name: "normal",
 
-			id:             uuid.FromStringOrNil("55c70eb8-6d00-11ee-af57-2f785264f30a"),
-			outplanID:      uuid.FromStringOrNil("55f43ff0-6d00-11ee-bbf1-97a90f12ce6b"),
-			outdialID:      uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
-			queueID:        uuid.FromStringOrNil("56545c96-6d00-11ee-955f-af50e79460c9"),
-			nextCampaignID: uuid.FromStringOrNil("60613bc8-6d00-11ee-ac28-6377edcc4a2f"),
+			campaign: &campaign.Campaign{
+				ID:             uuid.FromStringOrNil("55c70eb8-6d00-11ee-af57-2f785264f30a"),
+				OutplanID:      uuid.FromStringOrNil("55f43ff0-6d00-11ee-bbf1-97a90f12ce6b"),
+				OutdialID:      uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
+				QueueID:        uuid.FromStringOrNil("56545c96-6d00-11ee-955f-af50e79460c9"),
+				NextCampaignID: uuid.FromStringOrNil("60613bc8-6d00-11ee-ac28-6377edcc4a2f"),
+			},
 
 			responseOutdial: &omoutdial.Outdial{
 				ID:       uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
@@ -1120,11 +1118,11 @@ func Test_updateResources(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			if tt.outdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialUpdateCampaignID(ctx, tt.outdialID, tt.id).Return(tt.responseOutdial, nil)
+			if tt.campaign.OutdialID != uuid.Nil {
+				mockReq.EXPECT().OutdialV1OutdialUpdateCampaignID(ctx, tt.campaign.OutdialID, tt.campaign.ID).Return(tt.responseOutdial, nil)
 			}
 
-			if res := h.updateResources(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); res != true {
+			if res := h.updateReferencedResources(ctx, tt.campaign); res != true {
 				t.Errorf("Wrong match. expect: ok, got: %v", res)
 			}
 		})
