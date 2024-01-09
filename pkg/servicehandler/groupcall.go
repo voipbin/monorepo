@@ -52,8 +52,13 @@ func (h *serviceHandler) GroupcallGets(ctx context.Context, a *amagent.Agent, si
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	// filters
+	filters := map[string]string{
+		"deleted": "false", // we don't need deleted items
+	}
+
 	// get calls
-	tmps, err := h.reqHandler.CallV1GroupcallGets(ctx, a.CustomerID, token, size)
+	tmps, err := h.reqHandler.CallV1GroupcallGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
