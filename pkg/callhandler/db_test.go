@@ -248,6 +248,7 @@ func Test_Gets(t *testing.T) {
 		customerID uuid.UUID
 		size       uint64
 		token      string
+		filters    map[string]string
 
 		responseGets []*call.Call
 		expectRes    []*call.Call
@@ -258,6 +259,7 @@ func Test_Gets(t *testing.T) {
 			uuid.FromStringOrNil("9880aedc-992e-11ec-aed2-bf63c2b64858"),
 			10,
 			"2020-05-03%2021:35:02.809",
+			map[string]string{},
 
 			[]*call.Call{
 				{
@@ -289,9 +291,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGets(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseGets, nil)
+			mockDB.EXPECT().CallGets(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseGets, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

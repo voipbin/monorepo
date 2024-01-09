@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -397,20 +398,34 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 }
 
 // CallGets returns a list of calls.
-func (h *handler) CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
+func (h *handler) CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*call.Call, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc
-		limit ?
-		`, callSelect)
+	where
+		customer_id = ?
+		and tm_create < ?
+	`, callSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
 	}

@@ -35,7 +35,13 @@ func (h *listenHandler) processV1GroupcallsGet(ctx context.Context, m *rabbitmqh
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	tmp, err := h.groupcallHandler.Gets(ctx, customerID, pageSize, pageToken)
+	// get filters
+	filters := map[string]string{}
+	if u.Query().Has("filter_deleted") {
+		filters["deleted"] = u.Query().Get("filter_deleted")
+	}
+
+	tmp, err := h.groupcallHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil

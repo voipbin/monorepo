@@ -74,23 +74,31 @@ func Test_processV1CallsIDGet(t *testing.T) {
 
 func Test_processV1CallsGet(t *testing.T) {
 	tests := []struct {
-		name       string
+		name string
+
 		request    *rabbitmqhandler.Request
 		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
-		calls      []*call.Call
-		expectRes  *rabbitmqhandler.Response
+		filters    map[string]string
+
+		calls     []*call.Call
+		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
+
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac03d4ea-7f50-11ec-908d-d39407ab524d",
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac03d4ea-7f50-11ec-908d-d39407ab524d&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			uuid.FromStringOrNil("ac03d4ea-7f50-11ec-908d-d39407ab524d"),
 			10,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*call.Call{
 				{
 					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
@@ -105,13 +113,18 @@ func Test_processV1CallsGet(t *testing.T) {
 		},
 		{
 			"2 items",
+
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac35aeb6-7f50-11ec-b7c5-abac92baf1fb",
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac35aeb6-7f50-11ec-b7c5-abac92baf1fb&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
 			10,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*call.Call{
 				{
 					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
@@ -143,7 +156,7 @@ func Test_processV1CallsGet(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.calls, nil)
+			mockCall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.calls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
