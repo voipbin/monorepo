@@ -139,8 +139,13 @@ func (h *serviceHandler) CallGets(ctx context.Context, a *amagent.Agent, size ui
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
+	// filters
+	filters := map[string]string{
+		"deleted": "false", // we don't need deleted items
+	}
+
 	// get calls
-	tmps, err := h.reqHandler.CallV1CallGets(ctx, a.CustomerID, token, size)
+	tmps, err := h.reqHandler.CallV1CallGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
