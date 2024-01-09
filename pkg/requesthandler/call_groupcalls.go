@@ -70,8 +70,12 @@ func (r *requestHandler) CallV1GroupcallCreate(
 // CallV1GroupcallGets sends a request to call-manager
 // to getting a list of groupcall info.
 // it returns detail list of groupcall info if it succeed.
-func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmgroupcall.Groupcall, error) {
+func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallGroupcalls, 30000, 0, ContentTypeNone, nil)
 	switch {
