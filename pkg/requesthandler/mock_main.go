@@ -1131,18 +1131,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallGetDigits(ctx, callID interf
 }
 
 // CallV1CallGets mocks base method.
-func (m *MockRequestHandler) CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]call.Call, error) {
+func (m *MockRequestHandler) CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "CallV1CallGets", ctx, customerID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1CallGets indicates an expected call of CallV1CallGets.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // CallV1CallHangup mocks base method.
@@ -1699,18 +1699,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGet(ctx, groupcallID in
 }
 
 // CallV1GroupcallGets mocks base method.
-func (m *MockRequestHandler) CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]groupcall.Groupcall, error) {
+func (m *MockRequestHandler) CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1GroupcallGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "CallV1GroupcallGets", ctx, customerID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1GroupcallGets indicates an expected call of CallV1GroupcallGets.
-func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // CallV1GroupcallHangup mocks base method.
