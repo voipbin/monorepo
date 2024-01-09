@@ -12,7 +12,7 @@ require (
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.17.0
+	github.com/prometheus/client_golang v1.18.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
@@ -49,7 +49,7 @@ require (
 	github.com/tevino/abool v0.0.0-20170917061928-9b9efcf221b5 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
-	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20231129031206-5f69dfb5e088 // indirect
+	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20240107131318-b7b0a039e080 // indirect
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 // indirect
 	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c690da // indirect
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4 // indirect
@@ -65,8 +65,8 @@ require (
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
 	golang.org/x/crypto v0.16.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
-	google.golang.org/genproto v0.0.0-20231212172506-995d672761c0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/genproto v0.0.0-20240108191215-35c7eff3a6b1 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
 )
