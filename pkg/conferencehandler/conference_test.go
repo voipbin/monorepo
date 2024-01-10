@@ -546,23 +546,24 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID     uuid.UUID
-		conferenceType conference.Type
-		size           uint64
-		token          string
+		customerID uuid.UUID
+		size       uint64
+		token      string
+		filters    map[string]string
 
 		responseConference []*conference.Conference
 
-		expectFilters map[string]string
-		expectRes     []*conference.Conference
+		expectRes []*conference.Conference
 	}{
 		{
 			name: "normal",
 
-			customerID:     uuid.FromStringOrNil("c7dc2ef0-afd3-11ee-a624-3fa2cdf1cb55"),
-			conferenceType: conference.TypeConnect,
-			size:           10,
-			token:          "2023-01-03 21:35:02.809",
+			customerID: uuid.FromStringOrNil("c7dc2ef0-afd3-11ee-a624-3fa2cdf1cb55"),
+			size:       10,
+			token:      "2023-01-03 21:35:02.809",
+			filters: map[string]string{
+				"type": string(conference.TypeConnect),
+			},
 
 			responseConference: []*conference.Conference{
 				{
@@ -570,9 +571,6 @@ func Test_Gets(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"type": string(conference.TypeConnect),
-			},
 			expectRes: []*conference.Conference{
 				{
 					ID: uuid.FromStringOrNil("c831941c-afd3-11ee-b91b-8fdf2766ea5e"),
@@ -597,9 +595,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceGets(ctx, tt.customerID, tt.size, tt.token, tt.expectFilters).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceGets(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseConference, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.conferenceType, tt.size, tt.token)
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

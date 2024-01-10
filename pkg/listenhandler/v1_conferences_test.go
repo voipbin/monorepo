@@ -16,14 +16,15 @@ import (
 func Test_processV1ConferencesGet(t *testing.T) {
 
 	tests := []struct {
-		name           string
-		request        *rabbitmqhandler.Request
-		customerID     uuid.UUID
-		pageSize       uint64
-		pageToken      string
-		conferenceType string
-		confs          []*conference.Conference
-		expectRes      *rabbitmqhandler.Response
+		name       string
+		request    *rabbitmqhandler.Request
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
+		filters    map[string]string
+
+		confs     []*conference.Conference
+		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -34,7 +35,8 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8"),
 			10,
 			"2020-05-03 21:35:02.809",
-			"",
+			map[string]string{},
+
 			[]*conference.Conference{
 				{
 					ID:         uuid.FromStringOrNil("0addf332-9312-11eb-95e8-9b90e44428a0"),
@@ -56,7 +58,8 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			uuid.FromStringOrNil("3be94c82-7f49-11ec-814e-ff2a9d84a806"),
 			10,
 			"2020-05-03 21:35:02.809",
-			"",
+			map[string]string{},
+
 			[]*conference.Conference{
 				{
 					ID:                uuid.FromStringOrNil("33b1138a-3bef-11ec-a187-f77a455f3ced"),
@@ -81,13 +84,16 @@ func Test_processV1ConferencesGet(t *testing.T) {
 		{
 			"have confbridge and with conference type",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=4d4d8ce0-7f49-11ec-a61f-1358990ed631&type=conference",
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=4d4d8ce0-7f49-11ec-a61f-1358990ed631&filter_type=conference",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			uuid.FromStringOrNil("4d4d8ce0-7f49-11ec-a61f-1358990ed631"),
 			10,
 			"2020-05-03 21:35:02.809",
-			"conference",
+			map[string]string{
+				"type": string(conference.TypeConference),
+			},
+
 			[]*conference.Conference{
 				{
 					ID:                uuid.FromStringOrNil("c1e0a078-3de6-11ec-ae88-13052faf6ad7"),
@@ -125,7 +131,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().Gets(gomock.Any(), tt.customerID, conference.Type(tt.conferenceType), tt.pageSize, tt.pageToken).Return(tt.confs, nil)
+			mockConf.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.confs, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
