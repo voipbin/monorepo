@@ -832,8 +832,12 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231207170822-5576e863
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231207170822-5576e863cd8c/go.mod h1:wI+iPruHv+jKaJ+viWZYn4rGw429l/iZwz57tW/1ld0=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240109145711-fa3582022f78 h1:1QZ3m0wP5kQNKCuhzPjkLO4tdFx7auRhhxasUe5vOVQ=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240109145711-fa3582022f78/go.mod h1:HUR2ukoiWIGxWL0IiYs2uFJGQ+Fag/aBCkQ7xcC02+4=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240110175336-2495900c5769 h1:laVZnl5m36+0kHQ4h25vnRkJU+Zp/kyYCA2nym/IfXk=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240110175336-2495900c5769/go.mod h1:VmHcM2V26zDL8dKYMkCQI74RrtezlWIKmqDbxd0UjbQ=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578 h1:PzDD+gHw68YoW21NhfxyA9DHaqqcAJ2UkCCq3TkEcCo=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578/go.mod h1:K9Uk44FGgS/UgDvTLAsVFqINLfhGMCrBuRMNhGZyaLE=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110173312-de5436ad2531 h1:OGyI3PBqpWe2wgOl/JXnT7fk48u3jFjNaiGSKA/vMZ4=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110173312-de5436ad2531/go.mod h1:opIE1SpwhQ8ZhD1P+3VswdhoqWocVc8GhtGrXaJ6zMM=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02 h1:w1vRshMX9V0FfH1nyJ16yOyXNDnNui4iVPsUFOoUgOo=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02/go.mod h1:jpa5pRnCqdQqbjb7+GJqnV25JGYSyHnFPE2c5I/YnKw=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4 h1:/20Gi1qrErTzT1Uj0UPPYMPoC5jMCx2TsvRmy/qy3Fo=
