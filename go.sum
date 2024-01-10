@@ -85,6 +85,10 @@ gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c690da/go.mod h1:BdhX2Fa1ZRjUd7vY+ZUhnh2h9VojZncsTXQ0mVJTTqs=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578 h1:PzDD+gHw68YoW21NhfxyA9DHaqqcAJ2UkCCq3TkEcCo=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578/go.mod h1:K9Uk44FGgS/UgDvTLAsVFqINLfhGMCrBuRMNhGZyaLE=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110170053-ea0830e2602f h1:JrF6FHURacGaEFvuK9Ie9jgNhqc3iHnELRmvJSuJOh8=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110170053-ea0830e2602f/go.mod h1:opIE1SpwhQ8ZhD1P+3VswdhoqWocVc8GhtGrXaJ6zMM=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110173312-de5436ad2531 h1:OGyI3PBqpWe2wgOl/JXnT7fk48u3jFjNaiGSKA/vMZ4=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110173312-de5436ad2531/go.mod h1:opIE1SpwhQ8ZhD1P+3VswdhoqWocVc8GhtGrXaJ6zMM=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02 h1:w1vRshMX9V0FfH1nyJ16yOyXNDnNui4iVPsUFOoUgOo=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02/go.mod h1:jpa5pRnCqdQqbjb7+GJqnV25JGYSyHnFPE2c5I/YnKw=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4 h1:/20Gi1qrErTzT1Uj0UPPYMPoC5jMCx2TsvRmy/qy3Fo=

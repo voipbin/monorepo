@@ -77,10 +77,10 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID     uuid.UUID
-		pageToken      string
-		pageSize       uint64
-		conferenceType cfconference.Type
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+		filters    map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -94,11 +94,13 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 			uuid.FromStringOrNil("a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd"),
 			"2021-03-02 03:23:20.995000",
 			10,
-			cfconference.TypeConference,
+			map[string]string{
+				"type": string(cfconference.TypeConference),
+			},
 
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd&type=conference",
+				URI:    "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd&filter_type=conference",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -131,7 +133,7 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConferenceV1ConferenceGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, string(tt.conferenceType))
+			res, err := reqHandler.ConferenceV1ConferenceGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

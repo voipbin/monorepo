@@ -39,8 +39,12 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 // ConferenceV1ConferenceGets sends a request to conference-manager
 // to getting a list of conference info.
 // it returns detail list of conference info if it succeed.
-func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
-	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, conferenceType)
+func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeNone, nil)
 	switch {
