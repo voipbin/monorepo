@@ -75,8 +75,12 @@ func (h *serviceHandler) ConferencecallGets(ctx context.Context, a *amagent.Agen
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
+	filters := map[string]string{
+		"deleted": "false",
+	}
+
 	// get conferences
-	tmps, err := h.reqHandler.ConferenceV1ConferencecallGets(ctx, a.CustomerID, token, size)
+	tmps, err := h.reqHandler.ConferenceV1ConferencecallGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
