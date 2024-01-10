@@ -463,20 +463,73 @@ func Test_ConferenceSetData(t *testing.T) {
 	}
 }
 
-func Test_ConferenceGetsWithType(t *testing.T) {
+func Test_ConferenceGets(t *testing.T) {
+
 	tests := []struct {
 		name        string
 		conferences []*conference.Conference
 
-		customerID     uuid.UUID
-		conferenceType conference.Type
+		customerID uuid.UUID
+		count      int
+		filters    map[string]string
 
 		responseCurTime string
-
-		expectRes []*conference.Conference
+		expectRes       []*conference.Conference
 	}{
 		{
 			"normal",
+			[]*conference.Conference{
+				{
+					ID:         uuid.FromStringOrNil("ac54ebd4-94c9-11ed-b4aa-4f7da8f9741a"),
+					CustomerID: uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
+					CustomerID: uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+				},
+			},
+
+			uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+			10,
+			map[string]string{
+				"deleted": "false",
+			},
+
+			"2023-01-03 21:35:02.809",
+			[]*conference.Conference{
+				{
+					ID:                uuid.FromStringOrNil("ac54ebd4-94c9-11ed-b4aa-4f7da8f9741a"),
+					CustomerID:        uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+					Data:              map[string]interface{}{},
+					PreActions:        []fmaction.Action{},
+					PostActions:       []fmaction.Action{},
+					ConferencecallIDs: []uuid.UUID{},
+					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
+					TMEnd:             DefaultTimeStamp,
+					TMCreate:          "2023-01-03 21:35:02.809",
+					TMUpdate:          DefaultTimeStamp,
+					TMDelete:          DefaultTimeStamp,
+				},
+				{
+					ID:                uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
+					CustomerID:        uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+					Data:              map[string]interface{}{},
+					PreActions:        []fmaction.Action{},
+					PostActions:       []fmaction.Action{},
+					ConferencecallIDs: []uuid.UUID{},
+					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
+					TMEnd:             DefaultTimeStamp,
+					TMCreate:          "2023-01-03 21:35:02.809",
+					TMUpdate:          DefaultTimeStamp,
+					TMDelete:          DefaultTimeStamp,
+				},
+			},
+		},
+
+		{
+			"gets conference type only",
 			[]*conference.Conference{
 				{
 					ID:         uuid.FromStringOrNil("418ea85a-94b8-11ed-9cf4-5f71d1d56a86"),
@@ -496,10 +549,13 @@ func Test_ConferenceGetsWithType(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("80a965e0-7f45-11ec-a078-7f296665fa3d"),
-			conference.TypeConference,
+			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(conference.TypeConference),
+			},
 
 			"2023-01-03 21:35:02.809",
-
 			[]*conference.Conference{
 				{
 					ID:                uuid.FromStringOrNil("418ea85a-94b8-11ed-9cf4-5f71d1d56a86"),
@@ -533,118 +589,15 @@ func Test_ConferenceGetsWithType(t *testing.T) {
 				},
 			},
 		},
-		{
-			"empty",
-			[]*conference.Conference{},
 
-			uuid.FromStringOrNil("2060b9be-94c9-11ed-8e3e-2363706d4c8a"),
-			conference.TypeConference,
-
-			"2023-01-03 21:35:02.809",
-			[]*conference.Conference{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-
-			ctx := context.Background()
-
-			for _, cf := range tt.conferences {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-				mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
-				if errCreate := h.ConferenceCreate(ctx, cf); errCreate != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
-				}
-			}
-
-			res, err := h.ConferenceGetsWithType(ctx, tt.customerID, tt.conferenceType, 10, utilhandler.TimeGetCurTime())
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_ConferenceGets(t *testing.T) {
-
-	tests := []struct {
-		name        string
-		conferences []*conference.Conference
-
-		customerID uuid.UUID
-		count      int
-
-		responseCurTime string
-		expectRes       []*conference.Conference
-	}{
-		{
-			"normal",
-			[]*conference.Conference{
-				{
-					ID:         uuid.FromStringOrNil("ac54ebd4-94c9-11ed-b4aa-4f7da8f9741a"),
-					CustomerID: uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
-				},
-				{
-					ID:         uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
-					CustomerID: uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
-				},
-			},
-
-			uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
-			10,
-			"2023-01-03 21:35:02.809",
-			[]*conference.Conference{
-				{
-					ID:                uuid.FromStringOrNil("ac54ebd4-94c9-11ed-b4aa-4f7da8f9741a"),
-					CustomerID:        uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
-					Data:              map[string]interface{}{},
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
-					ConferencecallIDs: []uuid.UUID{},
-					RecordingIDs:      []uuid.UUID{},
-					TranscribeIDs:     []uuid.UUID{},
-					TMEnd:             DefaultTimeStamp,
-					TMCreate:          "2023-01-03 21:35:02.809",
-					TMUpdate:          DefaultTimeStamp,
-					TMDelete:          DefaultTimeStamp,
-				},
-				{
-					ID:                uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
-					CustomerID:        uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
-					Data:              map[string]interface{}{},
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
-					ConferencecallIDs: []uuid.UUID{},
-					RecordingIDs:      []uuid.UUID{},
-					TranscribeIDs:     []uuid.UUID{},
-					TMEnd:             DefaultTimeStamp,
-					TMCreate:          "2023-01-03 21:35:02.809",
-					TMUpdate:          DefaultTimeStamp,
-					TMDelete:          DefaultTimeStamp,
-				},
-			},
-		},
 		{
 			"empty",
 			[]*conference.Conference{},
 
 			uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
 			0,
+			map[string]string{},
+
 			"2023-01-03 21:35:02.809",
 			[]*conference.Conference{},
 		},
@@ -673,7 +626,7 @@ func Test_ConferenceGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConferenceGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime())
+			res, err := h.ConferenceGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

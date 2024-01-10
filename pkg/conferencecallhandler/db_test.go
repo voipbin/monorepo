@@ -90,6 +90,7 @@ func Test_Gets(t *testing.T) {
 		customerID uuid.UUID
 		size       uint64
 		token      string
+		filters    map[string]string
 
 		responseConferencecall []*conferencecall.Conferencecall
 	}{
@@ -99,6 +100,9 @@ func Test_Gets(t *testing.T) {
 			uuid.FromStringOrNil("9689bcf2-50c2-11ee-81cc-f366bc5c12c3"),
 			10,
 			"2023-01-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*conferencecall.Conferencecall{
 				{
@@ -125,8 +129,8 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallGetsByCustomerID(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseConferencecall, nil)
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			mockDB.EXPECT().ConferencecallGetsByCustomerID(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseConferencecall, nil)
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

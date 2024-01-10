@@ -63,8 +63,8 @@ func (h *conferencecallHandler) Create(
 }
 
 // Gets returns list of conferencecalls.
-func (h *conferencecallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conferencecall.Conferencecall, error) {
-	res, err := h.db.ConferencecallGetsByCustomerID(ctx, customerID, size, token)
+func (h *conferencecallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
+	res, err := h.db.ConferencecallGetsByCustomerID(ctx, customerID, size, token, filters)
 	if err != nil {
 		return nil, err
 	}

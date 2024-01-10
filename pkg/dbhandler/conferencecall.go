@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	uuid "github.com/gofrs/uuid"
 
@@ -213,21 +214,35 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 }
 
 // ConferencecallGetsByCustomerID returns a list of conferencecalls of the given customer_id.
-func (h *handler) ConferencecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conferencecall.Conferencecall, error) {
+func (h *handler) ConferencecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
-		%s
+			%s
 		where
-			tm_delete >= ?
-			and customer_id = ?
+			customer_id = ?
 			and tm_create < ?
-		order by
-			tm_create desc
-		limit ?
 	`, conferencecallSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, size)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferencecallGets. err: %v", err)
 	}
@@ -247,21 +262,35 @@ func (h *handler) ConferencecallGetsByCustomerID(ctx context.Context, customerID
 }
 
 // ConferencecallGetsByConferenceID returns a list of conferencecalls of the given conference_id.
-func (h *handler) ConferencecallGetsByConferenceID(ctx context.Context, conferenceID uuid.UUID, size uint64, token string) ([]*conferencecall.Conferencecall, error) {
+func (h *handler) ConferencecallGetsByConferenceID(ctx context.Context, conferenceID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
-			tm_delete >= ?
-			and conference_id = ?
+			conference_id = ?
 			and tm_create < ?
-		order by
-			tm_create desc
-		limit ?
 	`, conferencecallSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, conferenceID.Bytes(), token, size)
+	values := []interface{}{
+		conferenceID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferencecallGetsByConferenceID. err: %v", err)
 	}

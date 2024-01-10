@@ -179,16 +179,13 @@ func (h *conferenceHandler) createConferenceFlow(ctx context.Context, customerID
 
 // Gets returns list of conferences.
 func (h *conferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
-	var res []*conference.Conference
-	var err error
-	switch confType {
-	case conference.TypeNone:
-		res, err = h.db.ConferenceGets(ctx, customerID, size, token)
 
-	default:
-		res, err = h.db.ConferenceGetsWithType(ctx, customerID, confType, size, token)
+	filters := map[string]string{}
+	if confType != conference.TypeNone {
+		filters["type"] = string(confType)
 	}
 
+	res, err := h.db.ConferenceGets(ctx, customerID, size, token, filters)
 	if err != nil {
 		return nil, err
 	}

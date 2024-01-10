@@ -540,3 +540,73 @@ func Test_Delete(t *testing.T) {
 		})
 	}
 }
+
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		conferenceType conference.Type
+		size           uint64
+		token          string
+
+		responseConference []*conference.Conference
+
+		expectFilters map[string]string
+		expectRes     []*conference.Conference
+	}{
+		{
+			name: "normal",
+
+			customerID:     uuid.FromStringOrNil("c7dc2ef0-afd3-11ee-a624-3fa2cdf1cb55"),
+			conferenceType: conference.TypeConnect,
+			size:           10,
+			token:          "2023-01-03 21:35:02.809",
+
+			responseConference: []*conference.Conference{
+				{
+					ID: uuid.FromStringOrNil("c831941c-afd3-11ee-b91b-8fdf2766ea5e"),
+				},
+			},
+
+			expectFilters: map[string]string{
+				"type": string(conference.TypeConnect),
+			},
+			expectRes: []*conference.Conference{
+				{
+					ID: uuid.FromStringOrNil("c831941c-afd3-11ee-b91b-8fdf2766ea5e"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferenceGets(ctx, tt.customerID, tt.size, tt.token, tt.expectFilters).Return(tt.responseConference, nil)
+
+			res, err := h.Gets(ctx, tt.customerID, tt.conferenceType, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
