@@ -173,6 +173,7 @@ func Test_ConferencecallGetsByCustomerID(t *testing.T) {
 
 		customerID uuid.UUID
 		count      int
+		filters    map[string]string
 
 		responseCurTime string
 
@@ -193,6 +194,9 @@ func Test_ConferencecallGetsByCustomerID(t *testing.T) {
 
 			uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"2023-01-03 21:35:02.809",
 			[]*conferencecall.Conferencecall{
@@ -217,6 +221,10 @@ func Test_ConferencecallGetsByCustomerID(t *testing.T) {
 			[]*conferencecall.Conferencecall{},
 			uuid.FromStringOrNil("9c61ef24-b396-465b-9705-44b420f2dc5d"),
 			0,
+			map[string]string{
+				"deleted": "false",
+			},
+
 			"2023-01-03 21:35:02.809",
 			[]*conferencecall.Conferencecall{},
 		},
@@ -245,7 +253,7 @@ func Test_ConferencecallGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConferencecallGetsByCustomerID(ctx, tt.customerID, uint64(tt.count), utilhandler.TimeGetCurTime())
+			res, err := h.ConferencecallGetsByCustomerID(ctx, tt.customerID, uint64(tt.count), utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -265,6 +273,7 @@ func Test_ConferencecallGetsByConferenceID(t *testing.T) {
 
 		conferenceID uuid.UUID
 		count        int
+		filters      map[string]string
 
 		responseCurTime string
 		expectRes       []*conferencecall.Conferencecall
@@ -288,6 +297,9 @@ func Test_ConferencecallGetsByConferenceID(t *testing.T) {
 
 			uuid.FromStringOrNil("e8871151-a0bb-4064-95a9-5b59b195ba96"),
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"2023-01-03 21:35:02.809",
 			[]*conferencecall.Conferencecall{
@@ -313,6 +325,9 @@ func Test_ConferencecallGetsByConferenceID(t *testing.T) {
 
 			uuid.FromStringOrNil("2c6f5c63-293f-40bb-9c6e-12d15e3eca7b"),
 			0,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"2023-01-03 21:35:02.809",
 			[]*conferencecall.Conferencecall{},
@@ -342,7 +357,7 @@ func Test_ConferencecallGetsByConferenceID(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConferencecallGetsByConferenceID(ctx, tt.conferenceID, uint64(tt.count), utilhandler.TimeGetCurTime())
+			res, err := h.ConferencecallGetsByConferenceID(ctx, tt.conferenceID, uint64(tt.count), utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
