@@ -20,6 +20,7 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -33,10 +34,13 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 			uuid.FromStringOrNil("99a1f5de-50c8-11ee-9ce3-231aafe363bf"),
 			"2021-03-02 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=99a1f5de-50c8-11ee-9ce3-231aafe363bf",
+				URI:    "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=99a1f5de-50c8-11ee-9ce3-231aafe363bf&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -69,7 +73,7 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConferenceV1ConferencecallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ConferenceV1ConferencecallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
