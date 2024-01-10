@@ -237,10 +237,13 @@ func Test_ConferenceDelete(t *testing.T) {
 func Test_ConferenceGets(t *testing.T) {
 
 	tests := []struct {
-		name      string
-		agent     *amagent.Agent
-		token     string
-		limit     uint64
+		name  string
+		agent *amagent.Agent
+
+		token   string
+		limit   uint64
+		filters map[string]string
+
 		response  []cfconference.Conference
 		expectRes []*cfconference.WebhookMessage
 	}{
@@ -251,8 +254,14 @@ func Test_ConferenceGets(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Permission: amagent.PermissionCustomerAdmin,
 			},
+
 			"2020-09-20T03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(cfconference.TypeConference),
+			},
+
 			[]cfconference.Conference{
 				{
 					ID:         uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
@@ -282,7 +291,7 @@ func Test_ConferenceGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGets(ctx, tt.agent.CustomerID, tt.token, tt.limit, "conference").Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGets(ctx, tt.agent.CustomerID, tt.token, tt.limit, tt.filters).Return(tt.response, nil)
 			res, err := h.ConferenceGets(ctx, tt.agent, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
