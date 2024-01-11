@@ -716,3 +716,67 @@ func Test_CallMuteOff(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallGets(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent *amagent.Agent
+
+		pageToken string
+		pageSize  uint64
+
+		response  []cmcall.Call
+		expectRes []*cmcall.WebhookMessage
+	}{
+		{
+			"normal",
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+
+			"2021-03-01 01:00:00.995000",
+			10,
+
+			[]cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("1fbeb120-b08c-11ee-9298-8373260919fa"),
+				},
+			},
+			[]*cmcall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("1fbeb120-b08c-11ee-9298-8373260919fa"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize, map[string]string{"deleted": "false"}).Return(tt.response, nil)
+
+			res, err := h.CallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}

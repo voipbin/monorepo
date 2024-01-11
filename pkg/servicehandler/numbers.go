@@ -50,8 +50,13 @@ func (h *serviceHandler) NumberGets(ctx context.Context, a *amagent.Agent, size 
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	// filters
+	filters := map[string]string{
+		"deleted": "false", // we don't need deleted items
+	}
+
 	// get available numbers
-	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, a.CustomerID, token, size)
+	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get numbers info. err: %v", err)
 		return nil, err
