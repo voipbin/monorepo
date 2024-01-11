@@ -62,8 +62,12 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 // NumberV1NumberGets sends a request to number-manager
 // to get a list of numbers.
 // Returns list of numbers
-func (r *requestHandler) NumberV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
