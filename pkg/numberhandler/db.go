@@ -132,14 +132,14 @@ func (h *numberHandler) dbGet(ctx context.Context, id uuid.UUID) (*number.Number
 }
 
 // dbGetsByCustomerID returns list of numbers info of the given customer_id
-func (h *numberHandler) dbGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
+func (h *numberHandler) dbGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "dbGetsByCustomerID",
 		"customer_id": customerID,
 	})
 	log.Debugf("GetNumbers. customer_id: %s", customerID)
 
-	numbers, err := h.db.NumberGets(ctx, customerID, pageSize, pageToken)
+	numbers, err := h.db.NumberGets(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get numbers. customer_id: %s, err:%v", customerID, err)
 		return nil, err
@@ -231,7 +231,11 @@ func (h *numberHandler) dbGetsByTMRenew(ctx context.Context, tmRenew string) ([]
 		"tm_renew": tmRenew,
 	})
 
-	res, err := h.db.NumberGetsByTMRenew(ctx, tmRenew)
+	filters := map[string]string{
+		"deleted": "false",
+	}
+
+	res, err := h.db.NumberGetsByTMRenew(ctx, tmRenew, 100, filters)
 	if err != nil {
 		log.Errorf("Could not get numbers. tm_renew: %s, err:%v", tmRenew, err)
 		return nil, err

@@ -68,7 +68,7 @@ func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew).Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew, uint64(100), map[string]string{"deleted": "false"}).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
 				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)
@@ -144,7 +144,7 @@ func Test_RenewNumbers_renewNumbersByDays(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime).Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[string]string{"deleted": "false"}).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
 				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)
@@ -220,7 +220,7 @@ func Test_RenewNumbers_renewNumbersByHours(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime).Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[string]string{"deleted": "false"}).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
 				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)

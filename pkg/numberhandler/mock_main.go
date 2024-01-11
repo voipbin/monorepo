@@ -113,18 +113,18 @@ func (mr *MockNumberHandlerMockRecorder) GetByNumber(ctx, num interface{}) *gomo
 }
 
 // GetsByCustomerID mocks base method.
-func (m *MockNumberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
+func (m *MockNumberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, pageSize, pageToken)
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, pageSize, pageToken, filters)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockNumberHandlerMockRecorder) GetsByCustomerID(ctx, customerID, pageSize, pageToken interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) GetsByCustomerID(ctx, customerID, pageSize, pageToken, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockNumberHandler)(nil).GetsByCustomerID), ctx, customerID, pageSize, pageToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockNumberHandler)(nil).GetsByCustomerID), ctx, customerID, pageSize, pageToken, filters)
 }
 
 // RemoveNumbersFlowID mocks base method.

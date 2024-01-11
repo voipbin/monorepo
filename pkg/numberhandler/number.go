@@ -138,7 +138,7 @@ func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, 
 }
 
 // GetsByCustomerID returns list of numbers info of the given customer_id
-func (h *numberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
+func (h *numberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCustomerID",
 		"customer_id": customerID,
@@ -149,7 +149,7 @@ func (h *numberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UU
 		pageToken = h.utilHandler.TimeGetCurTime()
 	}
 
-	res, err := h.dbGetsByCustomerID(ctx, customerID, pageSize, pageToken)
+	res, err := h.dbGetsByCustomerID(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get numbers. err: %v", err)
 		return nil, errors.Wrap(err, "could not get numbers")

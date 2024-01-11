@@ -102,6 +102,7 @@ func Test_NumberGets(t *testing.T) {
 		numbers []*number.Number
 
 		customerID uuid.UUID
+		filters    map[string]string
 
 		responseCurTime string
 
@@ -120,6 +121,9 @@ func Test_NumberGets(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("3b0bfcce-7ff3-11ec-b5cd-f3669cd35916"),
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"2021-01-01 00:00:00.000",
 
@@ -141,6 +145,9 @@ func Test_NumberGets(t *testing.T) {
 			[]*number.Number{},
 
 			uuid.FromStringOrNil("4c1150be-7ff3-11ec-adb5-771b9c899a73"),
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"2021-01-01 00:00:00.000",
 			[]*number.Number{},
@@ -168,7 +175,7 @@ func Test_NumberGets(t *testing.T) {
 				_ = h.NumberCreate(context.Background(), tt.numbers[i])
 			}
 
-			res, err := h.NumberGets(context.Background(), tt.customerID, 10, utilhandler.TimeGetCurTime())
+			res, err := h.NumberGets(context.Background(), tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -183,10 +190,11 @@ func Test_NumberGets(t *testing.T) {
 func Test_NumberGetsByCallFlowID(t *testing.T) {
 
 	type test struct {
-		name string
+		name    string
+		numbers []*number.Number
 
 		flowID  uuid.UUID
-		numbers []*number.Number
+		filters map[string]string
 
 		responseCurTime string
 
@@ -196,8 +204,6 @@ func Test_NumberGetsByCallFlowID(t *testing.T) {
 	tests := []test{
 		{
 			"call flow id",
-			uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
-
 			[]*number.Number{
 				{
 					ID:         uuid.FromStringOrNil("5d73b940-7d20-11eb-8335-97856a00f2c6"),
@@ -207,12 +213,14 @@ func Test_NumberGetsByCallFlowID(t *testing.T) {
 				},
 			},
 
+			uuid.FromStringOrNil("66beabfe-7d20-11eb-9b69-375c485b40fa"),
+			map[string]string{},
+
 			"2021-01-01 00:00:00.000",
 			1,
 		},
 		{
 			"3 flows, but grep 2",
-			uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
 			[]*number.Number{
 				{
 					ID:         uuid.FromStringOrNil("109347b6-7d21-11eb-bdd4-c7226a0e1c81"),
@@ -233,6 +241,9 @@ func Test_NumberGetsByCallFlowID(t *testing.T) {
 					TMPurchase: "2021-01-01 00:00:00.000",
 				},
 			},
+
+			uuid.FromStringOrNil("0472a166-7d21-11eb-ab7a-93bacc9ce3f2"),
+			map[string]string{},
 
 			"2021-01-01 00:00:00.000",
 			2,
@@ -262,7 +273,7 @@ func Test_NumberGetsByCallFlowID(t *testing.T) {
 				_ = h.NumberCreate(ctx, n)
 			}
 
-			res, err := h.NumberGetsByCallFlowID(ctx, tt.flowID, 100, utilhandler.TimeGetCurTime())
+			res, err := h.NumberGetsByCallFlowID(ctx, tt.flowID, 100, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -277,10 +288,11 @@ func Test_NumberGetsByCallFlowID(t *testing.T) {
 func Test_NumberGetsByMessageFlowID(t *testing.T) {
 
 	type test struct {
-		name string
+		name    string
+		numbers []*number.Number
 
 		flowID  uuid.UUID
-		numbers []*number.Number
+		filters map[string]string
 
 		expectNum int
 	}
@@ -288,7 +300,6 @@ func Test_NumberGetsByMessageFlowID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("9714e212-a85f-11ec-a571-d79e5520a61c"),
 			[]*number.Number{
 				{
 					ID:            uuid.FromStringOrNil("974bb36e-a85f-11ec-afd8-13a6af6c6b79"),
@@ -300,11 +311,13 @@ func Test_NumberGetsByMessageFlowID(t *testing.T) {
 					TMDelete:      DefaultTimeStamp,
 				},
 			},
+
+			uuid.FromStringOrNil("9714e212-a85f-11ec-a571-d79e5520a61c"),
+			map[string]string{},
 			1,
 		},
 		{
 			"3 flows, but grep 2",
-			uuid.FromStringOrNil("97a1d14a-a85f-11ec-bd41-53acbe702228"),
 			[]*number.Number{
 				{
 					ID:            uuid.FromStringOrNil("c5b4a4b6-a861-11ec-84c2-4fedd4b408ea"),
@@ -334,6 +347,9 @@ func Test_NumberGetsByMessageFlowID(t *testing.T) {
 					TMDelete:      DefaultTimeStamp,
 				},
 			},
+
+			uuid.FromStringOrNil("97a1d14a-a85f-11ec-bd41-53acbe702228"),
+			map[string]string{},
 			2,
 		},
 	}
@@ -354,7 +370,7 @@ func Test_NumberGetsByMessageFlowID(t *testing.T) {
 				_ = h.NumberCreate(ctx, n)
 			}
 
-			res, err := h.NumberGetsByMessageFlowID(ctx, tt.flowID, 100, utilhandler.TimeGetCurTime())
+			res, err := h.NumberGetsByMessageFlowID(ctx, tt.flowID, 100, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -987,6 +1003,8 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 
 		id      uuid.UUID
 		tmRenew string
+		size    uint64
+		filters map[string]string
 
 		responseCurTimes []string
 		expectRes        []*number.Number
@@ -1012,6 +1030,10 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 
 			id:      uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
 			tmRenew: "2020-04-12 20:26:49.000",
+			size:    100,
+			filters: map[string]string{
+				"deleted": "false",
+			},
 
 			responseCurTimes: []string{
 				"2020-04-10 18:26:49.000",
@@ -1021,10 +1043,10 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 			},
 			expectRes: []*number.Number{
 				{
-					ID:         uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
-					TMPurchase: "2020-04-10 18:26:49.000",
-					TMRenew:    "2020-04-10 18:26:49.000",
-					TMCreate:   "2020-04-10 18:26:49.000",
+					ID:         uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
+					TMPurchase: "2020-04-12 18:26:49.000",
+					TMRenew:    "2020-04-12 18:26:49.000",
+					TMCreate:   "2020-04-12 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -1037,10 +1059,10 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
-					TMPurchase: "2020-04-12 18:26:49.000",
-					TMRenew:    "2020-04-12 18:26:49.000",
-					TMCreate:   "2020-04-12 18:26:49.000",
+					ID:         uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
+					TMPurchase: "2020-04-10 18:26:49.000",
+					TMRenew:    "2020-04-10 18:26:49.000",
+					TMCreate:   "2020-04-10 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -1070,7 +1092,7 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 				}
 			}
 
-			res, err := h.NumberGetsByTMRenew(ctx, tt.tmRenew)
+			res, err := h.NumberGetsByTMRenew(ctx, tt.tmRenew, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

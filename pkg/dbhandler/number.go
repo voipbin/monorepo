@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -291,21 +292,43 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.N
 	return res, nil
 }
 
+func (h *handler) numberGetsMergeFilters(query string, values []interface{}, filters map[string]string) (string, []interface{}) {
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				query = fmt.Sprintf("%s and tm_delete >= ?", query)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	return query, values
+}
+
 // NumberGets returns a list of numbers.
-func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
+func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create
-		desc limit ?
-		`, numberSelect)
+	where
+		customer_id = ?
+		and tm_create < ?
+	`, numberSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	// merge filters
+	q, values = h.numberGetsMergeFilters(q, values, filters)
+
+	// complete the query
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGets. err: %v", err)
 	}
@@ -325,21 +348,25 @@ func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uin
 }
 
 // NumberGetsByCallFlowID returns a list of numbers by call_flow_id.
-func (h *handler) NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
+func (h *handler) NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
 
-	// prepare
 	q := fmt.Sprintf(`%s
-		where
-			call_flow_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc
-		limit ?
-		`,
-		numberSelect)
+	where
+		call_flow_id = ?
+		and tm_create < ?
+	`, numberSelect)
 
-	rows, err := h.db.Query(q, flowID.Bytes(), token, DefaultTimeStamp, size)
+	values := []interface{}{
+		flowID.Bytes(),
+		token,
+	}
+
+	// merge filters and complete query
+	q, values = h.numberGetsMergeFilters(q, values, filters)
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetsByCallFlowID. err: %v", err)
 	}
@@ -359,21 +386,25 @@ func (h *handler) NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, 
 }
 
 // NumberGetsByMessageFlowID returns a list of numbers by message_flow_id.
-func (h *handler) NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error) {
+func (h *handler) NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
 
-	// prepare
 	q := fmt.Sprintf(`%s
-		where
-			message_flow_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc
-		limit ?
-		`,
-		numberSelect)
+	where
+		message_flow_id = ?
+		and tm_create < ?
+	`, numberSelect)
 
-	rows, err := h.db.Query(q, flowID.Bytes(), token, DefaultTimeStamp, size)
+	values := []interface{}{
+		flowID.Bytes(),
+		token,
+	}
+
+	// merge filters and complete query
+	q, values = h.numberGetsMergeFilters(q, values, filters)
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetsByMessageFlowID. err: %v", err)
 	}
@@ -553,17 +584,52 @@ func (h *handler) NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error {
 }
 
 // NumberGetsByTMRenew returns a list of numbers.
-func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error) {
+func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[string]string) ([]*number.Number, error) {
+	// // prepare
+	// q := fmt.Sprintf(`%s
+	// 	where
+	// 		tm_renew < ?
+	// 		and tm_delete >= ?
+	// 	order by
+	// 		tm_create
+	// 	`, numberSelect)
+
+	// rows, err := h.db.Query(q, tmRenew, DefaultTimeStamp)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %v", err)
+	// }
+	// defer rows.Close()
+
+	// res := []*number.Number{}
+	// for rows.Next() {
+	// 	u, err := h.numberGetFromRow(rows)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("could not get data. NumberGetsByTMRenew, err: %v", err)
+	// 	}
+
+	// 	res = append(res, u)
+	// }
+
+	// return res, nil
+
 	// prepare
 	q := fmt.Sprintf(`%s
 		where
 			tm_renew < ?
-			and tm_delete >= ?
-		order by
-			tm_create
 		`, numberSelect)
 
-	rows, err := h.db.Query(q, tmRenew, DefaultTimeStamp)
+	values := []interface{}{
+		tmRenew,
+	}
+
+	// merge filters
+	q, values = h.numberGetsMergeFilters(q, values, filters)
+
+	// complete the query
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %v", err)
 	}
@@ -580,4 +646,5 @@ func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string) ([]*n
 	}
 
 	return res, nil
+
 }

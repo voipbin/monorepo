@@ -23,15 +23,17 @@ type DBHandler interface {
 	NumberDelete(ctx context.Context, id uuid.UUID) error
 	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error)
-	NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*number.Number, error)
-	NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
-	NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
+
+	NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error)
+	NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error)
+	NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error)
+	NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[string]string) ([]*number.Number, error)
+
 	NumberUpdateInfo(ctx context.Context, id uuid.UUID, callflowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) error
 	NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) error
 	NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error
-	NumberGetsByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error)
 }
 
 // handler database handler

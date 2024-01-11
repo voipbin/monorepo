@@ -18,7 +18,7 @@ func (h *numberHandler) RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUI
 	// removing call_flow_id
 	for {
 		ts := h.utilHandler.TimeGetCurTime()
-		numbs, err := h.db.NumberGetsByCallFlowID(ctx, flowID, 100, ts)
+		numbs, err := h.db.NumberGetsByCallFlowID(ctx, flowID, 100, ts, map[string]string{})
 		if err != nil || len(numbs) <= 0 {
 			break
 		}
@@ -39,7 +39,7 @@ func (h *numberHandler) RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUI
 	// removing message_flow_id
 	for {
 		ts := h.utilHandler.TimeGetCurTime()
-		numbs, err := h.db.NumberGetsByMessageFlowID(ctx, flowID, 100, ts)
+		numbs, err := h.db.NumberGetsByMessageFlowID(ctx, flowID, 100, ts, map[string]string{})
 		if err != nil || len(numbs) <= 0 {
 			break
 		}
