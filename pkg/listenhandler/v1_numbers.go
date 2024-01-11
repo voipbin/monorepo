@@ -218,7 +218,13 @@ func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *rabbitmqhand
 	// get user_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	numbers, err := h.numberHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
+	// get filters
+	filters := map[string]string{}
+	if u.Query().Has("filter_deleted") {
+		filters["deleted"] = u.Query().Get("filter_deleted")
+	}
+
+	numbers, err := h.numberHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get numbers. err: %v", err)
 		return simpleResponse(500), nil

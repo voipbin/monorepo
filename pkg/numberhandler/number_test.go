@@ -197,6 +197,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
+		filters    map[string]string
 
 		responseNumbers []*number.Number
 	}
@@ -204,9 +205,14 @@ func Test_GetsByCustomerID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
+
 			uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 			10,
 			"2021-02-26 18:26:49.000",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("da535752-7a4d-11eb-aec4-5bac74c24370"),
@@ -227,6 +233,10 @@ func Test_GetsByCustomerID(t *testing.T) {
 			uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 			10,
 			"",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("b72d1844-7bdd-11eb-a2bb-4370f115b44c"),
@@ -265,12 +275,12 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			if tt.pageToken == "" {
 				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, gomock.Any()).Return(tt.responseNumbers, nil)
+				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, gomock.Any(), tt.filters).Return(tt.responseNumbers, nil)
 			} else {
-				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.responseNumbers, nil)
+				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseNumbers, nil)
 			}
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.pageSize, tt.pageToken)
+			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.pageSize, tt.pageToken, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

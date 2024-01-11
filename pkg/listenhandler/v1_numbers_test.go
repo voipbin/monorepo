@@ -301,6 +301,8 @@ func Test_processV1NumbersGet(t *testing.T) {
 		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
+		filters    map[string]string
+
 		resultData []*number.Number
 
 		request  *rabbitmqhandler.Request
@@ -314,6 +316,10 @@ func Test_processV1NumbersGet(t *testing.T) {
 			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 			10,
 			"2021-03-01 03:30:17.000000",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
@@ -329,7 +335,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 				},
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -344,6 +350,10 @@ func Test_processV1NumbersGet(t *testing.T) {
 			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 			10,
 			"2021-03-01 03:30:17.000000",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("5c18ee62-8800-11ec-bb8b-b74be365ebf2"),
@@ -371,7 +381,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 				},
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -395,7 +405,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
+			mockNumber.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
