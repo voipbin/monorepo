@@ -14,11 +14,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestOrderNumberGets(t *testing.T) {
+func Test_OrderNumberGets(t *testing.T) {
 
 	tests := []struct {
-		name      string
-		agent     *amagent.Agent
+		name  string
+		agent *amagent.Agent
+
 		pageToken string
 		pageSize  uint64
 
@@ -62,7 +63,7 @@ func TestOrderNumberGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize, map[string]string{"deleted": "false"}).Return(tt.response, nil)
 
 			res, err := h.NumberGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
