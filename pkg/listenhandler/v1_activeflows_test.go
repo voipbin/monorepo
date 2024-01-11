@@ -138,6 +138,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		responseActiveflows []*activeflow.Activeflow
 
@@ -146,13 +147,16 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			"1 item",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
+				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
 			"2020-10-10 03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*activeflow.Activeflow{
 				{
@@ -169,13 +173,16 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
+				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
 			"2020-10-10 03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*activeflow.Activeflow{
 				{
@@ -194,7 +201,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			"empty",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -202,6 +209,9 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 			uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
 			"2020-10-10 03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*activeflow.Activeflow{},
 			&rabbitmqhandler.Response{
@@ -227,7 +237,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				activeflowHandler: mockActiveflowHandler,
 			}
 
-			mockActiveflowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseActiveflows, nil)
+			mockActiveflowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseActiveflows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

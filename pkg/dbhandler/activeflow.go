@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -296,21 +297,35 @@ func (h *handler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 }
 
 // ActiveflowGetsByCustomerID returns list of activeflows.
-func (h *handler) ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
+func (h *handler) ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
-			tm_delete >= ?
-			and customer_id = ?
+			customer_id = ?
 			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
 	`, activeflowSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ActiveflowGetsByCustomerID. err: %v", err)
 	}

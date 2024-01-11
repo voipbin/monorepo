@@ -25,7 +25,7 @@ type DBHandler interface {
 	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error
 	ActiveflowDelete(ctx context.Context, id uuid.UUID) error
-	ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
+	ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error)
 	ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 	ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error
@@ -34,8 +34,7 @@ type DBHandler interface {
 	FlowCreate(ctx context.Context, f *flow.Flow) error
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
-	FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
+	FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
 	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error
 	FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error

@@ -35,7 +35,13 @@ func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *rabbitmqhandler
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	tmp, err := h.activeflowHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	// get filters
+	filters := map[string]string{}
+	if u.Query().Has("filter_deleted") {
+		filters["deleted"] = u.Query().Get("filter_deleted")
+	}
+
+	tmp, err := h.activeflowHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get activeflows. err: %v", err)
 		return nil, errors.Wrap(err, "could not get activeflows")

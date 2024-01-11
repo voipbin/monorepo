@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -216,21 +217,39 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 }
 
 // FlowGetsByCustomerID returns list of flows.
-func (h *handler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+func (h *handler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
-			tm_delete >= ?
-			and customer_id = ?
+			customer_id = ?
 			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
 	`, flowSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "type":
+			q = fmt.Sprintf("%s and type >= ?", q)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. FlowGets. err: %v", err)
 	}
@@ -247,41 +266,7 @@ func (h *handler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID
 	}
 
 	return res, nil
-}
 
-// FlowGetsByType returns list of flows of the given customerID and flowType.
-func (h *handler) FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and type = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, flowSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), flowType, token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. FlowGetsByType. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*flow.Flow
-	for rows.Next() {
-		u, err := h.flowGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. FlowGetsByType. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
 }
 
 // FlowUpdate updates the most of flow information.

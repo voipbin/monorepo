@@ -98,33 +98,18 @@ func (mr *MockFlowHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 }
 
 // GetsByCustomerID mocks base method.
-func (m *MockFlowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+func (m *MockFlowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, size, filters)
 	ret0, _ := ret[0].([]*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockFlowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+func (mr *MockFlowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, size, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockFlowHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
-}
-
-// GetsByType mocks base method.
-func (m *MockFlowHandler) GetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByType", ctx, customerID, flowType, token, limit)
-	ret0, _ := ret[0].([]*flow.Flow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByType indicates an expected call of GetsByType.
-func (mr *MockFlowHandlerMockRecorder) GetsByType(ctx, customerID, flowType, token, limit interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByType", reflect.TypeOf((*MockFlowHandler)(nil).GetsByType), ctx, customerID, flowType, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockFlowHandler)(nil).GetsByCustomerID), ctx, customerID, token, size, filters)
 }
 
 // Update mocks base method.

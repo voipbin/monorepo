@@ -334,16 +334,16 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		customerID  uuid.UUID
-		limit       uint64
 		activeflows []activeflow.Activeflow
+
+		customerID uuid.UUID
+		size       uint64
+		filters    map[string]string
 
 		expectRes []*activeflow.Activeflow
 	}{
 		{
 			"have no actions",
-			uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
-			10,
 			[]activeflow.Activeflow{
 				{
 					ID:         uuid.FromStringOrNil("49c467e0-add1-11ec-b88b-87989662b8c0"),
@@ -353,6 +353,12 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("4a107676-add1-11ec-ad99-33457dadbc35"),
 					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
 				},
+			},
+
+			uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
+			10,
+			map[string]string{
+				"deleted": "false",
 			},
 
 			[]*activeflow.Activeflow{
@@ -398,7 +404,7 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 
 			// time.Sleep(time.Microsecond * 100)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			flows, err := h.ActiveflowGetsByCustomerID(ctx, tt.customerID, h.util.TimeGetCurTime(), tt.limit)
+			flows, err := h.ActiveflowGetsByCustomerID(ctx, tt.customerID, h.util.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

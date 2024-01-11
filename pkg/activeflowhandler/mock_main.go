@@ -112,18 +112,18 @@ func (mr *MockActiveflowHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Ca
 }
 
 // GetsByCustomerID mocks base method.
-func (m *MockActiveflowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
+func (m *MockActiveflowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, size, filters)
 	ret0, _ := ret[0].([]*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockActiveflowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+func (mr *MockActiveflowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, size, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockActiveflowHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockActiveflowHandler)(nil).GetsByCustomerID), ctx, customerID, token, size, filters)
 }
 
 // PushActions mocks base method.

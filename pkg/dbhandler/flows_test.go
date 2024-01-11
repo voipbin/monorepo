@@ -139,33 +139,38 @@ func Test_FlowCreate(t *testing.T) {
 func Test_FlowGets(t *testing.T) {
 
 	tests := []struct {
-		name       string
+		name  string
+		flows []flow.Flow
+
 		customerID uuid.UUID
-		limit      uint64
-		flows      []flow.Flow
+		size       uint64
+		filters    map[string]string
 
 		expectRes []*flow.Flow
 	}{
 		{
-			"have no actions",
-			uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
-			10,
+			"normal",
 			[]flow.Flow{
 				{
 					ID:         uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
 					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 					Name:       "test1",
 					Persist:    true,
-					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
 					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 					Name:       "test2",
 					Persist:    true,
-					TMDelete:   DefaultTimeStamp,
 				},
 			},
+
+			uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+			10,
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*flow.Flow{
 				{
 					ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
@@ -185,96 +190,31 @@ func Test_FlowGets(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
-			}
-
-			ctx := context.Background()
-
-			for _, flow := range tt.flows {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
-				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
-				if err := h.FlowCreate(ctx, &flow); err != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", err)
-				}
-			}
-
-			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, utilhandler.TimeGetCurTime(), tt.limit)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			for _, f := range res {
-				f.TMCreate = ""
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_FlowGetsByType(t *testing.T) {
-
-	tests := []struct {
-		name       string
-		customerID uuid.UUID
-		flowType   flow.Type
-		limit      uint64
-		flows      []flow.Flow
-
-		expectRes []*flow.Flow
-	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
-			flow.TypeFlow,
-			10,
+			"has filter type",
 			[]flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
-					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
+					ID:         uuid.FromStringOrNil("5770b548-b099-11ee-95a1-2fc9e56873ac"),
+					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 					Type:       flow.TypeFlow,
-					Name:       "test1",
+					Name:       "test filter type",
 					Persist:    true,
-					TMDelete:   DefaultTimeStamp,
-				},
-				{
-					ID:         uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
-					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
-					Type:       flow.TypeFlow,
-					Name:       "test2",
-					Persist:    true,
-					TMDelete:   DefaultTimeStamp,
 				},
 			},
+
+			uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(flow.TypeFlow),
+			},
+
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("4fb2c612-6c0c-11ec-af63-832d2d72863f"),
-					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
+					ID:         uuid.FromStringOrNil("5770b548-b099-11ee-95a1-2fc9e56873ac"),
+					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 					Type:       flow.TypeFlow,
-					Name:       "test2",
-					Persist:    true,
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
-				},
-				{
-					ID:         uuid.FromStringOrNil("4f351e4c-6c0c-11ec-aeb7-63ef13f21b04"),
-					CustomerID: uuid.FromStringOrNil("b6563a82-7f46-11ec-98f8-8f45a152e25a"),
-					Type:       flow.TypeFlow,
-					Name:       "test1",
+					Name:       "test filter type",
 					Persist:    true,
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
@@ -306,17 +246,17 @@ func Test_FlowGetsByType(t *testing.T) {
 				}
 			}
 
-			flows, err := h.FlowGetsByType(ctx, tt.customerID, tt.flowType, utilhandler.TimeGetCurTime(), tt.limit)
+			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			for _, f := range flows {
+			for _, f := range res {
 				f.TMCreate = ""
 			}
 
-			if reflect.DeepEqual(flows, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, flows)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

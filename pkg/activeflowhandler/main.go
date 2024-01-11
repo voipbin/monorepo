@@ -40,7 +40,7 @@ type ActiveflowHandler interface {
 	Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
+	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error)
 
 	PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error)
 
