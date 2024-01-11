@@ -161,6 +161,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		flowType   flow.Type
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		responseFlows []*flow.Flow
 
@@ -178,6 +179,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{},
 
 			[]*flow.Flow{
 				{
@@ -198,6 +200,41 @@ func Test_v1FlowsGet(t *testing.T) {
 			},
 		},
 		{
+			"has various filters",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false&filter_type=flow",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+			flow.TypeNone,
+			"2020-10-10T03:30:17.000000",
+			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(flow.TypeFlow),
+			},
+
+			[]*flow.Flow{
+				{
+					ID:         uuid.FromStringOrNil("e1acb018-b099-11ee-b942-ebca8278ad69"),
+					CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+					Type:       flow.TypeFlow,
+					Actions: []action.Action{
+						{
+							Type: action.TypeAnswer,
+						},
+					},
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"e1acb018-b099-11ee-b942-ebca8278ad69","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
 			"2 items",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
@@ -209,6 +246,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{},
 
 			[]*flow.Flow{
 				{
@@ -250,6 +288,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{},
 
 			[]*flow.Flow{},
 			&rabbitmqhandler.Response{
@@ -261,7 +300,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			"type flow",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&type=flow",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&filter_type=flow",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -270,6 +309,9 @@ func Test_v1FlowsGet(t *testing.T) {
 			flow.TypeFlow,
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"type": string(flow.TypeFlow),
+			},
 
 			[]*flow.Flow{
 				{
@@ -304,11 +346,7 @@ func Test_v1FlowsGet(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			if tt.flowType != flow.TypeNone {
-				mockFlowHandler.EXPECT().GetsByType(gomock.Any(), tt.customerID, tt.flowType, tt.pageToken, tt.pageSize).Return(tt.responseFlows, nil)
-			} else {
-				mockFlowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseFlows, nil)
-			}
+			mockFlowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseFlows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

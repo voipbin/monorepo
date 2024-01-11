@@ -603,7 +603,8 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 		customerID uuid.UUID
 		token      string
-		limit      uint64
+		size       uint64
+		filters    map[string]string
 
 		responseGet []*activeflow.Activeflow
 	}{
@@ -613,6 +614,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			uuid.FromStringOrNil("e3bb9832-f81d-11ec-bcd9-9f298317c9f9"),
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*activeflow.Activeflow{
 				{
@@ -639,9 +643,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(tt.responseGet, nil)
+			mockDB.EXPECT().ActiveflowGetsByCustomerID(ctx, tt.customerID, tt.token, tt.size, tt.filters).Return(tt.responseGet, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

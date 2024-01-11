@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -195,22 +194,19 @@ func (h *listenHandler) v1FlowsGet(ctx context.Context, m *rabbitmqhandler.Reque
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	// get type
-	tmpType := flow.Type(u.Query().Get("type"))
+	// get filters
+	filters := map[string]string{}
+	if u.Query().Has("filter_deleted") {
+		filters["deleted"] = u.Query().Get("filter_deleted")
+	}
+	if u.Query().Has("filter_type") {
+		filters["type"] = u.Query().Get("filter_type")
+	}
 
-	var tmp []*flow.Flow
-	if tmpType != flow.TypeNone {
-		tmp, err = h.flowHandler.GetsByType(ctx, customerID, flow.Type(tmpType), pageToken, pageSize)
-		if err != nil {
-			log.Errorf("Could not get flows. err: %v", err)
-			return nil, err
-		}
-	} else {
-		tmp, err = h.flowHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
-		if err != nil {
-			log.Errorf("Could not get flows. err: %v", err)
-			return nil, err
-		}
+	tmp, err := h.flowHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize, filters)
+	if err != nil {
+		log.Errorf("Could not get flows. err: %v", err)
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)

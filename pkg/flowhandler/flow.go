@@ -91,35 +91,16 @@ func (h *flowHandler) Create(
 }
 
 // GetsByCustomerID returns list of flows
-func (h *flowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+func (h *flowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "GetsByCustomerID",
 			"customer_id": customerID,
 			"token":       token,
-			"limit":       limit,
+			"limit":       size,
 		})
 
-	res, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, limit)
-	if err != nil {
-		log.Errorf("Could not get flows. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// GetsByType returns list of flows
-func (h *flowHandler) GetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByType",
-			"customer_id": customerID,
-			"token":       token,
-			"limit":       limit,
-		})
-
-	res, err := h.db.FlowGetsByType(ctx, customerID, flowType, token, limit)
+	res, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err
