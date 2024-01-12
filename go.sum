@@ -115,6 +115,8 @@ gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b84
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519/go.mod h1:9iIQJAV4RU/qdrG82xYUUrEUcQ/9H+b5ihYE4JBr1hA=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230903182459-1d2f626b38fd h1:eq4xghzaeWcgMTaE3AcrV2OxXpXv0ZY4FQdDadlZ4v0=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230903182459-1d2f626b38fd/go.mod h1:jdZFA5ZT9bh4cVJywwlB5fI3+iUMTaq/xaJyCNDkt90=
+gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20240112140116-0943ccc8fb85 h1:/JezsWHd2dDuP8Yr4TVz9+66ShN4sXIbQCT5gjdAmUA=
+gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20240112140116-0943ccc8fb85/go.mod h1:qBayITjJbVKgu/MkqdwBvQRvc5oevsLA0gjavgMfEUQ=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231005165516-1c0255c49028 h1:hAWmd9UUsC53tHzOBzRA56SVZQRt1TH/c/yOf+Rs0Fc=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231005165516-1c0255c49028/go.mod h1:/K6K8VPSXHJvRWP2XDarqX6Wych+SMZrjaigdSmdI9c=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231206180144-5fd8f608cf0d h1:qIW7/l2ffJkkdhMgpHWu4ZR6JVDzepI6AuHuvIMiAjo=
