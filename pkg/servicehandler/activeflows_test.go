@@ -137,9 +137,10 @@ func Test_ActiveflowGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
-		size  uint64
-		token string
+		agent   *amagent.Agent
+		size    uint64
+		token   string
+		filters map[string]string
 
 		response  []fmactiveflow.Activeflow
 		expectRes []*fmactiveflow.WebhookMessage
@@ -153,6 +154,9 @@ func Test_ActiveflowGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]fmactiveflow.Activeflow{
 				{
@@ -182,7 +186,7 @@ func Test_ActiveflowGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGets(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.ActiveflowGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
