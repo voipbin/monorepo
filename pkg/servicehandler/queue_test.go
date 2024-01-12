@@ -22,6 +22,7 @@ func Test_QueueGets(t *testing.T) {
 		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
+		filters   map[string]string
 
 		response  []qmqueue.Queue
 		expectRes []*qmqueue.WebhookMessage
@@ -37,6 +38,9 @@ func Test_QueueGets(t *testing.T) {
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]qmqueue.Queue{
 				{
@@ -65,7 +69,7 @@ func Test_QueueGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.response, nil)
 
 			res, err := h.QueueGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
