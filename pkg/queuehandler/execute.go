@@ -15,12 +15,10 @@ import (
 // Execute handles queue execution.
 // it checks the waiting queuecall and dials to the available agent
 func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "Execute",
-			"queue_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "Execute",
+		"queue_id": id,
+	})
 
 	// get queue
 	q, err := h.Get(ctx, id)
@@ -36,8 +34,13 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 		return
 	}
 
+	filters := map[string]string{
+		"queue_id": q.ID.String(),
+		"status":   string(queuecall.StatusWaiting),
+	}
+
 	// get queuecalls
-	qcs, err := h.reqHandler.QueueV1QueuecallGetsByQueueIDAndStatus(ctx, id, queuecall.StatusWaiting, h.utilhandler.TimeGetCurTime(), 1)
+	qcs, err := h.reqHandler.QueueV1QueuecallGets(ctx, q.CustomerID, h.utilhandler.TimeGetCurTime(), 1, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls. err: %v", err)
 		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay) // retry after 1 sec.
