@@ -12,10 +12,10 @@ import (
 )
 
 // Gets returns queues
-func (h *queueHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error) {
+func (h *queueHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
 	log := logrus.WithField("func", "Gets")
 
-	res, err := h.db.QueueGets(ctx, customerID, size, token)
+	res, err := h.db.QueueGets(ctx, customerID, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get queues info. err: %v", err)
 		return nil, err

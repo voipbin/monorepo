@@ -12,34 +12,16 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
-// Gets returns queuecalls
-func (h *queuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByCustomerID",
-			"customer_id": customerID,
-		})
+// GetsByCustomerID returns queuecalls of the given customer_id
+func (h *queuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+	})
 
-	res, err := h.db.QueuecallGetsByCustomerID(ctx, customerID, size, token)
+	res, err := h.db.QueuecallGetsByCustomerID(ctx, customerID, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// GetsByQueueIDAndStatus returns queuecall info of the given queueID and status.
-func (h *queuecallHandler) GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "GetsByQueueIDAndStatus",
-			"queue_id": queueID,
-		})
-
-	res, err := h.db.QueuecallGetsByQueueIDAndStatus(ctx, queueID, status, size, token)
-	if err != nil {
-		log.Errorf("Could not get queuecalls. err: %v", err)
 		return nil, err
 	}
 

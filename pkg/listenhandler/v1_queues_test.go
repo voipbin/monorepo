@@ -150,6 +150,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
+		filters    map[string]string
 
 		queues []*queue.Queue
 
@@ -158,18 +159,24 @@ func Test_processV1QueuesGet(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=570b5094-7f55-11ec-b5cd-1b925f9028af",
+				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=570b5094-7f55-11ec-b5cd-1b925f9028af&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
+
 			uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
 			10,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*queue.Queue{
 				{
 					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
 					CustomerID: uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
 				},
 			},
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -179,12 +186,17 @@ func Test_processV1QueuesGet(t *testing.T) {
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=6a7ce2b4-7f55-11ec-a666-8b44aa06d0db",
+				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=6a7ce2b4-7f55-11ec-a666-8b44aa06d0db&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
+
 			uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
 			10,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*queue.Queue{
 				{
 					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
@@ -217,7 +229,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.queues, nil)
+			mockQueue.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.queues, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

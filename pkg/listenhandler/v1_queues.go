@@ -81,7 +81,13 @@ func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *rabbitmqhandl
 	// get customer id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	tmp, err := h.queueHandler.Gets(ctx, customerID, pageSize, pageToken)
+	// get filters
+	filters := map[string]string{}
+	if u.Query().Has("filter_deleted") {
+		filters["deleted"] = u.Query().Get("filter_deleted")
+	}
+
+	tmp, err := h.queueHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get queue info. err: %v", err)
 		return simpleResponse(500), nil
