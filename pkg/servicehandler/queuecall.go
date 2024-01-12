@@ -102,7 +102,12 @@ func (h *serviceHandler) QueuecallGets(ctx context.Context, a *amagent.Agent, si
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmps, err := h.reqHandler.QueueV1QueuecallGets(ctx, a.CustomerID, token, size)
+	// filters
+	filters := map[string]string{
+		"deleted": "false", // we don't need deleted items
+	}
+
+	tmps, err := h.reqHandler.QueueV1QueuecallGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get queues from the queue-manager. err: %v", err)
 		return nil, err
