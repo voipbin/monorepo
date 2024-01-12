@@ -16,8 +16,12 @@ import (
 // QueueV1QueuecallGets sends a request to queue-manager
 // to get a list of queuecalls.
 // Returns list of queuecalls
-func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error) {
+func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
