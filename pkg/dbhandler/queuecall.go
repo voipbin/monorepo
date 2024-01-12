@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -312,11 +313,49 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 }
 
 // QueuecallGetsByCustomerID returns QueueCalls.
-func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
-	// prepare
-	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", queuecallSelect)
+func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		customer_id = ?
+		and tm_create < ?
+	`, queuecallSelect)
+
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "reference_id":
+			q = fmt.Sprintf("%s and reference_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "queue_id":
+			q = fmt.Sprintf("%s and queue_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "status":
+			q = fmt.Sprintf("%s and status = ?", q)
+			values = append(values, v)
+
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueuecallGetsByCustomerID. err: %v", err)
 	}
@@ -327,54 +366,6 @@ func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByCustomerID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// QueuecallGetsByReferenceID returns QueueCalls.
-func (h *handler) QueuecallGetsByReferenceID(ctx context.Context, referenceID uuid.UUID) ([]*queuecall.Queuecall, error) {
-	// prepare
-	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", queuecallSelect)
-
-	rows, err := h.db.Query(q, referenceID.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallGetsByReferenceID. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*queuecall.Queuecall
-	for rows.Next() {
-		u, err := h.queuecallGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByReferenceID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// QueuecallGetsByQueueIDAndStatus returns QueueCalls.
-func (h *handler) QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error) {
-	// prepare
-	q := fmt.Sprintf("%s where queue_id = ? and status = ? and tm_create < ? order by tm_create asc limit ?", queuecallSelect)
-
-	rows, err := h.db.Query(q, queueID.Bytes(), status, token, size)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallGetsByQueueIDAndStatus. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*queuecall.Queuecall
-	for rows.Next() {
-		u, err := h.queuecallGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByQueueIDAndStatus. err: %v", err)
 		}
 
 		res = append(res, u)

@@ -23,6 +23,7 @@ func Test_Gets(t *testing.T) {
 		customerID uuid.UUID
 		pageSize   uint64
 		token      string
+		filters    map[string]string
 
 		responseQueues []*queue.Queue
 	}{
@@ -32,6 +33,9 @@ func Test_Gets(t *testing.T) {
 			uuid.FromStringOrNil("e2fc1400-d25a-11ec-9cd3-73acb3bb9c85"),
 			100,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*queue.Queue{
 				{
@@ -58,9 +62,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGets(ctx, tt.customerID, tt.pageSize, tt.token).Return(tt.responseQueues, nil)
+			mockDB.EXPECT().QueueGets(ctx, tt.customerID, tt.pageSize, tt.token, tt.filters).Return(tt.responseQueues, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.pageSize, tt.token)
+			res, err := h.Gets(ctx, tt.customerID, tt.pageSize, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

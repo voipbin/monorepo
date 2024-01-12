@@ -218,7 +218,7 @@ func Test_QueueCreate(t *testing.T) {
 	}
 }
 
-func TestQueueGets(t *testing.T) {
+func Test_QueueGets(t *testing.T) {
 	type test struct {
 		name string
 		data []*queue.Queue
@@ -226,6 +226,7 @@ func TestQueueGets(t *testing.T) {
 		customerID uuid.UUID
 		size       uint64
 		token      string
+		filters    map[string]string
 
 		responseCurtime string
 		expectRes       []*queue.Queue
@@ -260,6 +261,9 @@ func TestQueueGets(t *testing.T) {
 			uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 			2,
 			"2021-04-18T03:22:17.994000",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"2020-04-18T03:22:17.995000",
 			[]*queue.Queue{
@@ -315,7 +319,7 @@ func TestQueueGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueueGets(ctx, tt.customerID, tt.size, tt.token)
+			res, err := h.QueueGets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

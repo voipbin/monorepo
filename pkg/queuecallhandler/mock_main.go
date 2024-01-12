@@ -151,33 +151,18 @@ func (mr *MockQueuecallHandlerMockRecorder) GetByReferenceID(ctx, referenceID in
 }
 
 // GetsByCustomerID mocks base method.
-func (m *MockQueuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
+func (m *MockQueuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, size, token, filters)
 	ret0, _ := ret[0].([]*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockQueuecallHandlerMockRecorder) GetsByCustomerID(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) GetsByCustomerID(ctx, customerID, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByCustomerID), ctx, customerID, size, token)
-}
-
-// GetsByQueueIDAndStatus mocks base method.
-func (m *MockQueuecallHandler) GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByQueueIDAndStatus", ctx, queueID, status, size, token)
-	ret0, _ := ret[0].([]*queuecall.Queuecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByQueueIDAndStatus indicates an expected call of GetsByQueueIDAndStatus.
-func (mr *MockQueuecallHandlerMockRecorder) GetsByQueueIDAndStatus(ctx, queueID, status, size, token interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByQueueIDAndStatus", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByQueueIDAndStatus), ctx, queueID, status, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByCustomerID), ctx, customerID, size, token, filters)
 }
 
 // Kick mocks base method.

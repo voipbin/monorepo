@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -284,11 +285,33 @@ func (h *handler) QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 }
 
 // QueueGets returns queues.
-func (h *handler) QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error) {
+func (h *handler) QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
 	// prepare
-	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", queueSelect)
+	q := fmt.Sprintf(`%s
+	where
+		customer_id = ?
+		and tm_create < ?
+	`, queueSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueueGets. err: %v", err)
 	}

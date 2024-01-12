@@ -27,6 +27,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 		customerID uuid.UUID
 		size       uint64
 		token      string
+		filters    map[string]string
 
 		response []*queuecall.Queuecall
 
@@ -38,6 +39,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			uuid.FromStringOrNil("073e9dfe-7f56-11ec-97c6-a7b797137c40"),
 			1000,
 			"2021-04-18 03:22:17.994000",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*queuecall.Queuecall{
 				{
@@ -70,75 +74,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGetsByCustomerID(gomock.Any(), tt.customerID, tt.size, tt.token).Return(tt.response, nil)
+			mockDB.EXPECT().QueuecallGetsByCustomerID(gomock.Any(), tt.customerID, tt.size, tt.token, tt.filters).Return(tt.response, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.size, tt.token)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_GetsByQueueIDAndStatus(t *testing.T) {
-	tests := []struct {
-		name string
-
-		queueID uuid.UUID
-		status  queuecall.Status
-		size    uint64
-		token   string
-
-		response []*queuecall.Queuecall
-
-		expectRes []*queuecall.Queuecall
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("14faed80-d140-11ec-9255-8f61c2013693"),
-			queuecall.StatusWaiting,
-			1000,
-			"2021-04-18 03:22:17.994000",
-
-			[]*queuecall.Queuecall{
-				{
-					ID: uuid.FromStringOrNil("15816982-d140-11ec-9736-4f2812aeda51"),
-				},
-			},
-
-			[]*queuecall.Queuecall{
-				{
-					ID: uuid.FromStringOrNil("15816982-d140-11ec-9736-4f2812aeda51"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &queuecallHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyhandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().QueuecallGetsByQueueIDAndStatus(gomock.Any(), tt.queueID, tt.status, tt.size, tt.token).Return(tt.response, nil)
-
-			res, err := h.GetsByQueueIDAndStatus(ctx, tt.queueID, tt.status, tt.size, tt.token)
+			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

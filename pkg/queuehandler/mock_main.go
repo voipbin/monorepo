@@ -156,18 +156,18 @@ func (mr *MockQueueHandlerMockRecorder) GetAgents(ctx, id, status interface{}) *
 }
 
 // Gets mocks base method.
-func (m *MockQueueHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error) {
+func (m *MockQueueHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token, filters)
 	ret0, _ := ret[0].([]*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockQueueHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockQueueHandlerMockRecorder) Gets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueueHandler)(nil).Gets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueueHandler)(nil).Gets), ctx, customerID, size, token, filters)
 }
 
 // RemoveServiceQueuecallID mocks base method.
