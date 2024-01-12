@@ -23,6 +23,7 @@ func Test_QueueV1QueueGets(t *testing.T) {
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -35,10 +36,13 @@ func Test_QueueV1QueueGets(t *testing.T) {
 			uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
 			"2020-09-20T03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6cf22a94-7ff1-11ec-9254-5371564adf91",
+				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6cf22a94-7ff1-11ec-9254-5371564adf91&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -59,10 +63,13 @@ func Test_QueueV1QueueGets(t *testing.T) {
 			uuid.FromStringOrNil("6cf22a94-7ff1-11ec-9254-5371564adf91"),
 			"2020-09-20T03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6cf22a94-7ff1-11ec-9254-5371564adf91",
+				URI:      "/v1/queues?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6cf22a94-7ff1-11ec-9254-5371564adf91&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -95,7 +102,7 @@ func Test_QueueV1QueueGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QueueV1QueueGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.QueueV1QueueGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

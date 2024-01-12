@@ -350,8 +350,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 			map[string]string{
-				"deleted": "false",
-				"type":    string(fmflow.TypeConference),
+				"type": string(fmflow.TypeConference),
 			},
 
 			&rabbitmqhandler.Response{
@@ -362,7 +361,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=d9fceace-7f4d-11ec-8949-cf7a5dce40c9&filter_deleted=false&filter_type=conference", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=d9fceace-7f4d-11ec-8949-cf7a5dce40c9&filter_type=conference", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},

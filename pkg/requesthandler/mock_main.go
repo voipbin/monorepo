@@ -3966,18 +3966,18 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueueGetAgents(ctx, queueID, st
 }
 
 // QueueV1QueueGets mocks base method.
-func (m *MockRequestHandler) QueueV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]queue.Queue, error) {
+func (m *MockRequestHandler) QueueV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueueGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "QueueV1QueueGets", ctx, customerID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueV1QueueGets indicates an expected call of QueueV1QueueGets.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueueGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueueGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // QueueV1QueueUpdate mocks base method.
@@ -4116,33 +4116,18 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGetByReferenceID(ctx, 
 }
 
 // QueueV1QueuecallGets mocks base method.
-func (m *MockRequestHandler) QueueV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]queuecall.Queuecall, error) {
+func (m *MockRequestHandler) QueueV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueuecallGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "QueueV1QueuecallGets", ctx, customerID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueV1QueuecallGets indicates an expected call of QueueV1QueuecallGets.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGets), ctx, customerID, pageToken, pageSize)
-}
-
-// QueueV1QueuecallGetsByQueueIDAndStatus mocks base method.
-func (m *MockRequestHandler) QueueV1QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, pageToken string, pageSize uint64) ([]queuecall.Queuecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueuecallGetsByQueueIDAndStatus", ctx, queueID, status, pageToken, pageSize)
-	ret0, _ := ret[0].([]queuecall.Queuecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueueV1QueuecallGetsByQueueIDAndStatus indicates an expected call of QueueV1QueuecallGetsByQueueIDAndStatus.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGetsByQueueIDAndStatus(ctx, queueID, status, pageToken, pageSize interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGetsByQueueIDAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGetsByQueueIDAndStatus), ctx, queueID, status, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // QueueV1QueuecallKick mocks base method.
