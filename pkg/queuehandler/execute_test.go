@@ -27,6 +27,8 @@ func Test_Execute(t *testing.T) {
 		responseCurTime   string
 		responseQueuecall []queuecall.Queuecall
 		responseAgent     []amagent.Agent
+
+		expectFilters map[string]string
 	}{
 		{
 			"normal",
@@ -53,6 +55,11 @@ func Test_Execute(t *testing.T) {
 					ID: uuid.FromStringOrNil("7c8e7e02-d1af-11ec-8d8e-d7280dd6fcc8"),
 				},
 			},
+
+			map[string]string{
+				"queue_id": "558dc9da-d1ae-11ec-b9f8-e323caeb57c4",
+				"status":   string(queuecall.StatusWaiting),
+			},
 		},
 	}
 
@@ -77,7 +84,7 @@ func Test_Execute(t *testing.T) {
 
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().QueueV1QueuecallGetsByQueueIDAndStatus(ctx, tt.responseQueue.ID, queuecall.StatusWaiting, tt.responseCurTime, uint64(1)).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.responseQueue.CustomerID, tt.responseCurTime, uint64(1), tt.expectFilters).Return(tt.responseQueuecall, nil)
 
 			// GetAgents
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
