@@ -134,7 +134,7 @@ func Test_QueuecallCreate(t *testing.T) {
 	}
 }
 
-func TestQueuecallGetsByCustomerID(t *testing.T) {
+func Test_QueuecallGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -142,6 +142,7 @@ func TestQueuecallGetsByCustomerID(t *testing.T) {
 
 		customerID uuid.UUID
 		size       uint64
+		filters    map[string]string
 
 		responseCurTime string
 		expectRes       []*queuecall.Queuecall
@@ -165,6 +166,9 @@ func TestQueuecallGetsByCustomerID(t *testing.T) {
 
 			uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 			2,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"2023-02-14 03:22:17.994000",
 			[]*queuecall.Queuecall{
@@ -198,142 +202,120 @@ func TestQueuecallGetsByCustomerID(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			for _, u := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-				if err := h.QueuecallCreate(ctx, u); err != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", err)
-				}
-			}
-
-			res, err := h.QueuecallGetsByCustomerID(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime())
-			if err != nil {
-				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
-			}
-		})
-	}
-}
-
-func TestQueuecallGetsByReferenceID(t *testing.T) {
-
-	tests := []struct {
-		name string
-		data []*queuecall.Queuecall
-
-		callID uuid.UUID
-		size   uint64
-
-		responseCurTime string
-		expectRes       []*queuecall.Queuecall
-	}{
 		{
-			"normal",
+			"has filter reference_id",
 			[]*queuecall.Queuecall{
 				{
-					ID:            uuid.FromStringOrNil("66efdcbe-5ab6-11ec-953e-37514d9c9cb6"),
-					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
+					ID:            uuid.FromStringOrNil("f37b78e8-b14c-11ee-b324-23540b522246"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("66bb474c-5ab6-11ec-9636-0b7539c651ac"),
-					TMCreate:      "2020-04-18T03:22:17.995000",
+					ReferenceID:   uuid.FromStringOrNil("f3d7b568-b14c-11ee-b97e-135a40197a9b"),
 				},
 				{
-					ID:            uuid.FromStringOrNil("671bc14e-5ab6-11ec-9c00-6b261a1357c1"),
-					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
+					ID:            uuid.FromStringOrNil("f3a94b7e-b14c-11ee-8b7d-27274070e60e"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("ee77af9c-5c85-11ec-bac4-d3a4e453df6e"),
-					TMCreate:      "2020-04-18T03:22:17.994000",
+					ReferenceID:   uuid.FromStringOrNil("f3d7b568-b14c-11ee-b97e-135a40197a9b"),
 				},
 			},
 
-			uuid.FromStringOrNil("66bb474c-5ab6-11ec-9636-0b7539c651ac"),
+			uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 			2,
+			map[string]string{
+				"deleted":      "false",
+				"reference_id": "f3d7b568-b14c-11ee-b97e-135a40197a9b",
+			},
 
 			"2023-02-14 03:22:17.994000",
 			[]*queuecall.Queuecall{
 				{
-					ID:            uuid.FromStringOrNil("66efdcbe-5ab6-11ec-953e-37514d9c9cb6"),
-					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
+					ID:            uuid.FromStringOrNil("f37b78e8-b14c-11ee-b324-23540b522246"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("66bb474c-5ab6-11ec-9636-0b7539c651ac"),
+					ReferenceID:   uuid.FromStringOrNil("f3d7b568-b14c-11ee-b97e-135a40197a9b"),
 					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
-					TMCreate:      "2023-02-14 03:22:17.994000",
-					TMService:     DefaultTimeStamp,
-					TMUpdate:      DefaultTimeStamp,
-					TMEnd:         DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
+
+					TMCreate:  "2023-02-14 03:22:17.994000",
+					TMService: DefaultTimeStamp,
+					TMUpdate:  DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
+				},
+				{
+					ID:            uuid.FromStringOrNil("f3a94b7e-b14c-11ee-8b7d-27274070e60e"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					ReferenceType: queuecall.ReferenceTypeCall,
+					ReferenceID:   uuid.FromStringOrNil("f3d7b568-b14c-11ee-b97e-135a40197a9b"),
+					Source:        commonaddress.Address{},
+					TagIDs:        []uuid.UUID{},
+
+					TMCreate:  "2023-02-14 03:22:17.994000",
+					TMService: DefaultTimeStamp,
+					TMUpdate:  DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
 				},
 			},
 		},
 		{
-			"2 queuecalls",
+			"has filter queue_id and status",
 			[]*queuecall.Queuecall{
 				{
-					ID:            uuid.FromStringOrNil("2766dfd4-5ab6-11ec-afc2-f3a1937a9b34"),
-					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
+					ID:            uuid.FromStringOrNil("db173f7a-b14d-11ee-ab3a-5ff8ebbb9451"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
-					TMCreate:      "2020-04-18T03:22:17.995000",
+					QueueID:       uuid.FromStringOrNil("db62b2b6-b14d-11ee-b27b-6747a7421f4e"),
+					Status:        queuecall.StatusWaiting,
 				},
 				{
-					ID:            uuid.FromStringOrNil("279110b0-5ab6-11ec-afb8-e311840c5826"),
-					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
+					ID:            uuid.FromStringOrNil("db3c2006-b14d-11ee-b2bd-87180adefe69"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
-					TMCreate:      "2020-04-18T03:22:17.994000",
+					QueueID:       uuid.FromStringOrNil("db62b2b6-b14d-11ee-b27b-6747a7421f4e"),
+					Status:        queuecall.StatusWaiting,
 				},
 			},
 
-			uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
+			uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 			2,
+			map[string]string{
+				"deleted":  "false",
+				"queue_id": "db62b2b6-b14d-11ee-b27b-6747a7421f4e",
+				"status":   string(queuecall.StatusWaiting),
+			},
 
 			"2023-02-14 03:22:17.994000",
 			[]*queuecall.Queuecall{
 				{
-					ID:            uuid.FromStringOrNil("2766dfd4-5ab6-11ec-afc2-f3a1937a9b34"),
-					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
+					ID:            uuid.FromStringOrNil("db173f7a-b14d-11ee-ab3a-5ff8ebbb9451"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
+					QueueID:       uuid.FromStringOrNil("db62b2b6-b14d-11ee-b27b-6747a7421f4e"),
+					Status:        queuecall.StatusWaiting,
 					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
-					TMCreate:      "2023-02-14 03:22:17.994000",
-					TMService:     DefaultTimeStamp,
-					TMUpdate:      DefaultTimeStamp,
-					TMEnd:         DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
+
+					TMCreate:  "2023-02-14 03:22:17.994000",
+					TMService: DefaultTimeStamp,
+					TMUpdate:  DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
 				},
 				{
-					ID:            uuid.FromStringOrNil("279110b0-5ab6-11ec-afb8-e311840c5826"),
-					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
+					ID:            uuid.FromStringOrNil("db3c2006-b14d-11ee-b2bd-87180adefe69"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
+					QueueID:       uuid.FromStringOrNil("db62b2b6-b14d-11ee-b27b-6747a7421f4e"),
+					Status:        queuecall.StatusWaiting,
 					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
-					TMCreate:      "2023-02-14 03:22:17.994000",
-					TMService:     DefaultTimeStamp,
-					TMUpdate:      DefaultTimeStamp,
-					TMEnd:         DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
+
+					TMCreate:  "2023-02-14 03:22:17.994000",
+					TMService: DefaultTimeStamp,
+					TMUpdate:  DefaultTimeStamp,
+					TMEnd:     DefaultTimeStamp,
+					TMDelete:  DefaultTimeStamp,
 				},
 			},
 		},
@@ -361,117 +343,7 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueuecallGetsByReferenceID(ctx, tt.callID)
-			if err != nil {
-				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
-			}
-		})
-	}
-}
-
-func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
-
-	tests := []struct {
-		name string
-		data []*queuecall.Queuecall
-
-		queueID uuid.UUID
-		status  queuecall.Status
-		size    uint64
-
-		responseCurTime string
-		expectRes       []*queuecall.Queuecall
-	}{
-		{
-			"normal",
-			[]*queuecall.Queuecall{
-				{
-					ID:            uuid.FromStringOrNil("91f4affe-d13d-11ec-999d-1b5c2c4dfa2b"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
-					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
-					Status:        queuecall.StatusWaiting,
-					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					TMCreate:      "2020-04-18T03:22:17.995000",
-				},
-				{
-					ID:            uuid.FromStringOrNil("9221109e-d13d-11ec-99e7-d7ab2832c12b"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
-					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
-					Status:        queuecall.StatusWaiting,
-					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					TMCreate:      "2020-04-18T03:22:17.994000",
-				},
-			},
-
-			uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
-			queuecall.StatusWaiting,
-			2,
-
-			"2023-02-14 03:22:17.994000",
-			[]*queuecall.Queuecall{
-				{
-					ID:            uuid.FromStringOrNil("91f4affe-d13d-11ec-999d-1b5c2c4dfa2b"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
-					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
-					Status:        queuecall.StatusWaiting,
-					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					Source:        commonaddress.Address{},
-					TagIDs:        []uuid.UUID{},
-					TMCreate:      "2023-02-14 03:22:17.994000",
-					TMService:     DefaultTimeStamp,
-					TMUpdate:      DefaultTimeStamp,
-					TMEnd:         DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
-				},
-				{
-					ID:            uuid.FromStringOrNil("9221109e-d13d-11ec-99e7-d7ab2832c12b"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
-					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
-					Status:        queuecall.StatusWaiting,
-					ReferenceType: queuecall.ReferenceTypeCall,
-					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					Source:        commonaddress.Address{},
-					TagIDs:        []uuid.UUID{},
-					TMCreate:      "2023-02-14 03:22:17.994000",
-					TMService:     DefaultTimeStamp,
-					TMUpdate:      DefaultTimeStamp,
-					TMEnd:         DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			for _, u := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-				if err := h.QueuecallCreate(ctx, u); err != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", err)
-				}
-			}
-
-			res, err := h.QueuecallGetsByQueueIDAndStatus(ctx, tt.queueID, tt.status, tt.size, utilhandler.TimeGetCurTime())
+			res, err := h.QueuecallGetsByCustomerID(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

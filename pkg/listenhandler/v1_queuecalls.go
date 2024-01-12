@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -34,15 +33,20 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 
 	// get customer
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	queueID := uuid.FromStringOrNil(u.Query().Get("queue_id"))
-	status := queuecall.Status(u.Query().Get("status"))
 
-	var tmp []*queuecall.Queuecall
-	if queueID != uuid.Nil {
-		tmp, err = h.queuecallHandler.GetsByQueueIDAndStatus(ctx, queueID, status, pageSize, pageToken)
-	} else {
-		tmp, err = h.queuecallHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
+	// get filters
+	filters := map[string]string{}
+	if u.Query().Has("filter_deleted") {
+		filters["deleted"] = u.Query().Get("filter_deleted")
 	}
+	if u.Query().Has("filter_queue_id") {
+		filters["queue_id"] = u.Query().Get("filter_queue_id")
+	}
+	if u.Query().Has("filter_status") {
+		filters["status"] = u.Query().Get("filter_status")
+	}
+
+	tmp, err := h.queuecallHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
 		return simpleResponse(500), nil
