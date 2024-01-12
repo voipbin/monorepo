@@ -85,7 +85,12 @@ func (h *serviceHandler) ActiveflowGets(ctx context.Context, a *amagent.Agent, s
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmps, err := h.reqHandler.FlowV1ActiveflowGets(ctx, a.CustomerID, token, size)
+	// filters
+	filters := map[string]string{
+		"deleted": "false", // we don't need deleted items
+	}
+
+	tmps, err := h.reqHandler.FlowV1ActiveflowGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get activeflows info. err: %v", err)
 		return nil, err
