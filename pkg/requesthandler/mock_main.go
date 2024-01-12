@@ -3236,18 +3236,18 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowGetNextAction(ctx, act
 }
 
 // FlowV1ActiveflowGets mocks base method.
-func (m *MockRequestHandler) FlowV1ActiveflowGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]activeflow.Activeflow, error) {
+func (m *MockRequestHandler) FlowV1ActiveflowGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1ActiveflowGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "FlowV1ActiveflowGets", ctx, customerID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowV1ActiveflowGets indicates an expected call of FlowV1ActiveflowGets.
-func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowGets", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowGets", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // FlowV1ActiveflowPushActions mocks base method.
@@ -3340,18 +3340,18 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1FlowGet(ctx, flowID interface{})
 }
 
 // FlowV1FlowGets mocks base method.
-func (m *MockRequestHandler) FlowV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType flow.Type, pageToken string, pageSize uint64) ([]flow.Flow, error) {
+func (m *MockRequestHandler) FlowV1FlowGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1FlowGets", ctx, customerID, flowType, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "FlowV1FlowGets", ctx, customerID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowV1FlowGets indicates an expected call of FlowV1FlowGets.
-func (mr *MockRequestHandlerMockRecorder) FlowV1FlowGets(ctx, customerID, flowType, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowV1FlowGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowGets), ctx, customerID, flowType, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // FlowV1FlowUpdate mocks base method.

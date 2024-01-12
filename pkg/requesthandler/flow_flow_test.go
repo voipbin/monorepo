@@ -297,9 +297,9 @@ func Test_FlowV1FlowGets(t *testing.T) {
 		name string
 
 		customerID uuid.UUID
-		flowType   fmflow.Type
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -311,9 +311,12 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("c971cc06-7f4d-11ec-b0dc-5ff21ea97f57"),
-			fmflow.TypeFlow,
 			"2020-09-20 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(fmflow.TypeFlow),
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -323,7 +326,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57&type=flow", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57&filter_deleted=false&filter_type=flow", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -344,9 +347,12 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			"get type conference",
 
 			uuid.FromStringOrNil("d9fceace-7f4d-11ec-8949-cf7a5dce40c9"),
-			fmflow.TypeConference,
 			"2020-09-20 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(fmflow.TypeConference),
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -356,7 +362,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=d9fceace-7f4d-11ec-8949-cf7a5dce40c9&type=conference", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=d9fceace-7f4d-11ec-8949-cf7a5dce40c9&filter_deleted=false&filter_type=conference", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -387,7 +393,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FlowV1FlowGets(ctx, tt.customerID, tt.flowType, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.FlowV1FlowGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
