@@ -36,8 +36,7 @@ type QueuecallHandler interface {
 	) (*queuecall.Queuecall, error)
 	Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
-	GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
+	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
 	UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 

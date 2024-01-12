@@ -22,6 +22,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
+		filters    map[string]string
 
 		queuecalls []*queuecall.Queuecall
 
@@ -30,12 +31,19 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=f9f94078-7f54-11ec-8387-9fe49204286f",
+				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=f9f94078-7f54-11ec-8387-9fe49204286f&filter_deleted=false&filter_queue_id=d885e09e-b14e-11ee-95f5-37ef89c64b7a&filter_status=waiting",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
+
 			uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
 			10,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted":  "false",
+				"queue_id": "d885e09e-b14e-11ee-95f5-37ef89c64b7a",
+				"status":   "waiting",
+			},
+
 			[]*queuecall.Queuecall{
 				{
 					ID:         uuid.FromStringOrNil("4b46ad9c-6152-11ec-a4a6-7b3b226046a5"),
@@ -51,12 +59,17 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=13529ca4-7f55-11ec-b445-c3f90a718170",
+				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=13529ca4-7f55-11ec-b445-c3f90a718170&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
+
 			uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
 			10,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*queuecall.Queuecall{
 				{
 					ID:         uuid.FromStringOrNil("4ca0c722-6152-11ec-a0ad-1be04f100fff"),
@@ -89,7 +102,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.queuecalls, nil)
+			mockQueuecall.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.queuecalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
