@@ -140,8 +140,14 @@ func (h *serviceHandler) FlowGets(ctx context.Context, a *amagent.Agent, size ui
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	// filters
+	filters := map[string]string{
+		"deleted": "false", // we don't need deleted items
+		"type":    string(fmflow.TypeFlow),
+	}
+
 	// get flows
-	flows, err := h.reqHandler.FlowV1FlowGets(ctx, a.CustomerID, fmflow.TypeFlow, token, size)
+	flows, err := h.reqHandler.FlowV1FlowGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)

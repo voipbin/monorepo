@@ -260,6 +260,7 @@ func Test_FlowGets(t *testing.T) {
 		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
+		filters   map[string]string
 
 		response  []fmflow.Flow
 		expectRes []*fmflow.WebhookMessage
@@ -273,6 +274,10 @@ func Test_FlowGets(t *testing.T) {
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(fmflow.TypeFlow),
+			},
 
 			[]fmflow.Flow{
 				{
@@ -320,6 +325,10 @@ func Test_FlowGets(t *testing.T) {
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+				"type":    string(fmflow.TypeFlow),
+			},
 
 			[]fmflow.Flow{
 				{
@@ -368,7 +377,7 @@ func Test_FlowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.response, nil)
 
 			res, err := h.FlowGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
