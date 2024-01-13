@@ -12,7 +12,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -64,7 +63,7 @@ import (
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
-	tag0 "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
+	tag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
@@ -142,48 +141,18 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGet(ctx, agentID interface
 }
 
 // AgentV1AgentGets mocks base method.
-func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]agent.Agent, error) {
+func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1AgentGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "AgentV1AgentGets", ctx, customerID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentV1AgentGets indicates an expected call of AgentV1AgentGets.
-func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGets", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGets), ctx, customerID, pageToken, pageSize)
-}
-
-// AgentV1AgentGetsByTagIDs mocks base method.
-func (m *MockRequestHandler) AgentV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]agent.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1AgentGetsByTagIDs", ctx, customerID, tagIDs)
-	ret0, _ := ret[0].([]agent.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1AgentGetsByTagIDs indicates an expected call of AgentV1AgentGetsByTagIDs.
-func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGetsByTagIDs(ctx, customerID, tagIDs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGetsByTagIDs", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGetsByTagIDs), ctx, customerID, tagIDs)
-}
-
-// AgentV1AgentGetsByTagIDsAndStatus mocks base method.
-func (m *MockRequestHandler) AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status agent.Status) ([]agent.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1AgentGetsByTagIDsAndStatus", ctx, customerID, tagIDs, status)
-	ret0, _ := ret[0].([]agent.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1AgentGetsByTagIDsAndStatus indicates an expected call of AgentV1AgentGetsByTagIDsAndStatus.
-func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGetsByTagIDsAndStatus(ctx, customerID, tagIDs, status interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGetsByTagIDsAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGetsByTagIDsAndStatus), ctx, customerID, tagIDs, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGets", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // AgentV1AgentUpdate mocks base method.
@@ -289,81 +258,6 @@ func (m *MockRequestHandler) AgentV1Login(ctx context.Context, timeout int, user
 func (mr *MockRequestHandlerMockRecorder) AgentV1Login(ctx, timeout, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1Login", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1Login), ctx, timeout, username, password)
-}
-
-// AgentV1TagCreate mocks base method.
-func (m *MockRequestHandler) AgentV1TagCreate(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1TagCreate", ctx, customerID, name, detail)
-	ret0, _ := ret[0].(*tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1TagCreate indicates an expected call of AgentV1TagCreate.
-func (mr *MockRequestHandlerMockRecorder) AgentV1TagCreate(ctx, customerID, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1TagCreate", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1TagCreate), ctx, customerID, name, detail)
-}
-
-// AgentV1TagDelete mocks base method.
-func (m *MockRequestHandler) AgentV1TagDelete(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1TagDelete", ctx, id)
-	ret0, _ := ret[0].(*tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1TagDelete indicates an expected call of AgentV1TagDelete.
-func (mr *MockRequestHandlerMockRecorder) AgentV1TagDelete(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1TagDelete", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1TagDelete), ctx, id)
-}
-
-// AgentV1TagGet mocks base method.
-func (m *MockRequestHandler) AgentV1TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1TagGet", ctx, id)
-	ret0, _ := ret[0].(*tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1TagGet indicates an expected call of AgentV1TagGet.
-func (mr *MockRequestHandlerMockRecorder) AgentV1TagGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1TagGet", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1TagGet), ctx, id)
-}
-
-// AgentV1TagGets mocks base method.
-func (m *MockRequestHandler) AgentV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1TagGets", ctx, customerID, pageToken, pageSize)
-	ret0, _ := ret[0].([]tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1TagGets indicates an expected call of AgentV1TagGets.
-func (mr *MockRequestHandlerMockRecorder) AgentV1TagGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1TagGets", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1TagGets), ctx, customerID, pageToken, pageSize)
-}
-
-// AgentV1TagUpdate mocks base method.
-func (m *MockRequestHandler) AgentV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1TagUpdate", ctx, id, name, detail)
-	ret0, _ := ret[0].(*tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1TagUpdate indicates an expected call of AgentV1TagUpdate.
-func (mr *MockRequestHandlerMockRecorder) AgentV1TagUpdate(ctx, id, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1TagUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1TagUpdate), ctx, id, name, detail)
 }
 
 // AstAMIRedirect mocks base method.
@@ -4742,10 +4636,10 @@ func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, 
 }
 
 // TagV1TagCreate mocks base method.
-func (m *MockRequestHandler) TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag0.Tag, error) {
+func (m *MockRequestHandler) TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagV1TagCreate", ctx, customerID, name, detail)
-	ret0, _ := ret[0].(*tag0.Tag)
+	ret0, _ := ret[0].(*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4757,10 +4651,10 @@ func (mr *MockRequestHandlerMockRecorder) TagV1TagCreate(ctx, customerID, name, 
 }
 
 // TagV1TagDelete mocks base method.
-func (m *MockRequestHandler) TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tag0.Tag, error) {
+func (m *MockRequestHandler) TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagV1TagDelete", ctx, tagID)
-	ret0, _ := ret[0].(*tag0.Tag)
+	ret0, _ := ret[0].(*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4772,10 +4666,10 @@ func (mr *MockRequestHandlerMockRecorder) TagV1TagDelete(ctx, tagID interface{})
 }
 
 // TagV1TagGet mocks base method.
-func (m *MockRequestHandler) TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tag0.Tag, error) {
+func (m *MockRequestHandler) TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagV1TagGet", ctx, tagID)
-	ret0, _ := ret[0].(*tag0.Tag)
+	ret0, _ := ret[0].(*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4787,10 +4681,10 @@ func (mr *MockRequestHandlerMockRecorder) TagV1TagGet(ctx, tagID interface{}) *g
 }
 
 // TagV1TagGets mocks base method.
-func (m *MockRequestHandler) TagV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tag0.Tag, error) {
+func (m *MockRequestHandler) TagV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagV1TagGets", ctx, customerID, pageToken, pageSize)
-	ret0, _ := ret[0].([]tag0.Tag)
+	ret0, _ := ret[0].([]tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4802,10 +4696,10 @@ func (mr *MockRequestHandlerMockRecorder) TagV1TagGets(ctx, customerID, pageToke
 }
 
 // TagV1TagUpdate mocks base method.
-func (m *MockRequestHandler) TagV1TagUpdate(ctx context.Context, tagID uuid.UUID, name, detail string) (*tag0.Tag, error) {
+func (m *MockRequestHandler) TagV1TagUpdate(ctx context.Context, tagID uuid.UUID, name, detail string) (*tag.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagV1TagUpdate", ctx, tagID, name, detail)
-	ret0, _ := ret[0].(*tag0.Tag)
+	ret0, _ := ret[0].(*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
