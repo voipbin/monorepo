@@ -10,7 +10,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -170,7 +169,6 @@ const (
 	resourceAstRecordingUnmute  resource = "ast/recording/<recording_name>/unmute"
 
 	resourceAgentAgents resource = "agent/agents"
-	resourceAgentTags   resource = "agent/tags"
 
 	resourceCampaignCampaigns     resource = "campaign/campaigns"
 	resourceCampaignCampaigncalls resource = "campaign/campaigncalls"
@@ -361,9 +359,7 @@ type RequestHandler interface {
 		addresses []commonaddress.Address,
 	) (*amagent.Agent, error)
 	AgentV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error)
-	AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amagent.Agent, error)
-	AgentV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error)
-	AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
+	AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amagent.Agent, error)
 	AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error)
 	AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error)
 	AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*amagent.Agent, error)
@@ -374,18 +370,6 @@ type RequestHandler interface {
 
 	// agent-manager login
 	AgentV1Login(ctx context.Context, timeout int, username string, password string) (*amagent.Agent, error)
-
-	// agent-manager tag
-	AgentV1TagCreate(
-		ctx context.Context,
-		customerID uuid.UUID,
-		name string,
-		detail string,
-	) (*amtag.Tag, error)
-	AgentV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
-	AgentV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error)
-	AgentV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error)
-	AgentV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
 
 	// billing-manager account
 	BillingV1AccountGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]bmaccount.Account, error)
