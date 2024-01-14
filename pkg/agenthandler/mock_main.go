@@ -112,48 +112,18 @@ func (mr *MockAgentHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockAgentHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
+func (m *MockAgentHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token, filters)
 	ret0, _ := ret[0].([]*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockAgentHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) Gets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAgentHandler)(nil).Gets), ctx, customerID, size, token)
-}
-
-// GetsByTagIDs mocks base method.
-func (m *MockAgentHandler) GetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByTagIDs", ctx, customerID, tags)
-	ret0, _ := ret[0].([]*agent.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByTagIDs indicates an expected call of GetsByTagIDs.
-func (mr *MockAgentHandlerMockRecorder) GetsByTagIDs(ctx, customerID, tags interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByTagIDs", reflect.TypeOf((*MockAgentHandler)(nil).GetsByTagIDs), ctx, customerID, tags)
-}
-
-// GetsByTagIDsAndStatus mocks base method.
-func (m *MockAgentHandler) GetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByTagIDsAndStatus", ctx, customerID, tags, status)
-	ret0, _ := ret[0].([]*agent.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByTagIDsAndStatus indicates an expected call of GetsByTagIDsAndStatus.
-func (mr *MockAgentHandlerMockRecorder) GetsByTagIDsAndStatus(ctx, customerID, tags, status interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByTagIDsAndStatus", reflect.TypeOf((*MockAgentHandler)(nil).GetsByTagIDsAndStatus), ctx, customerID, tags, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAgentHandler)(nil).Gets), ctx, customerID, size, token, filters)
 }
 
 // Login mocks base method.

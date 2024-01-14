@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
@@ -234,11 +237,63 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 }
 
 // AgentGets returns agents.
-func (h *handler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
+func (h *handler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
 	// prepare
-	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", agentSelect)
+	q := fmt.Sprintf(`%s
+	where
+		customer_id = ?
+		and tm_create < ?
+	`, agentSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "status":
+			q = fmt.Sprintf("%s and status = ?", q)
+			values = append(values, v)
+
+		case "tag_ids":
+			ids := strings.Split(v, ",")
+			if len(ids) == 0 {
+				// has no tag ids
+				break
+			}
+
+			tmp := ""
+			for i, id := range ids {
+				if i == 0 {
+					tmp = "json_contains(tag_ids, ?)"
+					tmpTagID := fmt.Sprintf(`"%s"`, id)
+					values = append(values, tmpTagID)
+				} else {
+					tmp = fmt.Sprintf("%s or json_contains(tag_ids, ?)", tmp)
+					tmpTagID := fmt.Sprintf(`"%s"`, id)
+					values = append(values, tmpTagID)
+				}
+			}
+
+			q = fmt.Sprintf("%s and (%s)", q, tmp)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+	logrus.WithFields(logrus.Fields{
+		"query":  q,
+		"values": values,
+	}).Debugf("test log. query info.")
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGets. err: %v", err)
 	}

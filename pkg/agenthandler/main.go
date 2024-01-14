@@ -17,18 +17,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 )
 
-const (
-	maxAgentCount = 999 // maximum agent numbers
-)
-
 // AgentHandler interface
 type AgentHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
-	GetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)
-	GetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
+	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error)
 	Login(ctx context.Context, username, password string) (*agent.Agent, error)
 	UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)
@@ -71,13 +65,4 @@ func checkHash(password, hashString string) bool {
 func generateHash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	return string(bytes), err
-}
-
-func contains(s []uuid.UUID, x uuid.UUID) bool {
-	for _, v := range s {
-		if v == x {
-			return true
-		}
-	}
-	return false
 }

@@ -12,77 +12,19 @@ import (
 )
 
 // dbGets returns agents
-func (h *agentHandler) dbGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
+func (h *agentHandler) dbGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "dbGets",
 		"customer_id": customerID,
 		"size":        size,
 		"token":       token,
+		"filters":     filters,
 	})
 
-	res, err := h.db.AgentGets(ctx, customerID, size, token)
+	res, err := h.db.AgentGets(ctx, customerID, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
-	}
-
-	return res, nil
-}
-
-// dbGetsByTagIDs returns agents of the given tag
-func (h *agentHandler) dbGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]*agent.Agent, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "dbGetsByTagIDs",
-		"customer_id": customerID,
-		"tag_ids":     tagIDs,
-	})
-
-	agents, err := h.dbGets(ctx, customerID, maxAgentCount, h.utilHandler.TimeGetCurTime())
-	if err != nil {
-		log.Errorf("Could not get agents info. err: %v", err)
-		return nil, err
-	}
-
-	res := []*agent.Agent{}
-	for _, a := range agents {
-		for _, b := range a.TagIDs {
-			if contains(tagIDs, b) {
-				res = append(res, a)
-				break
-			}
-		}
-	}
-
-	return res, nil
-}
-
-// dbGetsByTagIDsAndStatus returns agent with given condition.
-func (h *agentHandler) dbGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "dbGetsByTagIDsAndStatus",
-		"customer_id": customerID,
-		"tag_ids":     tagIDs,
-		"status":      status,
-	})
-
-	agents, err := h.db.AgentGets(ctx, customerID, maxAgentCount, h.utilHandler.TimeGetCurTime())
-	if err != nil {
-		log.Errorf("Could not get agent info. err: %v", err)
-		return nil, err
-	}
-
-	res := []*agent.Agent{}
-	for _, a := range agents {
-		if a.Status != status {
-			continue
-		}
-
-		for _, b := range a.TagIDs {
-			if contains(tagIDs, b) {
-				res = append(res, a)
-				break
-			}
-		}
 	}
 
 	return res, nil

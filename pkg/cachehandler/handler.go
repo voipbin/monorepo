@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 )
 
 // getSerialize returns cached serialized info.
@@ -53,29 +52,6 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 // AgentrSet sets the agent info into the cache.
 func (h *handler) AgentSet(ctx context.Context, u *agent.Agent) error {
 	key := fmt.Sprintf("agent:%d", u.ID)
-
-	if err := h.setSerialize(ctx, key, u); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// TagGet returns cached tag info
-func (h *handler) TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	key := fmt.Sprintf("tag:%s", id)
-
-	var res tag.Tag
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// TagSet sets the tag info into the cache.
-func (h *handler) TagSet(ctx context.Context, u *tag.Tag) error {
-	key := fmt.Sprintf("tag:%s", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {
 		return err

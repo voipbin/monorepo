@@ -11,7 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -78,33 +77,4 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
-}
-
-// TagGet mocks base method.
-func (m *MockCacheHandler) TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagGet", ctx, id)
-	ret0, _ := ret[0].(*tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TagGet indicates an expected call of TagGet.
-func (mr *MockCacheHandlerMockRecorder) TagGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGet", reflect.TypeOf((*MockCacheHandler)(nil).TagGet), ctx, id)
-}
-
-// TagSet mocks base method.
-func (m *MockCacheHandler) TagSet(ctx context.Context, u *tag.Tag) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagSet", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TagSet indicates an expected call of TagSet.
-func (mr *MockCacheHandlerMockRecorder) TagSet(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagSet", reflect.TypeOf((*MockCacheHandler)(nil).TagSet), ctx, u)
 }
