@@ -177,11 +177,10 @@ func Test_AgentGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
-		size   uint64
-		token  string
-		tagIDs []uuid.UUID
-		status amagent.Status
+		agent   *amagent.Agent
+		size    uint64
+		token   string
+		filters map[string]string
 
 		response  []amagent.Agent
 		expectRes []*amagent.WebhookMessage
@@ -195,8 +194,9 @@ func Test_AgentGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
-			[]uuid.UUID{},
-			"",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]amagent.Agent{
 				{
@@ -218,8 +218,9 @@ func Test_AgentGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
-			[]uuid.UUID{},
-			"",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]amagent.Agent{
 				{
@@ -255,199 +256,9 @@ func Test_AgentGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
-			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.tagIDs, tt.status)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_AgentGetsByTagIDs(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		agent  *amagent.Agent
-		size   uint64
-		token  string
-		tagIDs []uuid.UUID
-		status amagent.Status
-
-		response  []amagent.Agent
-		expectRes []*amagent.WebhookMessage
-	}{
-		{
-			"normal",
-			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
-				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
-				Permission: amagent.PermissionCustomerAdmin,
-			},
-			10,
-			"2020-09-20 03:23:20.995000",
-			[]uuid.UUID{
-				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
-			},
-			"",
-
-			[]amagent.Agent{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-			[]*amagent.WebhookMessage{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-		},
-		{
-			"2 tag ids",
-			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
-				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
-				Permission: amagent.PermissionCustomerAdmin,
-			},
-			10,
-			"2020-09-20 03:23:20.995000",
-			[]uuid.UUID{
-				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
-				uuid.FromStringOrNil("07eec5dc-4fc0-11ec-adfb-dbfffb9e6dc5"),
-			},
-			"",
-
-			[]amagent.Agent{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-			[]*amagent.WebhookMessage{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().AgentV1AgentGetsByTagIDs(ctx, tt.agent.CustomerID, tt.tagIDs).Return(tt.response, nil)
-
-			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.tagIDs, tt.status)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		agent  *amagent.Agent
-		size   uint64
-		token  string
-		tagIDs []uuid.UUID
-		status amagent.Status
-
-		response  []amagent.Agent
-		expectRes []*amagent.WebhookMessage
-	}{
-		{
-			"normal",
-			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
-				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
-				Permission: amagent.PermissionCustomerAdmin,
-			},
-			10,
-			"2020-09-20T03:23:20.995000",
-			[]uuid.UUID{
-				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
-			},
-			amagent.StatusAvailable,
-
-			[]amagent.Agent{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-			[]*amagent.WebhookMessage{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-		},
-		{
-			"2 tag ids",
-			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
-				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
-				Permission: amagent.PermissionCustomerAdmin,
-			},
-			10,
-			"2020-09-20T03:23:20.995000",
-			[]uuid.UUID{
-				uuid.FromStringOrNil("ed33fa28-4fbf-11ec-9aab-efb29082f61d"),
-				uuid.FromStringOrNil("07eec5dc-4fc0-11ec-adfb-dbfffb9e6dc5"),
-			},
-			amagent.StatusAvailable,
-
-			[]amagent.Agent{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-			[]*amagent.WebhookMessage{
-				{
-					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.agent.CustomerID, tt.tagIDs, amagent.Status(tt.status)).Return(tt.response, nil)
-
-			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.tagIDs, tt.status)
+			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
