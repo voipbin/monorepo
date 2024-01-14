@@ -10,6 +10,7 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
@@ -26,7 +27,8 @@ func Test_GetAgents(t *testing.T) {
 		responseQueue  *queue.Queue
 		responseAgents []amagent.Agent
 
-		expectRes []amagent.Agent
+		expectFilters map[string]string
+		expectRes     []amagent.Agent
 	}{
 		{
 			"none",
@@ -39,6 +41,7 @@ func Test_GetAgents(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("dd185d70-b499-11ec-a4b6-735983739876"),
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("5d443cfe-b499-11ec-ac74-83f95d8a0381"),
+					uuid.FromStringOrNil("4fc21d6c-b244-11ee-9bd1-1b47f77edd77"),
 				},
 			},
 			[]amagent.Agent{
@@ -47,6 +50,10 @@ func Test_GetAgents(t *testing.T) {
 				},
 			},
 
+			map[string]string{
+				"deleted": "false",
+				"tag_ids": "5d443cfe-b499-11ec-ac74-83f95d8a0381,4fc21d6c-b244-11ee-9bd1-1b47f77edd77",
+			},
 			[]amagent.Agent{
 				{
 					ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
@@ -72,6 +79,11 @@ func Test_GetAgents(t *testing.T) {
 				},
 			},
 
+			map[string]string{
+				"deleted": "false",
+				"status":  string(amagent.StatusAvailable),
+				"tag_ids": "5d443cfe-b499-11ec-ac74-83f95d8a0381",
+			},
 			[]amagent.Agent{
 				{
 					ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
@@ -88,22 +100,21 @@ func Test_GetAgents(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &queueHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
+				utilhandler:   mockUtil,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueueGet(ctx, tt.id).Return(tt.responseQueue, nil)
 
-			if tt.status == amagent.StatusNone {
-				mockReq.EXPECT().AgentV1AgentGetsByTagIDs(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs).Return(tt.responseAgents, nil)
-			} else {
-				mockReq.EXPECT().AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs, tt.status).Return(tt.responseAgents, nil)
-			}
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.responseQueue.CustomerID, gomock.Any(), uint64(100), tt.expectFilters).Return(tt.responseAgents, nil)
 
 			res, err := h.GetAgents(ctx, tt.id, tt.status)
 			if err != nil {
