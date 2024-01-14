@@ -82,3 +82,36 @@ Error handling and Termination
 ------------------------------
 During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
 The VoIPBin system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.
+
+Call concept
+-------------
+The concept of a call in Voipbin departs from the traditional 1:1 call model. Here's an overview:
+
+In Voipbin, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call's trajectory as it connects to an agent and then diverges to another destination.
+
+In Voipbin, the conventional call scenario A -> B is delineated by two distinct calls:
+
+.. code::
+
+    A            Voipbin            B
+    |<-- Call 1 --->|               |
+    |               |<--- Call 2 -->|
+    |<-----RTP----->|<-----RTP----->|
+
+Comparison: Traditional Call Concept vs Voipbin Call Concept
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Traditional Call Concept
+
+* Follows a 1:1 model where a call is a direct connection between a source and a destination.
+* Typically involves a straightforward flow from the caller to the recipient.
+* Limited in handling complex call journeys or interactions with multiple parties.
+
+Voipbin Call Concept
+
+* Deviates from the traditional 1:1 model, allowing for more intricate call structures.
+* Encompasses source, destination, and additional metadata in a call.
+* Permits connections to multiple other calls, creating dynamic call journeys.
+* Visualizes a call's path, which may involve connecting to an agent and branching to additional destinations.
+
+In summary, while the traditional call concept adheres to a simple point-to-point model, the Voipbin call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.
