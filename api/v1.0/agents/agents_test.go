@@ -146,8 +146,7 @@ func Test_AgentsGET(t *testing.T) {
 
 		pageSize  uint64
 		pageToken string
-		tagIDs    []uuid.UUID
-		status    amagent.Status
+		filters   map[string]string
 
 		resAgents []*amagent.WebhookMessage
 	}{
@@ -156,12 +155,14 @@ func Test_AgentsGET(t *testing.T) {
 			amagent.Agent{
 				ID: uuid.FromStringOrNil("7d2835bc-8df4-11ee-bde2-377a8d7b62a2"),
 			},
-			"/v1.0/agents?page_size=11&page_token=2020-09-20T03:23:20.995000",
+			"/v1.0/agents?page_size=11&page_token=2020-09-20T03:23:20.995000&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3",
 
 			11,
 			"2020-09-20T03:23:20.995000",
-			[]uuid.UUID{},
-			amagent.StatusNone,
+			map[string]string{
+				"deleted": "false",
+				"tag_ids": "b79599f2-4f2a-11ec-b49d-df70a67f68d3",
+			},
 
 			[]*amagent.WebhookMessage{
 				{
@@ -179,10 +180,11 @@ func Test_AgentsGET(t *testing.T) {
 
 			10,
 			"",
-			[]uuid.UUID{
-				uuid.FromStringOrNil("b79599f2-4f2a-11ec-b49d-df70a67f68d3"),
+			map[string]string{
+				"deleted": "false",
+				"tag_ids": "b79599f2-4f2a-11ec-b49d-df70a67f68d3",
+				"status":  string(amagent.StatusAvailable),
 			},
-			amagent.StatusAvailable,
 
 			[]*amagent.WebhookMessage{
 				{
@@ -196,15 +198,15 @@ func Test_AgentsGET(t *testing.T) {
 			amagent.Agent{
 				ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 			},
-			"/v1.0/agents?tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c",
+			"/v1.0/agents?tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c&status=available",
 
 			10,
 			"",
-			[]uuid.UUID{
-				uuid.FromStringOrNil("b79599f2-4f2a-11ec-b49d-df70a67f68d3"),
-				uuid.FromStringOrNil("39fa07ce-4fb8-11ec-8e5b-db7c7886455c"),
+			map[string]string{
+				"deleted": "false",
+				"tag_ids": "b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c",
+				"status":  string(amagent.StatusAvailable),
 			},
-			"",
 
 			[]*amagent.WebhookMessage{
 				{
@@ -236,7 +238,7 @@ func Test_AgentsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().AgentGets(req.Context(), &tt.agent, tt.pageSize, tt.pageToken, tt.tagIDs, tt.status).Return(tt.resAgents, nil)
+			mockSvc.EXPECT().AgentGets(req.Context(), &tt.agent, tt.pageSize, tt.pageToken, tt.filters).Return(tt.resAgents, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

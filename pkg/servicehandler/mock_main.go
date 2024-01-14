@@ -184,18 +184,18 @@ func (mr *MockServiceHandlerMockRecorder) AgentGet(ctx, a, agentID interface{}) 
 }
 
 // AgentGets mocks base method.
-func (m *MockServiceHandler) AgentGets(ctx context.Context, a *agent.Agent, size uint64, token string, tagIDs []uuid.UUID, status agent.Status) ([]*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentGets(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentGets", ctx, a, size, token, tagIDs, status)
+	ret := m.ctrl.Call(m, "AgentGets", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*agent.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentGets indicates an expected call of AgentGets.
-func (mr *MockServiceHandlerMockRecorder) AgentGets(ctx, a, size, token, tagIDs, status interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AgentGets(ctx, a, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockServiceHandler)(nil).AgentGets), ctx, a, size, token, tagIDs, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockServiceHandler)(nil).AgentGets), ctx, a, size, token, filters)
 }
 
 // AgentUpdate mocks base method.

@@ -1,8 +1,6 @@
 package agents
 
 import (
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -200,17 +198,21 @@ func agentsGET(c *gin.Context) {
 		log.Debugf("Invalid requested page size. Set to max. page_size: %d", pageSize)
 	}
 
-	tagIDs := []uuid.UUID{}
+	// filters
+	filters := map[string]string{
+		"deleted": "false",
+	}
+
 	if req.TagIDs != "" {
-		tags := strings.Split(req.TagIDs, ",")
-		for _, tag := range tags {
-			t := uuid.FromStringOrNil(tag)
-			tagIDs = append(tagIDs, t)
-		}
+		filters["tag_ids"] = req.TagIDs
+	}
+
+	if req.Status != amagent.StatusNone {
+		filters["status"] = string(req.Status)
 	}
 
 	// get tmps
-	tmps, err := serviceHandler.AgentGets(c.Request.Context(), &a, pageSize, req.PageToken, tagIDs, req.Status)
+	tmps, err := serviceHandler.AgentGets(c.Request.Context(), &a, pageSize, req.PageToken, filters)
 	if err != nil {
 		logrus.Errorf("Could not get agents info. err: %v", err)
 		c.AbortWithStatus(400)
