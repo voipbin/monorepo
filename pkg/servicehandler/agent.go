@@ -95,7 +95,7 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 // AgentGet sends a request to agent-manager
 // to getting a list of agents.
 // it returns agent info if it succeed.
-func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentGets",
 		"customer_id": a.CustomerID,
@@ -112,16 +112,7 @@ func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size u
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	// get agents
-	var tmps []amagent.Agent
-	var err error
-	if len(tagIDs) > 0 && status != "" {
-		tmps, err = h.reqHandler.AgentV1AgentGetsByTagIDsAndStatus(ctx, a.CustomerID, tagIDs, amagent.Status(status))
-	} else if len(tagIDs) > 0 {
-		tmps, err = h.reqHandler.AgentV1AgentGetsByTagIDs(ctx, a.CustomerID, tagIDs)
-	} else {
-		tmps, err = h.reqHandler.AgentV1AgentGets(ctx, a.CustomerID, token, size)
-	}
+	tmps, err := h.reqHandler.AgentV1AgentGets(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get agents info. err: %v", err)
 		return nil, err
