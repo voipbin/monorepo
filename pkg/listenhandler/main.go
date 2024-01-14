@@ -7,16 +7,13 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"strings"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/taghandler"
 )
 
 // pagination parameters
@@ -34,7 +31,6 @@ type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	agentHandler agenthandler.AgentHandler
-	tagHandler   taghandler.TagHandler
 }
 
 var (
@@ -52,11 +48,6 @@ var (
 	regV1AgentsIDStatus      = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
 	regV1AgentsIDPassword    = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
 	regV1AgentsIDPermission  = regexp.MustCompile("/v1/agents/" + regUUID + "/permission$")
-
-	// tags
-	regV1Tags    = regexp.MustCompile("/v1/tags$")
-	regV1TagsGet = regexp.MustCompile(`/v1/tags\?(.*)$`)
-	regV1TagsID  = regexp.MustCompile("/v1/tags/" + regUUID + "$")
 
 	// login
 	regV1Login = regexp.MustCompile("/v1/login$")
@@ -92,12 +83,11 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler, tagHandler taghandler.TagHandler) ListenHandler {
+func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler) ListenHandler {
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
 
 		agentHandler: agentHandler,
-		tagHandler:   tagHandler,
 	}
 
 	return h
@@ -229,34 +219,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/agents/<agent-id>/permission"
 
 	////////////
-	// tags
-	////////////
-	// GET /tags
-	case regV1TagsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1TagsGet(ctx, m)
-		requestType = "/v1/tags"
-
-	// POST /tags
-	case regV1Tags.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1TagsPost(ctx, m)
-		requestType = "/v1/tags"
-
-	// DELETE /tags/<tag-id>
-	case regV1TagsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1TagsIDDelete(ctx, m)
-		requestType = "/v1/tags"
-
-	// GET /tags/<tag-id>
-	case regV1TagsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1TagsIDGet(ctx, m)
-		requestType = "/v1/tags"
-
-	// PUT /tags/<tag-id>
-	case regV1TagsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1TagsIDPut(ctx, m)
-		requestType = "/v1/tags"
-
-	////////////
 	// login
 	////////////
 	// POST /login
@@ -289,20 +251,4 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	}
 
 	return response, err
-}
-
-func parseTagIDs(t string) []uuid.UUID {
-	str := strings.Split(t, ",")
-
-	res := []uuid.UUID{}
-	for _, s := range str {
-		tmp := uuid.FromStringOrNil(s)
-		if tmp == uuid.Nil {
-			continue
-		}
-
-		res = append(res, tmp)
-	}
-
-	return res
 }

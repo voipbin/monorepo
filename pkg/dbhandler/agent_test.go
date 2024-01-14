@@ -258,6 +258,7 @@ func Test_AgentGets(t *testing.T) {
 
 		customerID uuid.UUID
 		size       uint64
+		filters    map[string]string
 
 		responseCurTime string
 		expectRes       []*agent.Agent
@@ -281,6 +282,9 @@ func Test_AgentGets(t *testing.T) {
 
 			customerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 			size:       2,
+			filters: map[string]string{
+				"deleted": "false",
+			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: []*agent.Agent{
@@ -332,7 +336,7 @@ func Test_AgentGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AgentGets(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime())
+			res, err := h.AgentGets(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

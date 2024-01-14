@@ -12,43 +12,18 @@ import (
 )
 
 // Gets returns agents
-func (h *agentHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
-	log := logrus.WithField("func", "Gets")
-
-	res, err := h.dbGets(ctx, customerID, size, token)
-	if err != nil {
-		log.Errorf("Could not get agents info. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// GetsByTagIDs returns agents
-func (h *agentHandler) GetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error) {
-	log := logrus.WithField("func", "GetsByTags")
-
-	res, err := h.dbGetsByTagIDs(ctx, customerID, tags)
-	if err != nil {
-		log.Errorf("Could not get agents info. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// GetsByTagIDsAndStatus returns agent with given condition.
-func (h *agentHandler) GetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+func (h *agentHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByTagIDsAndStatus",
+		"func":        "Gets",
 		"customer_id": customerID,
-		"tag_ids":     tagIDs,
-		"status":      status,
+		"size":        size,
+		"token":       token,
+		"filters":     filters,
 	})
 
-	res, err := h.dbGetsByTagIDsAndStatus(ctx, customerID, tagIDs, status)
+	res, err := h.dbGets(ctx, customerID, size, token, filters)
 	if err != nil {
-		log.Errorf("Could not get agent info. err: %v", err)
+		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
 	}
 

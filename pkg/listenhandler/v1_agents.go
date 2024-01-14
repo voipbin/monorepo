@@ -31,42 +31,35 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *rabbitmqhan
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	// parse tagIDs
-	hasTagIDs := u.Query().Has("tag_ids")
-	tmpTagIDs := u.Query().Get("tag_ids")
-	tagIDs := []uuid.UUID{}
-	if tmpTagIDs != "" {
-		tagIDs = parseTagIDs(tmpTagIDs)
+	// get filters
+	filters := map[string]string{}
+	if u.Query().Has("filter_deleted") {
+		filters["deleted"] = u.Query().Get("filter_deleted")
 	}
-
-	hasStatus := u.Query().Has("status")
-	tmpStatus := u.Query().Get("status")
+	if u.Query().Has("filter_status") {
+		filters["status"] = u.Query().Get("filter_status")
+	}
+	if u.Query().Has("filter_tag_ids") {
+		filters["tag_ids"] = u.Query().Get("filter_tag_ids")
+	}
 
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "processV1AgentsGet",
 		"customer_id": customerID,
 		"size":        pageSize,
 		"token":       pageToken,
+		"filters":     filters,
 	})
 
-	var tmpRes []*agent.Agent
-	var tmpErr error
-
-	if hasTagIDs && hasStatus {
-		tmpRes, tmpErr = h.agentHandler.GetsByTagIDsAndStatus(ctx, customerID, tagIDs, agent.Status(tmpStatus))
-	} else if hasTagIDs {
-		tmpRes, tmpErr = h.agentHandler.GetsByTagIDs(ctx, customerID, tagIDs)
-	} else {
-		tmpRes, tmpErr = h.agentHandler.Gets(ctx, customerID, pageSize, pageToken)
-	}
-	if tmpErr != nil {
+	tmp, err := h.agentHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
+	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(tmpRes)
+	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmpRes, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 

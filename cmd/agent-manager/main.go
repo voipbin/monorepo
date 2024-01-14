@@ -22,7 +22,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/subscribehandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/taghandler"
 )
 
 const serviceName = "agent-manager"
@@ -144,9 +143,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
-	tagHandler := taghandler.NewTagHandler(reqHandler, db, notifyHandler, agentHandler)
 
-	if err := runListen(rabbitSock, agentHandler, tagHandler); err != nil {
+	if err := runListen(rabbitSock, agentHandler); err != nil {
 		return err
 	}
 
@@ -158,8 +156,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler, tagHandler taghandler.TagHandler) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, agentHandler, tagHandler)
+func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler) error {
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, agentHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

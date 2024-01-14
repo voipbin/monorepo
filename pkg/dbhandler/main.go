@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
 )
 
@@ -22,19 +21,13 @@ type DBHandler interface {
 	AgentDelete(ctx context.Context, id uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error)
-	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
+	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error)
 	AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) error
 	AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
 	AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error
 	AgentSetPermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error
 	AgentSetStatus(ctx context.Context, id uuid.UUID, status agent.Status) error
 	AgentSetTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error
-
-	TagCreate(ctx context.Context, a *tag.Tag) error
-	TagDelete(ctx context.Context, id uuid.UUID) error
-	TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
-	TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
-	TagGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error)
 }
 
 // handler database handler
@@ -46,7 +39,7 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = fmt.Errorf("Record not found")
+	ErrNotFound = fmt.Errorf("record not found")
 )
 
 // List of default values

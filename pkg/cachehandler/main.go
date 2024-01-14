@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 )
 
 type handler struct {
@@ -26,9 +25,6 @@ type CacheHandler interface {
 
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentSet(ctx context.Context, u *agent.Agent) error
-
-	TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
-	TagSet(ctx context.Context, u *tag.Tag) error
 }
 
 // NewHandler creates DBHandler
