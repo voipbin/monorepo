@@ -53,9 +53,9 @@ const (
 
 // queuecallGetFromRow gets the  queuecall from the row.
 func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, error) {
-
-	source := ""
-	tagIDs := ""
+	var referenceActiveflowID sql.NullString
+	var source sql.NullString
+	var tagIDs sql.NullString
 
 	res := &queuecall.Queuecall{}
 	if err := row.Scan(
@@ -65,7 +65,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 
 		&res.ReferenceType,
 		&res.ReferenceID,
-		&res.ReferenceActiveflowID,
+		&referenceActiveflowID,
 
 		&res.ForwardActionID,
 		&res.ExitActionID,
@@ -93,12 +93,23 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		return nil, fmt.Errorf("could not scan the row. queueCallGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. queuecallGetFromRow. err: %v", err)
+	// referenceActiveflowID
+	if referenceActiveflowID.Valid {
+		res.ReferenceActiveflowID = uuid.FromBytesOrNil([]byte(referenceActiveflowID.String))
 	}
 
-	if err := json.Unmarshal([]byte(tagIDs), &res.TagIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the tag_ids. queuecallGetFromRow. err: %v", err)
+	// source
+	if source.Valid {
+		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the source. queuecallGetFromRow. err: %v", err)
+		}
+	}
+
+	// tag_ids
+	if tagIDs.Valid {
+		if err := json.Unmarshal([]byte(tagIDs.String), &res.TagIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the source. queuecallGetFromRow. err: %v", err)
+		}
 	}
 	if res.TagIDs == nil {
 		res.TagIDs = []uuid.UUID{}

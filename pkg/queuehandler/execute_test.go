@@ -28,7 +28,8 @@ func Test_Execute(t *testing.T) {
 		responseQueuecall []queuecall.Queuecall
 		responseAgent     []amagent.Agent
 
-		expectFilters map[string]string
+		expectFiltersQueue map[string]string
+		expectFiltersAgent map[string]string
 	}{
 		{
 			"normal",
@@ -60,6 +61,11 @@ func Test_Execute(t *testing.T) {
 				"queue_id": "558dc9da-d1ae-11ec-b9f8-e323caeb57c4",
 				"status":   string(queuecall.StatusWaiting),
 			},
+			map[string]string{
+				"deleted": "false",
+				"tag_ids": "a3a6841c-d1af-11ec-8844-c7602a790709",
+				"status":  string(amagent.StatusAvailable),
+			},
 		},
 	}
 
@@ -84,11 +90,12 @@ func Test_Execute(t *testing.T) {
 
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.responseQueue.CustomerID, tt.responseCurTime, uint64(1), tt.expectFilters).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.responseQueue.CustomerID, tt.responseCurTime, uint64(1), tt.expectFiltersQueue).Return(tt.responseQueuecall, nil)
 
 			// GetAgents
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockReq.EXPECT().AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs, amagent.StatusAvailable).Return(tt.responseAgent, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.responseQueue.CustomerID, gomock.Any(), uint64(100), tt.expectFiltersAgent).Return(tt.responseAgent, nil)
 
 			mockReq.EXPECT().QueueV1QueuecallExecute(ctx, tt.responseQueuecall[0].ID, gomock.Any()).Return(&queuecall.Queuecall{}, nil)
 			mockReq.EXPECT().QueueV1QueueExecuteRun(ctx, tt.queueID, 100)
