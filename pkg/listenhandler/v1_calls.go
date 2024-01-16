@@ -39,10 +39,7 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, m *rabbitmqhandle
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	// get filters
-	filters := map[string]string{}
-	if u.Query().Has("filter_deleted") {
-		filters["deleted"] = u.Query().Get("filter_deleted")
-	}
+	filters := h.getFilters(u)
 
 	calls, err := h.callHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
