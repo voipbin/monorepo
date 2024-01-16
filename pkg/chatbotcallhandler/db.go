@@ -179,13 +179,16 @@ func (h *chatbotcallHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID) 
 }
 
 // Gets returns list of chatbotcalls.
-func (h *chatbotcallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbotcall.Chatbotcall, error) {
+func (h *chatbotcallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Gets",
 		"customer_id": customerID,
+		"size":        size,
+		"token":       token,
+		"filters":     filters,
 	})
 
-	res, err := h.db.ChatbotcallGets(ctx, customerID, size, token)
+	res, err := h.db.ChatbotcallGets(ctx, customerID, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get chatbotcalls. err: %v", err)
 		return nil, err

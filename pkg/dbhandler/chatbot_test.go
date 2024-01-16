@@ -181,6 +181,7 @@ func Test_ChatbotGets(t *testing.T) {
 
 		customerID uuid.UUID
 		count      int
+		filters    map[string]string
 
 		responseCurTime string
 		expectRes       []*chatbot.Chatbot
@@ -200,6 +201,10 @@ func Test_ChatbotGets(t *testing.T) {
 
 			uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
+
 			"2023-01-03 21:35:02.809",
 			[]*chatbot.Chatbot{
 				{
@@ -224,6 +229,10 @@ func Test_ChatbotGets(t *testing.T) {
 
 			uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
 			0,
+			map[string]string{
+				"deleted": "false",
+			},
+
 			"2023-01-03 21:35:02.809",
 			[]*chatbot.Chatbot{},
 		},
@@ -252,7 +261,7 @@ func Test_ChatbotGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.ChatbotGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime())
+			res, err := h.ChatbotGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

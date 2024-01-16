@@ -100,6 +100,7 @@ func Test_Gets(t *testing.T) {
 		customerID uuid.UUID
 		size       uint64
 		token      string
+		filters    map[string]string
 
 		responseChatbots []*chatbot.Chatbot
 	}{
@@ -109,6 +110,9 @@ func Test_Gets(t *testing.T) {
 			customerID: uuid.FromStringOrNil("132be434-f839-11ed-ae95-efa657af10fb"),
 			size:       10,
 			token:      "2023-01-03 21:35:02.809",
+			filters: map[string]string{
+				"deleted": "false",
+			},
 
 			responseChatbots: []*chatbot.Chatbot{
 				{
@@ -137,9 +141,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatbotGets(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseChatbots, nil)
+			mockDB.EXPECT().ChatbotGets(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseChatbots, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

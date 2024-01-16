@@ -82,18 +82,18 @@ func (mr *MockChatbotHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call 
 }
 
 // Gets mocks base method.
-func (m *MockChatbotHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error) {
+func (m *MockChatbotHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbot.Chatbot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token, filters)
 	ret0, _ := ret[0].([]*chatbot.Chatbot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockChatbotHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockChatbotHandlerMockRecorder) Gets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatbotHandler)(nil).Gets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatbotHandler)(nil).Gets), ctx, customerID, size, token, filters)
 }
 
 // Update mocks base method.
