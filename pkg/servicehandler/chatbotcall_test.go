@@ -19,9 +19,10 @@ func Test_ChatbotcallGetsByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
-		size  uint64
-		token string
+		agent   *amagent.Agent
+		size    uint64
+		token   string
+		filters map[string]string
 
 		response  []chatbotchatbotcall.Chatbotcall
 		expectRes []*chatbotchatbotcall.WebhookMessage
@@ -35,6 +36,9 @@ func Test_ChatbotcallGetsByCustomerID(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]chatbotchatbotcall.Chatbotcall{
 				{
@@ -63,7 +67,7 @@ func Test_ChatbotcallGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ChatbotcallGetsByCustomerID(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().ChatbotV1ChatbotcallGetsByCustomerID(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.ChatbotcallGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
