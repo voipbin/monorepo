@@ -610,7 +610,7 @@ type RequestHandler interface {
 
 	// chatbot-manager chatbot
 	ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
-	ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbot.Chatbot, error)
+	ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbot.Chatbot, error)
 	ChatbotV1ChatbotCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -630,7 +630,7 @@ type RequestHandler interface {
 	) (*cbchatbot.Chatbot, error)
 
 	// chatbot-manager chatbotcall
-	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 

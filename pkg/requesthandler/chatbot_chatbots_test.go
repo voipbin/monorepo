@@ -22,6 +22,7 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -35,6 +36,9 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 			uuid.FromStringOrNil("83fec56f-8e28-4356-a50c-7641e39ed2df"),
 			"2020-09-20 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -44,7 +48,7 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 
 			"bin-manager.chatbot-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:    fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			[]cbchatbot.Chatbot{
@@ -71,7 +75,7 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
