@@ -81,18 +81,18 @@ func (mr *MockDBHandlerMockRecorder) ChatbotGet(ctx, id interface{}) *gomock.Cal
 }
 
 // ChatbotGets mocks base method.
-func (m *MockDBHandler) ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error) {
+func (m *MockDBHandler) ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbot.Chatbot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotGets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "ChatbotGets", ctx, customerID, size, token, filters)
 	ret0, _ := ret[0].([]*chatbot.Chatbot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatbotGets indicates an expected call of ChatbotGets.
-func (mr *MockDBHandlerMockRecorder) ChatbotGets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChatbotGets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotGets", reflect.TypeOf((*MockDBHandler)(nil).ChatbotGets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotGets", reflect.TypeOf((*MockDBHandler)(nil).ChatbotGets), ctx, customerID, size, token, filters)
 }
 
 // ChatbotSetInfo mocks base method.
@@ -183,18 +183,18 @@ func (mr *MockDBHandlerMockRecorder) ChatbotcallGetByTranscribeID(ctx, transcrib
 }
 
 // ChatbotcallGets mocks base method.
-func (m *MockDBHandler) ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbotcall.Chatbotcall, error) {
+func (m *MockDBHandler) ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatbotcallGets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "ChatbotcallGets", ctx, customerID, size, token, filters)
 	ret0, _ := ret[0].([]*chatbotcall.Chatbotcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatbotcallGets indicates an expected call of ChatbotcallGets.
-func (mr *MockDBHandlerMockRecorder) ChatbotcallGets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChatbotcallGets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGets", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallGets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGets", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallGets), ctx, customerID, size, token, filters)
 }
 
 // ChatbotcallSetMessages mocks base method.

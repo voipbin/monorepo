@@ -72,13 +72,14 @@ func (h *chatbotHandler) Get(ctx context.Context, id uuid.UUID) (*chatbot.Chatbo
 }
 
 // Gets returns list of chatbots.
-func (h *chatbotHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error) {
+func (h *chatbotHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Gets",
 		"customer_id": customerID,
+		"filters":     filters,
 	})
 
-	res, err := h.db.ChatbotGets(ctx, customerID, size, token)
+	res, err := h.db.ChatbotGets(ctx, customerID, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get chatbots. err: %v", err)
 		return nil, err

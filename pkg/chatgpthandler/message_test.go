@@ -56,7 +56,7 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			h := NewChatgptHandler("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")
+			h := NewChatgptHandler("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")
 			ctx := context.Background()
 
 			res, err := h.MessageSend(ctx, tt.messages, tt.role, tt.text)

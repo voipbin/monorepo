@@ -457,3 +457,66 @@ func Test_Delete(t *testing.T) {
 		})
 	}
 }
+
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		size       uint64
+		token      string
+		filters    map[string]string
+
+		responseChatbotcalls []*chatbotcall.Chatbotcall
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("1694a6ac-b485-11ee-9900-ff6bfeb9a3cc"),
+			size:       10,
+			token:      "2023-01-03 21:35:02.809",
+			filters: map[string]string{
+				"deleted": "false",
+			},
+
+			responseChatbotcalls: []*chatbotcall.Chatbotcall{
+				{
+					ID: uuid.FromStringOrNil("16f0c4f0-b485-11ee-81fd-6fe39701733c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &chatbotcallHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChatbotcallGets(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseChatbotcalls, nil)
+
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseChatbotcalls) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseChatbotcalls, res)
+			}
+		})
+	}
+}

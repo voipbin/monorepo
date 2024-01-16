@@ -20,7 +20,7 @@ type DBHandler interface {
 	ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error
 	ChatbotDelete(ctx context.Context, id uuid.UUID) error
 	ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
-	ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error)
+	ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbot.Chatbot, error)
 	ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) error
 
 	ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbotcall) error
@@ -28,7 +28,7 @@ type DBHandler interface {
 	ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	ChatbotcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error)
-	ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbotcall.Chatbotcall, error)
+	ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error)
 	ChatbotcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
 	ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error
 	ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) error

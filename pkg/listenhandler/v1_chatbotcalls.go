@@ -31,13 +31,18 @@ func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *rabbitm
 
 	// get customer id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+
+	// get filters
+	filters := getFilters(u)
+
 	log = log.WithFields(logrus.Fields{
 		"customer_id": customerID,
 		"size":        pageSize,
 		"token":       pageToken,
+		"filters":     filters,
 	})
 
-	tmp, err := h.chatbotcallHandler.Gets(ctx, customerID, pageSize, pageToken)
+	tmp, err := h.chatbotcallHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil

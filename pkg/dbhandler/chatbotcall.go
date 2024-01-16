@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	uuid "github.com/gofrs/uuid"
 
@@ -382,21 +383,34 @@ func (h *handler) ChatbotcallDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // ChatbotcallGets returns a list of chatbotcalls.
-func (h *handler) ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbotcall.Chatbotcall, error) {
+func (h *handler) ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error) {
 
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc
-		limit ?
+	q := fmt.Sprintf(`%s
+	where
+		customer_id = ?
+		and tm_create < ?
 	`, chatbotcallSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, size)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatbotcallGets. err: %v", err)
 	}

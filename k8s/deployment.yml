@@ -49,7 +49,7 @@ spec:
             - '-redis_db'
             - '1'
             - '-engine_key_chatgpt'
-            - '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'
+            - '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'
           ports:
             - name: metrics
               protocol: "TCP"

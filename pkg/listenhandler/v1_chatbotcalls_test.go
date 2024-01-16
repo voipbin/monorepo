@@ -23,12 +23,13 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 		expectCustomerID uuid.UUID
 		expectPageSize   uint64
 		expectPageToken  string
+		expectFilters    map[string]string
 		expectRes        *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/chatbotcalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=645e65c8-a773-11ed-b5ae-df76e94347ad",
+				URI:    "/v1/chatbotcalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=645e65c8-a773-11ed-b5ae-df76e94347ad&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
@@ -44,6 +45,9 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 			uuid.FromStringOrNil("645e65c8-a773-11ed-b5ae-df76e94347ad"),
 			10,
 			"2020-05-03 21:35:02.809",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -66,7 +70,7 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 				chatbotcallHandler: mockChatbotcall,
 			}
 
-			mockChatbotcall.EXPECT().Gets(gomock.Any(), tt.expectCustomerID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseChatbotcalls, nil)
+			mockChatbotcall.EXPECT().Gets(gomock.Any(), tt.expectCustomerID, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseChatbotcalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

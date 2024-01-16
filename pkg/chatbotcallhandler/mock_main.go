@@ -112,18 +112,18 @@ func (mr *MockChatbotcallHandlerMockRecorder) GetByTranscribeID(ctx, transcribeI
 }
 
 // Gets mocks base method.
-func (m *MockChatbotcallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbotcall.Chatbotcall, error) {
+func (m *MockChatbotcallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token, filters)
 	ret0, _ := ret[0].([]*chatbotcall.Chatbotcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockChatbotcallHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockChatbotcallHandlerMockRecorder) Gets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatbotcallHandler)(nil).Gets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatbotcallHandler)(nil).Gets), ctx, customerID, size, token, filters)
 }
 
 // ProcessEnd mocks base method.
