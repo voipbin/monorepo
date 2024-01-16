@@ -89,8 +89,13 @@ func (h *serviceHandler) ChatbotGetsByCustomerID(ctx context.Context, a *amagent
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	// filters
+	filters := map[string]string{
+		"deleted": "false", // we don't need deleted items
+	}
+
 	// get chatbots
-	tmps, err := h.reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, a.CustomerID, token, size)
+	tmps, err := h.reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, a.CustomerID, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chatbots info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
