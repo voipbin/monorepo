@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -21,6 +22,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -34,6 +36,9 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 			uuid.FromStringOrNil("ccf7720e-4838-4f97-bb61-3021e14c185a"),
 			"2020-09-20 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -43,7 +48,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 
 			"bin-manager.chatbot-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:    fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			[]cbchatbotcall.Chatbotcall{
@@ -70,7 +75,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1ChatbotcallGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ChatbotV1ChatbotcallGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
