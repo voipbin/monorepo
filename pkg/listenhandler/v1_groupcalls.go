@@ -36,10 +36,7 @@ func (h *listenHandler) processV1GroupcallsGet(ctx context.Context, m *rabbitmqh
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	// get filters
-	filters := map[string]string{}
-	if u.Query().Has("filter_deleted") {
-		filters["deleted"] = u.Query().Get("filter_deleted")
-	}
+	filters := h.getFilters(u)
 
 	tmp, err := h.groupcallHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
 	if err != nil {
