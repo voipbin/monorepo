@@ -15,8 +15,12 @@ import (
 // ChatbotV1ChatbotcallGetsByCustomerID sends a request to chatbot-manager
 // to getting a list of chatbotcall info of the given customer id.
 // it returns detail list of chatbotcall info if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cbchatbotcall.Chatbotcall, error) {
 	uri := fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatbotChatbotcalls, 30000, 0, ContentTypeNone, nil)
 	switch {
