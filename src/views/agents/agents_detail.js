@@ -287,6 +287,10 @@ const AgentsDetail = () => {
   const Delete = () => {
     console.log("Delete info");
 
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
+
     const body = JSON.stringify("");
     const target = "agents/" + ref_id.current.value;
     console.log("Deleting agent info. target: " + target + ", body: " + body);

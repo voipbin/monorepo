@@ -58,10 +58,6 @@ const ExtensionsList = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("extensions", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("extensions"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list
@@ -101,21 +97,6 @@ const ExtensionsList = () => {
     id: false,
   };
 
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('extension')}`)
-    ) {
-      return;
-    }
-
-    const target = "extensions/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted extension.");
-    });
-  }
-
   const navigate = useNavigate();
   const Detail = (row) => {
     const target = "/resources/extensions/extensions_detail/" + row.original.id;
@@ -141,21 +122,8 @@ const ExtensionsList = () => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton
-                onClick={() => {
-                  Detail(row);
-                }
-              }>
+              <IconButton onClick={() => Detail(row)}>
                 <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton
-                color="error"
-                onClick={() =>
-                  handleDeleteRow(row)
-                }>
-                <Delete />
               </IconButton>
             </Tooltip>
           </Box>

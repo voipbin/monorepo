@@ -2,16 +2,10 @@ import React, { useMemo, useState, useEffect } from 'react'
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
-  Stack,
-  TextField,
   Tooltip,
 } from '@mui/material';
-import { Delete, Edit } from '@mui/icons-material';
+import { Edit } from '@mui/icons-material';
 import store from '../../store'
 import {
   MaterialReactTable,
@@ -47,10 +41,6 @@ const AgentsList = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("agents", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("agents"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list
@@ -133,21 +123,6 @@ const AgentsList = () => {
     tm_delete: false,
   };
 
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
-    ) {
-      return;
-    }
-
-    const target = "agents/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted queue.");
-    });
-  }
-
   const navigate = useNavigate();
   const Detail = (row) => {
     const target = "/resources/agents/agents_detail/" + row.original.id;
@@ -165,23 +140,16 @@ const AgentsList = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData ?? []} // data?.data ?? []
-        enableRowNumbers
         state={{
           isLoading: isLoading,
         }}
+        enableRowNumbers
         enableRowActions
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => {
-                Detail(row);
-              }}>
+              <IconButton onClick={() => Detail(row)}>
                 <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
               </IconButton>
             </Tooltip>
           </Box>

@@ -138,21 +138,6 @@ const CampaignsList = () => {
     tm_delete: false,
   };
 
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
-    ) {
-      return;
-    }
-
-    const target = "campaigns/" + row.getValue('id');
-    ProviderDelete(target).then((response) => {
-      console.log("Deleted info.", JSON.stringify(response));
-    });
-  }
-
   const navigate = useNavigate();
   const Detail = (row) => {
     const target = "/resources/campaigns/campaigns_detail/" + row.original.id;
@@ -176,16 +161,8 @@ const CampaignsList = () => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => {
-                  Detail(row);
-                }
-              }>
+              <IconButton onClick={() => Detail(row)}>
                 <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
               </IconButton>
             </Tooltip>
           </Box>

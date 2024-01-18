@@ -7,6 +7,12 @@ import {
   CModalHeader,
   CModalTitle,
 } from '@coreui/react'
+import {
+  Box,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import { Edit } from '@mui/icons-material';
 import store from '../../store'
 import { MaterialReactTable } from 'material-react-table';
 import {
@@ -25,11 +31,11 @@ const Activeflows = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getActiveflows();
+    getList();
     return;
   }, []);
 
-  const getActiveflows = (() => {
+  const getList = (() => {
     const target = "activeflows?page_size=100";
 
     ProviderGet(target).then(result => {
@@ -86,6 +92,16 @@ const Activeflows = () => {
           isLoading: isLoading,
         }}
         enableRowNumbers
+        enableRowActions
+        renderRowActions={({ row, table }) => (
+          <Box sx={{ display: 'flex' }}>
+            <Tooltip arrow placement="left" title="Edit">
+              <IconButton onClick={() => Detail(row)}>
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
         muiTableBodyRowProps={({ row }) => ({
           onDoubleClick: (event) => {
             Detail(row);

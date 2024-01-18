@@ -47,10 +47,6 @@ const TrunksList = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("trunks", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("trunks"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list
@@ -91,21 +87,6 @@ const TrunksList = () => {
     id: false,
   };
 
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
-    ) {
-      return;
-    }
-
-    const target = "trunks/" + row.getValue('id');
-    ProviderDelete(target).then((response) => {
-      console.log("Deleted resource. ", JSON.stringify(response));
-    });
-  }
-
   const navigate = useNavigate();
   const Detail = (row) => {
     const target = "/resources/trunks/trunks_detail/" + row.original.id;
@@ -131,16 +112,8 @@ const TrunksList = () => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => {
-                  Detail(row);
-                }
-              }>
+              <IconButton onClick={() => Detail(row)}>
                 <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
               </IconButton>
             </Tooltip>
           </Box>

@@ -59,7 +59,6 @@ const BuyCreate = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
 
 
@@ -84,8 +83,6 @@ const BuyCreate = () => {
                 </CRow>
 
 
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Call Flow ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -95,7 +92,6 @@ const BuyCreate = () => {
                       id="colFormLabelSm"
                     />
                   </CCol>
-
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Message Flow ID</b></CFormLabel>
                   <CCol>
@@ -107,13 +103,12 @@ const BuyCreate = () => {
                   </CCol>
                 </CRow>
 
+                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };

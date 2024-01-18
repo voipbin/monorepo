@@ -21,17 +21,30 @@ import {
   ParseData,
 } from '../../provider';
 
-const CallsCreate = () => {
-  console.log("CallsCreate");
+const MessagesCreate = () => {
+  console.log("MessagesCreate");
 
   const ref_source = useRef(null);
   const ref_destinations = useRef(null);
-  const ref_actions = useRef(null);
-  const ref_flow_id = useRef(null);
+  const ref_text = useRef(null);
+
+
+  const ref_id = useRef(null);
+  const ref_name = useRef(null);
+  const ref_detail = useRef(null);
+  const ref_routing_method = useRef(null);
+  const ref_service_timeout = useRef(null);
+  const ref_wait_timeout = useRef(null);
+  const ref_service_queuecall_ids = useRef(null);
+  const ref_wait_queuecall_ids = useRef(null);
+  const ref_wait_actions = useRef(null);
+  const ref_tag_ids = useRef(null);
+  const ref_total_abandoned_count = useRef(null);
+  const ref_total_incoming_count = useRef(null);
+  const ref_total_serviced_count = useRef(null);
 
   const routeParams = useParams();
   const Create = () => {
-    const id = routeParams.id;
 
     return (
       <>
@@ -39,7 +52,7 @@ const CallsCreate = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Create</strong> <small>Creating resource</small>
+                <strong>Detail</strong> <small>Detail of the resource</small>
               </CCardHeader>
 
               <CCardBody>
@@ -66,42 +79,29 @@ const CallsCreate = () => {
                       rows={10}
                     />
                   </CCol>
-
                 </CRow>
 
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Flow ID</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_flow_id}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue="00000000-0000-0000-0000-000000000000"
-                    />
-                  </CCol>
-                </CRow>
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Text</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
-                      ref={ref_actions}
+                      ref={ref_text}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={JSON.stringify(JSON.parse('[{"type":"talk", "option":{"text": "hello world", "gender": "female", "language": "en-US"}}]'), null, 2)}
+                      placeholder="Message here"
+                      defaultValue=""
                       rows={10}
                     />
                   </CCol>
                 </CRow>
 
                 <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
-
               </CCardBody>
             </CCard>
           </CCol>
         </CRow>
+
       </>
     )
   };
@@ -112,15 +112,14 @@ const CallsCreate = () => {
     const tmpData = {
       "source": JSON.parse(ref_source.current.value),
       "destinations": JSON.parse(ref_destinations.current.value),
-      "flow_id": ref_flow_id.current.value,
-      "actions": JSON.parse(ref_actions.current.value),
+      "text": ref_text.current.value,
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "calls";
-    console.log("Creating call info. target: " + target + ", body: " + body);
+    const target = "messages";
+    console.log("Creating message info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
-      console.log("Created call info.", JSON.stringify(response));
+      console.log("Created message info.", JSON.stringify(response));
     });
   };
 
@@ -131,4 +130,4 @@ const CallsCreate = () => {
   )
 }
 
-export default CallsCreate
+export default MessagesCreate

@@ -1,12 +1,17 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import {
-  CButton,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-} from '@coreui/react'
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
+  TextField,
+  Tooltip,
+} from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
 import store from '../../store'
 import { MaterialReactTable } from 'material-react-table';
 import {
@@ -24,11 +29,11 @@ const Messages = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getMessages();
+    getList();
     return;
   }, []);
 
-  const getMessages = (() => {
+  const getList = (() => {
     const target = "messages?page_size=100";
 
     ProviderGet(target).then(result => {
@@ -76,51 +81,55 @@ const Messages = () => {
 
   const navigate = useNavigate();
   const Detail = (row) => {
-    const target = "/activity/messages/" + row.original.id;
+    const target = "/resources/messages/messages_detail/" + row.original.id;
     console.log("navigate target: ", target);
     navigate(target);
   }
 
-  const [detailData, setDetailData] = useState({});
-  const [modalState, setModalState] = useState(false);
-  const ModalDetail = () => {
-    const tmp = JSON.stringify(detailData, null, 2)
-    return (
-      <>
-        <CModal scrollable visible={modalState} size="xl" onClose={() => setModalState(false)}>
-          <CModalHeader>
-            <CModalTitle>Call detail</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-
-            <div><pre>{tmp}</pre></div>
-
-          </CModalBody>
-          <CModalFooter>
-            <CButton color="primary" onClick={() => setModalState(false)}>
-              Close
-            </CButton>
-          </CModalFooter>
-        </CModal>
-      </>
-    )
+  const Create = () => {
+    const target = "/resources/messages/messages_create";
+    console.log("navigate target: ", target);
+    navigate(target);
   }
 
   return (
     <>
-      <ModalDetail/>
       <MaterialReactTable
         columns={listColumns}
         data={listData}
-        enableRowNumbers
         state={{
           isLoading: isLoading,
         }}
+        enableRowNumbers
+        enableRowActions
+        renderRowActions={({ row, table }) => (
+          <Box sx={{ display: 'flex' }}>
+            <Tooltip arrow placement="left" title="Edit">
+              <IconButton onClick={() => {
+                Detail(row);
+              }}>
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
         muiTableBodyRowProps={({ row }) => ({
           onDoubleClick: (event) => {
             Detail(row);
           },
         })}
+        renderTopToolbarCustomActions={() => (
+          <Button
+            color="secondary"
+            onClick={() => {
+              Create();
+            }}
+            variant="contained"
+          >
+            Create
+          </Button>
+        )}
+
       />
     </>
   )

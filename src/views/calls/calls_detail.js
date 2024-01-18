@@ -234,7 +234,11 @@ const CallsDetail = () => {
   };
 
   const Delete = () => {
-    console.log("Delete");
+    console.log("Delete info");
+
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
 
     const body = JSON.stringify("");
     const target = "calls/" + ref_id.current.value;

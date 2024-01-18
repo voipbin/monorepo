@@ -59,12 +59,6 @@ const CustomersList = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("customers", tmpData);
     });
-
-
-
-    // const tmp = JSON.parse(localStorage.getItem("customers"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list
@@ -141,21 +135,6 @@ const CustomersList = () => {
     tm_delete: false,
   };
 
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('username')}`)
-    ) {
-      return;
-    }
-
-    const target = "customers/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted customer.");
-    });
-  }
-
   const navigate = useNavigate();
   const Detail = (row) => {
     const target = "/resources/customers/customers_detail/" + row.original.id;
@@ -173,29 +152,16 @@ const CustomersList = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData}
-        enableRowNumbers
-        enableRowActions
         state={{
           isLoading: isLoading,
         }}
+        enableRowNumbers
+        enableRowActions
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton
-                onClick={() => {
-                  Detail(row);
-                }
-              }>
+              <IconButton onClick={() => Detail(row)}>
                 <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton
-                color="error"
-                onClick={() =>
-                  handleDeleteRow(row)
-                }>
-                <Delete />
               </IconButton>
             </Tooltip>
           </Box>
