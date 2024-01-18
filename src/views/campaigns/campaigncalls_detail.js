@@ -35,9 +35,6 @@ const CampaigncallsDetail = () => {
     const detailData = datas[id];
     console.log("detailData", detailData);
 
-    // const storeData = store.getState();
-    // const detailData = storeData["campaigns"][id];
-    // console.log("detailData", detailData);
 
     return (
       <>
@@ -85,6 +82,7 @@ const CampaigncallsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outdial ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -107,6 +105,7 @@ const CampaigncallsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Queue ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -118,6 +117,7 @@ const CampaigncallsDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Flow ID</b></CFormLabel>
@@ -140,6 +140,7 @@ const CampaigncallsDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Reference Type</b></CFormLabel>
@@ -164,9 +165,6 @@ const CampaigncallsDetail = () => {
                 </CRow>
 
 
-
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Status</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -188,8 +186,6 @@ const CampaigncallsDetail = () => {
                     />
                   </CCol>
                 </CRow>
-
-
 
 
                 <CRow>
@@ -263,6 +259,8 @@ const CampaigncallsDetail = () => {
                 </CRow>
 
 
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
               </CCardBody>
             </CCard>
           </CCol>
@@ -270,6 +268,18 @@ const CampaigncallsDetail = () => {
       </>
     )
   };
+
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "campaigncalls/" + ref_id.current.value;
+    console.log("Deleting campaigncall info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
 
 
   return (

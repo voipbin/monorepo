@@ -99,14 +99,12 @@ const OutdialsDetail = () => {
                   </CCol>
                 </CRow>
 
-
-                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
-                <br />
-                <br />
-                <CButton type="submit" onClick={() => ListOutdialtargets()}>Targets</CButton>
-                <br />
-                <br />
-
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Targets</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CButton type="submit" color="info" onClick={() => ListOutdialtargets()}>Outdial target list</CButton>
+                  </CCol>
+                </CRow>
 
 
                 <CRow>
@@ -130,6 +128,12 @@ const OutdialsDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
+
+                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
 
               </CCardBody>
             </CCard>
@@ -164,6 +168,17 @@ const OutdialsDetail = () => {
     console.log("navigate target: ", target);
     navigate(target);
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "outdials/" + ref_id.current.value;
+    console.log("Deleting outdial info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
 
 
   return (

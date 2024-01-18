@@ -195,7 +195,7 @@ const CustomersDetail = () => {
                 </CRow>
 
 
-                <CRow>
+                {/* <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Permission IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
@@ -209,7 +209,7 @@ const CustomersDetail = () => {
                   <CCol className="mb-3 align-items-auto">
                     <CButton type="submit" onClick={() => UpdatePermissionIDs()}>Update Permission IDs</CButton>
                   </CCol>
-                </CRow>
+                </CRow> */}
 
 
 
@@ -236,12 +236,14 @@ const CustomersDetail = () => {
                   </CCol>
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
 
-      <CButton type="submit" onClick={() => UpdateBasic()}>Update</CButton>
+                <br />
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
@@ -263,8 +265,8 @@ const CustomersDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "customers/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
 
@@ -278,8 +280,8 @@ const CustomersDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "customers/" + ref_id.current.value +"/billing_account_id";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
 
@@ -293,11 +295,21 @@ const CustomersDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "customers/" + ref_id.current.value +"/permission_ids";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
 
+  const Delete = () => {
+    console.log("Delete");
+
+    const body = JSON.stringify("");
+    const target = "customers/" + ref_id.current.value;
+    console.log("Deleting customer info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
 
 
   return (

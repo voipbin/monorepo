@@ -32,6 +32,12 @@ const ActiveflowsDetail = () => {
     const tmp = localStorage.getItem("activeflows");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
+
+    var stopDisabled = false;
+    if (detailData["status"] == "ended") {
+      stopDisabled = true;
+    }
+
     return (
       <CRow>
         <CCol xs={12}>
@@ -139,7 +145,9 @@ const ActiveflowsDetail = () => {
               </CRow>
 
               <br />
-              <CButton type="submit" onClick={() => Stop()}>Stop</CButton>
+              <CButton type="submit" disabled={stopDisabled} onClick={() => Stop()}>Stop</CButton>
+              &nbsp;
+              <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
 
             </CCardBody>
           </CCard>
@@ -153,10 +161,21 @@ const ActiveflowsDetail = () => {
     const body = JSON.stringify("");
     const target = "activeflows/" + ref_id.current.value + "/stop";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPost(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "activeflows/" + ref_id.current.value;
+    console.log("Deleting activeflow info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
 
   return (
     <>

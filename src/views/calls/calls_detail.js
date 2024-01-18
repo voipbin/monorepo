@@ -31,6 +31,12 @@ const CallsDetail = () => {
     const tmp = localStorage.getItem("calls");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
+
+    var hangupDisable = false;
+    if (detailData["status"] == "hangup") {
+      hangupDisable = true;
+    }
+
     return (
       <CRow>
         <CCol xs={12}>
@@ -205,9 +211,10 @@ const CallsDetail = () => {
                 </CCol>
               </CRow>
 
-              <br/>
-              <CButton type="submit" onClick={() => Hangup()}>Hangup</CButton>
-
+              <br />
+              <CButton type="submit" disabled={hangupDisable} onClick={() => Hangup()}>Hangup</CButton>
+              &nbsp;
+              <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
             </CCardBody>
           </CCard>
         </CCol>
@@ -220,11 +227,22 @@ const CallsDetail = () => {
 
     const body = JSON.stringify("");
     const target = "calls/" + ref_id.current.value + "/hangup";
-    console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(() => {
-      console.log("Updated info.");
+    console.log("Hangup call info. target: " + target + ", body: " + body);
+    ProviderPost(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete");
+
+    const body = JSON.stringify("");
+    const target = "calls/" + ref_id.current.value;
+    console.log("Deleting call info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
+    });
+  }
 
   return (
     <>

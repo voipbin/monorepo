@@ -34,9 +34,10 @@ const QueuecallsDetail = () => {
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
 
-    // const storeData = store.getState();
-    // const detailData = storeData["queuecalls"][id];
-    // console.log("detailData", detailData);
+    var kickDisabled = false;
+    if (detailData["status"] == "done") {
+      kickDisabled = true;
+    }
 
     return (
       <>
@@ -145,12 +146,14 @@ const QueuecallsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => Kick()}>Kick</CButton>
+                <CButton type="submit" disabled={kickDisabled} onClick={() => Kick()}>Kick</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
@@ -161,10 +164,22 @@ const QueuecallsDetail = () => {
     const body = JSON.stringify("");
     const target = "queuecalls/" + ref_id.current.value + "/kick";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPost(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "queuecalls/" + ref_id.current.value;
+    console.log("Deleting queuecall info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>

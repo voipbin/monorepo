@@ -33,6 +33,11 @@ const GroupcallsDetail = () => {
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
 
+    var hangupDisabled = false;
+    if (detailData["status"] == "hangup") {
+      hangupDisabled = true;
+    }
+
     return (
       <CRow>
         <CCol xs={12}>
@@ -200,8 +205,10 @@ const GroupcallsDetail = () => {
                 </CCol>
               </CRow>
 
-              <br/>
-              <CButton type="submit" onClick={() => Hangup()}>Hangup</CButton>
+              <br />
+              <CButton type="submit" disabled={hangupDisabled} onClick={() => Hangup()}>Hangup</CButton>
+              &nbsp;
+              <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
 
             </CCardBody>
           </CCard>
@@ -216,10 +223,22 @@ const GroupcallsDetail = () => {
     const body = JSON.stringify("");
     const target = "groupcalls/" + ref_id.current.value + "/hangup";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPost(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "groupcalls/" + ref_id.current.value;
+    console.log("Deleting call info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>

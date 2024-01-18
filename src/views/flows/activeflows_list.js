@@ -42,9 +42,6 @@ const Activeflows = () => {
       localStorage.setItem("activeflows", tmpData);
     });
 
-    // const tmp = JSON.parse(localStorage.getItem("activeflows"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   const listColumns = useMemo(

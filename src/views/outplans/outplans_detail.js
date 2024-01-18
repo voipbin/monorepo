@@ -94,6 +94,7 @@ const OutplansDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Source</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -102,10 +103,11 @@ const OutplansDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={JSON.stringify(detailData.source, null, 2)}
-                      rows={5}
+                      rows={7}
                     />
                   </CCol>
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Dial Timeout(ms)</b></CFormLabel>
@@ -129,6 +131,7 @@ const OutplansDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Max Try Count 0</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -150,6 +153,7 @@ const OutplansDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Max Try Count 2</b></CFormLabel>
@@ -173,6 +177,7 @@ const OutplansDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Max Try Count 4</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -185,11 +190,6 @@ const OutplansDetail = () => {
                   </CCol>
 
                 </CRow>
-
-
-                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
-                <br />
-                <br />
 
 
                 <CRow>
@@ -213,6 +213,11 @@ const OutplansDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
+
+                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -245,6 +250,18 @@ const OutplansDetail = () => {
       console.log("Updated info.", JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "outplans/" + ref_id.current.value;
+    console.log("Deleting outplan info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>
