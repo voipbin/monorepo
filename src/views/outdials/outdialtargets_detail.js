@@ -337,6 +337,10 @@ const OutdialsDetail = () => {
   const Delete = () => {
     console.log("Delete info");
 
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
+
     const body = JSON.stringify("");
     const target = "outdials/" + outdial_id + "/targets/" + ref_id.current.value;
     console.log("Deleting outdial target info. target: " + target + ", body: " + body);

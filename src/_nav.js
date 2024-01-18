@@ -29,6 +29,7 @@ import {
   cilRouter,
   cilMap,
   cilChatBubble,
+  cilCommentSquare,
   cilLocomotive,
   cilLoopCircular,
 } from '@coreui/icons'
@@ -207,6 +208,20 @@ const chats = {
   ]
 };
 
+const messages = {
+  component: CNavGroup,
+  name: 'Messages',
+  icon: <CIcon icon={cilCommentSquare} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Messages',
+      to: '/resources/messages/messages_list',
+    },
+  ]
+};
+
+
 const trunks = {
   component: CNavGroup,
   name: 'Trunks',
@@ -324,6 +339,7 @@ const navProjectAdmin = [
   conferences,
   chatbots,
   chats,
+  messages,
   trunks,
   extensions,
   providers,
@@ -356,6 +372,7 @@ const navCustomerAdmin = [
   conferences,
   chatbots,
   chats,
+  messages,
   trunks,
   extensions,
 
@@ -384,6 +401,7 @@ const navCustomerManager = [
   conferences,
   chatbots,
   chats,
+  messages,
   trunks,
   extensions,
 
@@ -408,6 +426,7 @@ const navCustomerAgent = [
   calls,
   conferences,
   chats,
+  messages,
 ]
 
 

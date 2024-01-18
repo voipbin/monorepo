@@ -35,9 +35,10 @@ const MessagesDetail = () => {
   const GetDetail = () => {
     const id = routeParams.id;
 
-    const storeData = store.getState();
-    const detailData = storeData["messages"][id];
-    console.log("detailData", detailData);
+    const tmp = localStorage.getItem("messages");
+    const datas = JSON.parse(tmp);
+    const detailData = datas[id];
+
 
     return (
       <>
@@ -61,6 +62,7 @@ const MessagesDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
@@ -101,8 +103,6 @@ const MessagesDetail = () => {
                 </CRow>
 
 
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Targets</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -118,7 +118,6 @@ const MessagesDetail = () => {
                 </CRow>
 
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Text</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -132,10 +131,6 @@ const MessagesDetail = () => {
                     />
                   </CCol>
                 </CRow>
-
-
-
-
 
 
                 <CRow>
@@ -160,13 +155,32 @@ const MessagesDetail = () => {
                   </CCol>
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
+
+    const body = JSON.stringify("");
+    const target = "messages/" + ref_id.current.value;
+    console.log("Deleting message info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>

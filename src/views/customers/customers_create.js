@@ -125,7 +125,6 @@ const CustomersCreate = () => {
                 </CRow>
 
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Webhook URI</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -135,7 +134,6 @@ const CustomersCreate = () => {
                       id="colFormLabelSm"
                     />
                   </CCol>
-
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Webhook Method</b></CFormLabel>
                   <CCol>
@@ -167,14 +165,12 @@ const CustomersCreate = () => {
                   </CCol>
                 </CRow>
 
+                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
 
-
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };

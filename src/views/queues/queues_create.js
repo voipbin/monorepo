@@ -140,12 +140,12 @@ const QueuesCreate = () => {
                   </CCol>
                 </CRow>
 
+                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+
               </CCardBody>
             </CCard>
           </CCol>
         </CRow>
-
-        <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
       </>
     )
   };

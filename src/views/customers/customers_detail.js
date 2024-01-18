@@ -303,6 +303,10 @@ const CustomersDetail = () => {
   const Delete = () => {
     console.log("Delete");
 
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
+
     const body = JSON.stringify("");
     const target = "customers/" + ref_id.current.value;
     console.log("Deleting customer info. target: " + target + ", body: " + body);

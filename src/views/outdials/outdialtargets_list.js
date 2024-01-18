@@ -88,22 +88,6 @@ const OutdialtargetsList = () => {
     id: false,
   };
 
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
-    ) {
-      return;
-    }
-
-    const target = "outdials/" + outdialID + "/targets/" + row.getValue('id');
-    console.log("Deleting target. target: " + target)
-    ProviderDelete(target).then((response) => {
-      console.log("Deleted resource. ", JSON.stringify(response));
-    });
-  }
-
   const navigate = useNavigate();
   const Detail = (row) => {
     const target = "/resources/outdials/" + outdialID + "/outdialtargets_detail/" + row.original.id;
@@ -129,16 +113,8 @@ const OutdialtargetsList = () => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => {
-                  Detail(row);
-                }
-              }>
+              <IconButton onClick={() => Detail(row)}>
                 <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
               </IconButton>
             </Tooltip>
           </Box>

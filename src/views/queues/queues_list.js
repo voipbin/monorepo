@@ -47,13 +47,7 @@ const QueuesList = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("queues", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("queues"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
-
-
 
   // show list
   const listColumns = useMemo(
@@ -131,22 +125,6 @@ const QueuesList = () => {
     tm_delete: false,
   };
 
-
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
-    ) {
-      return;
-    }
-
-    const target = "queues/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted queue.");
-    });
-  }
-
   const navigate = useNavigate();
   const Detail = (row) => {
     const target = "/resources/queues/queues_detail/" + row.original.id;
@@ -169,16 +147,8 @@ const QueuesList = () => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => {
-                  Detail(row);
-                }
-              }>
+              <IconButton onClick={() => Detail(row)}>
                 <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
               </IconButton>
             </Tooltip>
           </Box>

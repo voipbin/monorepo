@@ -180,6 +180,10 @@ const ChatsDetail = () => {
   const Delete = () => {
     console.log("Delete info");
 
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
+
     const body = JSON.stringify("");
     const target = "chats/" + ref_id.current.value;
     console.log("Deleting chat info. target: " + target + ", body: " + body);

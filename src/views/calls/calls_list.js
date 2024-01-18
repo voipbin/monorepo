@@ -11,6 +11,7 @@ import {
   TextField,
   Tooltip,
 } from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
 import {
   CButton,
   CModal,
@@ -53,10 +54,6 @@ const Calls = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("calls", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("calls"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   const listColumns = useMemo(
@@ -121,6 +118,16 @@ const Calls = () => {
         state={{
           isLoading: isLoading,
         }}
+        enableRowActions
+        renderRowActions={({ row, table }) => (
+          <Box sx={{ display: 'flex' }}>
+            <Tooltip arrow placement="left" title="Edit">
+              <IconButton onClick={() => Detail(row)}>
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
         muiTableBodyRowProps={({ row }) => ({
           onDoubleClick: (event) => {
             Detail(row);

@@ -82,6 +82,7 @@ const ChatsCreate = React.lazy(() => import('./views/chats/chats_create'))
 // messages
 const MessagesList = React.lazy(() => import('./views/messages/messages_list'))
 const MessagesDetail = React.lazy(() => import('./views/messages/messages_detail'))
+const MessagesCreate = React.lazy(() => import('./views/messages/messages_create'))
 
 // trunks
 const TrunksList = React.lazy(() => import('./views/trunks/trunks_list'))
@@ -192,6 +193,10 @@ const routes = [
   { path: '/resources/chats/chats_list', name: 'ChatsList', element: ChatsList },
   { path: '/resources/chats/chats_create', name: 'ChatsCreate', element: ChatsCreate },
   { path: '/resources/chats/chats_detail/:id', name: 'ChatsDetail', element: ChatsDetail },
+
+  { path: '/resources/messages/messages_list', name: 'MessagesList', element: MessagesList },
+  { path: '/resources/messages/messages_create', name: 'MessagesCreate', element: MessagesCreate },
+  { path: '/resources/messages/messages_detail/:id', name: 'MessagesDetail', element: MessagesDetail },
 
   { path: '/resources/trunks/trunks_list', name: 'TrunksList', element: TrunksList },
   { path: '/resources/trunks/trunks_create', name: 'TrunksCreate', element: TrunksCreate },

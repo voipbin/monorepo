@@ -244,6 +244,10 @@ const QueuesDetail = () => {
   const Delete = () => {
     console.log("Delete info");
 
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
+
     const body = JSON.stringify("");
     const target = "queues/" + ref_id.current.value;
     console.log("Deleting queue info. target: " + target + ", body: " + body);

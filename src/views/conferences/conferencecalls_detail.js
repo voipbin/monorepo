@@ -173,6 +173,10 @@ const ConferencecallsDetail = () => {
   const Delete = () => {
     console.log("Delete info");
 
+    if (!confirm(`Are you sure you want to delete?`)) {
+      return;
+    }
+
     const body = JSON.stringify("");
     const target = "conferencecalls/" + ref_id.current.value;
     console.log("Deleting conferencecall info. target: " + target + ", body: " + body);
