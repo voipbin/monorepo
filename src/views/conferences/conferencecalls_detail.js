@@ -39,6 +39,11 @@ const ConferencecallsDetail = () => {
     const detailData = datas[id];
     console.log("detailData", detailData);
 
+    var hangupDisabled = false;
+    if (detailData["status"] == "leaved") {
+      hangupDisabled = true;
+    }
+
     return (
       <>
         <CRow>
@@ -139,14 +144,16 @@ const ConferencecallsDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" onClick={() => Kick()}>Kick</CButton>
+                <CButton type="submit" disabled={hangupDisabled} onClick={() => Kick()}>Kick</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
                 <br />
                 <br />
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
       </>
     )
@@ -162,6 +169,18 @@ const ConferencecallsDetail = () => {
       console.log("Kick info.", JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "conferencecalls/" + ref_id.current.value;
+    console.log("Deleting conferencecall info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>

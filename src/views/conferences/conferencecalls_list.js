@@ -47,10 +47,6 @@ const ConferencecallsList = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("conferencecalls", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("conferencecalls"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list

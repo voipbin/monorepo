@@ -152,9 +152,6 @@ const ProvidersDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
-                <br />
-                <br />
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
@@ -178,10 +175,14 @@ const ProvidersDetail = () => {
                   </CCol>
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
       </>
     )
@@ -206,7 +207,19 @@ const ProvidersDetail = () => {
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
     });
-  };
+  }
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "providers/" + ref_id.current.value;
+    console.log("Deleting provider info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>

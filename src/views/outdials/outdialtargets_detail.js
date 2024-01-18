@@ -100,8 +100,6 @@ const OutdialsDetail = () => {
                 </CRow>
 
 
-
-
                 <CRow>
                   <CFormLabel className="col-sm-2 col-form-label"><b>Outdial ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -138,7 +136,7 @@ const OutdialsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={JSON.stringify(detailData.destination_0, null, 2)}
-                      rows={5}
+                      rows={7}
                       readOnly plainText
                     />
                   </CCol>
@@ -155,6 +153,7 @@ const OutdialsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Destination 1</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -163,7 +162,7 @@ const OutdialsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={JSON.stringify(detailData.destination_1, null, 2)}
-                      rows={5}
+                      rows={7}
                       readOnly plainText
                     />
                   </CCol>
@@ -180,6 +179,7 @@ const OutdialsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Destination 2</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -188,7 +188,7 @@ const OutdialsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={JSON.stringify(detailData.destination_2, null, 2)}
-                      rows={5}
+                      rows={7}
                       readOnly plainText
                     />
                   </CCol>
@@ -203,8 +203,8 @@ const OutdialsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Destination 3</b></CFormLabel>
@@ -214,7 +214,7 @@ const OutdialsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={JSON.stringify(detailData.destination_3, null, 2)}
-                      rows={5}
+                      rows={7}
                       readOnly plainText
                     />
                   </CCol>
@@ -231,6 +231,7 @@ const OutdialsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Destination 4</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -239,7 +240,7 @@ const OutdialsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={JSON.stringify(detailData.destination_4, null, 2)}
-                      rows={5}
+                      rows={7}
                       readOnly plainText
                     />
                   </CCol>
@@ -256,6 +257,7 @@ const OutdialsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Data</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -264,17 +266,11 @@ const OutdialsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={detailData.data}
-                      rows={5}
+                      rows={2}
                       readOnly plainText
                     />
                   </CCol>
                 </CRow>
-
-
-                {/* <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
-                <br />
-                <br /> */}
-
 
 
                 <CRow>
@@ -298,6 +294,9 @@ const OutdialsDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
+
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -334,6 +333,17 @@ const OutdialsDetail = () => {
       console.log("Updated info.", JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "outdials/" + outdial_id + "/targets/" + ref_id.current.value;
+    console.log("Deleting outdial target info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
 
   return (
     <>

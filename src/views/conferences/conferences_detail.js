@@ -227,10 +227,12 @@ const ConferencesDetail = () => {
                   </CCol>
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
       </>
     )
@@ -254,6 +256,17 @@ const ConferencesDetail = () => {
       console.log("Updated info.", response);
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "conferences/" + ref_id.current.value;
+    console.log("Deleting conference info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
 
   return (
     <>

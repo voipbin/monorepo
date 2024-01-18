@@ -112,16 +112,6 @@ const ExtensionsDetail = () => {
                 </CRow>
 
 
-
-
-
-
-                <CButton type="submit" onClick={() => UpdateBasic()}>Update</CButton>
-                <br/>
-                <br/>
-
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -144,6 +134,10 @@ const ExtensionsDetail = () => {
                   </CCol>
                 </CRow>
 
+                <CButton type="submit" onClick={() => UpdateBasic()}>Update</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
               </CCardBody>
             </CCard>
           </CCol>
@@ -164,10 +158,21 @@ const ExtensionsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "extensions/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "extensions/" + ref_id.current.value;
+    console.log("Deleting extension info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
 
   return (
     <>

@@ -152,10 +152,12 @@ const BillingAccountsDetail = () => {
                   </CCol>
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
       </>
     )
@@ -194,6 +196,18 @@ const BillingAccountsDetail = () => {
       console.log("Updated info.", JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "billing_accounts/" + ref_id.current.value;
+    console.log("Deleting billing account info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted billing account. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>

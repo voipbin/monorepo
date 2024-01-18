@@ -130,6 +130,8 @@ const FlowsDetail = () => {
                 </CRow>
 
                 <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -151,10 +153,22 @@ const FlowsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "flows/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "flows/" + ref_id.current.value;
+    console.log("Deleting flow info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>

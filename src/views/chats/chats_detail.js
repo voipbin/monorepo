@@ -63,7 +63,6 @@ const ChatsDetail = () => {
                 </CRow>
 
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -85,8 +84,6 @@ const ChatsDetail = () => {
                     />
                   </CCol>
                 </CRow>
-
-
 
 
                 <CRow>
@@ -114,9 +111,6 @@ const ChatsDetail = () => {
                 </CRow>
 
 
-
-
-
                 <CRow>
                 <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Participant IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -129,12 +123,7 @@ const ChatsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
-
-
                 </CRow>
-
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
@@ -160,11 +149,13 @@ const ChatsDetail = () => {
 
 
                 <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
       </>
     )
@@ -181,10 +172,22 @@ const ChatsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "chats/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(() => {
-      console.log("Updated info.");
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
+
+  const Delete = () => {
+    console.log("Delete info");
+
+    const body = JSON.stringify("");
+    const target = "chats/" + ref_id.current.value;
+    console.log("Deleting chat info. target: " + target + ", body: " + body);
+    ProviderDelete(target, body).then(response => {
+      console.log("Deleted info. response: " + JSON.stringify(response));
+    });
+  }
+
 
   return (
     <>
