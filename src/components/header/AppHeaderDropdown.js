@@ -27,9 +27,8 @@ import avatar8 from './../../assets/images/avatars/8.jpg'
 const AppHeaderDropdown = () => {
   const logout = () => {
     localStorage.setItem('token', "");
+    localStorage.setItem('agent_info', null);
   }
-
-
 
   return (
     <CDropdown variant="nav-item">
