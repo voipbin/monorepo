@@ -29,6 +29,7 @@ import {
   cilRouter,
   cilMap,
   cilChatBubble,
+  cilCommentBubble,
   cilCommentSquare,
   cilLocomotive,
   cilLoopCircular,
@@ -206,13 +207,17 @@ const conversations = {
       name: 'Conversations',
       to: '/resources/conversations/conversations_list',
     },
-  ]
+    {
+      component: CNavItem,
+      name: 'Accounts',
+      to: '/resources/conversations/accounts_list',
+    },  ]
 };
 
 const chats = {
   component: CNavGroup,
   name: 'Chats',
-  icon: <CIcon icon={cilChatBubble} customClassName="nav-icon" />,
+  icon: <CIcon icon={cilCommentBubble} customClassName="nav-icon" />,
   items: [
     {
       component: CNavItem,

@@ -75,6 +75,9 @@ const ChatbotsCreate = React.lazy(() => import('./views/chatbots/chatbots_create
 const Chatbotcalls = React.lazy(() => import('./views/chatbots/chatbotcalls'))
 
 // conversations
+const ConversationaccountsList = React.lazy(() => import('./views/conversations/accounts_list'))
+const ConversationaccountsDetail = React.lazy(() => import('./views/conversations/accounts_detail'))
+const ConversationaccountsCreate = React.lazy(() => import('./views/conversations/accounts_create'))
 const ConversationsList = React.lazy(() => import('./views/conversations/conversations_list'))
 const ConversationsDetail = React.lazy(() => import('./views/conversations/conversations_detail'))
 const ConversationsCreate = React.lazy(() => import('./views/conversations/conversations_create'))
@@ -196,12 +199,15 @@ const routes = [
 
   { path: '/resources/chatbots/chatbotcalls_list', name: 'Chatbotcalls', element: Chatbotcalls },
 
+  { path: '/resources/conversations/accounts_list', name: 'ConversationaccountsList', element: ConversationaccountsList },
+  { path: '/resources/conversations/accounts_create', name: 'ConversationaccountsCreate', element: ConversationaccountsCreate },
+  { path: '/resources/conversations/accounts_detail/:id', name: 'ConversationaccountsDetail', element: ConversationaccountsDetail },
+
   { path: '/resources/conversations/conversations_list', name: 'ConversationsList', element: ConversationsList },
   { path: '/resources/conversations/conversations_create', name: 'ConversationsCreate', element: ConversationsCreate },
   { path: '/resources/conversations/conversations_detail/:id', name: 'ConversationsDetail', element: ConversationsDetail },
 
   { path: '/resources/conversations/:conversation_id/messages_list', name: 'ConversationmessagesList', element: ConversationmessagesList },
-
 
   { path: '/resources/chats/chats_list', name: 'ChatsList', element: ChatsList },
   { path: '/resources/chats/chats_create', name: 'ChatsCreate', element: ChatsCreate },
