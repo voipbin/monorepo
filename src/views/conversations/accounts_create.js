@@ -21,17 +21,14 @@ import {
   ParseData,
 } from '../../provider';
 
-const FlowsCreate = () => {
-  console.log("FlowsCreate");
+const AccountsCreate = () => {
+  console.log("CallsCreate");
 
-  const ref_username = useRef(null);
-  const ref_password = useRef(null);
+  const ref_type = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
-  const ref_billingaccount_id = useRef(null);
-  const ref_webhook_uri = useRef(null);
-  const ref_webhook_method = useRef(null);
-  const ref_actions = useRef(null);
+  const ref_secret = useRef(null);
+  const ref_token = useRef(null);
 
   const routeParams = useParams();
   const Create = () => {
@@ -47,6 +44,23 @@ const FlowsCreate = () => {
               </CCardHeader>
 
               <CCardBody>
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+
+                    <CFormSelect
+                      ref={ref_type}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue="line"
+                      options={[
+                        { label: 'line', value: 'line' },
+                      ]}
+                    />
+                  </CCol>
+                </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
@@ -70,17 +84,28 @@ const FlowsCreate = () => {
 
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Secret</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_actions}
+                    <CFormInput
+                      ref={ref_secret}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue="[]"
-                      rows={20}
                     />
                   </CCol>
                 </CRow>
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Token</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_token}
+                      type="text"
+                      id="colFormLabelSm"
+                    />
+                  </CCol>
+                </CRow>
+
 
                 <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
 
@@ -88,7 +113,6 @@ const FlowsCreate = () => {
             </CCard>
           </CCol>
         </CRow>
-
       </>
     )
   };
@@ -97,16 +121,18 @@ const FlowsCreate = () => {
     console.log("Create info");
 
     const tmpData = {
-      "name": ref_name.current.value,
-      "detail": ref_detail.current.value,
-      "actions": JSON.parse(ref_actions.current.value),
+      "type": JSON.parse(ref_type.current.value),
+      "name": JSON.parse(ref_name.current.value),
+      "detail": JSON.parse(ref_detail.current.value),
+      "secret": JSON.parse(ref_secret.current.value),
+      "token": JSON.parse(ref_token.current.value),
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "flows";
-    console.log("Create info. target: " + target + ", body: " + body);
+    const target = "conversation_accounts";
+    console.log("Creating conversation accounts info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
+      console.log("Created conversation accounts info.", JSON.stringify(response));
     });
   };
 
@@ -117,4 +143,4 @@ const FlowsCreate = () => {
   )
 }
 
-export default FlowsCreate
+export default AccountsCreate

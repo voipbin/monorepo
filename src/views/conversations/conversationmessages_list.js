@@ -75,7 +75,7 @@ const Conversationmessages = () => {
             <CFormInput
               type="text"
               floatingClassName="mb-3"
-              floatingLabel={tmp["source"].target}
+              floatingLabel="me"
               color="success"
               defaultValue={tmp["text"]}
               aria-label="Disabled input example"
