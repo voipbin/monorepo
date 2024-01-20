@@ -35,6 +35,7 @@ import {
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { useEffect } from 'react'
+import { useNavigate } from "react-router-dom";
 
 const dashboard = {
   component: CNavItem,
@@ -195,6 +196,19 @@ const chatbots = {
   ]
 };
 
+const conversations = {
+  component: CNavGroup,
+  name: 'Conversations',
+  icon: <CIcon icon={cilChatBubble} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Conversations',
+      to: '/resources/conversations/conversations_list',
+    },
+  ]
+};
+
 const chats = {
   component: CNavGroup,
   name: 'Chats',
@@ -338,6 +352,7 @@ const navProjectAdmin = [
   billing_accounts,
   conferences,
   chatbots,
+  conversations,
   chats,
   messages,
   trunks,
@@ -370,6 +385,7 @@ const navCustomerAdmin = [
   agents,
   billing_accounts,
   conferences,
+  conversations,
   chatbots,
   chats,
   messages,
@@ -400,6 +416,7 @@ const navCustomerManager = [
   agents,
   conferences,
   chatbots,
+  conversations,
   chats,
   messages,
   trunks,
@@ -425,17 +442,18 @@ const navCustomerAgent = [
   },
   calls,
   conferences,
+  conversations,
   chats,
   messages,
 ]
-
 
 var _nav = [];
 
 const agentInfo = JSON.parse(localStorage.getItem("agent_info"));
 if (agentInfo === null) {
   console.log("The customer has no agent info.");
-  _nav = navCustomerAgent;
+  // _nav = navCustomerAgent;
+  _nav = navProjectAdmin;  // todo: need to be fixed
 } else if (agentInfo["permission"] & 0x0001) {  // project super admin
   console.log("The customer has project admin permission." + 0x0001);
   _nav = navProjectAdmin;

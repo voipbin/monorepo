@@ -65,20 +65,6 @@ import {
 
 const Dashboard = () => {
 
-  const navigate = useNavigate();
-  let authToken = "";
-
-  authToken = localStorage.getItem("token");
-  useEffect(() => {
-    console.log("got token. token: ", authToken);
-
-    if (!authToken) {
-      navigate("/login");
-    }
-  }, []);
-
-
-
   const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
 
   const traffics = [
