@@ -28,8 +28,8 @@ type DBHandler interface {
 	ChatDelete(ctx context.Context, id uuid.UUID) error
 	ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 	ChatGetByTypeAndParticipantsID(ctx context.Context, customerID uuid.UUID, chatType chat.Type, participantIDs []uuid.UUID) (*chat.Chat, error)
-	ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chat.Chat, error)
-	ChatGetsByType(ctx context.Context, customerID uuid.UUID, chatType chat.Type, token string, limit uint64) ([]*chat.Chat, error)
+	ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*chat.Chat, error)
+	ChatGetsByType(ctx context.Context, customerID uuid.UUID, chatType chat.Type, token string, size uint64) ([]*chat.Chat, error)
 	ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) error
 	ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	ChatAddParticipantID(ctx context.Context, id, participantID uuid.UUID) error
@@ -38,10 +38,10 @@ type DBHandler interface {
 	// chatroom
 	ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) error
 	ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error)
-	ChatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error)
-	ChatroomGetsByType(ctx context.Context, customerID uuid.UUID, chatType chatroom.Type, token string, limit uint64) ([]*chatroom.Chatroom, error)
-	ChatroomGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error)
-	ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error)
+	ChatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
+	ChatroomGetsByType(ctx context.Context, customerID uuid.UUID, chatType chatroom.Type, token string, size uint64) ([]*chatroom.Chatroom, error)
+	ChatroomGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, size uint64) ([]*chatroom.Chatroom, error)
+	ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
 	ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	ChatroomDelete(ctx context.Context, id uuid.UUID) error
 	ChatroomAddParticipantID(ctx context.Context, id, participantID uuid.UUID) error
@@ -50,16 +50,16 @@ type DBHandler interface {
 	// messagechat
 	MessagechatCreate(ctx context.Context, m *messagechat.Messagechat) error
 	MessagechatGet(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error)
-	MessagechatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error)
-	MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error)
+	MessagechatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*messagechat.Messagechat, error)
+	MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, size uint64) ([]*messagechat.Messagechat, error)
 	MessagechatDelete(ctx context.Context, id uuid.UUID) error
 
 	// messagechatroom
 	MessagechatroomCreate(ctx context.Context, m *messagechatroom.Messagechatroom) error
 	MessagechatroomGet(ctx context.Context, id uuid.UUID) (*messagechatroom.Messagechatroom, error)
-	MessagechatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*messagechatroom.Messagechatroom, error)
-	MessagechatroomGetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, token string, limit uint64) ([]*messagechatroom.Messagechatroom, error)
-	MessagechatroomGetsByMessagechatID(ctx context.Context, messagechatID uuid.UUID, token string, limit uint64) ([]*messagechatroom.Messagechatroom, error)
+	MessagechatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*messagechatroom.Messagechatroom, error)
+	MessagechatroomGetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, token string, size uint64) ([]*messagechatroom.Messagechatroom, error)
+	MessagechatroomGetsByMessagechatID(ctx context.Context, messagechatID uuid.UUID, token string, size uint64) ([]*messagechatroom.Messagechatroom, error)
 	MessagechatroomDelete(ctx context.Context, id uuid.UUID) error
 }
 

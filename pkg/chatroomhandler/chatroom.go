@@ -27,32 +27,15 @@ func (h *chatroomHandler) Get(ctx context.Context, id uuid.UUID) (*chatroom.Chat
 	return res, nil
 }
 
-// GetsByCustomerID returns the chatrooms by the given customer id.
-func (h *chatroomHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
-	})
-
-	// get
-	res, err := h.db.ChatroomGetsByCustomerID(ctx, customerID, token, limit)
-	if err != nil {
-		log.Errorf("Could not get chatroom info. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // GetsByOwnerID returns the chatrooms by the given owner id.
-func (h *chatroomHandler) GetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error) {
+func (h *chatroomHandler) GetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "GetsByOwnerID",
 		"owner_id": ownerID,
 	})
 
 	// get
-	res, err := h.db.ChatroomGetsByOwnerID(ctx, ownerID, token, limit)
+	res, err := h.db.ChatroomGetsByOwnerID(ctx, ownerID, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chatroom info. err: %v", err)
 		return nil, err
@@ -152,30 +135,6 @@ func (h *chatroomHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 
 	return res, nil
 }
-
-// // UpdateOwnerID updates the chat's owner_id
-// func (h *chatroomHandler) UpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chatroom.Chatroom, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":         "UpdateOwnerID",
-// 		"chat_id":      id,
-// 		"new_owner_id": ownerID,
-// 	})
-
-// 	if errUpdate := h.db.ChatroomUpdateOwnerID(ctx, id, ownerID); errUpdate != nil {
-// 		log.Errorf("Could not update the chat. err: %v", errUpdate)
-// 		return nil, errUpdate
-// 	}
-
-// 	// get
-// 	res, err := h.db.ChatroomGet(ctx, id)
-// 	if err != nil {
-// 		log.Errorf("Could not get updated chat info. err: %v", err)
-// 		return nil, err
-// 	}
-// 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chat.EventTypeChatUpdated, res)
-
-// 	return res, nil
-// }
 
 // AddParticipantID adds the given pariticipant_id to the given chatroom's pariticipant_ids
 func (h *chatroomHandler) AddParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatroom.Chatroom, error) {

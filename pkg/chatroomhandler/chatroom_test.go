@@ -65,63 +65,6 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customerID uuid.UUID
-		token      string
-		limit      uint64
-
-		responseChatroom []*chatroom.Chatroom
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("08dd383d-1ee7-41a3-ba1b-5406ef0680a6"),
-			"2022-04-18 03:22:17.995000",
-			10,
-
-			[]*chatroom.Chatroom{
-				{
-					CustomerID: uuid.FromStringOrNil("08dd383d-1ee7-41a3-ba1b-5406ef0680a6"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &chatroomHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().ChatroomGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(tt.responseChatroom, nil)
-
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.responseChatroom) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseChatroom, res)
-			}
-		})
-	}
-}
-
 func Test_GetsByOwnerID(t *testing.T) {
 
 	tests := []struct {
@@ -129,7 +72,8 @@ func Test_GetsByOwnerID(t *testing.T) {
 
 		ownerID uuid.UUID
 		token   string
-		limit   uint64
+		size    uint64
+		filters map[string]string
 
 		responseChatroom []*chatroom.Chatroom
 	}{
@@ -139,6 +83,9 @@ func Test_GetsByOwnerID(t *testing.T) {
 			uuid.FromStringOrNil("e6ce18b8-3127-11ed-9c3e-ef9980066fd8"),
 			"2022-04-18 03:22:17.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*chatroom.Chatroom{
 				{
@@ -165,9 +112,9 @@ func Test_GetsByOwnerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatroomGetsByOwnerID(ctx, tt.ownerID, tt.token, tt.limit).Return(tt.responseChatroom, nil)
+			mockDB.EXPECT().ChatroomGetsByOwnerID(ctx, tt.ownerID, tt.token, tt.size, tt.filters).Return(tt.responseChatroom, nil)
 
-			res, err := h.GetsByOwnerID(ctx, tt.ownerID, tt.token, tt.limit)
+			res, err := h.GetsByOwnerID(ctx, tt.ownerID, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

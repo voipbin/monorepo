@@ -251,7 +251,7 @@ func (h *handler) ChatGetByTypeAndParticipantsID(ctx context.Context, customerID
 }
 
 // ChatGetsByCustomerID returns list of chats.
-func (h *handler) ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chat.Chat, error) {
+func (h *handler) ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*chat.Chat, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
@@ -265,7 +265,7 @@ func (h *handler) ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID
 		limit ?
 	`, chatSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatGetsByCustomerID. err: %v", err)
 	}
@@ -285,7 +285,7 @@ func (h *handler) ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID
 }
 
 // ChatGetsByType returns list of chats of the given customerID and chatType.
-func (h *handler) ChatGetsByType(ctx context.Context, customerID uuid.UUID, chatType chat.Type, token string, limit uint64) ([]*chat.Chat, error) {
+func (h *handler) ChatGetsByType(ctx context.Context, customerID uuid.UUID, chatType chat.Type, token string, size uint64) ([]*chat.Chat, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
@@ -300,7 +300,7 @@ func (h *handler) ChatGetsByType(ctx context.Context, customerID uuid.UUID, chat
 		limit ?
 	`, chatSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), chatType, token, limit)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), chatType, token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatGetsByType. err: %v", err)
 	}

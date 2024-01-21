@@ -114,7 +114,8 @@ func Test_ChatroomGetsByCustomerID(t *testing.T) {
 		name string
 
 		customerID uuid.UUID
-		limit      uint64
+		size       uint64
+		filters    map[string]string
 
 		chatrooms []*chatroom.Chatroom
 	}{
@@ -122,6 +123,10 @@ func Test_ChatroomGetsByCustomerID(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*chatroom.Chatroom{
 				{
 					ID:         uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
@@ -159,7 +164,75 @@ func Test_ChatroomGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			cs, err := h.ChatroomGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
+			cs, err := h.ChatroomGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.size, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(cs, tt.chatrooms) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.chatrooms, cs)
+			}
+		})
+	}
+}
+
+func Test_ChatroomGetsByOwnerID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		ownerID uuid.UUID
+		size    uint64
+		filters map[string]string
+
+		chatrooms []*chatroom.Chatroom
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("df474d84-b82c-11ee-93f6-d3ff927a1060"),
+			10,
+			map[string]string{
+				"deleted": "false",
+			},
+
+			[]*chatroom.Chatroom{
+				{
+					ID:       uuid.FromStringOrNil("5ba01d6a-b82e-11ee-8699-bfdaee561985"),
+					OwnerID:  uuid.FromStringOrNil("df474d84-b82c-11ee-93f6-d3ff927a1060"),
+					TMCreate: "2020-04-19T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
+				},
+				{
+					ID:       uuid.FromStringOrNil("5bddcc6e-b82e-11ee-933a-5f95f3a20894"),
+					OwnerID:  uuid.FromStringOrNil("df474d84-b82c-11ee-93f6-d3ff927a1060"),
+					TMCreate: "2020-04-18T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			for _, c := range tt.chatrooms {
+				mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
+				if err := h.ChatroomCreate(ctx, c); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			cs, err := h.ChatroomGetsByOwnerID(ctx, tt.ownerID, GetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
