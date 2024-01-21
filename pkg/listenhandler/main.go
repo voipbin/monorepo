@@ -5,7 +5,9 @@ package listenhandler
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -144,7 +146,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// process the received request
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "chat-manager", false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, "chat-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -289,4 +291,23 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
+}
+
+// getFilters parses the query and returns filters
+func getFilters(u *url.URL) map[string]string {
+	res := map[string]string{}
+
+	keys := make([]string, 0, len(u.Query()))
+	for k := range u.Query() {
+		keys = append(keys, k)
+	}
+
+	for _, k := range keys {
+		if strings.HasPrefix(k, "filter_") {
+			tmp, _ := strings.CutPrefix(k, "filter_")
+			res[tmp] = u.Query().Get(k)
+		}
+	}
+
+	return res
 }

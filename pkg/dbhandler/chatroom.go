@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -216,21 +217,35 @@ func (h *handler) ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chat
 }
 
 // ChatroomGetsByCustomerID returns list of chatrooms.
-func (h *handler) ChatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error) {
+func (h *handler) ChatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
+	// // prepare
+	q := fmt.Sprintf(`%s
+	where
+		customer_id = ?
+		and tm_create < ?
 	`, chatroomSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	values := []interface{}{
+		customerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
+
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatroomGetsByCustomerID. err: %v", err)
 	}
@@ -250,21 +265,34 @@ func (h *handler) ChatroomGetsByCustomerID(ctx context.Context, customerID uuid.
 }
 
 // ChatroomGetsByOwnerID returns list of chatrooms.
-func (h *handler) ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error) {
+func (h *handler) ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
 
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and owner_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
+	q := fmt.Sprintf(`%s
+	where
+		owner_id = ?
+		and tm_create < ?
 	`, chatroomSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, ownerID.Bytes(), token, limit)
+	values := []interface{}{
+		ownerID.Bytes(),
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatroomGetsByOwnerID. err: %v", err)
 	}
