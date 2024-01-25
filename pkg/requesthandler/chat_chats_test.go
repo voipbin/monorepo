@@ -157,14 +157,14 @@ func Test_ChatV1ChatGet(t *testing.T) {
 	}
 }
 
-func Test_ChatV1ChatGetsByCustomerID(t *testing.T) {
+func Test_ChatV1ChatGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -175,9 +175,12 @@ func Test_ChatV1ChatGetsByCustomerID(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("c6ebf88c-3698-11ed-a6e1-7f172e23f5ea"),
 			"2020-09-20 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted":     "false",
+				"customer_id": "c6ebf88c-3698-11ed-a6e1-7f172e23f5ea",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -187,7 +190,7 @@ func Test_ChatV1ChatGetsByCustomerID(t *testing.T) {
 
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/chats?page_token=%s&page_size=10&customer_id=c6ebf88c-3698-11ed-a6e1-7f172e23f5ea", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/chats?page_token=%s&page_size=10&filter_deleted=false&filter_customer_id=c6ebf88c-3698-11ed-a6e1-7f172e23f5ea", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -212,7 +215,7 @@ func Test_ChatV1ChatGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatV1ChatGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ChatV1ChatGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
