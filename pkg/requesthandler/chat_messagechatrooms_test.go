@@ -35,7 +35,6 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 			map[string]string{
-				"deleted":     "false",
 				"chatroom_id": "15f4abea-369e-11ed-b888-1f2976c17434",
 			},
 
@@ -47,7 +46,7 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=10&filter_deleted=false&filter_chatroom_id=15f4abea-369e-11ed-b888-1f2976c17434", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=10&filter_chatroom_id=15f4abea-369e-11ed-b888-1f2976c17434", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},

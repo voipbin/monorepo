@@ -605,7 +605,7 @@ type RequestHandler interface {
 		medias []chatmedia.Media,
 	) (*chatmessagechat.Messagechat, error)
 	ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error)
-	// ChatV1MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechat.Messagechat, error)
+	ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechat.Messagechat, error)
 	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 
 	// chatbot-manager chatbot

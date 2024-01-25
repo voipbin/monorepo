@@ -314,8 +314,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 			map[string]string{
-				"deleted": "false",
-				"type":    string(fmflow.TypeFlow),
+				"type": string(fmflow.TypeFlow),
 			},
 
 			&rabbitmqhandler.Response{
@@ -326,7 +325,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57&filter_deleted=false&filter_type=flow", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57&filter_type=flow", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},

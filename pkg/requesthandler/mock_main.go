@@ -2278,6 +2278,21 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatGet(ctx, messagechatI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatGet), ctx, messagechatID)
 }
 
+// ChatV1MessagechatGets mocks base method.
+func (m *MockRequestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]messagechat.Messagechat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatV1MessagechatGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]messagechat.Messagechat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatV1MessagechatGets indicates an expected call of ChatV1MessagechatGets.
+func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatGets", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatGets), ctx, pageToken, pageSize, filters)
+}
+
 // ChatV1MessagechatroomDelete mocks base method.
 func (m *MockRequestHandler) ChatV1MessagechatroomDelete(ctx context.Context, messagechatroomID uuid.UUID) (*messagechatroom.Messagechatroom, error) {
 	m.ctrl.T.Helper()
