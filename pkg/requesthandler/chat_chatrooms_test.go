@@ -95,7 +95,6 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 			map[string]string{
-				"deleted":  "false",
 				"owner_id": "19de5bc8-3696-11ed-b9b7-3f54f6f0297b",
 			},
 
@@ -107,7 +106,7 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=10&filter_deleted=false&filter_owner_id=19de5bc8-3696-11ed-b9b7-3f54f6f0297b", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=10&filter_owner_id=19de5bc8-3696-11ed-b9b7-3f54f6f0297b", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},

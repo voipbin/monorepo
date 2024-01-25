@@ -180,7 +180,6 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 			map[string]string{
-				"deleted": "false",
 				"chat_id": "fdf8ca74-369f-11ed-b48b-b728ad308b30",
 			},
 
@@ -192,7 +191,7 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=10&filter_deleted=false&filter_chat_id=fdf8ca74-369f-11ed-b48b-b728ad308b30", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=10&filter_chat_id=fdf8ca74-369f-11ed-b48b-b728ad308b30", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
