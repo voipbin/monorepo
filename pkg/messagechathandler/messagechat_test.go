@@ -10,6 +10,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
@@ -71,7 +72,7 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetsByChatID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -79,6 +80,7 @@ func Test_GetsByChatID(t *testing.T) {
 		chatroomID uuid.UUID
 		token      string
 		limit      uint64
+		filters    map[string]string
 
 		responseMessagechat []*messagechat.Messagechat
 	}{
@@ -88,6 +90,9 @@ func Test_GetsByChatID(t *testing.T) {
 			uuid.FromStringOrNil("e6358764-32ae-11ed-b8c3-57bb40e5b6e9"),
 			"2022-04-18 03:22:17.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*messagechat.Messagechat{
 				{
@@ -114,9 +119,9 @@ func Test_GetsByChatID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessagechatGetsByChatID(ctx, tt.chatroomID, tt.token, tt.limit).Return(tt.responseMessagechat, nil)
+			mockDB.EXPECT().MessagechatGets(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseMessagechat, nil)
 
-			res, err := h.GetsByChatID(ctx, tt.chatroomID, tt.token, tt.limit)
+			res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -142,6 +147,8 @@ func Test_Create(t *testing.T) {
 
 		responseMessagechat *messagechat.Messagechat
 		responseChatroom    []*chatroom.Chatroom
+
+		expectFilters map[string]string
 	}{
 		{
 			"normal",
@@ -178,6 +185,11 @@ func Test_Create(t *testing.T) {
 					ID: uuid.FromStringOrNil("41b04940-32b8-11ed-9da3-473f30fded15"),
 				},
 			},
+
+			map[string]string{
+				"chat_id": "c40c7bda-32b7-11ed-829e-73051197cfc8",
+				"deleted": "false",
+			},
 		},
 	}
 
@@ -186,6 +198,7 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
@@ -193,6 +206,7 @@ func Test_Create(t *testing.T) {
 			mockMessagechatroom := messagechatroomhandler.NewMockMessagechatroomHandler(mc)
 
 			h := &messagechatHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
@@ -204,13 +218,15 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			// create
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().MessagechatCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessagechatGet(ctx, gomock.Any()).Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatCreated, tt.responseMessagechat)
 
 			convertType := messagechatroom.ConvertType(tt.responseMessagechat.Type)
-			mockChatroom.EXPECT().GetsByChatID(ctx, tt.responseMessagechat.ChatID, gomock.Any(), gomock.Any()).Return(tt.responseChatroom, nil)
+			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatroom, nil)
 			for _, cr := range tt.responseChatroom {
+				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 				mockMessagechatroom.EXPECT().Create(
 					ctx,
 					tt.responseMessagechat.CustomerID,
@@ -276,18 +292,20 @@ func Test_create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &messagechatHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().MessagechatCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessagechatGet(ctx, gomock.Any()).Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatCreated, tt.responseMessagechat)
@@ -366,6 +384,8 @@ func Test_Delete(t *testing.T) {
 
 		responseMessagechat     *messagechat.Messagechat
 		responseMessagechatroom []*messagechatroom.Messagechatroom
+
+		expectFilters map[string]string
 	}{
 		{
 			"normal",
@@ -382,6 +402,11 @@ func Test_Delete(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("11b3578c-32c2-11ed-9759-976f13bc97e9"),
 				},
+			},
+
+			map[string]string{
+				"deleted":        "false",
+				"messagechat_id": "bf722c96-32c1-11ed-b432-3f40e42890ad",
 			},
 		},
 	}
@@ -411,7 +436,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().MessagechatGet(ctx, tt.responseMessagechat.ID).Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatDeleted, tt.responseMessagechat)
 
-			mockMessagechatroom.EXPECT().GetsByMessagechatID(ctx, tt.id, dbhandler.DefaultTimeStamp, gomock.Any()).Return(tt.responseMessagechatroom, nil)
+			mockMessagechatroom.EXPECT().Gets(ctx, dbhandler.DefaultTimeStamp, gomock.Any(), tt.expectFilters).Return(tt.responseMessagechatroom, nil)
 			for _, mc := range tt.responseMessagechatroom {
 				mockMessagechatroom.EXPECT().Delete(ctx, mc.ID).Return(&messagechatroom.Messagechatroom{}, nil)
 			}

@@ -96,34 +96,19 @@ func (mr *MockChatroomHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockChatroomHandler)(nil).Get), ctx, id)
 }
 
-// GetsByChatID mocks base method.
-func (m *MockChatroomHandler) GetsByChatID(ctx context.Context, chatID uuid.UUID, token string, size uint64) ([]*chatroom.Chatroom, error) {
+// Gets mocks base method.
+func (m *MockChatroomHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByChatID", ctx, chatID, token, size)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*chatroom.Chatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByChatID indicates an expected call of GetsByChatID.
-func (mr *MockChatroomHandlerMockRecorder) GetsByChatID(ctx, chatID, token, size interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockChatroomHandlerMockRecorder) Gets(ctx, token, limit, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByChatID", reflect.TypeOf((*MockChatroomHandler)(nil).GetsByChatID), ctx, chatID, token, size)
-}
-
-// GetsByOwnerID mocks base method.
-func (m *MockChatroomHandler) GetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByOwnerID", ctx, ownerID, token, size, filters)
-	ret0, _ := ret[0].([]*chatroom.Chatroom)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByOwnerID indicates an expected call of GetsByOwnerID.
-func (mr *MockChatroomHandlerMockRecorder) GetsByOwnerID(ctx, ownerID, token, size, filters interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByOwnerID", reflect.TypeOf((*MockChatroomHandler)(nil).GetsByOwnerID), ctx, ownerID, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatroomHandler)(nil).Gets), ctx, token, limit, filters)
 }
 
 // RemoveParticipantID mocks base method.

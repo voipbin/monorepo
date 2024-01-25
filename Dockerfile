@@ -1,4 +1,4 @@
-FROM golang:1.20.4-bullseye
+FROM golang:1.20-alpine
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 

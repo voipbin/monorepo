@@ -42,7 +42,8 @@ func Test_v1ChatroomsGet(t *testing.T) {
 			"2020-10-10T03:30:17.000000",
 			10,
 			map[string]string{
-				"deleted": "false",
+				"deleted":  "false",
+				"owner_id": "5cc29ca4-3503-11ed-af37-3388a22eea50",
 			},
 
 			[]*chatroom.Chatroom{
@@ -70,7 +71,8 @@ func Test_v1ChatroomsGet(t *testing.T) {
 			"2020-10-10T03:30:17.000000",
 			10,
 			map[string]string{
-				"deleted": "false",
+				"deleted":  "false",
+				"owner_id": "5d1a8cca-3503-11ed-88db-57e51b7f708f",
 			},
 
 			[]*chatroom.Chatroom{
@@ -101,7 +103,8 @@ func Test_v1ChatroomsGet(t *testing.T) {
 			"2020-10-10T03:30:17.000000",
 			10,
 			map[string]string{
-				"deleted": "false",
+				"deleted":  "false",
+				"owner_id": "5dae1058-3503-11ed-a7d3-df338985d478",
 			},
 
 			[]*chatroom.Chatroom{},
@@ -131,7 +134,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChatroom.EXPECT().GetsByOwnerID(gomock.Any(), tt.ownerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseChatrooms, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

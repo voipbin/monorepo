@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/gofrs/uuid"
 
@@ -96,7 +99,8 @@ func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
 	}
 	defer stmt.Close()
 
-	participantIDs, err := json.Marshal(c.ParticipantIDs)
+	tmpParticipantIDs := sortUUIDs(c.ParticipantIDs)
+	participantIDs, err := json.Marshal(tmpParticipantIDs)
 	if err != nil {
 		return fmt.Errorf("could not marshal actions. ChatCreate. err: %v", err)
 	}
@@ -211,61 +215,57 @@ func (h *handler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 	return res, nil
 }
 
-// ChatGetByTypeAndParticipantsID returns a chat of the given customerID and chatType and participant ids.
-func (h *handler) ChatGetByTypeAndParticipantsID(ctx context.Context, customerID uuid.UUID, chatType chat.Type, participantIDs []uuid.UUID) (*chat.Chat, error) {
+// ChatGets returns list of chats.
+func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chat.Chat, error) {
 
 	// prepare
-	q := fmt.Sprintf(`
-		%s
+	q := fmt.Sprintf(`%s
 		where
-			tm_delete >= ?
-			and customer_id = ?
-			and type = ?
-			and participant_ids = ?
-		order by
-			tm_create desc, id desc
-		limit 1
-	`, chatSelect)
+			tm_create < ?
+		`, chatSelect)
 
-	tmp, err := json.Marshal(participantIDs)
-	if err != nil {
-		return nil, fmt.Errorf("could not marshal actions. ChatGetByTypeAndParticipantsID. err: %v", err)
+	values := []interface{}{
+		token,
 	}
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), chatType, tmp)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatGetByTypeAndParticipantsID. err: %v", err)
+	for k, v := range filters {
+		switch k {
+		case "customer_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "type":
+			q = fmt.Sprintf("%s and type = ?", q)
+			values = append(values, v)
+
+		case "owner_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and owner_id = ?", q)
+			values = append(values, tmp.Bytes())
+
+		case "participant_ids":
+			tmp := h.chatFilterParseParticipantIDs(v)
+			if tmp == "" {
+				// has no participant ids
+				continue
+			}
+			values = append(values, tmp)
+
+			q = fmt.Sprintf("%s and participant_ids = json_array(?)", q)
+		}
 	}
-	defer rows.Close()
 
-	if !rows.Next() {
-		return nil, ErrNotFound
-	}
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
 
-	res, err := h.chatGetFromRow(rows)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ChatGetByTypeAndParticipantsID. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// ChatGetsByCustomerID returns list of chats.
-func (h *handler) ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*chat.Chat, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, chatSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, size)
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatGetsByCustomerID. err: %v", err)
 	}
@@ -284,75 +284,25 @@ func (h *handler) ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID
 	return res, nil
 }
 
-// ChatGetsByType returns list of chats of the given customerID and chatType.
-func (h *handler) ChatGetsByType(ctx context.Context, customerID uuid.UUID, chatType chat.Type, token string, size uint64) ([]*chat.Chat, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and type = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, chatSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), chatType, token, size)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatGetsByType. err: %v", err)
+func (h *handler) chatFilterParseParticipantIDs(participantIDs string) string {
+	if participantIDs == "" {
+		return ""
 	}
-	defer rows.Close()
 
-	var res []*chat.Chat
-	for rows.Next() {
-		u, err := h.chatGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatGetsByType. err: %v", err)
+	ids := strings.Split(participantIDs, ",")
+	sort.Strings(ids)
+
+	res := ""
+	for i, id := range ids {
+		if i == 0 {
+			res = fmt.Sprintf(`"%s"`, id)
+		} else {
+			res = fmt.Sprintf(`%s,"%s"`, res, id)
 		}
-
-		res = append(res, u)
 	}
+	res = fmt.Sprintf(`[%s]`, res)
 
-	return res, nil
-}
-
-// ChatGetsByType returns list of chats of the given customerID and chatType.
-func (h *handler) ChatGetsByTypeAndOnwerID(ctx context.Context, customerID uuid.UUID, chatType chat.Type, ownerID uuid.UUID, token string, limit uint64) ([]*chat.Chat, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and type = ?
-			and owner_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, chatSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), ownerID.Bytes(), chatType, token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatGetsByType. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*chat.Chat
-	for rows.Next() {
-		u, err := h.chatGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatGetsByType. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
+	return res
 }
 
 // ChatUpdateBasicInfo updates the basic information.
@@ -366,7 +316,7 @@ func (h *handler) ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, d
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ChatUpdateBasicInfo. err: %v", err)
 	}
 
@@ -386,7 +336,9 @@ func (h *handler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+	ts := h.utilHandler.TimeGetCurTime()
+
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ChatDelete. err: %v", err)
 	}
 
@@ -406,7 +358,7 @@ func (h *handler) ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID u
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, ownerID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, ownerID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ChatUpdateOwnerID. err: %v", err)
 	}
 
@@ -416,56 +368,26 @@ func (h *handler) ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID u
 	return nil
 }
 
-// ChatAddParticipantID adds the given participant_id to the participant_ids.
-func (h *handler) ChatAddParticipantID(ctx context.Context, id, participantID uuid.UUID) error {
+// ChatUpdateParticipantID updates the given participant_id to the participant_ids.
+func (h *handler) ChatUpdateParticipantID(ctx context.Context, id uuid.UUID, participantIDs []uuid.UUID) error {
 	// prepare
 	q := `
 	update chats set
-		participant_ids = json_array_append(
-			participant_ids,
-			'$',
-			?
-		),
+		participant_ids = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, participantID.String(), GetCurTime(), id.Bytes())
+	tmpParticipantIDs := sortUUIDs(participantIDs)
+	tmp, err := json.Marshal(tmpParticipantIDs)
 	if err != nil {
-		return fmt.Errorf("could not execute. ChatAddParticipantID. err: %v", err)
+		return fmt.Errorf("could not marshal actions. ChatUpdateParticipantID. err: %v", err)
 	}
 
-	// update the cache
-	_ = h.chatUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// ChatRemoveParticipantID removes the given participantID from the participant_ids.
-func (h *handler) ChatRemoveParticipantID(ctx context.Context, id, participantID uuid.UUID) error {
-	// prepare
-	q := `
-	update chats set
-		participant_ids = json_remove(
-			participant_ids, replace(
-				json_search(
-					participant_ids,
-					'one',
-					?
-				),
-				'"',
-				''
-			)
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, participantID.String(), GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ChatRemoveParticipantID. err: %v", err)
+		return fmt.Errorf("could not execute. ChatUpdateParticipantID. err: %v", err)
 	}
 
 	// update the cache

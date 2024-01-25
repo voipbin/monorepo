@@ -96,19 +96,19 @@ func (mr *MockChatHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockChatHandler)(nil).Get), ctx, id)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockChatHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chat.Chat, error) {
+// Gets mocks base method.
+func (m *MockChatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chat.Chat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*chat.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockChatHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockChatHandlerMockRecorder) Gets(ctx, token, limit, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockChatHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatHandler)(nil).Gets), ctx, token, limit, filters)
 }
 
 // RemoveParticipantID mocks base method.

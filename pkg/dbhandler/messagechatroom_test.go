@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
@@ -88,32 +89,58 @@ func Test_MessagechatroomCreate(t *testing.T) {
 	}
 }
 
-func Test_MessagechatroomGetsByCustomerID(t *testing.T) {
+func Test_MessagechatroomGets(t *testing.T) {
 
 	tests := []struct {
 		name string
+		data []*messagechatroom.Messagechatroom
 
 		customerID uuid.UUID
-		limit      uint64
+		size       uint64
+		filters    map[string]string
 
-		messages []*messagechatroom.Messagechatroom
+		expectRes []*messagechatroom.Messagechatroom
 	}{
 		{
 			"normal",
-			uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
-			10,
 			[]*messagechatroom.Messagechatroom{
 				{
-					ID:         uuid.FromStringOrNil("7afc1816-20b9-11ed-9ff2-838e10ae7629"),
-					CustomerID: uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
-					TMCreate:   "2020-04-19T03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					ID:            uuid.FromStringOrNil("7afc1816-20b9-11ed-9ff2-838e10ae7629"),
+					CustomerID:    uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					ChatroomID:    uuid.FromStringOrNil("c84b4484-bad2-11ee-be7f-1bb4bcbab992"),
+					MessagechatID: uuid.FromStringOrNil("c87ad8d4-bad2-11ee-964d-2f7ccf4aa5aa"),
+
+					TMCreate: "2020-04-19T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("7b2f6bd0-20b9-11ed-9c4d-e3fcfa19401a"),
-					CustomerID: uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
-					TMCreate:   "2020-04-18T03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					ID:            uuid.FromStringOrNil("7b2f6bd0-20b9-11ed-9c4d-e3fcfa19401a"),
+					CustomerID:    uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					ChatroomID:    uuid.FromStringOrNil("c84b4484-bad2-11ee-be7f-1bb4bcbab992"),
+					MessagechatID: uuid.FromStringOrNil("c8a3c082-bad2-11ee-bb40-878bc8a951a1"),
+
+					TMCreate: "2020-04-18T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
+				},
+			},
+
+			uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+			10,
+			map[string]string{
+				"deleted":        "false",
+				"chatroom_id":    "c84b4484-bad2-11ee-be7f-1bb4bcbab992",
+				"messagechat_id": "c87ad8d4-bad2-11ee-964d-2f7ccf4aa5aa",
+			},
+
+			[]*messagechatroom.Messagechatroom{
+				{
+					ID:            uuid.FromStringOrNil("7afc1816-20b9-11ed-9ff2-838e10ae7629"),
+					CustomerID:    uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					ChatroomID:    uuid.FromStringOrNil("c84b4484-bad2-11ee-be7f-1bb4bcbab992"),
+					MessagechatID: uuid.FromStringOrNil("c87ad8d4-bad2-11ee-964d-2f7ccf4aa5aa"),
+
+					TMCreate: "2020-04-19T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -132,20 +159,20 @@ func Test_MessagechatroomGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			for _, c := range tt.messages {
+			for _, c := range tt.data {
 				mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 				if err := h.MessagechatroomCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			cs, err := h.MessagechatroomGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
+			cs, err := h.MessagechatroomGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(cs, tt.messages) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.messages, cs)
+			if reflect.DeepEqual(cs, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.data, cs)
 			}
 		})
 	}
@@ -204,7 +231,7 @@ func Test_MessagechatroomGetsByChatroomID(t *testing.T) {
 				}
 			}
 
-			cs, err := h.MessagechatroomGetsByChatroomID(ctx, tt.chatroomID, GetCurTime(), tt.limit)
+			cs, err := h.MessagechatroomGetsByChatroomID(ctx, tt.chatroomID, utilhandler.TimeGetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -241,12 +268,13 @@ func Test_MessagechatroomDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
-
 			ctx := context.Background()
 
 			mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
@@ -254,6 +282,7 @@ func Test_MessagechatroomDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 			if errDel := h.MessagechatroomDelete(ctx, tt.msg.ID); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)

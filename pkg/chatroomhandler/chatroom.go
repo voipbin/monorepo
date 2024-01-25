@@ -27,32 +27,15 @@ func (h *chatroomHandler) Get(ctx context.Context, id uuid.UUID) (*chatroom.Chat
 	return res, nil
 }
 
-// GetsByOwnerID returns the chatrooms by the given owner id.
-func (h *chatroomHandler) GetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
+// Gets returns the chatrooms by the given filters.
+func (h *chatroomHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "GetsByOwnerID",
-		"owner_id": ownerID,
+		"func":    "Gets",
+		"filters": filters,
 	})
 
 	// get
-	res, err := h.db.ChatroomGetsByOwnerID(ctx, ownerID, token, size, filters)
-	if err != nil {
-		log.Errorf("Could not get chatroom info. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// GetsByChatID returns the chatrooms by the given chat id.
-func (h *chatroomHandler) GetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "GetsByChatID",
-		"chat_id": chatID,
-	})
-
-	// get
-	res, err := h.db.ChatroomGetsByChatID(ctx, chatID, token, limit)
+	res, err := h.db.ChatroomGets(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get chatroom info. err: %v", err)
 		return nil, err
@@ -82,7 +65,7 @@ func (h *chatroomHandler) Create(
 	})
 
 	id := uuid.Must(uuid.NewV4())
-	curTime := dbhandler.GetCurTime()
+	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &chatroom.Chatroom{
 		ID:             id,
 		CustomerID:     customerID,

@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
@@ -65,124 +66,6 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetsByOwnerID(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		ownerID uuid.UUID
-		token   string
-		size    uint64
-		filters map[string]string
-
-		responseChatroom []*chatroom.Chatroom
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("e6ce18b8-3127-11ed-9c3e-ef9980066fd8"),
-			"2022-04-18 03:22:17.995000",
-			10,
-			map[string]string{
-				"deleted": "false",
-			},
-
-			[]*chatroom.Chatroom{
-				{
-					CustomerID: uuid.FromStringOrNil("e6ce18b8-3127-11ed-9c3e-ef9980066fd8"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &chatroomHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().ChatroomGetsByOwnerID(ctx, tt.ownerID, tt.token, tt.size, tt.filters).Return(tt.responseChatroom, nil)
-
-			res, err := h.GetsByOwnerID(ctx, tt.ownerID, tt.token, tt.size, tt.filters)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.responseChatroom) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseChatroom, res)
-			}
-		})
-	}
-}
-
-func Test_GetsByChatID(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		chatID uuid.UUID
-		token  string
-		limit  uint64
-
-		responseChatroom []*chatroom.Chatroom
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("13d9f688-3128-11ed-b578-0b7fe8ad38e4"),
-			"2022-04-18 03:22:17.995000",
-			10,
-
-			[]*chatroom.Chatroom{
-				{
-					CustomerID: uuid.FromStringOrNil("13d9f688-3128-11ed-b578-0b7fe8ad38e4"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &chatroomHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().ChatroomGetsByChatID(ctx, tt.chatID, tt.token, tt.limit).Return(tt.responseChatroom, nil)
-
-			res, err := h.GetsByChatID(ctx, tt.chatID, tt.token, tt.limit)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.responseChatroom) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseChatroom, res)
-			}
-		})
-	}
-}
-
 func Test_Create(t *testing.T) {
 
 	tests := []struct {
@@ -223,18 +106,20 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &chatroomHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().ChatroomCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ChatroomGet(ctx, gomock.Any()).Return(tt.responseChatroom, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatroom.CustomerID, chatroom.EventTypeChatroomCreated, tt.responseChatroom)

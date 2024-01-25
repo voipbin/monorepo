@@ -23,6 +23,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		chatroomID uuid.UUID
 		pageToken  string
 		pageSize   uint64
+		filters    map[string]string
 
 		responseMessagechatrooms []*messagechatroom.Messagechatroom
 
@@ -31,7 +32,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		{
 			"gets by chatroom id return 1 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&chatroom_id=d260ac86-3507-11ed-9594-cfe9c21b2ca3",
+				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=d260ac86-3507-11ed-9594-cfe9c21b2ca3&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -39,6 +40,10 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 			uuid.FromStringOrNil("d260ac86-3507-11ed-9594-cfe9c21b2ca3"),
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted":     "false",
+				"chatroom_id": "d260ac86-3507-11ed-9594-cfe9c21b2ca3",
+			},
 
 			[]*messagechatroom.Messagechatroom{
 				{
@@ -55,7 +60,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		{
 			"gets by chatroom id return 2 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&chatroom_id=3b683b7c-3508-11ed-97bb-9be24437edc2",
+				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=3b683b7c-3508-11ed-97bb-9be24437edc2&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -63,6 +68,10 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 			uuid.FromStringOrNil("3b683b7c-3508-11ed-97bb-9be24437edc2"),
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted":     "false",
+				"chatroom_id": "3b683b7c-3508-11ed-97bb-9be24437edc2",
+			},
 
 			[]*messagechatroom.Messagechatroom{
 				{
@@ -82,7 +91,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		{
 			"gets by chat id return 0 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&chatroom_id=4829801e-3503-11ed-aecf-4f1b13ce1b9f",
+				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=4829801e-3503-11ed-aecf-4f1b13ce1b9f&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -90,6 +99,10 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 			uuid.FromStringOrNil("4829801e-3503-11ed-aecf-4f1b13ce1b9f"),
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted":     "false",
+				"chatroom_id": "4829801e-3503-11ed-aecf-4f1b13ce1b9f",
+			},
 
 			[]*messagechatroom.Messagechatroom{},
 
@@ -122,7 +135,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 				messagechatroomHandler: mockMessagechatroom,
 			}
 
-			mockMessagechatroom.EXPECT().GetsByChatroomID(gomock.Any(), tt.chatroomID, tt.pageToken, tt.pageSize).Return(tt.responseMessagechatrooms, nil)
+			mockMessagechatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseMessagechatrooms, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

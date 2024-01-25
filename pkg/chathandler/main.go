@@ -4,11 +4,11 @@ package chathandler
 
 import (
 	"context"
-	"sort"
 
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
@@ -17,6 +17,7 @@ import (
 
 // chatHandler defines
 type chatHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -27,7 +28,7 @@ type chatHandler struct {
 // ChatHandler defines
 type ChatHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chat.Chat, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chat.Chat, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -54,6 +55,7 @@ func NewChatHandler(
 ) ChatHandler {
 
 	return &chatHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
@@ -62,10 +64,10 @@ func NewChatHandler(
 	}
 }
 
-// sortParticipantIDs sort the given participant ids
-func sortParticipantIDs(participantIDs []uuid.UUID) {
-	// sort the participants
-	sort.Slice(participantIDs, func(i, j int) bool {
-		return participantIDs[i].String() < participantIDs[j].String()
-	})
-}
+// // sortParticipantIDs sort the given participant ids
+// func sortParticipantIDs(participantIDs []uuid.UUID) {
+// 	// sort the participants
+// 	sort.Slice(participantIDs, func(i, j int) bool {
+// 		return participantIDs[i].String() < participantIDs[j].String()
+// 	})
+// }

@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
@@ -72,18 +73,21 @@ func Test_GetsByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		token      string
-		limit      uint64
+		token   string
+		limit   uint64
+		filters map[string]string
 
 		responseChat []*chat.Chat
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 			"2022-04-18 03:22:17.995000",
 			10,
+			map[string]string{
+				"customer_id": "809656e2-305e-43cd-8d7b-ccb44373dddb",
+				"deleted":     "false",
+			},
 
 			[]*chat.Chat{
 				{
@@ -107,12 +111,11 @@ func Test_GetsByCustomerID(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ChatGets(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseChat, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -162,18 +165,20 @@ func Test_create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &chatHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, gomock.Any()).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatCreated, tt.responseChat)
@@ -311,6 +316,8 @@ func Test_addParticipantID(t *testing.T) {
 		participantID uuid.UUID
 
 		responseChat *chat.Chat
+
+		expectParticipantIDs []uuid.UUID
 	}{
 		{
 			"normal",
@@ -320,6 +327,18 @@ func Test_addParticipantID(t *testing.T) {
 
 			&chat.Chat{
 				ID: uuid.FromStringOrNil("02d7e497-8825-4f80-934e-cb01d93270e9"),
+				ParticipantIDs: []uuid.UUID{
+					uuid.FromStringOrNil("e4391882-b957-11ee-aaa9-bb3cdf1e2651"),
+					uuid.FromStringOrNil("e4610d9c-b957-11ee-91f3-07311eda30a4"),
+					uuid.FromStringOrNil("e494310e-b957-11ee-ac35-876aad11c488"),
+				},
+			},
+
+			[]uuid.UUID{
+				uuid.FromStringOrNil("e4391882-b957-11ee-aaa9-bb3cdf1e2651"),
+				uuid.FromStringOrNil("e4610d9c-b957-11ee-91f3-07311eda30a4"),
+				uuid.FromStringOrNil("e494310e-b957-11ee-ac35-876aad11c488"),
+				uuid.FromStringOrNil("2cd8e3b8-200c-4ab3-a9d2-b14788d3e41d"),
 			},
 		},
 	}
@@ -338,10 +357,10 @@ func Test_addParticipantID(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatAddParticipantID(ctx, tt.id, tt.participantID).Return(nil)
+			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ChatUpdateParticipantID(ctx, tt.id, tt.expectParticipantIDs).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
@@ -366,6 +385,8 @@ func Test_removeParticipantID(t *testing.T) {
 		participantID uuid.UUID
 
 		responseChat *chat.Chat
+
+		expectParticipantID []uuid.UUID
 	}{
 		{
 			"normal",
@@ -375,6 +396,14 @@ func Test_removeParticipantID(t *testing.T) {
 
 			&chat.Chat{
 				ID: uuid.FromStringOrNil("61a94935-5fd4-4091-ab23-49ebc69b9d66"),
+				ParticipantIDs: []uuid.UUID{
+					uuid.FromStringOrNil("3bbc8f4a-b957-11ee-b921-8f4469c59011"),
+					uuid.FromStringOrNil("5f16f38b-5d9d-40af-94c2-2bd50d939c28"),
+				},
+			},
+
+			[]uuid.UUID{
+				uuid.FromStringOrNil("3bbc8f4a-b957-11ee-b921-8f4469c59011"),
 			},
 		},
 	}
@@ -396,7 +425,8 @@ func Test_removeParticipantID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatRemoveParticipantID(ctx, tt.id, tt.participantID).Return(nil)
+			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ChatUpdateParticipantID(ctx, tt.id, tt.expectParticipantID).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
@@ -475,6 +505,9 @@ func Test_AddParticipantID(t *testing.T) {
 
 		responseChat      *chat.Chat
 		responseChatrooms []*chatroom.Chatroom
+
+		expectFilters        map[string]string
+		expectParticipantIDs []uuid.UUID
 	}{
 		{
 			"normal",
@@ -486,7 +519,6 @@ func Test_AddParticipantID(t *testing.T) {
 				ID: uuid.FromStringOrNil("2442834a-312e-11ed-8306-87672e5154fb"),
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("612a6f48-312e-11ed-ac1d-ab725d46bc95"),
-					uuid.FromStringOrNil("253abd3a-312e-11ed-9393-0ff58ef4c53f"),
 				},
 			},
 			[]*chatroom.Chatroom{
@@ -497,6 +529,15 @@ func Test_AddParticipantID(t *testing.T) {
 					ID: uuid.FromStringOrNil("0343ca40-312f-11ed-8b56-971508921afc"),
 				},
 			},
+
+			map[string]string{
+				"deleted": "false",
+				"chat_id": "2442834a-312e-11ed-8306-87672e5154fb",
+			},
+			[]uuid.UUID{
+				uuid.FromStringOrNil("612a6f48-312e-11ed-ac1d-ab725d46bc95"),
+				uuid.FromStringOrNil("253abd3a-312e-11ed-9393-0ff58ef4c53f"),
+			},
 		},
 	}
 
@@ -505,27 +546,29 @@ func Test_AddParticipantID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &chatHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 
 				chatroomHandler: mockChatroom,
 			}
-
 			ctx := context.Background()
 
 			// addParticipantID
-			mockDB.EXPECT().ChatAddParticipantID(ctx, tt.id, tt.participantID).Return(nil)
+			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ChatUpdateParticipantID(ctx, tt.id, tt.expectParticipantIDs).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			mockChatroom.EXPECT().GetsByChatID(ctx, tt.id, gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatrooms, nil)
 			for _, cr := range tt.responseChatrooms {
 				mockChatroom.EXPECT().AddParticipantID(ctx, cr.ID, tt.participantID).Return(&chatroom.Chatroom{}, nil)
 			}
@@ -541,6 +584,7 @@ func Test_AddParticipantID(t *testing.T) {
 				tt.responseChat.Detail,
 			).Return(&chatroom.Chatroom{}, nil)
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			res, err := h.AddParticipantID(ctx, tt.id, tt.participantID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -563,6 +607,9 @@ func Test_RemoveParticipantID(t *testing.T) {
 
 		responseChat      *chat.Chat
 		responseChatrooms []*chatroom.Chatroom
+
+		expectFilters        map[string]string
+		expectParticipantIDs []uuid.UUID
 	}{
 		{
 			"normal",
@@ -586,6 +633,14 @@ func Test_RemoveParticipantID(t *testing.T) {
 					ID: uuid.FromStringOrNil("336e3386-3134-11ed-b1df-e38814f71100"),
 				},
 			},
+
+			map[string]string{
+				"deleted": "false",
+				"chat_id": "25d04f5c-3134-11ed-ac20-6f4780413d87",
+			},
+			[]uuid.UUID{
+				uuid.FromStringOrNil("2622af18-3134-11ed-9fde-a709c229f85c"),
+			},
 		},
 	}
 
@@ -594,12 +649,14 @@ func Test_RemoveParticipantID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &chatHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
@@ -610,11 +667,12 @@ func Test_RemoveParticipantID(t *testing.T) {
 			ctx := context.Background()
 
 			// removeParticipantID
-			mockDB.EXPECT().ChatRemoveParticipantID(ctx, tt.id, tt.participantID).Return(nil)
+			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ChatUpdateParticipantID(ctx, tt.id, tt.expectParticipantIDs).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			mockChatroom.EXPECT().GetsByChatID(ctx, tt.id, gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatrooms, nil)
 			chatroomID := uuid.Nil
 			for _, cr := range tt.responseChatrooms {
 				if cr.OwnerID == tt.participantID {
@@ -623,6 +681,7 @@ func Test_RemoveParticipantID(t *testing.T) {
 				mockChatroom.EXPECT().RemoveParticipantID(ctx, cr.ID, tt.participantID).Return(&chatroom.Chatroom{}, nil)
 			}
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockChatroom.EXPECT().Delete(ctx, chatroomID).Return(&chatroom.Chatroom{}, nil)
 
 			res, err := h.RemoveParticipantID(ctx, tt.id, tt.participantID)

@@ -87,9 +87,9 @@ func Test_v1ChatsGet(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		responseChats []*chat.Chat
 
@@ -98,14 +98,18 @@ func Test_v1ChatsGet(t *testing.T) {
 		{
 			"gets by customer id return 1 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=0c21c67c-31dd-11ed-9f27-cb7cefee3726",
+				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=0c21c67c-31dd-11ed-9f27-cb7cefee3726&filter_deleted=false&filter_participant_ids=1cc7bc1a-b95a-11ee-9129-5771eb8762a7,1cf5a562-b95a-11ee-ac01-7b660d7215d6",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("0c21c67c-31dd-11ed-9f27-cb7cefee3726"),
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted":         "false",
+				"customer_id":     "0c21c67c-31dd-11ed-9f27-cb7cefee3726",
+				"participant_ids": "1cc7bc1a-b95a-11ee-9129-5771eb8762a7,1cf5a562-b95a-11ee-ac01-7b660d7215d6",
+			},
 
 			[]*chat.Chat{
 				{
@@ -122,14 +126,17 @@ func Test_v1ChatsGet(t *testing.T) {
 		{
 			"gets by customer id return 2 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=472ad5d2-31de-11ed-8f3b-7fbd0e2b1f81",
+				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=472ad5d2-31de-11ed-8f3b-7fbd0e2b1f81&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("472ad5d2-31de-11ed-8f3b-7fbd0e2b1f81"),
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted":     "false",
+				"customer_id": "472ad5d2-31de-11ed-8f3b-7fbd0e2b1f81",
+			},
 
 			[]*chat.Chat{
 				{
@@ -149,14 +156,17 @@ func Test_v1ChatsGet(t *testing.T) {
 		{
 			"gets by customer id return 0 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=77a3e140-31de-11ed-b4d0-3323833e9231",
+				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=77a3e140-31de-11ed-b4d0-3323833e9231&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("77a3e140-31de-11ed-b4d0-3323833e9231"),
 			"2020-10-10T03:30:17.000000",
 			10,
+			map[string]string{
+				"deleted":     "false",
+				"customer_id": "77a3e140-31de-11ed-b4d0-3323833e9231",
+			},
 
 			[]*chat.Chat{},
 
@@ -185,7 +195,7 @@ func Test_v1ChatsGet(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseChats, nil)
+			mockChat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseChats, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

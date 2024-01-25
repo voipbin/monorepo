@@ -6,10 +6,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
+	"sort"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
@@ -20,28 +20,19 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	// common
-	GetCurTime() string
-
 	// chat
 	ChatCreate(ctx context.Context, c *chat.Chat) error
 	ChatDelete(ctx context.Context, id uuid.UUID) error
 	ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
-	ChatGetByTypeAndParticipantsID(ctx context.Context, customerID uuid.UUID, chatType chat.Type, participantIDs []uuid.UUID) (*chat.Chat, error)
-	ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*chat.Chat, error)
-	ChatGetsByType(ctx context.Context, customerID uuid.UUID, chatType chat.Type, token string, size uint64) ([]*chat.Chat, error)
+	ChatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chat.Chat, error)
 	ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) error
 	ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
-	ChatAddParticipantID(ctx context.Context, id, participantID uuid.UUID) error
-	ChatRemoveParticipantID(ctx context.Context, id, participantID uuid.UUID) error
+	ChatUpdateParticipantID(ctx context.Context, id uuid.UUID, participantIDs []uuid.UUID) error
 
 	// chatroom
 	ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) error
 	ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error)
-	ChatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
-	ChatroomGetsByType(ctx context.Context, customerID uuid.UUID, chatType chatroom.Type, token string, size uint64) ([]*chatroom.Chatroom, error)
-	ChatroomGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, size uint64) ([]*chatroom.Chatroom, error)
-	ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
+	ChatroomGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
 	ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	ChatroomDelete(ctx context.Context, id uuid.UUID) error
 	ChatroomAddParticipantID(ctx context.Context, id, participantID uuid.UUID) error
@@ -50,23 +41,21 @@ type DBHandler interface {
 	// messagechat
 	MessagechatCreate(ctx context.Context, m *messagechat.Messagechat) error
 	MessagechatGet(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error)
-	MessagechatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*messagechat.Messagechat, error)
-	MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, size uint64) ([]*messagechat.Messagechat, error)
+	MessagechatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechat.Messagechat, error)
 	MessagechatDelete(ctx context.Context, id uuid.UUID) error
 
 	// messagechatroom
 	MessagechatroomCreate(ctx context.Context, m *messagechatroom.Messagechatroom) error
 	MessagechatroomGet(ctx context.Context, id uuid.UUID) (*messagechatroom.Messagechatroom, error)
-	MessagechatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64) ([]*messagechatroom.Messagechatroom, error)
-	MessagechatroomGetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, token string, size uint64) ([]*messagechatroom.Messagechatroom, error)
-	MessagechatroomGetsByMessagechatID(ctx context.Context, messagechatID uuid.UUID, token string, size uint64) ([]*messagechatroom.Messagechatroom, error)
+	MessagechatroomGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechatroom.Messagechatroom, error)
 	MessagechatroomDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler
 type handler struct {
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // handler errors
@@ -82,20 +71,22 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		db:    db,
-		cache: cache,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
 	}
 	return h
 }
 
-func (h *handler) GetCurTime() string {
-	return GetCurTime()
-}
+// sortUUIDs sort the given participant ids
+func sortUUIDs(uuids []uuid.UUID) []uuid.UUID {
 
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
+	res := make([]uuid.UUID, len(uuids))
+	copy(res, uuids)
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].String() < res[j].String()
+	})
 
 	return res
 }

@@ -118,9 +118,12 @@ func NewListenHandler(
 }
 
 func (h *listenHandler) Run(queue, exchangeDelay string) error {
-	logrus.WithFields(logrus.Fields{
-		"queue": queue,
-	}).Info("Creating rabbitmq queue for listen.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Run",
+		"queue":         queue,
+		"exchage_delay": exchangeDelay,
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
 	if err := h.rabbitSock.QueueDeclare(queue, true, false, false, false); err != nil {
@@ -129,7 +132,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// Set QoS
 	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
-		logrus.Errorf("Could not set the queue's qos. err: %v", err)
+		log.Errorf("Could not set the queue's qos. err: %v", err)
 		return err
 	}
 
@@ -148,7 +151,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		for {
 			err := h.rabbitSock.ConsumeRPCOpt(queue, "chat-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()
@@ -164,13 +167,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	ctx := context.Background()
 
-	logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
+	logrus.WithFields(logrus.Fields{
+		"uri":       m.URI,
+		"method":    m.Method,
+		"data_type": m.DataType,
+		"data":      m.Data,
+	}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -260,11 +262,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.v1MessagechatroomsIDDelete(ctx, m)
 
 	default:
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		logrus.WithFields(logrus.Fields{
+			"uri":    m.URI,
+			"method": m.Method,
+		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -274,21 +275,19 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// default error handler
 	if err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-				"error":  err,
-			}).Errorf("Could not process the request correctly. data: %s", m.Data)
+		logrus.WithFields(logrus.Fields{
+			"uri":    m.URI,
+			"method": m.Method,
+			"error":  err,
+		}).Errorf("Could not process the request correctly. data: %s", m.Data)
 		response = simpleResponse(400)
 		err = nil
 	}
 
-	logrus.WithFields(
-		logrus.Fields{
-			"response": response,
-			"err":      err,
-		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
+	logrus.WithFields(logrus.Fields{
+		"response": response,
+		"err":      err,
+	}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }
