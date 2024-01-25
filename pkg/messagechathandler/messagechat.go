@@ -30,15 +30,17 @@ func (h *messagechatHandler) Get(ctx context.Context, id uuid.UUID) (*messagecha
 	return res, nil
 }
 
-// GetsByChatID returns the chats by the given chatroom id.
-func (h *messagechatHandler) GetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error) {
+// Gets returns the chats by the given chatroom id.
+func (h *messagechatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*messagechat.Messagechat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByChatID",
-		"customer_id": chatID,
+		"func":    "Gets",
+		"token":   token,
+		"limit":   limit,
+		"filters": filters,
 	})
 
 	// get
-	res, err := h.db.MessagechatGetsByChatID(ctx, chatID, token, limit)
+	res, err := h.db.MessagechatGets(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get messagechat info. err: %v", err)
 		return nil, err
@@ -82,8 +84,12 @@ func (h *messagechatHandler) Create(
 	log.WithField("messagechat", res).Debugf("Created a new messagechat. messagechat_id: %s", res.ID)
 
 	// get chatrooms
-	curTime := dbhandler.GetCurTime()
-	chatrooms, err := h.chatroomHandler.GetsByChatID(ctx, res.ChatID, curTime, 100000)
+	filters := map[string]string{
+		"chat_id": res.ChatID.String(),
+		"deleted": "false",
+	}
+	curTime := h.utilHandler.TimeGetCurTime()
+	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, filters)
 	if err != nil {
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
@@ -129,7 +135,7 @@ func (h *messagechatHandler) create(
 	})
 
 	id := uuid.Must(uuid.NewV4())
-	curTime := dbhandler.GetCurTime()
+	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &messagechat.Messagechat{
 		ID:         id,
 		CustomerID: customerID,
@@ -173,7 +179,11 @@ func (h *messagechatHandler) Delete(ctx context.Context, id uuid.UUID) (*message
 	}
 
 	// get messagechatrooms
-	messagechatrooms, err := h.messagechatroomHandler.GetsByMessagechatID(ctx, id, dbhandler.DefaultTimeStamp, 100000)
+	filters := map[string]string{
+		"deleted":        "false",
+		"messagechat_id": id.String(),
+	}
+	messagechatrooms, err := h.messagechatroomHandler.Gets(ctx, dbhandler.DefaultTimeStamp, 100000, filters)
 	if err != nil {
 		log.Errorf("Could not get messagechatrooms. err: %v", err)
 		return nil, err

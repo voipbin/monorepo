@@ -216,76 +216,46 @@ func (h *handler) ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chat
 	return res, nil
 }
 
-// ChatroomGetsByCustomerID returns list of chatrooms.
-func (h *handler) ChatroomGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
-
-	// // prepare
-	q := fmt.Sprintf(`%s
-	where
-		customer_id = ?
-		and tm_create < ?
-	`, chatroomSelect)
-
-	values := []interface{}{
-		customerID.Bytes(),
-		token,
-	}
-
-	for k, v := range filters {
-		switch k {
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
-
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatroomGetsByCustomerID. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*chatroom.Chatroom
-	for rows.Next() {
-		u, err := h.chatroomGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatroomGetsByCustomerID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// ChatroomGetsByOwnerID returns list of chatrooms.
-func (h *handler) ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
+// ChatroomGets returns list of chatrooms.
+func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		owner_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, chatroomSelect)
 
 	values := []interface{}{
-		ownerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		case "type":
+			q = fmt.Sprintf("%s and type = ?", q)
+			values = append(values, v)
+
+		case "owner_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and owner_id = ?", q)
+			values = append(values, tmp.Bytes())
+
+		case "chat_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and chat_id = ?", q)
+			values = append(values, tmp.Bytes())
+
 		}
 	}
 
@@ -294,7 +264,7 @@ func (h *handler) ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, 
 
 	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatroomGetsByOwnerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ChatroomGets. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -302,76 +272,7 @@ func (h *handler) ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, 
 	for rows.Next() {
 		u, err := h.chatroomGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatroomGetsByOwnerID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// ChatroomGetsByType returns list of chatrooms of the given customerID and chatType.
-func (h *handler) ChatroomGetsByType(ctx context.Context, customerID uuid.UUID, chatType chatroom.Type, token string, limit uint64) ([]*chatroom.Chatroom, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and type = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, chatroomSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), chatType, token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatroomGetsByType. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*chatroom.Chatroom
-	for rows.Next() {
-		u, err := h.chatroomGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatroomGetsByType. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// ChatroomGetsByChatID returns list of chatrooms of the given chat_id.
-func (h *handler) ChatroomGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*chatroom.Chatroom, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and chat_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, chatroomSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, chatID.Bytes(), token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatroomGetsByChatID. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*chatroom.Chatroom
-	for rows.Next() {
-		u, err := h.chatroomGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatroomGetsByChatID. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. ChatroomGets. err: %v", err)
 		}
 
 		res = append(res, u)
@@ -391,7 +292,7 @@ func (h *handler) ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ChatroomUpdateBasicInfo. err: %v", err)
 	}
 
@@ -411,7 +312,9 @@ func (h *handler) ChatroomDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+	ts := h.utilHandler.TimeGetCurTime()
+
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ChatroomDelete. err: %v", err)
 	}
 
@@ -436,7 +339,7 @@ func (h *handler) ChatroomAddParticipantID(ctx context.Context, id, participantI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, participantID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, participantID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatroomAddParticipantID. err: %v", err)
 	}
@@ -468,7 +371,7 @@ func (h *handler) ChatroomRemoveParticipantID(ctx context.Context, id, participa
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, participantID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, participantID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatroomRemoveParticipantID. err: %v", err)
 	}

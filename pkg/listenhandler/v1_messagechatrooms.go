@@ -10,17 +10,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 )
 
 // v1MessagechatroomsGet handles /v1/messagechatrooms GET request
 func (h *listenHandler) v1MessagechatroomsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1MessagechatroomsGet",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1MessagechatroomsGet",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
@@ -36,9 +32,13 @@ func (h *listenHandler) v1MessagechatroomsGet(ctx context.Context, m *rabbitmqha
 	// get owner_id
 	chatroomID := uuid.FromStringOrNil(u.Query().Get("chatroom_id"))
 
-	var tmp []*messagechatroom.Messagechatroom
+	filters := getFilters(u)
+	if filters["chatroom_id"] == "" {
+		filters["chatroom_id"] = chatroomID.String()
+	}
+
 	// gets by owner id
-	tmp, err = h.messagechatroomHandler.GetsByChatroomID(ctx, chatroomID, pageToken, pageSize)
+	tmp, err := h.messagechatroomHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get messagechatrooms by GetsByChatroomID. err: %v", err)
 		return nil, err

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -226,24 +227,50 @@ func (h *handler) MessagechatGet(ctx context.Context, id uuid.UUID) (*messagecha
 	return res, nil
 }
 
-// MessagechatGetsByCustomerID returns list of messagechats.
-func (h *handler) MessagechatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error) {
+// MessagechatGets returns list of message chat.
+func (h *handler) MessagechatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechat.Messagechat, error) {
 
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
 	`, messagechatSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "type":
+			q = fmt.Sprintf("%s and type = ?", q)
+			values = append(values, v)
+
+		case "chat_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and chat_id = ?", q)
+			values = append(values, tmp.Bytes())
+
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. MessagechatGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. MessagechatGets. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -251,47 +278,14 @@ func (h *handler) MessagechatGetsByCustomerID(ctx context.Context, customerID uu
 	for rows.Next() {
 		u, err := h.messagechatGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. MessagechatGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. MessagechatGets. err: %v", err)
 		}
 
 		res = append(res, u)
 	}
 
 	return res, nil
-}
 
-// MessagechatGetsByChatID returns list of messagechats of the given chat_id.
-func (h *handler) MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and chat_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, messagechatSelect)
-
-	rows, err := h.db.Query(q, DefaultTimeStamp, chatID.Bytes(), token, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. MessagechatGetsByChatID. err: %v", err)
-	}
-	defer rows.Close()
-
-	var res []*messagechat.Messagechat
-	for rows.Next() {
-		u, err := h.messagechatGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. MessagechatGetsByChatID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
 }
 
 // MessagechatDelete deletes the given messagechat
@@ -304,7 +298,8 @@ func (h *handler) MessagechatDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+	ts := h.utilHandler.TimeGetCurTime()
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. MessagechatDelete. err: %v", err)
 	}
 

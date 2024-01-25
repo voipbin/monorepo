@@ -34,8 +34,11 @@ func (h *listenHandler) v1ChatroomsGet(ctx context.Context, m *rabbitmqhandler.R
 
 	// get filters
 	filters := getFilters(u)
+	if filters["owner_id"] == "" {
+		filters["owner_id"] = ownerID.String()
+	}
 
-	tmp, err := h.chatroomHandler.GetsByOwnerID(ctx, ownerID, pageToken, pageSize, filters)
+	tmp, err := h.chatroomHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get chats by GetsByOwnerID. err: %v", err)
 		return nil, err

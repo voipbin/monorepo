@@ -18,11 +18,9 @@ import (
 // v1ChatsPost handles /v1/chats POST request
 // creates a new chat with given data and return the created chat info.
 func (h *listenHandler) v1ChatsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsPost",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsPost",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	var req request.V1DataChatsPost
@@ -63,11 +61,9 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m *rabbitmqhandler.Requ
 
 // v1ChatsGet handles /v1/chats GET request
 func (h *listenHandler) v1ChatsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsGet",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsGet",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
@@ -83,7 +79,13 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m *rabbitmqhandler.Reque
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	tmp, err := h.chatHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	// get filters
+	filters := getFilters(u)
+	if filters["customer_id"] == "" {
+		filters["customer_id"] = customerID.String()
+	}
+
+	tmp, err := h.chatHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get chats. err: %v", err)
 		return nil, err
@@ -106,11 +108,9 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m *rabbitmqhandler.Reque
 
 // v1ChatsIDGet handles /v1/chats/{id} GET request
 func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsIDGet",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsIDGet",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
@@ -145,11 +145,9 @@ func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m *rabbitmqhandler.Req
 
 // v1ChatsIDPut handles /v1/chats/{id} PUT request
 func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsIDPut",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsIDPut",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
@@ -190,11 +188,9 @@ func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m *rabbitmqhandler.Req
 
 // v1ChatsIDDelete handles /v1/chats/{id} Delete request
 func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsIDDelete",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsIDDelete",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
@@ -229,11 +225,9 @@ func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m *rabbitmqhandler.
 
 // v1ChatsIDOwnerIDPut handles /v1/chats/{id}/owner_id PUT request
 func (h *listenHandler) v1ChatsIDOwnerIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsIDOwnerIDPut",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsIDOwnerIDPut",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
@@ -272,14 +266,12 @@ func (h *listenHandler) v1ChatsIDOwnerIDPut(ctx context.Context, m *rabbitmqhand
 	return res, nil
 }
 
-// v1ChatsIDParticipantsPost handles /v1/chats/<chat-id>/participant_ids POST request
+// v1ChatsIDParticipantIDsPost handles /v1/chats/<chat-id>/participant_ids POST request
 // add a new participant to the chat.
 func (h *listenHandler) v1ChatsIDParticipantIDsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsIDParticipantIDsPost",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsIDParticipantIDsPost",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
@@ -322,11 +314,9 @@ func (h *listenHandler) v1ChatsIDParticipantIDsPost(ctx context.Context, m *rabb
 // v1ChatsIDParticipantIDsIDDelete handles /v1/chats/<chat-id>/participant_ids/<participant-id> POST request
 // add a new participant to the chat.
 func (h *listenHandler) v1ChatsIDParticipantIDsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1ChatsIDParticipantIDsIDDelete",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatsIDParticipantIDsIDDelete",
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)

@@ -9,6 +9,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
@@ -18,6 +19,7 @@ import (
 
 // messagechatroomHandler defines
 type messagechatroomHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -26,8 +28,7 @@ type messagechatroomHandler struct {
 // MessagechatroomHandler defines
 type MessagechatroomHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*messagechatroom.Messagechatroom, error)
-	GetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, token string, limit uint64) ([]*messagechatroom.Messagechatroom, error)
-	GetsByMessagechatID(ctx context.Context, messagechatID uuid.UUID, token string, limit uint64) ([]*messagechatroom.Messagechatroom, error)
+	Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechatroom.Messagechatroom, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -51,6 +52,7 @@ func NewMessagechatroomHandler(
 ) MessagechatroomHandler {
 
 	return &messagechatroomHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,

@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
@@ -15,6 +16,7 @@ import (
 
 // chatroomHandler defines
 type chatroomHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -23,8 +25,7 @@ type chatroomHandler struct {
 // ChatroomHandler defines
 type ChatroomHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error)
-	GetsByOwnerID(ctx context.Context, ownerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
-	GetsByChatID(ctx context.Context, chatID uuid.UUID, token string, size uint64) ([]*chatroom.Chatroom, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -49,6 +50,7 @@ func NewChatroomHandler(
 ) ChatroomHandler {
 
 	return &chatroomHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,

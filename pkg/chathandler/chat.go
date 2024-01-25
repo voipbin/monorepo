@@ -3,6 +3,7 @@ package chathandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -10,10 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
-)
-
-const (
-	maxCountChatsTypeGroup = 100
 )
 
 // Get returns the chat
@@ -33,15 +30,17 @@ func (h *chatHandler) Get(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 	return res, nil
 }
 
-// GetsByCustomerID returns the chats by the given customer id.
-func (h *chatHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*chat.Chat, error) {
+// Gets returns the chats by the given customer id.
+func (h *chatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
+		"func":    "Gets",
+		"token":   token,
+		"limit":   limit,
+		"filters": filters,
 	})
 
 	// get
-	res, err := h.db.ChatGetsByCustomerID(ctx, customerID, token, limit)
+	res, err := h.db.ChatGets(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get chat info. err: %v", err)
 		return nil, err
@@ -68,30 +67,28 @@ func (h *chatHandler) Create(
 		"participant_ids": participantIDs,
 	})
 
-	// sort the participants
-	sortParticipantIDs(participantIDs)
+	tmpParticipantIDs := []string{}
+	for _, id := range participantIDs {
+		tmpParticipantIDs = append(tmpParticipantIDs, id.String())
+	}
+	tmpParticipantIDsString := strings.Join(tmpParticipantIDs, ",")
 
-	// validate request
-	if chatType == chat.TypeNormal {
-		// check the exist
-		tmp, err := h.db.ChatGetByTypeAndParticipantsID(ctx, customerID, chatType, participantIDs)
-		if err == nil && tmp != nil {
-			log.WithField("chat", tmp).Debugf("The given chat is already exist. chat_id: %s", tmp.ID)
-			return nil, fmt.Errorf("already exist")
-		}
-	} else {
-		// check the max chat count
-		curTime := dbhandler.GetCurTime()
-		tmp, err := h.db.ChatGetsByType(ctx, customerID, chat.TypeGroup, curTime, maxCountChatsTypeGroup)
-		if err != nil {
-			log.Errorf("Could not get list of chats. err: %v", err)
-			return nil, err
-		}
+	filters := map[string]string{
+		"customer_id":     customerID.String(),
+		"type":            string(chatType),
+		"participant_ids": tmpParticipantIDsString,
+		"deleted":         "false",
+	}
 
-		if len(tmp) >= maxCountChatsTypeGroup {
-			log.Warnf("Exceeded max chat count. max_chat_count: %d", maxCountChatsTypeGroup)
-			return nil, fmt.Errorf("exceeded max chat count")
-		}
+	tmp, err := h.db.ChatGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
+	if err != nil {
+		log.Errorf("Could not get list of chats. err: %v", err)
+		return nil, err
+	}
+
+	if len(tmp) >= 1 {
+		log.WithField("chat", tmp).Warnf("Already exist.")
+		return nil, fmt.Errorf("already exist")
 	}
 
 	// create chat
@@ -144,7 +141,7 @@ func (h *chatHandler) create(
 	detail string,
 ) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "Create",
+		"func":            "create",
 		"customer_id":     customerID,
 		"type":            chatType,
 		"owner_id":        ownerID,
@@ -152,7 +149,7 @@ func (h *chatHandler) create(
 	})
 
 	id := uuid.Must(uuid.NewV4())
-	curTime := dbhandler.GetCurTime()
+	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &chat.Chat{
 		ID:             id,
 		CustomerID:     customerID,
@@ -244,9 +241,14 @@ func (h *chatHandler) AddParticipantID(ctx context.Context, id uuid.UUID, partic
 		return nil, err
 	}
 
+	filters := map[string]string{
+		"deleted": "false",
+		"chat_id": id.String(),
+	}
+
 	// get chatrooms
-	curTime := dbhandler.GetCurTime()
-	chatrooms, err := h.chatroomHandler.GetsByChatID(ctx, id, curTime, 100000)
+	curTime := h.utilHandler.TimeGetCurTime()
+	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, filters)
 	if err != nil {
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
@@ -290,9 +292,28 @@ func (h *chatHandler) addParticipantID(ctx context.Context, id uuid.UUID, partic
 		"participant_id": participantID,
 	})
 
-	if errRemove := h.db.ChatAddParticipantID(ctx, id, participantID); errRemove != nil {
-		log.Errorf("Could not add the participant id to the chat. err: %v", errRemove)
-		return nil, errRemove
+	// get chat info
+	c, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get chat info. err: %v", err)
+		return nil, err
+	}
+
+	// check the participant id is already exist
+	for _, tmpParticipantID := range c.ParticipantIDs {
+		if tmpParticipantID == participantID {
+			// already exist
+			return nil, fmt.Errorf("already exist")
+		}
+	}
+
+	// add the participant id
+	tmpParticipantIDs := append(c.ParticipantIDs, participantID)
+
+	// update
+	if err := h.db.ChatUpdateParticipantID(ctx, id, tmpParticipantIDs); err != nil {
+		log.Errorf("Could not update the participant ids. err: %v", err)
+		return nil, fmt.Errorf("update failed")
 	}
 
 	// get
@@ -322,8 +343,12 @@ func (h *chatHandler) RemoveParticipantID(ctx context.Context, id uuid.UUID, par
 	}
 
 	// get chatrooms
-	curTime := dbhandler.GetCurTime()
-	chatrooms, err := h.chatroomHandler.GetsByChatID(ctx, id, curTime, 100000)
+	filters := map[string]string{
+		"deleted": "false",
+		"chat_id": id.String(),
+	}
+	curTime := h.utilHandler.TimeGetCurTime()
+	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, filters)
 	if err != nil {
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
@@ -363,9 +388,24 @@ func (h *chatHandler) removeParticipantID(ctx context.Context, id uuid.UUID, par
 		"participant_id": participantID,
 	})
 
-	if errRemove := h.db.ChatRemoveParticipantID(ctx, id, participantID); errRemove != nil {
-		log.Errorf("Could not remove the participant id from the chat. err: %v", errRemove)
-		return nil, errRemove
+	// get chat info
+	c, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get chat info. err: %v", err)
+		return nil, err
+	}
+
+	var tmpParticipantIDs []uuid.UUID
+	for i, tmpParticipantID := range c.ParticipantIDs {
+		if tmpParticipantID == participantID {
+			tmpParticipantIDs = append(c.ParticipantIDs[:i], c.ParticipantIDs[i+1:]...)
+		}
+	}
+
+	// update
+	if err := h.db.ChatUpdateParticipantID(ctx, id, tmpParticipantIDs); err != nil {
+		log.Errorf("Could not update the participant ids. err: %v", err)
+		return nil, fmt.Errorf("update failed")
 	}
 
 	// get
@@ -377,6 +417,7 @@ func (h *chatHandler) removeParticipantID(ctx context.Context, id uuid.UUID, par
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chat.EventTypeChatUpdated, res)
 
 	return res, nil
+
 }
 
 // Delete deletes the chat

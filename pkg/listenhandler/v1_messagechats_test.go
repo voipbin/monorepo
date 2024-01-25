@@ -148,12 +148,13 @@ func Test_v1MessagechatsGet(t *testing.T) {
 
 		responseMessagechats []*messagechat.Messagechat
 
-		expectRes *rabbitmqhandler.Response
+		expectFilters map[string]string
+		expectRes     *rabbitmqhandler.Response
 	}{
 		{
 			"gets by chat id return 1 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/messagechats?page_token=2020-10-10T03:30:17.000000&page_size=10&chat_id=1209ea7a-3506-11ed-9c39-83b3c3ded5a4",
+				URI:      "/v1/messagechats?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chat_id=1209ea7a-3506-11ed-9c39-83b3c3ded5a4&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -168,6 +169,10 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				},
 			},
 
+			map[string]string{
+				"chat_id": "1209ea7a-3506-11ed-9c39-83b3c3ded5a4",
+				"deleted": "false",
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -177,7 +182,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 		{
 			"gets by chat id return 2 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/messagechats?page_token=2020-10-10T03:30:17.000000&page_size=10&chat_id=6728bcac-3506-11ed-87e1-6b1453c7790c",
+				URI:      "/v1/messagechats?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chat_id=6728bcac-3506-11ed-87e1-6b1453c7790c&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -195,6 +200,10 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				},
 			},
 
+			map[string]string{
+				"chat_id": "6728bcac-3506-11ed-87e1-6b1453c7790c",
+				"deleted": "false",
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -204,7 +213,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 		{
 			"gets by chat id return 0 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/messagechats?page_token=2020-10-10T03:30:17.000000&page_size=10&chat_id=925dfbf8-3506-11ed-b4aa-439c6be5c723",
+				URI:      "/v1/messagechats?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chat_id=925dfbf8-3506-11ed-b4aa-439c6be5c723&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -215,6 +224,10 @@ func Test_v1MessagechatsGet(t *testing.T) {
 
 			[]*messagechat.Messagechat{},
 
+			map[string]string{
+				"chat_id": "925dfbf8-3506-11ed-b4aa-439c6be5c723",
+				"deleted": "false",
+			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -243,7 +256,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				messagechatHandler: mockMessagechat,
 			}
 
-			mockMessagechat.EXPECT().GetsByChatID(gomock.Any(), tt.chatID, tt.pageToken, tt.pageSize).Return(tt.responseMessagechats, nil)
+			mockMessagechat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseMessagechats, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -9,6 +9,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
@@ -19,6 +20,7 @@ import (
 
 // messagechatHandler defines
 type messagechatHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -30,7 +32,7 @@ type messagechatHandler struct {
 // MessagechatHandler defines
 type MessagechatHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error)
-	GetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*messagechat.Messagechat, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -54,6 +56,7 @@ func NewMessagechatHandler(
 ) MessagechatHandler {
 
 	return &messagechatHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,

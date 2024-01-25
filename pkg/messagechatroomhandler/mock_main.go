@@ -83,32 +83,17 @@ func (mr *MockMessagechatroomHandlerMockRecorder) Get(ctx, id interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessagechatroomHandler)(nil).Get), ctx, id)
 }
 
-// GetsByChatroomID mocks base method.
-func (m *MockMessagechatroomHandler) GetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, token string, limit uint64) ([]*messagechatroom.Messagechatroom, error) {
+// Gets mocks base method.
+func (m *MockMessagechatroomHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechatroom.Messagechatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByChatroomID", ctx, chatroomID, token, limit)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*messagechatroom.Messagechatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByChatroomID indicates an expected call of GetsByChatroomID.
-func (mr *MockMessagechatroomHandlerMockRecorder) GetsByChatroomID(ctx, chatroomID, token, limit interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockMessagechatroomHandlerMockRecorder) Gets(ctx, token, size, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByChatroomID", reflect.TypeOf((*MockMessagechatroomHandler)(nil).GetsByChatroomID), ctx, chatroomID, token, limit)
-}
-
-// GetsByMessagechatID mocks base method.
-func (m *MockMessagechatroomHandler) GetsByMessagechatID(ctx context.Context, messagechatID uuid.UUID, token string, limit uint64) ([]*messagechatroom.Messagechatroom, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByMessagechatID", ctx, messagechatID, token, limit)
-	ret0, _ := ret[0].([]*messagechatroom.Messagechatroom)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByMessagechatID indicates an expected call of GetsByMessagechatID.
-func (mr *MockMessagechatroomHandlerMockRecorder) GetsByMessagechatID(ctx, messagechatID, token, limit interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByMessagechatID", reflect.TypeOf((*MockMessagechatroomHandler)(nil).GetsByMessagechatID), ctx, messagechatID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessagechatroomHandler)(nil).Gets), ctx, token, size, filters)
 }
