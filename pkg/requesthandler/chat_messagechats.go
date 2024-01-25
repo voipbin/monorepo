@@ -90,8 +90,12 @@ func (r *requestHandler) ChatV1MessagechatGet(ctx context.Context, messagechatID
 // ChatV1MessagechatGets sends a request to chat-manager
 // to getting a list of messagechat info.
 // it returns detail list of chat info if it succeed.
-func (r *requestHandler) ChatV1MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechat.Messagechat, error) {
-	uri := fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=%d&chat_id=%s", url.QueryEscape(pageToken), pageSize, chatID)
+func (r *requestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechat.Messagechat, error) {
+	uri := fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
