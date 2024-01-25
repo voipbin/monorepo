@@ -14,14 +14,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_ChatV1MessagechatroomGetsByChatroomID(t *testing.T) {
+func Test_ChatV1MessagechatroomGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		chatroomID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -32,9 +32,12 @@ func Test_ChatV1MessagechatroomGetsByChatroomID(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("15f4abea-369e-11ed-b888-1f2976c17434"),
 			"2020-09-20 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted":     "false",
+				"chatroom_id": "15f4abea-369e-11ed-b888-1f2976c17434",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -44,7 +47,7 @@ func Test_ChatV1MessagechatroomGetsByChatroomID(t *testing.T) {
 
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=10&chatroom_id=15f4abea-369e-11ed-b888-1f2976c17434", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=10&filter_deleted=false&filter_chatroom_id=15f4abea-369e-11ed-b888-1f2976c17434", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -65,11 +68,11 @@ func Test_ChatV1MessagechatroomGetsByChatroomID(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatV1MessagechatroomGetsByChatroomID(ctx, tt.chatroomID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ChatV1MessagechatroomGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -74,14 +74,14 @@ func Test_ChatV1ChatroomGet(t *testing.T) {
 	}
 }
 
-func Test_ChatV1ChatroomGetsByOwnerID(t *testing.T) {
+func Test_ChatV1ChatroomGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		ownerID   uuid.UUID
 		pageToken string
 		pageSize  uint64
+		filters   map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -92,9 +92,12 @@ func Test_ChatV1ChatroomGetsByOwnerID(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("19de5bc8-3696-11ed-b9b7-3f54f6f0297b"),
 			"2020-09-20 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted":  "false",
+				"owner_id": "19de5bc8-3696-11ed-b9b7-3f54f6f0297b",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -104,7 +107,7 @@ func Test_ChatV1ChatroomGetsByOwnerID(t *testing.T) {
 
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=10&owner_id=19de5bc8-3696-11ed-b9b7-3f54f6f0297b", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=10&filter_deleted=false&filter_owner_id=19de5bc8-3696-11ed-b9b7-3f54f6f0297b", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -129,7 +132,7 @@ func Test_ChatV1ChatroomGetsByOwnerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatV1ChatroomGetsByOwnerID(ctx, tt.ownerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ChatV1ChatroomGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
