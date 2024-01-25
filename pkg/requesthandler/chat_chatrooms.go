@@ -40,8 +40,12 @@ func (r *requestHandler) ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.
 // ChatV1ChatroomGets sends a request to chat-manager
 // to getting a list of chatroom info.
 // it returns detail list of chatroom info if it succeed.
-func (r *requestHandler) ChatV1ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, pageToken string, pageSize uint64) ([]chatchatroom.Chatroom, error) {
-	uri := fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=%d&owner_id=%s", url.QueryEscape(pageToken), pageSize, ownerID)
+func (r *requestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatchatroom.Chatroom, error) {
+	uri := fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

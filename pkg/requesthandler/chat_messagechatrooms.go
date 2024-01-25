@@ -12,11 +12,15 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// ChatV1MessagechatroomGetsByChatroomID sends a request to chat-manager
+// ChatV1MessagechatroomGets sends a request to chat-manager
 // to getting a list of messagechatroom info of the given chatroom id.
 // it returns detail list of messagechatroom info if it succeed.
-func (r *requestHandler) ChatV1MessagechatroomGetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechatroom.Messagechatroom, error) {
-	uri := fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=%d&chatroom_id=%s", url.QueryEscape(pageToken), pageSize, chatroomID)
+func (r *requestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechatroom.Messagechatroom, error) {
+	uri := fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
