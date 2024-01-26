@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 )
 
@@ -55,13 +56,17 @@ func (h *serviceHandler) ChatroomGetsByOwnerID(ctx context.Context, a *amagent.A
 	}
 	log.WithField("owner", owner).Debugf("Found owner info. owner_id: %s", owner.ID)
 
-	if !h.hasPermission(ctx, a, owner.CustomerID, amagent.PermissionAll) {
+	if (a.ID != owner.ID) && (!h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// get chats
-	tmps, err := h.reqHandler.ChatV1ChatroomGetsByOwnerID(ctx, ownerID, token, size)
+	filters := map[string]string{
+		"deleted":  "false",
+		"owner_id": owner.ID.String(),
+	}
+	tmps, err := h.reqHandler.ChatV1ChatroomGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -74,6 +79,38 @@ func (h *serviceHandler) ChatroomGetsByOwnerID(ctx context.Context, a *amagent.A
 		res = append(res, tmp)
 	}
 
+	return res, nil
+}
+
+// chatroomGetByChatIDAndOwnerID returns the chatroom info of the given chat_id and owner_id.
+func (h *serviceHandler) chatroomGetByChatIDAndOwnerID(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, ownerID uuid.UUID) (*chatchatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chatroomGetByChatIDAndOwnerID",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"chat_id":     chatID,
+		"owner_id":    ownerID,
+	})
+	log.Debug("Getting a chatrooms.")
+
+	filters := map[string]string{
+		"deleted":  "false",
+		"chat_id":  chatID.String(),
+		"owner_id": ownerID.String(),
+	}
+
+	tmps, err := h.reqHandler.ChatV1ChatroomGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
+	if err != nil {
+		log.Errorf("Could not get chatroom info from the chat-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find chatroom info. err: %v", err)
+	}
+
+	if len(tmps) < 1 {
+		log.Errorf("Could not get chatroom info.")
+		return nil, fmt.Errorf("could not get chatroom info")
+	}
+
+	res := tmps[0].ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -133,5 +170,64 @@ func (h *serviceHandler) ChatroomDelete(ctx context.Context, a *amagent.Agent, i
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ChatroomCreate creates the chatroom message of the given chatroom id.
+// It returns created chatroommessages if it succeed.
+func (h *serviceHandler) ChatroomCreate(ctx context.Context, a *amagent.Agent, participantIDs []uuid.UUID, name string, detail string) (*chatchatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "ChatroomCreate",
+		"agent":           a,
+		"participant_ids": participantIDs,
+		"name":            name,
+		"detail":          detail,
+	})
+	log.Debug("Creating the chatroom.")
+
+	// check participant ids
+	found := false
+	for _, participantID := range participantIDs {
+		if participantID == a.ID {
+			found = true
+			continue
+		}
+
+		tmp, err := h.agentGet(ctx, a, participantID)
+		if err != nil {
+			log.Errorf("Could not get participant info. err: %v", err)
+			return nil, err
+		}
+
+		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+			log.Errorf("User has no permission")
+			return nil, fmt.Errorf("user has no permission")
+		}
+	}
+	if !found {
+		log.Debugf("Could not find agent id in the participant ids. Adding automatically. agent_id: %s", a.ID)
+		participantIDs = append(participantIDs, a.ID)
+	}
+
+	ct := chatchat.TypeNormal
+	if len(participantIDs) > 2 {
+		ct = chatchat.TypeGroup
+	}
+
+	c, err := h.ChatCreate(ctx, a, ct, a.ID, participantIDs, name, detail)
+	if err != nil {
+		log.Errorf("Could not create the chat. err: %v", err)
+		return nil, err
+	}
+	log.WithField("chat", c).Debugf("Created chat. chat_id: %s", c.ID)
+
+	// get chatroom
+	res, err := h.chatroomGetByChatIDAndOwnerID(ctx, a, c.ID, a.ID)
+	if err != nil {
+		log.Errorf("Could not get created chatroom info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("chatroom", res).Debugf("Created chatroom. chatroom_id: %s", res.ID)
+
 	return res, nil
 }
