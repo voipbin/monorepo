@@ -13,6 +13,51 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
+// chatroommessagesPOST handles POST /chatroommessages request.
+// It creates a new chatroommessage with the given info and returns created chatroommessage info.
+// @Summary     Create a new chatroommessage and returns detail created chatroommessage info.
+// @Description Create a new chatroommessage and returns detail created chatroommessage info.
+// @Produce     json
+// @Param       chatroommessage body     request.BodyChatroommessagesPOST true "chatroommessage info."
+// @Success     200         {object} messagechat.WebhookMessage
+// @Router      /v1.0/chatroommessages [post]
+func chatroommessagesPOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroommessagesPOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	var req request.BodyChatroommessagesPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing chatroommessagesPOST.")
+
+	// create
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ChatroommessageCreate(c.Request.Context(), &a, req.ChatroomID, req.Text)
+	if err != nil {
+		log.Errorf("Could not create a chatroommessage. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // chatroommessagesGET handles GET /chatroommessages request.
 // It gets a list of chatroommessages with the given info.
 // @Summary     Gets a list of chatroommessages.
