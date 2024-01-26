@@ -202,3 +202,69 @@ func Test_ChatV1ChatroomDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_ChatV1ChatroomUpdateBasicInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatID       uuid.UUID
+		updateName   string
+		updateDetail string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectResult  *chatchatroom.Chatroom
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("800b6dae-bc60-11ee-94fb-23e2e1876984"),
+			"update name",
+			"update detail",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"800b6dae-bc60-11ee-94fb-23e2e1876984"}`),
+			},
+
+			"bin-manager.chat-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/chatrooms/800b6dae-bc60-11ee-94fb-23e2e1876984",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
+			},
+			&chatchatroom.Chatroom{
+				ID: uuid.FromStringOrNil("800b6dae-bc60-11ee-94fb-23e2e1876984"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ChatV1ChatroomUpdateBasicInfo(ctx, tt.chatID, tt.updateName, tt.updateDetail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			}
+		})
+	}
+}

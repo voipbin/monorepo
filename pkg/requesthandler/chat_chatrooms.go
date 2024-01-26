@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
+	chatrequest "gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/listenhandler/models/request"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -73,6 +74,40 @@ func (r *requestHandler) ChatV1ChatroomDelete(ctx context.Context, chatroomID uu
 	uri := fmt.Sprintf("/v1/chatrooms/%s", chatroomID)
 
 	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res chatchatroom.Chatroom
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ChatV1ChatroomUpdateBasicInfo sends a request to chat-manager
+// to update the chatroom's basic info.
+func (r *requestHandler) ChatV1ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchatroom.Chatroom, error) {
+	uri := fmt.Sprintf("/v1/chatrooms/%s", id)
+
+	data := &chatrequest.V1DataChatroomsIDPut{
+		Name:   name,
+		Detail: detail,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
