@@ -21,8 +21,8 @@ import {
   ParseData,
 } from '../../provider';
 
-const ChatsCreate = () => {
-  console.log("ChatsCreate");
+const ChatroomsCreate = () => {
+  console.log("ChatroomsCreate");
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -67,31 +67,6 @@ const ChatsCreate = () => {
 
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormSelect
-                      ref={ref_type}
-                      type="text"
-                      id="colFormLabelSm"
-                      options={[
-                        { label: 'normal', value: 'normal' },
-                        { label: 'group', value: 'group' },
-                      ]}
-                    />
-                  </CCol>
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Owner ID</b></CFormLabel>
-                  <CCol>
-                    <CFormInput
-                      ref={ref_owner_id}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
-                </CRow>
-
-
-                <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Participant IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
@@ -119,13 +94,11 @@ const ChatsCreate = () => {
     const tmpData = {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "type": ref_type.current.value,
-      "owner_id": ref_owner_id.current.value,
       "participant_ids": JSON.parse(ref_participant_ids.current.value),
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "chats";
+    const target = "chatrooms";
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
@@ -139,4 +112,4 @@ const ChatsCreate = () => {
   )
 }
 
-export default ChatsCreate
+export default ChatroomsCreate

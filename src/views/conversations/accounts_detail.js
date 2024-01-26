@@ -170,7 +170,7 @@ const AccountsDetail = () => {
     const body = JSON.stringify("");
     const target = "conversation_accounts/" + ref_id.current.value;
     console.log("Updating conversation info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(response => {
+    ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
