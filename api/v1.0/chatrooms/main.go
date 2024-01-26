@@ -7,6 +7,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	chatrooms := r.Group("/chatrooms")
 
 	chatrooms.GET("", chatroomsGET)
+	chatrooms.POST("", chatroomsPOST)
 
 	chatrooms.DELETE("/:id", chatroomsIDDELETE)
 	chatrooms.GET("/:id", chatroomsIDGET)

@@ -98,7 +98,9 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 
 		responseChat *chatchat.Chat
 		response     []chatmessagechat.Messagechat
-		expectRes    []*chatmessagechat.WebhookMessage
+
+		expectFilters map[string]string
+		expectRes     []*chatmessagechat.WebhookMessage
 	}{
 		{
 			"normal",
@@ -119,6 +121,11 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("b45b1da6-3774-11ed-856d-1b95e72acae8"),
 				},
+			},
+
+			map[string]string{
+				"deleted": "false",
+				"chat_id": "8ec6c9be-3774-11ed-a626-73312e33dc72",
 			},
 			[]*chatmessagechat.WebhookMessage{
 				{
@@ -144,7 +151,7 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1MessagechatGetsByChatID(ctx, tt.chatID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1MessagechatGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.ChatmessageGetsByChatID(ctx, tt.agent, tt.chatID, tt.size, tt.token)
 			if err != nil {
