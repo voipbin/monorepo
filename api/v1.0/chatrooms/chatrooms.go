@@ -13,6 +13,51 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
+// chatroomsPOST handles POST /chatrooms request.
+// It creates a new chatroom with the given info and returns created chatroom info.
+// @Summary     Create a new chatroom and returns detail created chatroom info.
+// @Description Create a new chatroom and returns detail created chatroom info.
+// @Produce     json
+// @Param       chatroom body     request.BodyChatroomsPOST true "chatroom info."
+// @Success     200         {object} chatroom.WebhookMessage
+// @Router      /v1.0/chatrooms [post]
+func chatroomsPOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroomsPOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	var req request.BodyChatroomsPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing chatroomsPOST.")
+
+	// create
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ChatroomCreate(c.Request.Context(), &a, req.ParticipantID, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not create a chatroom. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // chatroomsGET handles GET /chatrooms request.
 // It gets a list of chatrooms with the given info.
 // @Summary     Gets a list of chatrooms.
@@ -48,6 +93,10 @@ func chatroomsGET(c *gin.Context) {
 	}
 
 	ownerID := uuid.FromStringOrNil(req.OwnerID)
+	if ownerID == uuid.Nil {
+		// has no owner id info. use default owner id
+		ownerID = a.ID
+	}
 
 	// set max page size
 	pageSize := req.PageSize

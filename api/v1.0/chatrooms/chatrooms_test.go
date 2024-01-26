@@ -1,6 +1,8 @@
 package chatrooms
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +14,7 @@ import (
 	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -19,6 +22,81 @@ import (
 func setupServer(app *gin.Engine) {
 	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
 	ApplyRoutes(v1)
+}
+
+func Test_chatroommessagesPOST(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  request.BodyChatroomsPOST
+
+		response *chatchatroom.WebhookMessage
+	}{
+		{
+			"normal",
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+
+			"/v1.0/chatrooms",
+			request.BodyChatroomsPOST{
+				ParticipantID: []uuid.UUID{
+					uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+					uuid.FromStringOrNil("a5d27d76-bc05-11ee-b3db-0333d9946bda"),
+				},
+				Name:   "test name",
+				Detail: "test detail",
+			},
+
+			&chatchatroom.WebhookMessage{
+				ID: uuid.FromStringOrNil("a5ffbb60-bc05-11ee-af79-e73be92a78fe"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("agent", tt.agent)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.reqBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
+			req.Header.Set("Content-type", "application/json")
+
+			mockSvc.EXPECT().ChatroomCreate(
+				req.Context(),
+				&tt.agent,
+				tt.reqBody.ParticipantID,
+				tt.reqBody.Name,
+				tt.reqBody.Detail,
+			).Return(tt.response, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
 }
 
 func Test_chatroomsGET(t *testing.T) {

@@ -7,7 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // chatroommessageGet validates the chatroommessage's ownership and returns the chatroommessage info.
@@ -57,6 +59,56 @@ func (h *serviceHandler) ChatroommessageGet(ctx context.Context, a *amagent.Agen
 	return res, nil
 }
 
+// ChatroommessageCreate creates the chatroom message of the given chatroom id.
+// It returns created chatroommessages if it succeed.
+func (h *serviceHandler) ChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string) (*chatmessagechatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ChatroommessageCreate",
+		"agent":       a,
+		"chatroom_id": chatroomID,
+		"message":     message,
+	})
+	log.Debug("Creating the chatroom message.")
+
+	// get chatroom info
+	cr, err := h.chatroomGet(ctx, a, chatroomID)
+	if err != nil {
+		log.Errorf("Could not get chatroom info. err: %v", err)
+		return nil, err
+	}
+
+	// create chatmessage
+	source := commonaddress.Address{
+		Type:       commonaddress.TypeAgent,
+		Target:     a.ID.String(),
+		TargetName: a.Name,
+	}
+	cm, err := h.ChatmessageCreate(ctx, a, cr.ChatID, source, chatmessagechat.TypeNormal, message, nil)
+	if err != nil {
+		log.Errorf("Could not create chatmessage. err: %v", err)
+		return nil, err
+	}
+
+	// get message chatroom by chatmessage.
+	filters := map[string]string{
+		"chatroom_id":    cr.ID.String(),
+		"messagechat_id": cm.ID.String(),
+	}
+	crms, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
+	if err != nil {
+		log.Errorf("Could not get message chatroom. err: %v", err)
+		return nil, err
+	}
+
+	if len(crms) < 1 {
+		log.Errorf("Could not create message chatroom.")
+		return nil, fmt.Errorf("could not create chatroom message")
+	}
+
+	res := crms[0].ConvertWebhookMessage()
+	return res, nil
+}
+
 // ChatroommessageGetsByChatroomID gets the list of chatroommessages of the given owner id.
 // It returns list of chatroommessages if it succeed.
 func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error) {
@@ -87,7 +139,11 @@ func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, a 
 	}
 
 	// get chats
-	tmps, err := h.reqHandler.ChatV1MessagechatroomGetsByChatroomID(ctx, chatroomID, token, size)
+	filters := map[string]string{
+		"deleted":     "false",
+		"chatroom_id": chatroomID.String(),
+	}
+	tmps, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chatroommessages info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroommessages info. err: %v", err)

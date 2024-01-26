@@ -89,7 +89,11 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, a *amagent.Ag
 	}
 
 	// get chats
-	tmps, err := h.reqHandler.ChatV1ChatGetsByCustomerID(ctx, a.CustomerID, token, size)
+	filters := map[string]string{
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false",
+	}
+	tmps, err := h.reqHandler.ChatV1ChatGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
