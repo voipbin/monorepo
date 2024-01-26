@@ -389,3 +389,71 @@ func Test_ChatroomCreate(t *testing.T) {
 		})
 	}
 }
+
+func Test_ChatroomUpdateBasicInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent      *amagent.Agent
+		chatroomID uuid.UUID
+		chatName   string
+		detail     string
+
+		responseChatroom *chatchatroom.Chatroom
+		expectRes        *chatchatroom.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
+			"update name",
+			"update detail",
+
+			&chatchatroom.Chatroom{
+				ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
+				CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
+				OwnerID:    uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			},
+			&chatchatroom.WebhookMessage{
+				ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
+				CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
+				OwnerID:    uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomUpdateBasicInfo(ctx, tt.chatroomID, tt.chatName, tt.detail).Return(tt.responseChatroom, nil)
+
+			res, err := h.ChatroomUpdateBasicInfo(ctx, tt.agent, tt.chatroomID, tt.chatName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}

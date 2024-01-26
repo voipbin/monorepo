@@ -141,6 +141,38 @@ func (h *serviceHandler) ChatroomGet(ctx context.Context, a *amagent.Agent, id u
 	return res, nil
 }
 
+// ChatroomUpdateBasicInfo updates the chatroom's basic info.
+// It returns updated chatroom if it succeed.
+func (h *serviceHandler) ChatroomUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ChatroomUpdateBasicInfo",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"chatroom_id": id,
+	})
+	log.Debug("Updating the chatroom.")
+
+	// get chat
+	c, err := h.chatroomGet(ctx, a, id)
+	if err != nil {
+		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find chat info. err: %v", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) || a.ID != c.OwnerID {
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.ChatV1ChatroomUpdateBasicInfo(ctx, id, name, detail)
+	if err != nil {
+		logrus.Errorf("Could not update the chat. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // ChatroomDelete deletes the chatroom.
 func (h *serviceHandler) ChatroomDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
