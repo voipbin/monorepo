@@ -10,6 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/listenhandler/models/request"
 )
 
 // v1ChatroomsGet handles /v1/chatrooms GET request
@@ -77,6 +79,49 @@ func (h *listenHandler) v1ChatroomsIDGet(ctx context.Context, m *rabbitmqhandler
 	tmp, err := h.chatroomHandler.Get(ctx, chatroomID)
 	if err != nil {
 		log.Errorf("Could not get chatroom info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1ChatroomsIDPut handles /v1/chatrooms/{id} PUT request
+func (h *listenHandler) v1ChatroomsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1ChatroomsIDPut",
+	})
+	log.WithField("request", m).Debug("Received request.")
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/chatrooms/2d8d416a-bc5b-11ee-bcaa-8728b23e22f1"
+	tmpVals := strings.Split(u.Path, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataChatroomsIDPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.chatroomHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not update the chatroom info. err: %v", err)
 		return nil, err
 	}
 

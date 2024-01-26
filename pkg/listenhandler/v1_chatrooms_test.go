@@ -213,6 +213,76 @@ func Test_v1ChatroomsIDGet(t *testing.T) {
 	}
 }
 
+func Test_v1ChatroomsIDPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		chatroomID   uuid.UUID
+		updateName   string
+		updateDetail string
+
+		responseChatroom *chatroom.Chatroom
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/chatrooms/d11c222e-bc5b-11ee-940b-d3e8acd4c0d3",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name": "update name", "detail": "update detail"}`),
+			},
+
+			uuid.FromStringOrNil("d11c222e-bc5b-11ee-940b-d3e8acd4c0d3"),
+			"update name",
+			"update detail",
+
+			&chatroom.Chatroom{
+				ID: uuid.FromStringOrNil("d11c222e-bc5b-11ee-940b-d3e8acd4c0d3"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"d11c222e-bc5b-11ee-940b-d3e8acd4c0d3","customer_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","onwer_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockChat := chathandler.NewMockChatHandler(mc)
+			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				chatHandler:     mockChat,
+				chatroomHandler: mockChatroom,
+			}
+
+			mockChatroom.EXPECT().UpdateBasicInfo(gomock.Any(), tt.chatroomID, tt.updateName, tt.updateDetail).Return(tt.responseChatroom, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_v1ChatroomsIDDelete(t *testing.T) {
 
 	tests := []struct {
