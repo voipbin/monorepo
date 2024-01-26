@@ -219,10 +219,15 @@ const chats = {
   name: 'Chats',
   icon: <CIcon icon={cilCommentBubble} customClassName="nav-icon" />,
   items: [
+    // {
+    //   component: CNavItem,
+    //   name: 'Chats',
+    //   to: '/resources/chats/chats_list',
+    // },
     {
       component: CNavItem,
-      name: 'Chats',
-      to: '/resources/chats/chats_list',
+      name: 'Rooms',
+      to: '/resources/chats/rooms_list',
     },
   ]
 };
