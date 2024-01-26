@@ -229,6 +229,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/chatrooms/<chatroom-id>"
 		response, err = h.v1ChatroomsIDDelete(ctx, m)
 
+	case regV1ChatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/chatrooms/<chatroom-id>"
+		response, err = h.v1ChatroomsIDPut(ctx, m)
+
 	// messagechats
 	case regV1MessagechatsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/messagechats"
