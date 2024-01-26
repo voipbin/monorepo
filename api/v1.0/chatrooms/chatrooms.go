@@ -212,3 +212,54 @@ func chatroomsIDDELETE(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// chatroomsIDPUT handles PUT /chatrooms/{id} request.
+// It updates a exist chat info with the given info.
+// And returns updated chat info if it succeed.
+// @Summary     Update a chat and reuturns updated info.
+// @Description Update a chat and returns detail updated info.
+// @Produce     json
+// @Param       id          query    string                 	true "The chatroom's id"
+// @Param       update_info body     request.BodyChatroomsIDPUT true "The update info"
+// @Success     200         {object} chat.Chat
+// @Router      /v1.0/chatrooms/{id} [put]
+func chatroomsIDPUT(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroomsIDPUT",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("chatroom_id", id)
+
+	var req request.BodyChatroomsIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing chatsIDPUT.")
+
+	// update
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ChatroomUpdateBasicInfo(c.Request.Context(), &a, id, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not update the chat. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

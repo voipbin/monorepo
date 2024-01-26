@@ -321,3 +321,80 @@ func Test_chatroomsIDDELETE(t *testing.T) {
 		})
 	}
 }
+
+func Test_chatroomsIDPUT(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery   string
+		chatroomID uuid.UUID
+
+		reqBody request.BodyChatsIDPUT
+
+		responseChat *chatchatroom.WebhookMessage
+
+		expectRes string
+	}{
+		{
+			"normal",
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+
+			"/v1.0/chatrooms/cba8e95e-bc64-11ee-9324-bb5c09ef083f",
+			uuid.FromStringOrNil("cba8e95e-bc64-11ee-9324-bb5c09ef083f"),
+
+			request.BodyChatsIDPUT{
+				Name:   "test name",
+				Detail: "test detail",
+			},
+
+			&chatchatroom.WebhookMessage{
+				ID: uuid.FromStringOrNil("cba8e95e-bc64-11ee-9324-bb5c09ef083f"),
+			},
+
+			`{"id":"cba8e95e-bc64-11ee-9324-bb5c09ef083f","customer_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("agent", tt.agent)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.reqBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().ChatroomUpdateBasicInfo(req.Context(), &tt.agent, tt.chatroomID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.responseChat, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}

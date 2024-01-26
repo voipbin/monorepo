@@ -227,6 +227,7 @@ type ServiceHandler interface {
 	ChatroomGetsByOwnerID(ctx context.Context, a *amagent.Agent, ownerID uuid.UUID, size uint64, token string) ([]*chatchatroom.WebhookMessage, error)
 	ChatroomGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchatroom.WebhookMessage, error)
 	ChatroomDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchatroom.WebhookMessage, error)
+	ChatroomUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchatroom.WebhookMessage, error)
 
 	// chatroommessage handlers
 	ChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string) (*chatmessagechatroom.WebhookMessage, error)
