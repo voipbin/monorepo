@@ -23,6 +23,8 @@ type WebhookMessage struct {
 
 	ForwardActionID uuid.UUID `json:"forward_action_id"`
 
+	ExecutedActions []action.Action `json:"executed_actions"` // list of executed actions
+
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
@@ -43,6 +45,8 @@ func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 		CurrentAction: h.CurrentAction,
 
 		ForwardActionID: h.ForwardActionID,
+
+		ExecutedActions: h.ExecutedActions,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
