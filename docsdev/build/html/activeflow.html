@@ -44,6 +44,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#execution">Execution</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#status-and-control-interface">Status and Control interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#activeflow-lifecycle">Activeflow Lifecycle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#executed-actions">Executed Actions</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#activeflow-struct-activeflow">Activeflow</a><ul>
@@ -128,6 +130,61 @@
 <section id="status-and-control-interface">
 <h3>Status and Control interface<a class="headerlink" href="#status-and-control-interface" title="Permalink to this headline"></a></h3>
 <p>The activeflow includes essential status information that allows users to monitor the flow’s progress closely. This information encompasses details about the activeflow’s current state, including completed and pending actions. Additionally, the activeflow offers a control interface that empowers users to manage the execution process. This interface enables actions such as stopping the activeflow at any point and modifying its configuration or parameters as needed.</p>
+</section>
+<section id="activeflow-lifecycle">
+<h3>Activeflow Lifecycle<a class="headerlink" href="#activeflow-lifecycle" title="Permalink to this headline"></a></h3>
+<p>The activeflow executes the actions until one of the following conditions is met:</p>
+<ul class="simple">
+<li><p><strong>Main Service Type Completion:</strong> The activeflow continues executing flow actions until the primary service type is completed. For instance, in the case of a call service, actions will be executed until the call is hung up.</p></li>
+<li><p><strong>Stop Action Execution:</strong> Execution ceases if an action with the type “stop” is encountered in the flow.</p></li>
+<li><p><strong>User-Initiated Interruption:</strong> Users can actively interrupt their activeflow by sending a POST request to the endpoint: <a class="reference external" href="https://api.voipbin.net/v1/activeflows">https://api.voipbin.net/v1/activeflows</a>/&lt;activeflow-id&gt;/stop.</p></li>
+</ul>
+</section>
+<section id="executed-actions">
+<h3>Executed Actions<a class="headerlink" href="#executed-actions" title="Permalink to this headline"></a></h3>
+<p>Within the CPaaS environment, flows can be complex, incorporating various service types such as call, SMS, chat, and more. Handling history logs for these diverse services requires a structured approach.</p>
+<p>VoIPBin simplifies the tracking of executed actions by providing a comprehensive history log within the activeflow. Unlike traditional telephony services with straightforward flows, CPaaS services demand a more flexible approach due to their diverse nature.</p>
+<p>In VoIPBin, each action in the activeflow defines a distinct step in the service’s behavior. This ensures clarity in tracking the sequence of actions performed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;executed_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021546521&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;605f5650-ba92-4dcd-bdac-91fcf6260939&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is a test message.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+31616818985&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>With the detailed information provided in the executed_actions array, customers can easily review and understand the history logs of their CPaaS services.</p>
 </section>
 </section>
 <section id="activeflow-struct-activeflow">
