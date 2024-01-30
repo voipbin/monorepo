@@ -67,3 +67,19 @@ offline    Offline.
 ringing    Ringing.
 ========== ============
 
+Permissio
+---------
+Agent's permission
+
+============== ================
+Permission     Description
+============== ================
+0              (0x0000)None.
+65535          (0xFFFF)All permission.
+1              (0x0001)Permission for voipbin project super admin.
+15             (0x000F)All permission for project level.
+16             (0x0010)Permission for customer level agent
+32             (0x0020)Permission for customer level admin
+64             (0x0040)Permission for customer level manager
+240            (0x00F0)All permission for customer level
+============== ================
