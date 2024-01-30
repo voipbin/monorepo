@@ -46,12 +46,14 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Agent</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#call-to-agent">Call to agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#permission">Permission</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#agent-struct-agent-agent">Agent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ring-method">Ring method</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#permissio">Permissio</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
@@ -121,6 +123,16 @@
 <img alt="_images/agent_call.png" src="_images/agent_call.png" />
 <p>This approach enables efficient call handling, minimizing the time customers spend waiting for an available agent. The call distribution mechanism ensures that agents are optimally utilized, enhancing customer service and overall call center productivity.</p>
 </section>
+<section id="permission">
+<h3>Permission<a class="headerlink" href="#permission" title="Permalink to this headline"></a></h3>
+<p>In the VoIPBin ecosystem, permissions play a crucial role in governing the actions that can be performed by the system’s agents. Each API within VoIPBin is subject to specific permission limitations, ensuring a secure and controlled environment.</p>
+<p>VoIPBin employs a robust permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Agents, representing entities interacting with the system, are assigned permissions that align with their intended functionalities.</p>
+<p>Every API in VoIPBin is associated with granular permission limitations. These limitations are designed to:</p>
+<ul class="simple">
+<li><p>Restrict Access: Ensure that only authorized agents can invoke specific APIs.</p></li>
+</ul>
+<p>For clarity, consider an example where an agent is granted permission to access the “activeflows” API but is restricted from invoking certain actions within it. This granular control ensures that agents operate within defined boundaries.</p>
+</section>
 </section>
 <section id="struct">
 <span id="agent-struct-agent"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline"></a></h2>
@@ -151,8 +163,8 @@
 <li><p><em>username</em>: Agent’s login username.</p></li>
 <li><p><em>name</em>: Agent’s name.</p></li>
 <li><p><em>detail</em>: Agent’s detail description.</p></li>
-<li><p><em>ring_method</em>: Ring method for agent calling. See detail <a class="reference internal" href="#agent-struct-agent-ring-method"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>status</em>: Agent’s status. See detail <a class="reference internal" href="#agent-struct-agent-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>ring_method</em>: Ring method for agent calling. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-ring-method"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: Agent’s status. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>permission</em>: Agent’s permission.</p></li>
 <li><p><em>tag_ids</em>: List of agent’s tags.</p></li>
 <li><p><em>addresses</em>: List of agent’s addresses. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
@@ -206,6 +218,47 @@
 </tr>
 <tr class="row-even"><td><p>ringing</p></td>
 <td><p>Ringing.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="permissio">
+<h3>Permissio<a class="headerlink" href="#permissio" title="Permalink to this headline"></a></h3>
+<p>Agent’s permission</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Permission</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>(0x0000)None.</p></td>
+</tr>
+<tr class="row-odd"><td><p>65535</p></td>
+<td><p>(0xFFFF)All permission.</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>(0x0001)Permission for voipbin project super admin.</p></td>
+</tr>
+<tr class="row-odd"><td><p>15</p></td>
+<td><p>(0x000F)All permission for project level.</p></td>
+</tr>
+<tr class="row-even"><td><p>16</p></td>
+<td><p>(0x0010)Permission for customer level agent</p></td>
+</tr>
+<tr class="row-odd"><td><p>32</p></td>
+<td><p>(0x0020)Permission for customer level admin</p></td>
+</tr>
+<tr class="row-even"><td><p>64</p></td>
+<td><p>(0x0040)Permission for customer level manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>240</p></td>
+<td><p>(0x00F0)All permission for customer level</p></td>
 </tr>
 </tbody>
 </table>
