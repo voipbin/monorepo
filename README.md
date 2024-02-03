@@ -1,4 +1,3 @@
 # common-handler
 
-common-han
-dler for bin-manager group
+common-handler for bin-manager group
