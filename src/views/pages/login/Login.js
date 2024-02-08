@@ -28,6 +28,8 @@ import {
 } from '../../../provider';
 import { Base64 } from "js-base64";
 import { NewPhone } from "../../../phone";
+import { useDispatch } from 'react-redux';
+import { ChatroommessagesAddWithChatroomID } from 'src/store';
 
 const Login = () => {
 
@@ -36,6 +38,7 @@ const Login = () => {
   const [loginDisabled, setLoginDisabled] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const loginHandle = (event) => {
     event.preventDefault();
@@ -85,18 +88,50 @@ const Login = () => {
         // load all resources
         ProviderLoadResourcesAll();
 
-        NewPhone();
+        NewPhone(dispatch);
         const phone = localStorage.getItem("phone");
         console.log("Detailed phone info. phone: ", phone)
+
+        // websocket
+        Connect();
 
         navigate('/');
     })
   };
 
+  const WS_URL = 'wss://api.voipbin.net/v1.0/ws';
+  const Connect = () => {
+    let authToken = localStorage.getItem("token");
+    let url = WS_URL + '?token=' + authToken
+
+    console.log("Establishing websocket connection. utl: ", url);
+    var ws = new WebSocket(url);
+
+    ws.onopen = () => {
+        // subscribe topics
+        let m = '{"type": "subscribe","topics": ["call", "activeflow", "messagechatroom"]}';
+        console.log("Subscribing topics. message: ", m);
+        ws.send(m);
+    }
+
+    ws.onmessage = (e) => {
+
+      const data = JSON.parse(e.data);
+      const type = data["type"];
+      const message = data["data"];
+      console.log("Recevied websocket type: %s, message: %s", type, message);
+
+
+      switch (type) {
+        case "messagechatroom_created":
+          console.log("Chatroom message received. chatroom_id: %s, message: %s", message["chatroom_id"], message["text"]);
+          dispatch(ChatroommessagesAddWithChatroomID(message["chatroom_id"], message));
+      }
+    }
+  }
+
   const registerHandle = (event) => {
-    console.log("test11");
-
-
+    console.log("registerHandle");
     return (
       <Link to='javascript:void(0)'
         onClick={() => window.location = 'mailto:yourmail@domain.com'}>
