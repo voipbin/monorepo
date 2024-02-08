@@ -18,15 +18,9 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
-import { useSelector, useDispatch } from 'react-redux'
 
 const CallsDetail = () => {
   console.log("CallsDetail");
-
-  const calls = useSelector(state => state.resourceCallsReducer);
-  console.log(calls);
-
-
   const ref_id = useRef(null);
 
   const routeParams = useParams();
@@ -36,9 +30,6 @@ const CallsDetail = () => {
     const tmp = localStorage.getItem("calls");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
-
-    const tmpData = calls.data[id];
-    console.log("test data. call: ", tmpData);
 
     var hangupDisable = false;
     if (detailData["status"] == "hangup") {

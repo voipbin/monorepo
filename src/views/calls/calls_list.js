@@ -30,7 +30,6 @@ import {
   ParseData,
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux'
 
 const Calls = () => {
   const [listData, setListData] = useState([]);
