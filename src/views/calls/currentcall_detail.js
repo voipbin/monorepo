@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -27,23 +27,26 @@ import {
   CallHangup as PhoneHangup,
   CallGetInfo,
 } from '../../phone'
+import { useSelector, useDispatch } from 'react-redux'
 
 const CurrentcallDetail = () => {
   console.log("CurrentcallDetail");
+
+  let currentCall = useSelector((state) => {
+    // note: i don't know why this is needed, but this makes possible to
+    // update the call info on the fly.
+    let res = [state.resourceCurrentcallReducer];
+    return res;
+  });
+  console.log("currentcall info: ", currentCall);
 
   // get extension
   const tmp = localStorage.getItem("extension_info");
   const extension = JSON.parse(tmp);
   console.log("Debug info. extension info: ", extension);
 
-
   const ref_source = useRef(null);
   const ref_destination = useRef(null);
-
-
-  const ref_destinations = useRef(null);
-  const ref_actions = useRef(null);
-  const ref_flow_id = useRef(null);
 
   const call_info = CallGetInfo();
 
@@ -104,6 +107,7 @@ const CurrentcallDetail = () => {
                       id="colFormLabelSm"
                       defaultValue={call_info["from"]}
                       rows={10}
+                      readOnly
                     />
                   </CCol>
 
@@ -114,6 +118,7 @@ const CurrentcallDetail = () => {
                       id="colFormLabelSm"
                       defaultValue={call_info["to"]}
                       rows={10}
+                      readOnly
                     />
                   </CCol>
                 </CRow>
@@ -125,6 +130,7 @@ const CurrentcallDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={call_info["status"]}
+                      readOnly
                     />
                   </CCol>
                 </CRow>
@@ -136,6 +142,7 @@ const CurrentcallDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={call_info["direction"]}
+                      readOnly
                     />
                   </CCol>
                 </CRow>
@@ -172,24 +179,6 @@ const CurrentcallDetail = () => {
     console.log("Hangup the current call.");
 
     PhoneHangup();
-  };
-
-  const CreateResource = () => {
-    console.log("Create info");
-
-    const tmpData = {
-      "source": JSON.parse(ref_source.current.value),
-      "destinations": JSON.parse(ref_destinations.current.value),
-      "flow_id": ref_flow_id.current.value,
-      "actions": JSON.parse(ref_actions.current.value),
-    };
-
-    const body = JSON.stringify(tmpData);
-    const target = "calls";
-    console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(() => {
-      console.log("Created info.");
-    });
   };
 
   return (

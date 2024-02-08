@@ -1,5 +1,4 @@
-import { createStore, applyMiddleware } from 'redux'
-import myLogger from './middleware';
+import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 const SET = 'set';
 
@@ -8,50 +7,134 @@ const initialState = {
   sidebarUnfoldable: false,
 }
 
-const changeState = (state = initialState, action) => {
+// resource chatroommessages
+const resourceChatroommessagesInitial = {
+  data: {},
+}
 
-  switch (action.method) {
+export const CHATROOMMESSAGES_SET_WITH_CHATROOMID = 'CHATROOMMESSAGES_SET_WITH_ROOMID';
+export const ChatroommessagesSetWithChatroomID = (chatroomID, data) => {
+  return {
+    type: CHATROOMMESSAGES_SET_WITH_CHATROOMID,
+    chatroom_id: chatroomID,
+    data: data,
+  }
+}
+
+export const CHATROOMMESSAGES_ADD_WITH_CHATROOMID = 'CHATROOMMESSAGES_ADD_WITH_CHATROOMID';
+export const ChatroommessagesAddWithChatroomID = (chatroomID, data) => {
+  return {
+    type: CHATROOMMESSAGES_ADD_WITH_CHATROOMID,
+    chatroom_id: chatroomID,
+    data: data,
+  }
+}
+
+const resourceChatroommessagesReducer = (state = resourceChatroommessagesInitial, action) => {
+  let newState = {
+    data: state.data,
+  };
+
+  switch (action.type) {
+    case CHATROOMMESSAGES_SET_WITH_CHATROOMID:
+      newState.data[action.chatroom_id] = action.data;
+      return newState;
+
+    case CHATROOMMESSAGES_ADD_WITH_CHATROOMID:
+      const roomID = action.data["chatroom_id"];
+      if (newState.data[roomID]) {
+        newState.data[roomID] = [action.data, ...newState.data[roomID]];
+      } else {
+        newState.data[roomID] = [action.data];
+      }
+      return newState;
+
+    default:
+      return newState;
+  }
+}
+
+// resource currentcall
+const resourceCurrentcallInitial = {
+  "session": {},
+  "id": "",
+  "source": "",
+  "destination": "",
+  "status": "finished",
+  "direction": "",
+}
+
+export const CURRENTCALL_SET_SESSION = 'CURRENTCALL_SET_SESSION';
+export const CurrentcallSetSession = (session) => {
+  return {
+    type: CURRENTCALL_SET_SESSION,
+    data: session,
+  }
+}
+
+export const CURRENTCALL_SET_STATUS = 'CURRENTCALL_SET_STATUS';
+export const CurrentcallSetStatus = (state) => {
+  return {
+    type: CURRENTCALL_SET_STATUS,
+    data: state,
+  }
+}
+
+const resourceCurrentcallReducer = (state = resourceCurrentcallInitial, action) => {
+  let newState = state;
+
+  switch (action.type) {
+    case CURRENTCALL_SET_SESSION:
+      console.log("Setting the currentcall session. action: ", action)
+      newState["session"] = action.data;
+      newState["id"] = action.data.id;
+      newState["direction"] = action.data.direction;
+
+      if (newState['direction'] == 'incoming') {
+        // incoming
+        newState['source'] = action.data.remote_identity.uri.user;
+        newState['destination'] = action.data.local_identity.uri.user;
+
+        newState['status'] = 'ringing';
+      } else {
+        // outgoing
+        newState['source'] = action.data.local_identity.uri.user;
+        newState['destination'] = action.data.remote_identity.uri.user;
+
+        newState['status'] = 'dialing';
+      }
+
+      return newState;
+
+    case CURRENTCALL_SET_STATUS:
+      console.log("Setting the current call status. action: ", action)
+      newState["status"] = action.data;
+      return newState;
+
+    default:
+      return newState;
+  }
+}
+
+
+const resourceReducer = (state = initialState, action) => {
+
+  switch (action.type) {
     case 'update':
       console.log("Update data. ", action.type, action.data);
       localStorage.setItem(action.type, JSON.stringify(action.data));
 
-    // case 'get':
-    //   return localStorage.getItem(action.type)
-  }
-
-  switch (action.type) {
-    case 'activeflows':
-      return Object.assign({}, state, { ...state, activeflows: action.data });
-    case 'agents':
-      return Object.assign({}, state, { ...state, agents: action.data });
-    case 'billing_accounts':
-      return Object.assign({}, state, { ...state, billing_accounts: action.data });
-    case 'calls':
-      return Object.assign({}, state, { ...state, calls: action.data });
-    case 'campaigns':
-      return Object.assign({}, state, { ...state, campaigns: action.data });
-    case 'chatbots':
-      return Object.assign({}, state, { ...state, chatbots: action.data });
-    case 'chats':
-      return Object.assign({}, state, { ...state, chats: action.data });
-    case 'customers':
-      return Object.assign({}, state, { ...state, customers: action.data });
-    case 'flows':
-      return Object.assign({}, state, { ...state, flows: action.data });
-    case 'groupcalls':
-      return Object.assign({}, state, { ...state, groupcalls: action.data });
-    case 'messages':
-      return Object.assign({}, state, { ...state, messages: action.data });
-    case 'numbers':
-      return Object.assign({}, state, { ...state, numbers: action.data });
-    case 'queues':
-      return Object.assign({}, state, { ...state, queues: action.data });
-    case 'queuecalls':
-      return Object.assign({}, state, { ...state, queuecalls: action.data });
     default:
-      return state
+      return state;
   }
 }
 
-const store = createStore(changeState);
+const storeAll = combineReducers({
+  resourceReducer,
+  resourceChatroommessagesReducer,
+  resourceCurrentcallReducer,
+});
+
+const store = createStore(storeAll);
+// const store = createStore(resourceReducer);
 export default store

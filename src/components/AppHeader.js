@@ -29,9 +29,6 @@ const AppHeader = () => {
     navigate("/login")
   }
 
-
-
-
   return (
     <CHeader position="sticky" className="mb-4">
       <CContainer fluid>

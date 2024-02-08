@@ -18,9 +18,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useSelector, useDispatch } from 'react-redux'
 
 const CallsDetail = () => {
   console.log("CallsDetail");
+
+  const calls = useSelector(state => state.resourceCallsReducer);
+  console.log(calls);
+
 
   const ref_id = useRef(null);
 
@@ -31,6 +36,9 @@ const CallsDetail = () => {
     const tmp = localStorage.getItem("calls");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
+
+    const tmpData = calls.data[id];
+    console.log("test data. call: ", tmpData);
 
     var hangupDisable = false;
     if (detailData["status"] == "hangup") {
@@ -68,6 +76,7 @@ const CallsDetail = () => {
                   />
                 </CCol>
               </CRow>
+
 
               <CRow>
                 <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Flow ID</b></CFormLabel>
@@ -128,8 +137,6 @@ const CallsDetail = () => {
               </CRow>
 
 
-
-
               <CRow>
                 <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Hangup By</b></CFormLabel>
                 <CCol className="mb-3 align-items-auto">
@@ -151,8 +158,6 @@ const CallsDetail = () => {
                   />
                 </CCol>
               </CRow>
-
-
 
 
               <CRow>
@@ -177,6 +182,7 @@ const CallsDetail = () => {
                 </CCol>
               </CRow>
 
+
               <CRow>
                 <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Progressing Timestamp</b></CFormLabel>
                 <CCol className="mb-3 align-items-auto">
@@ -199,6 +205,7 @@ const CallsDetail = () => {
                 </CCol>
               </CRow>
 
+
               <CRow>
                 <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Update Timestamp</b></CFormLabel>
                 <CCol>
@@ -210,6 +217,7 @@ const CallsDetail = () => {
                   />
                 </CCol>
               </CRow>
+
 
               <br />
               <CButton type="submit" disabled={hangupDisable} onClick={() => Hangup()}>Hangup</CButton>

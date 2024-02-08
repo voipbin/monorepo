@@ -34,16 +34,12 @@ import {
   ParseData,
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
-
+import { useSelector, useDispatch } from 'react-redux'
+import { ChatroommessagesSetWithChatroomID } from 'src/store';
 
 const Roommessages = () => {
-
+  const dispatch = useDispatch();
   const routeParams = useParams();
-
-  const [listData, setListData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [listMessages, setMessages] = useState([]);
-
   const ref_message = useRef("");
 
   useEffect(() => {
@@ -54,54 +50,51 @@ const Roommessages = () => {
   const agentInfo = JSON.parse(localStorage.getItem("agent_info"));
   const room_id = routeParams.room_id;
 
+  let messagesAll = useSelector(state => {
+    var messages = state.resourceChatroommessagesReducer.data[room_id];
+
+    var tmpRes = [];
+    messages?.forEach(tmp => {
+      if (tmp["source"].target == agentInfo["id"]) {
+        tmpRes.push(
+          <CFormInput
+            type="text"
+            floatingClassName="mb-3"
+            floatingLabel="me"
+            color="success"
+            defaultValue={tmp["text"]}
+            aria-label="Disabled input example"
+            readOnly
+            valid
+          />
+        );
+      } else {
+        tmpRes.push(
+          <CFormInput
+            type="text"
+            floatingClassName="mb-3"
+            floatingLabel={tmp["source"].target}
+            color="primary"
+            defaultValue={tmp["text"]}
+            aria-label="Disabled input example"
+            readOnly
+          />
+        );
+      }
+    });
+
+    const res = tmpRes.reverse();
+    console.log("Update message: ", res);
+
+    return res;
+  });
+
   const getList = (() => {
     const target = "chatroommessages?page_size=100&chatroom_id=" + room_id;
 
     ProviderGet(target).then(result => {
       const data = result.result;
-      setListData(data);
-      setIsLoading(false);
-
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("chatroommessages/" + room_id, tmpData);
-
-      var tmpMessages = [];
-      data.forEach(tmp => {
-
-        console.log("Detail message. message: ", tmp);
-
-        if (tmp["source"].target == agentInfo["id"]) {
-          console.log("My message. id: %s, message: %s", tmp["id"], tmp["text"]);
-          tmpMessages.push(
-            <CFormInput
-              type="text"
-              floatingClassName="mb-3"
-              floatingLabel="me"
-              color="success"
-              defaultValue={tmp["text"]}
-              aria-label="Disabled input example"
-              readOnly
-              valid
-            />
-          );
-        } else {
-          console.log("Other message. id: %s, message: %s", tmp["id"], tmp["text"]);
-          tmpMessages.push(
-            <CFormInput
-              type="text"
-              floatingClassName="mb-3"
-              floatingLabel={tmp["source"].target}
-              color="primary"
-              defaultValue={tmp["text"]}
-              aria-label="Disabled input example"
-              readOnly
-            />
-          );
-        }
-      });
-
-      setMessages(tmpMessages.reverse());
+      dispatch(ChatroommessagesSetWithChatroomID(room_id, data));
     });
   });
 
@@ -130,7 +123,7 @@ const Roommessages = () => {
           </CCardHeader>
 
           <CCardBody>
-            {listMessages}
+            {messagesAll}
 
             <CRow>
               <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Message</b></CFormLabel>
@@ -145,7 +138,6 @@ const Roommessages = () => {
               <CCol className="mb-3 align-items-auto">
                 <CButton type="submit" onClick={() => SendMessage()}>Send</CButton>
               </CCol>
-
             </CRow>
 
           </CCardBody>
