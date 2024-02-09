@@ -2,13 +2,30 @@
 
 Overview
 ========
-WebSocket, a formidable feature within VoIPBin, empowers web applications to subscribe to specific event topics, facilitating real-time updates for dynamic data changes during runtime.
+WebSocket, a powerful feature within VoIPBin, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.
 
-WebSocket establishes a persistent and bi-directional connection with the VoIPBin server, fostering seamless communication and event notification, ultimately bestowing web applications with real-time capabilities. This makes WebSocket an indispensable tool for constructing dynamic and interactive communication applications using VoIPBin.
+WebSocket establishes a persistent and bi-directional connection with the VoIPBin server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.
 
-Topic Subscription
-------------------
-WebSocket enables users to subscribe to distinct event topics, each corresponding to a specific resource in the VoIPBin system. Subscribers can tailor their topic subscriptions to match their application's needs, ensuring they receive updates for resources of interest.
+Websocket endpoint
+----------------------
+To leverage WebSocket in VoIPBin, connect to the following endpoint:
+
+.. code::
+
+    GET wss://api.voipbin.net/v1.0/ws?token=<your authtoken here>
+
+Topic Subscription/Unsubscription
+------------------------------------
+WebSocket empowers users to subscribe to distinct event topics, each corresponding to a specific resource in the VoIPBin system. Users can tailor their topic subscriptions to match their application's needs, ensuring they receive updates for resources of interest.
+
+To subscribe or unsubscribe from an event, send the following JSON message through the established WebSocket:
+
+.. code::
+
+    {
+        "type": "<subscribe|unsubscribe>",
+        "topics": ["<topic>", ...]
+    }
 
 The topic format follows:
 
@@ -16,17 +33,18 @@ The topic format follows:
 
     <resource>:<resource-id>
 
-For instance, subscribing to the topic `activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f` results in receiving events related to the activeflow resource with the ID 74ac5405-7c70-4184-9388-1c9f8f8ce25f. Additionally, subscribing to the broader topic activeflow yields events for all activeflow resources in the system.
+Here's an example subscribe message:
 
 .. code::
 
     {
-        "type": "activeflow_created",
-        "data": {
-            "id": "74ac5405-7c70-4184-9388-1c9f8f8ce25f",
-            ...
-        }
+        "type": "subscribe",
+        "topics": [
+            "activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f"
+        ]
     }
+
+Subscribing to the topic activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f results in receiving events related to the activeflow resource with the specified ID.
 
 Pattern Matching Subscription
 -----------------------------
