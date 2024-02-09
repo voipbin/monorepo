@@ -6,13 +6,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // WebsockHandler defines
 type WebsockHandler interface {
-	Run(ctx context.Context, w http.ResponseWriter, r *http.Request, agentID uuid.UUID) error
+	Run(ctx context.Context, w http.ResponseWriter, r *http.Request, a *amagent.Agent) error
 }
 
 var upgrader = websocket.Upgrader{

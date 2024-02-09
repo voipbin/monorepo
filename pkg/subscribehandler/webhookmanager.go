@@ -18,12 +18,10 @@ type commonWebhookData struct {
 
 // processEventWebhookManagerWebhookPublished handles the webhook-manager's webhook_published event.
 func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":  "processEventWebhookManagerWebhookPublished",
-			"event": m,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventWebhookManagerWebhookPublished",
+		"event": m,
+	})
 	log.Debugf("Received event. event: %s", m.Type)
 
 	wh := &wmwebhook.Webhook{}
@@ -58,6 +56,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 		log.Errorf("Could not create the topic")
 		return fmt.Errorf("could not create the topic")
 	}
+	log.Debugf("Created topic. topic: %s", topic)
 
 	// create the data
 	data, err := json.Marshal(wh.Data)
@@ -65,6 +64,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return err
 	}
+	log.Debugf("Created data. data: %s", string(data))
 
 	if errPub := h.zmqpubHandler.Publish(topic, string(data)); errPub != nil {
 		log.Errorf("Could not publish the webhook. err: %v", errPub)
