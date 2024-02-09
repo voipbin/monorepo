@@ -11,11 +11,11 @@ import (
 // WebsockCreate validates the tag's ownership and returns the message info.
 func (h *serviceHandler) WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "WebsockCreate",
-		"agent_id": a.ID,
+		"func":  "WebsockCreate",
+		"agent": a,
 	})
 
-	if errRun := h.websockHandler.Run(ctx, w, r, a.ID); errRun != nil {
+	if errRun := h.websockHandler.Run(ctx, w, r, a); errRun != nil {
 		log.Errorf("Could not run the websock handler correctly. err: %v", errRun)
 		return errRun
 	}

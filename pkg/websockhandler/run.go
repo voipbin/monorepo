@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/models/hook"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmqsubhandler"
@@ -37,13 +37,13 @@ func (h *websockHandler) runZMQSub(
 func (h *websockHandler) runWebsock(
 	ctx context.Context,
 	cancel context.CancelFunc,
-	agentID uuid.UUID,
+	a *amagent.Agent,
 	ws *websocket.Conn,
 	sock zmqsubhandler.ZMQSubHandler,
 ) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "runWebsock",
-		"agent_id": agentID,
+		"func":  "runWebsock",
+		"agent": a,
 	})
 
 	chanWS := make(chan hook.Hook)
@@ -68,7 +68,7 @@ main:
 			case hook.TypeSubscribe:
 				for _, t := range m.Topics {
 					// subscribe
-					topic := fmt.Sprintf("%s:%s", agentID, t)
+					topic := fmt.Sprintf("%s:%s", a.CustomerID, t)
 					if errSub := sock.Subscribe(topic); errSub != nil {
 						log.Errorf("Could not subscribe the topic. topic: %s, err: %v", topic, errSub)
 						continue
@@ -79,7 +79,7 @@ main:
 			case hook.TypeUnsubscribe:
 				for _, t := range m.Topics {
 					// unsubscribe
-					topic := fmt.Sprintf("%s:%s", agentID, t)
+					topic := fmt.Sprintf("%s:%s", a.CustomerID, t)
 					if errSub := sock.Unsubscribe(topic); errSub != nil {
 						log.Errorf("Could not unsubscribe the topic. topic: %s, err: %v", topic, errSub)
 						continue
