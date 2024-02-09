@@ -64,7 +64,8 @@
 <li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Websocket</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#topic-subscription">Topic Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#websocket-endpoint">Websocket endpoint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topic-subscription-unsubscription">Topic Subscription/Unsubscription</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pattern-matching-subscription">Pattern Matching Subscription</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#real-time-event-updates">Real-Time Event Updates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#benefits-of-websocket">Benefits of WebSocket</a></li>
@@ -116,25 +117,39 @@
 <span id="websocket-main"></span><h1>Websocket<a class="headerlink" href="#websocket" title="Permalink to this headline"></a></h1>
 <section id="overview">
 <span id="websocket-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>WebSocket, a formidable feature within VoIPBin, empowers web applications to subscribe to specific event topics, facilitating real-time updates for dynamic data changes during runtime.</p>
-<p>WebSocket establishes a persistent and bi-directional connection with the VoIPBin server, fostering seamless communication and event notification, ultimately bestowing web applications with real-time capabilities. This makes WebSocket an indispensable tool for constructing dynamic and interactive communication applications using VoIPBin.</p>
-<section id="topic-subscription">
-<h3>Topic Subscription<a class="headerlink" href="#topic-subscription" title="Permalink to this headline"></a></h3>
-<p>WebSocket enables users to subscribe to distinct event topics, each corresponding to a specific resource in the VoIPBin system. Subscribers can tailor their topic subscriptions to match their application’s needs, ensuring they receive updates for resources of interest.</p>
+<p>WebSocket, a powerful feature within VoIPBin, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.</p>
+<p>WebSocket establishes a persistent and bi-directional connection with the VoIPBin server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.</p>
+<section id="websocket-endpoint">
+<h3>Websocket endpoint<a class="headerlink" href="#websocket-endpoint" title="Permalink to this headline"></a></h3>
+<p>To leverage WebSocket in VoIPBin, connect to the following endpoint:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET wss://api.voipbin.net/v1.0/ws?token=&lt;your authtoken here&gt;
+</pre></div>
+</div>
+</section>
+<section id="topic-subscription-unsubscription">
+<h3>Topic Subscription/Unsubscription<a class="headerlink" href="#topic-subscription-unsubscription" title="Permalink to this headline"></a></h3>
+<p>WebSocket empowers users to subscribe to distinct event topics, each corresponding to a specific resource in the VoIPBin system. Users can tailor their topic subscriptions to match their application’s needs, ensuring they receive updates for resources of interest.</p>
+<p>To subscribe or unsubscribe from an event, send the following JSON message through the established WebSocket:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;subscribe|unsubscribe&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;topic&gt;&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <p>The topic format follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>For instance, subscribing to the topic <cite>activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f</cite> results in receiving events related to the activeflow resource with the ID 74ac5405-7c70-4184-9388-1c9f8f8ce25f. Additionally, subscribing to the broader topic activeflow yields events for all activeflow resources in the system.</p>
+<p>Here’s an example subscribe message:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;74ac5405-7c70-4184-9388-1c9f8f8ce25f&quot;</span><span class="p">,</span>
-        <span class="o">...</span>
-    <span class="p">}</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f&quot;</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>Subscribing to the topic activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f results in receiving events related to the activeflow resource with the specified ID.</p>
 </section>
 <section id="pattern-matching-subscription">
 <h3>Pattern Matching Subscription<a class="headerlink" href="#pattern-matching-subscription" title="Permalink to this headline"></a></h3>

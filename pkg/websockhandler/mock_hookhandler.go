@@ -9,8 +9,8 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // MockWebsockHandler is a mock of WebsockHandler interface.
@@ -37,15 +37,15 @@ func (m *MockWebsockHandler) EXPECT() *MockWebsockHandlerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockWebsockHandler) Run(ctx context.Context, w http.ResponseWriter, r *http.Request, agentID uuid.UUID) error {
+func (m *MockWebsockHandler) Run(ctx context.Context, w http.ResponseWriter, r *http.Request, a *agent.Agent) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", ctx, w, r, agentID)
+	ret := m.ctrl.Call(m, "Run", ctx, w, r, a)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockWebsockHandlerMockRecorder) Run(ctx, w, r, agentID interface{}) *gomock.Call {
+func (mr *MockWebsockHandlerMockRecorder) Run(ctx, w, r, a interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockWebsockHandler)(nil).Run), ctx, w, r, agentID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockWebsockHandler)(nil).Run), ctx, w, r, a)
 }
