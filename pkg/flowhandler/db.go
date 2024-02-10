@@ -14,11 +14,11 @@ import (
 
 // Get returns flow
 func (h *flowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "Get",
-			"id":   id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Get",
+		"id":   id,
+	})
+
 	res, err := h.db.FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow. err: %v", err)
@@ -38,7 +38,15 @@ func (h *flowHandler) Create(
 	persist bool,
 	actions []action.Action,
 ) (*flow.Flow, error) {
-	log := logrus.WithField("func", "Create")
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"customer_id": customerID,
+		"flow_type":   flowType,
+		"name":        name,
+		"detail":      detail,
+		"persist":     persist,
+		"actions":     actions,
+	})
 
 	// generates the actions
 	a, err := h.actionHandler.GenerateFlowActions(ctx, actions)
@@ -92,13 +100,12 @@ func (h *flowHandler) Create(
 
 // GetsByCustomerID returns list of flows
 func (h *flowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByCustomerID",
-			"customer_id": customerID,
-			"token":       token,
-			"limit":       size,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+		"token":       token,
+		"limit":       size,
+	})
 
 	res, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, size, filters)
 	if err != nil {
@@ -110,19 +117,15 @@ func (h *flowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID
 }
 
 // Update updates the flow info and return the updated flow
-func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "Update",
-			"flow_id": id,
-		})
-	log.WithFields(
-		logrus.Fields{
-			"name":    name,
-			"detail":  detail,
-			"actions": actions,
-		},
-	).Debug("Updating the flow.")
+func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, actions []action.Action) (*flow.Flow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Update",
+		"flow_id": id,
+		"name":    name,
+		"detail":  detail,
+		"actions": actions,
+	})
+	log.Debug("Updating the flow.")
 
 	// generates the tmpActions
 	tmpActions, err := h.actionHandler.GenerateFlowActions(ctx, actions)
@@ -150,12 +153,10 @@ func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name, detail str
 // Delete deletes the flow
 // And it also removes the related flow_id from the number-manager
 func (h *flowHandler) Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "Delete",
-			"flow_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Delete",
+		"flow_id": id,
+	})
 	log.Debug("Deleting the flow.")
 
 	err := h.db.FlowDelete(ctx, id)
@@ -176,16 +177,12 @@ func (h *flowHandler) Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, err
 
 // UpdateActions updates the actions and return the updated flow
 func (h *flowHandler) UpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "UpdateActions",
-			"flow_id": id,
-		})
-	log.WithFields(
-		logrus.Fields{
-			"actions": actions,
-		},
-	).Debug("Updating the flow.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "UpdateActions",
+		"flow_id": id,
+		"actions": actions,
+	})
+	log.Debug("Updating the flow actions.")
 
 	// generates the tmpActions
 	tmpActions, err := h.actionHandler.GenerateFlowActions(ctx, actions)
