@@ -1,6 +1,7 @@
 package activeflows
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,9 +12,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -21,6 +24,86 @@ import (
 func setupServer(app *gin.Engine) {
 	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
 	ApplyRoutes(v1)
+}
+
+func Test_activeflowsPOST(t *testing.T) {
+
+	type test struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		req      request.BodyActiveflowsPOST
+
+		responseActiveflow *fmactiveflow.WebhookMessage
+		expectRes          string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			agent: amagent.Agent{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			reqQuery: "/v1.0/activeflows",
+			req: request.BodyActiveflowsPOST{
+				ID:     uuid.FromStringOrNil("06f74fac-c82f-11ee-bbfd-33ef6d9071f8"),
+				FlowID: uuid.FromStringOrNil("073130b4-c82f-11ee-b396-6392e3537393"),
+				Actions: []fmaction.Action{
+					{
+						Type: fmaction.TypeAnswer,
+					},
+				},
+			},
+
+			responseActiveflow: &fmactiveflow.WebhookMessage{
+				ID: uuid.FromStringOrNil("06f74fac-c82f-11ee-bbfd-33ef6d9071f8"),
+			},
+			expectRes: `{"id":"06f74fac-c82f-11ee-bbfd-33ef6d9071f8","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_action_id":"00000000-0000-0000-0000-000000000000","executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("agent", tt.agent)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.req)
+			if err != nil {
+				t.Errorf("Wong match. expect: ok, got: %v", err)
+			}
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
+
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().ActiveflowCreate(req.Context(), &tt.agent, tt.req.ID, tt.req.FlowID, tt.req.Actions).Return(tt.responseActiveflow, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+
+		})
+	}
 }
 
 func Test_ActiveflowsGET(t *testing.T) {

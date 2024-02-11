@@ -64,6 +64,7 @@ const (
 type ServiceHandler interface {
 
 	// activeflows
+	ActiveflowCreate(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowDelete(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowGet(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error)
