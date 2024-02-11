@@ -439,7 +439,7 @@ func agentsIDStatusPUT(c *gin.Context) {
 // @Description Update an agent permission info.
 // @Produce     json
 // @Param       id          path string                        true "The ID of the agent"
-// @Param       update_info body request.agentsIDPermissionPUT true "Agent's update info"
+// @Param       update_info body request.BodyAgentsIDPermissionPUT true "Agent's update info"
 // @Success     200
 // @Router      /v1.0/agents/{id}/permission [put]
 func agentsIDPermissionPUT(c *gin.Context) {

@@ -78,6 +78,21 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
 }
 
+// ActiveflowCreate mocks base method.
+func (m *MockServiceHandler) ActiveflowCreate(ctx context.Context, a *agent.Agent, activeflowID, flowID uuid.UUID, actions []action.Action) (*activeflow.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowCreate", ctx, a, activeflowID, flowID, actions)
+	ret0, _ := ret[0].(*activeflow.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowCreate indicates an expected call of ActiveflowCreate.
+func (mr *MockServiceHandlerMockRecorder) ActiveflowCreate(ctx, a, activeflowID, flowID, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowCreate", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowCreate), ctx, a, activeflowID, flowID, actions)
+}
+
 // ActiveflowDelete mocks base method.
 func (m *MockServiceHandler) ActiveflowDelete(ctx context.Context, a *agent.Agent, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()

@@ -6,6 +6,7 @@ import "github.com/gin-gonic/gin"
 func ApplyRoutes(r *gin.RouterGroup) {
 	a := r.Group("/activeflows")
 
+	a.POST("", activeflowsPOST)
 	a.GET("", activeflowsGET)
 	a.DELETE("/:id", activeflowsIDDELETE)
 	a.GET("/:id", activeflowsIDGET)

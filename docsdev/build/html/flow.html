@@ -46,6 +46,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#non-linear-action-execution">Non-linear action execution</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#flow-fork">Flow fork</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#actions">Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flow-execution">Flow execution</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#flow-struct-flow">Flow</a><ul>
@@ -328,31 +329,65 @@
 <p>The Flow in VoIPBIN is a powerful set of instructions that guides the platform on how to handle incoming calls. When someone calls one of your VoIPBIN numbers or destinations, the platform looks up the associated URL and sends a request. The Flow instructions are then read to determine the appropriate actions to be taken, such as recording the call, playing a message, or prompting the caller to press digits on their keypad.</p>
 <p>At its core, the Flow is an array of JSON objects with special tags defined by VoIPBIN, enabling users to build their own Programmable Voice applications.</p>
 <section id="how-the-flow-works">
-<span id="flow-overview-actions"></span><h3>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this headline"></a></h3>
+<span id="flow-overview-how-the-flow-works"></span><h3>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this headline"></a></h3>
 <p>When an incoming call is received on one of your VoIPBIN numbers or destinations, the platform identifies the associated URL and sends a request.</p>
 <p>The Flow instructions are then processed, providing a step-by-step guide on how to handle the call. This might involve greeting the caller, presenting options, gathering input, or executing various actions based on the caller’s response.</p>
 </section>
 <section id="unified-flow">
-<h3>Unified flow<a class="headerlink" href="#unified-flow" title="Permalink to this headline"></a></h3>
+<span id="flow-overview-unified-flow"></span><h3>Unified flow<a class="headerlink" href="#unified-flow" title="Permalink to this headline"></a></h3>
 <p>VoIPBIN’s Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice and video calls, SMS, and RESTful API triggers.</p>
 <p>With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBIN then automatically executes this flow, ensuring a consistent experience for customers across various channels.</p>
 </section>
 <section id="non-linear-action-execution">
-<h3>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Permalink to this headline"></a></h3>
+<span id="flow-overview-non-linear-action-execution"></span><h3>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Permalink to this headline"></a></h3>
 <p>VoIPBIN’s Flow provides the flexibility of Non-Linear action execution.</p>
 <p>Users can customize their actions in both linear and non-linear ways, allowing them to define complex logic and decision trees to handle various call scenarios.</p>
 <img alt="_images/flow_overview_non_linear.png" src="_images/flow_overview_non_linear.png" />
 </section>
 <section id="flow-fork">
-<h3>Flow fork<a class="headerlink" href="#flow-fork" title="Permalink to this headline"></a></h3>
+<span id="flow-overview-flow-fork"></span><h3>Flow fork<a class="headerlink" href="#flow-fork" title="Permalink to this headline"></a></h3>
 <p>Certain flow actions, such as fetch, fetch_flow, queue_join, and more, enable flow forking.</p>
 <p>When the flow is forked, the execution cursor moves to the forked flow and starts executing the actions within it. Once the forked flow reaches its end, the execution cursor moves back to the following action of the forking action, continuing the flow execution.</p>
 <img alt="_images/flow_overview_fork.png" src="_images/flow_overview_fork.png" />
 </section>
 <section id="actions">
-<h3>Actions<a class="headerlink" href="#actions" title="Permalink to this headline"></a></h3>
+<span id="flow-overview-actions"></span><h3>Actions<a class="headerlink" href="#actions" title="Permalink to this headline"></a></h3>
 <p>Within VoIPBIN, actions dictate the course of the platform’s response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.</p>
 <p>VoIPBIN’s Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBIN’s Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.</p>
+</section>
+<section id="flow-execution">
+<span id="flow-overview-flow-execution"></span><h3>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this headline"></a></h3>
+<p>In VoIPBin, the execution of flows is versatile and can be initiated through various methods:</p>
+<p><strong>Incoming/Outgoing Calls:</strong></p>
+<p>VoIPBin facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBin will seamlessly execute the associated flow.
+Users can also initiate a call with a predefined flow. Once the outgoing call is answered, the attached flow will be triggered.</p>
+<p><strong>Received Messages:</strong></p>
+<p>VoIPBin allows users to register flows to received messages. When a message is received, the registered flow will be executed.
+For example, you can register the flow like the below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.message.text&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;call me&quot;</span><span class="p">:</span> <span class="s2">&quot;7a1e8c4c-aaea-11ed-9f0f-bffcc31ca3c3&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;text me&quot;</span><span class="p">:</span> <span class="s2">&quot;79fd8c9a-aaea-11ed-a238-0b094a49c637&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;text developer&quot;</span><span class="p">:</span> <span class="s2">&quot;73107b70-d56b-4b47-b331-dc4f2ac43a5b&quot;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>In the provided example, the system examines the content of the received message using <strong>voipbin.message.text</strong> and proceeds to compare the message text.
+Should the message text match the specified criterion, such as “call me,” the flow execution cursor will be directed to the designated action ID (7a1e8c4c-aaea-11ed-9f0f-bffcc31ca3c3) for subsequent execution.
+See detail about available variables at <a class="reference internal" href="variable.html#variable-main"><span class="std std-ref">here</span></a>.</p>
+<p><strong>Outbound Campaigns:</strong></p>
+<p>The VoIPBin platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.</p>
+<p><strong>API:</strong></p>
+<p>Users have the flexibility to trigger flows through API calls. This API integration empowers developers to seamlessly incorporate and activate flows within their applications.
+These diverse methods offer users and developers flexibility in integrating and executing flows based on their specific needs and scenarios.
+See detail at here &lt;<a class="reference external" href="https://api.voipbin.net/swagger/index.html#/default/post_v1_0_activeflows">https://api.voipbin.net/swagger/index.html#/default/post_v1_0_activeflows</a>&gt;.</p>
 </section>
 </section>
 <section id="flow-struct-flow">
@@ -375,10 +410,10 @@
 </div>
 <ul class="simple">
 <li><p>id: Flow’s ID.</p></li>
-<li><p>type: Flow’s types. See detail <a class="reference internal" href="#flow-struct-flow-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>type: Flow’s types. See detail <a class="reference internal" href="flow_struct_flow.html#flow-struct-flow-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>name: Flow’s name.</p></li>
 <li><p>detail: Flow’s detail.</p></li>
-<li><p>actions: List of actions. See detail <a class="reference internal" href="#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>actions: List of actions. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <p><strong>Example</strong>
 .. code:</p>
@@ -452,7 +487,7 @@
 <ul class="simple">
 <li><p><em>id</em>: Action’s id.</p></li>
 <li><p><em>next_id</em>: Action’s next id. If it sets empty, just move on to the next action in the action array.</p></li>
-<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>option</em>: Action’s option.</p></li>
 </ul>
 </section>
@@ -634,7 +669,7 @@ The agent may have various types of addresses or phone numbers, such as a desk p
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>machine_handle</em>: hangup,delay,continue if the machine answered a call. See detail <a class="reference internal" href="#flow-struct-action-amd-machinehandle"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>machine_handle</em>: hangup,delay,continue if the machine answered a call. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-amd-machinehandle"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>async</em>: if it’s false, the call flow will be stop until amd done.</p></li>
 </ul>
 </section>
@@ -732,7 +767,7 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>variable</em>: Target variable. If this value is empty, default target variable will be selected. Available variables are listed <a class="reference internal" href="variable.html#variable-variable"><span class="std std-ref">here</span></a>. default: voipbin.call.digits</p></li>
+<li><p><em>variable</em>: Target variable. If this value is empty, default target variable will be selected. Available variables are listed <a class="reference internal" href="variable_variable.html#variable-variable"><span class="std std-ref">here</span></a>. default: voipbin.call.digits</p></li>
 <li><p>default_target_id: action id for default selection. This will be generated automatically by the given default_index.</p></li>
 <li><p>target_ids: set of input digit and target id fair. This will be generated automatically by the given target_indexes.</p></li>
 </ul>
@@ -923,7 +958,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>status</em>: match call’s status. See detail <a class="reference internal" href="call.html#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: match call’s status. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>false_target_id: action id for false condition.</p></li>
 </ul>
 </section>
@@ -1016,7 +1051,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 <ul class="simple">
 <li><p><em>condition</em>: Match condition. One of “==”, “!=”, “&gt;”, “&gt;=”, “&lt;”, “&lt;=”.</p></li>
-<li><p><em>variable</em>: Target variable. See detail <a class="reference internal" href="variable.html#variable-variable"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>variable</em>: Target variable. See detail <a class="reference internal" href="variable_variable.html#variable-variable"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>value_type: Type of value. string/number/length.</p></li>
 <li><p>value_string: Value. Valid only if the value_type is string.</p></li>
 <li><p>value_number: * value_string: Value. Valid only if the value_type is number.</p></li>
@@ -1646,7 +1681,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p>text: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</p></li>
 <li><p>gender: male/female/neutral.</p></li>
 <li><p>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
-<li><p>digits_handle: See detail <a class="reference internal" href="#flow-struct-action-talk-digits-handle"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>digits_handle: See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-talk-digits-handle"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="digits-handle">
@@ -1859,11 +1894,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <ul class="simple">
 <li><p>id: Activeflow’s ID.</p></li>
 <li><p>flow_id: Based flow id.</p></li>
-<li><p><em>reference_type</em>: Referenced resource type. See detail <a class="reference internal" href="#flow-struct-activeflow-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>reference_type</em>: Referenced resource type. See detail <a class="reference internal" href="flow_struct_activeflow.html#flow-struct-activeflow-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>reference_id: Referenced resource’s ID.</p></li>
-<li><p>current_action: Currently executing action. See detail <a class="reference internal" href="#flow-struct-action"><span class="std std-ref">here</span></a></p></li>
+<li><p>current_action: Currently executing action. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a></p></li>
 <li><p>forward_action_id: Forward action ID. This action_id will be executed in the next action execution.</p></li>
-<li><p>actions: List of actions. See detail <a class="reference internal" href="#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>actions: List of actions. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id73">
 <h4>Example<a class="headerlink" href="#id73" title="Permalink to this headline"></a></h4>

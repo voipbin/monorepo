@@ -12,6 +12,52 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
+// @Summary     Make and execute the activeflow
+// @Description Create and execute the activeflow
+// @Produce     json
+// activeflowsPOST handles POST /activeflows request.
+// It creates an activeflow and executes the created activeflow.
+// @Param       activeflow body     request.BodyActiveflowsPOST true "The activeflow detail"
+// @Success     200  {object} activeflow.Activeflow
+// @Router      /v1.0/activeflows [post]
+func activeflowsPOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "activeflowsPOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	var req request.BodyActiveflowsPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// create activeflow
+	res, err := serviceHandler.ActiveflowCreate(c.Request.Context(), &a, req.ID, req.FlowID, req.Actions)
+	if err != nil {
+		log.Errorf("Could not create a call for outgoing. err; %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // activeflowsGET handles GET /activeflows request.
 // It returns list of activeflows of the given customer.
 
