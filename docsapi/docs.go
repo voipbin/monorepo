@@ -91,6 +91,32 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Create and execute the activeflow",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Make and execute the activeflow",
+                "parameters": [
+                    {
+                        "description": "The activeflow detail",
+                        "name": "activeflow",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyActiveflowsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/activeflow.Activeflow"
+                        }
+                    }
+                }
             }
         },
         "/v1.0/activeflows/{id}": {
@@ -334,6 +360,38 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/request.BodyAgentsIDAddressesPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/agents/{id}/permission": {
+            "put": {
+                "description": "Update an agent permission info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an agent's permission info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Agent's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyAgentsIDPermissionPUT"
                         }
                     }
                 ],
@@ -1727,6 +1785,32 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Create a new chatroommessage and returns detail created chatroommessage info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new chatroommessage and returns detail created chatroommessage info.",
+                "parameters": [
+                    {
+                        "description": "chatroommessage info.",
+                        "name": "chatroommessage",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatroommessagesPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/messagechat.WebhookMessage"
+                        }
+                    }
+                }
             }
         },
         "/v1.0/chatroommessages/{id}": {
@@ -1815,6 +1899,32 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Create a new chatroom and returns detail created chatroom info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new chatroom and returns detail created chatroom info.",
+                "parameters": [
+                    {
+                        "description": "chatroom info.",
+                        "name": "chatroom",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatroomsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chatroom.WebhookMessage"
+                        }
+                    }
+                }
             }
         },
         "/v1.0/chatrooms/{id}": {
@@ -1838,6 +1948,39 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/chatroom.Chatroom"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a chat and returns detail updated info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a chat and reuturns updated info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The chatroom's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatroomsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chat.Chat"
                         }
                     }
                 }
@@ -5345,6 +5488,13 @@ const docTemplate = `{
                 "customer_id": {
                     "type": "string"
                 },
+                "executed_actions": {
+                    "description": "list of executed actions",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
                 "flow_id": {
                     "type": "string"
                 },
@@ -6261,6 +6411,49 @@ const docTemplate = `{
                 },
                 "participant_ids": {
                     "description": "list of participated agent ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "chatroom.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "description": "owned agent id",
+                    "type": "string"
+                },
+                "participant_ids": {
+                    "description": "list of participated ids(agent ids)",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -7889,6 +8082,9 @@ const docTemplate = `{
         "recording.WebhookMessage": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "format": {
                     "type": "string"
                 },
@@ -7921,6 +8117,24 @@ const docTemplate = `{
                 }
             }
         },
+        "request.BodyActiveflowsPOST": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "activeflow id",
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyAgentsIDAddressesPUT": {
             "type": "object",
             "required": [
@@ -7947,6 +8161,18 @@ const docTemplate = `{
                 "ring_method": {
                     "description": "agent's ring method",
                     "type": "string"
+                }
+            }
+        },
+        "request.BodyAgentsIDPermissionPUT": {
+            "type": "object",
+            "required": [
+                "permission"
+            ],
+            "properties": {
+                "permission": {
+                    "description": "agent's permission.",
+                    "type": "integer"
                 }
             }
         },
@@ -8181,6 +8407,45 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "request.BodyChatroommessagesPOST": {
+            "type": "object",
+            "properties": {
+                "chatroom_id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyChatroomsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyChatroomsPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "participant_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

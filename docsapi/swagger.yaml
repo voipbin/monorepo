@@ -94,6 +94,11 @@ definitions:
         $ref: '#/definitions/action.Action'
       customer_id:
         type: string
+      executed_actions:
+        description: list of executed actions
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
       flow_id:
         type: string
       forward_action_id:
@@ -728,6 +733,35 @@ definitions:
         type: string
       participant_ids:
         description: list of participated agent ids
+        items:
+          type: string
+        type: array
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  chatroom.WebhookMessage:
+    properties:
+      chat_id:
+        type: string
+      customer_id:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        description: owned agent id
+        type: string
+      participant_ids:
+        description: list of participated ids(agent ids)
         items:
           type: string
         type: array
@@ -1843,6 +1877,8 @@ definitions:
     type: object
   recording.WebhookMessage:
     properties:
+      customer_id:
+        type: string
       format:
         type: string
       id:
@@ -1864,6 +1900,18 @@ definitions:
       tm_update:
         type: string
     type: object
+  request.BodyActiveflowsPOST:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      flow_id:
+        type: string
+      id:
+        description: activeflow id
+        type: string
+    type: object
   request.BodyAgentsIDAddressesPUT:
     properties:
       addresses:
@@ -1882,6 +1930,14 @@ definitions:
       ring_method:
         description: agent's ring method
         type: string
+    type: object
+  request.BodyAgentsIDPermissionPUT:
+    properties:
+      permission:
+        description: agent's permission.
+        type: integer
+    required:
+    - permission
     type: object
   request.BodyAgentsIDStatusPUT:
     properties:
@@ -2036,6 +2092,31 @@ definitions:
         type: string
       type:
         type: string
+    type: object
+  request.BodyChatroommessagesPOST:
+    properties:
+      chatroom_id:
+        type: string
+      text:
+        type: string
+    type: object
+  request.BodyChatroomsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  request.BodyChatroomsPOST:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      participant_ids:
+        items:
+          type: string
+        type: array
     type: object
   request.BodyChatsIDOwnerIDPUT:
     properties:
@@ -2987,6 +3068,23 @@ paths:
           schema:
             $ref: '#/definitions/response.BodyActiveflowsGET'
       summary: Get list of activeflows
+    post:
+      description: Create and execute the activeflow
+      parameters:
+      - description: The activeflow detail
+        in: body
+        name: activeflow
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyActiveflowsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/activeflow.Activeflow'
+      summary: Make and execute the activeflow
   /v1.0/activeflows/{id}:
     delete:
       description: Deletes activeflow info of the given activeflow id.
@@ -3152,6 +3250,27 @@ paths:
         "200":
           description: OK
       summary: Update an agent info.
+  /v1.0/agents/{id}/permission:
+    put:
+      description: Update an agent permission info.
+      parameters:
+      - description: The ID of the agent
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Agent's update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyAgentsIDPermissionPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update an agent's permission info.
   /v1.0/agents/{id}/status:
     put:
       description: Update an agent status info.
@@ -4061,6 +4180,25 @@ paths:
           schema:
             $ref: '#/definitions/response.BodyChatsGET'
       summary: Gets a list of chatroommessages.
+    post:
+      description: Create a new chatroommessage and returns detail created chatroommessage
+        info.
+      parameters:
+      - description: chatroommessage info.
+        in: body
+        name: chatroommessage
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatroommessagesPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/messagechat.WebhookMessage'
+      summary: Create a new chatroommessage and returns detail created chatroommessage
+        info.
   /v1.0/chatroommessages/{id}:
     delete:
       description: Deletes a chatroommessage and returns detail chatroommessage info.
@@ -4120,6 +4258,23 @@ paths:
           schema:
             $ref: '#/definitions/response.BodyChatsGET'
       summary: Gets a list of chatrooms.
+    post:
+      description: Create a new chatroom and returns detail created chatroom info.
+      parameters:
+      - description: chatroom info.
+        in: body
+        name: chatroom
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatroomsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chatroom.WebhookMessage'
+      summary: Create a new chatroom and returns detail created chatroom info.
   /v1.0/chatrooms/{id}:
     delete:
       description: Deletes a chatroom and returns detail chatroom info.
@@ -4153,6 +4308,28 @@ paths:
           schema:
             $ref: '#/definitions/chatroom.Chatroom'
       summary: Returns detail chatroom info.
+    put:
+      description: Update a chat and returns detail updated info.
+      parameters:
+      - description: The chatroom's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatroomsIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chat.Chat'
+      summary: Update a chat and reuturns updated info.
   /v1.0/chats:
     get:
       description: Gets a list of chats
