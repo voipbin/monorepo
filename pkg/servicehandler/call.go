@@ -69,6 +69,17 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *amagent.Agent, flowI
 		targetFlowID = f.ID
 	}
 
+	// verify the flow
+	f, err := h.flowGet(ctx, a, targetFlowID)
+	if err != nil {
+		log.Errorf("Could not get flow info. err: %v", err)
+		return nil, nil, err
+	}
+	if f.CustomerID != a.CustomerID {
+		log.WithField("flow", f).Errorf("The flow has wrong customer id")
+		return nil, nil, fmt.Errorf("the flow has wrong customer id")
+	}
+
 	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)

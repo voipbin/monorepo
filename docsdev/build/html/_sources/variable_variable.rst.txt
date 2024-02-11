@@ -28,6 +28,30 @@ Others
 * voipbin.call.master_call_id: Call's master call id.
 * voipbin.call.digits: Call;s received digits.
 
+Message
+-------
+
+Source address
+++++++++++++++
+* voipbin.message.source.name: Source address's name.
+* voipbin.message.source.detail: Source address's detail.
+* voipbin.message.source.target: Source address's target.
+* voipbin.message.source.target_name: Source address's target name.
+* voipbin.message.source.type: Source address's type.
+
+Target destination address
+++++++++++++++++++++++++++
+* voipbin.message.target.destination.name: Destination address's name.
+* voipbin.message.target.destination.detail: Destination address's detail.
+* voipbin.message.target.destination.target: Destination address's target.
+* voipbin.message.target.destination.target_name: Destination address's target name.
+* voipbin.message.target.destination.type: Destination address's type.
+
+Message
++++++++
+* voipbin.message.id: Message's id.
+* voipbin.message.text: Message's text.
+* voipbin.message.direction: Message's direction.
 
 Queue
 -----

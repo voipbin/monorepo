@@ -147,6 +147,7 @@ func Test_CallCreate(t *testing.T) {
 		source       *commonaddress.Address
 		destinations []commonaddress.Address
 
+		responseFlow       *fmflow.Flow
 		responseCalls      []*cmcall.Call
 		responseGroupcalls []*cmgroupcall.Groupcall
 
@@ -174,6 +175,11 @@ func Test_CallCreate(t *testing.T) {
 				},
 			},
 
+			responseFlow: &fmflow.Flow{
+				ID:         uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
+			},
 			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
@@ -221,6 +227,11 @@ func Test_CallCreate(t *testing.T) {
 				},
 			},
 
+			responseFlow: &fmflow.Flow{
+				ID:         uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
+			},
 			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
@@ -268,6 +279,11 @@ func Test_CallCreate(t *testing.T) {
 				},
 			},
 
+			responseFlow: &fmflow.Flow{
+				ID:         uuid.FromStringOrNil("2ca43d36-8df9-11ec-846a-ebf271da36c8"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
+			},
 			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
@@ -306,12 +322,14 @@ func Test_CallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			targetFlowID := tt.flowID
-			if targetFlowID == uuid.Nil {
-				targetFlowID = uuid.Must(uuid.NewV4())
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
+			flowID := tt.flowID
+			if flowID == uuid.Nil {
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(tt.responseFlow, nil)
+				flowID = tt.responseFlow.ID
 			}
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(tt.responseFlow, nil)
+
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, tt.responseFlow.ID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.agent, tt.flowID, tt.actions, tt.source, tt.destinations)
 			if err != nil {
@@ -327,7 +345,6 @@ func Test_CallCreate(t *testing.T) {
 
 		})
 	}
-
 }
 
 func Test_CallDelete(t *testing.T) {
