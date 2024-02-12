@@ -18,7 +18,7 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 
 	for _, a := range actions {
 		found := false
-		for _, at := range action.TypeList {
+		for _, at := range action.TypeListAll {
 			if a.Type == at {
 				found = true
 				break
