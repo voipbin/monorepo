@@ -75,16 +75,20 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 // executeAction execute the active action.
 // some of active-actions are flow-manager need to run.
 func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Activeflow) (*action.Action, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "executeAction",
-			"activeflow_id": af.ID,
-			"stack_id":      af.CurrentStackID,
-			"action_id":     af.CurrentAction.ID,
-			"action_type":   af.CurrentAction.Type,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "executeAction",
+		"activeflow_id": af.ID,
+		"stack_id":      af.CurrentStackID,
+		"action_id":     af.CurrentAction.ID,
+		"action_type":   af.CurrentAction.Type,
+	})
 	log.Debugf("Executing the action. action_id: %s, action_type: %s", af.CurrentAction.ID, af.CurrentAction.Type)
+
+	// verify the reference type and action type
+	if !h.verifyActionType(ctx, af) {
+		log.Infof("The action type and reference type are not valid. Move to the next action. action_type: %s, reference_type: %s", af.CurrentAction.Type, af.ReferenceType)
+		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
+	}
 
 	actionType := af.CurrentAction.Type
 	start := time.Now()
@@ -229,4 +233,26 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 	}
 
 	return &af.CurrentAction, nil
+}
+
+// verifyActionType verifies the given activeflow's action is valid for the reference type.
+// return true if the reference type and action type are valid
+func (h *activeflowHandler) verifyActionType(ctx context.Context, af *activeflow.Activeflow) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "verifyActionType",
+		"activeflow_id": af.ID,
+	})
+
+	if af.ReferenceType == activeflow.ReferenceTypeCall {
+		return true
+	}
+
+	for _, actionType := range action.TypeListMediaRequired {
+		if af.CurrentAction.Type == actionType {
+			log.Infof("The given activeflow's action type requires media. reference_type: %s, action_type: %s", af.ReferenceType, af.CurrentAction.Type)
+			return false
+		}
+	}
+
+	return true
 }

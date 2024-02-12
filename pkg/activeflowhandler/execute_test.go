@@ -42,6 +42,7 @@ func Test_Execute(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
+				ReferenceType: activeflow.ReferenceTypeCall,
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
 						ID: stack.IDMain,
@@ -128,6 +129,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 					ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 					Type: action.TypeAnswer,
 				},
+				ReferenceType:   activeflow.ReferenceTypeCall,
 				ForwardActionID: action.IDEmpty,
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -162,6 +164,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: action.IDStart,
 				},
+				ReferenceType:   activeflow.ReferenceTypeCall,
 				ForwardActionID: action.IDEmpty,
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -197,6 +200,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 				CurrentAction: action.Action{
 					ID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
 				},
+				ReferenceType:   activeflow.ReferenceTypeCall,
 				ForwardStackID:  uuid.FromStringOrNil("fbc9fe2a-d4da-11ec-8488-ffd76437ad90"),
 				ForwardActionID: uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
 
@@ -364,6 +368,7 @@ func Test_executeAction(t *testing.T) {
 					ID:   uuid.FromStringOrNil("00b40040-f4a0-11ec-844f-bf9b5ac7bc7a"),
 					Type: action.TypeAnswer,
 				},
+				ReferenceType: activeflow.ReferenceTypeCall,
 			},
 
 			&action.Action{
