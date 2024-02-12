@@ -94,4 +94,5 @@ The VoIPBin platform integrates flows into outbound campaigns, providing a struc
 
 Users have the flexibility to trigger flows through API calls. This API integration empowers developers to seamlessly incorporate and activate flows within their applications.
 These diverse methods offer users and developers flexibility in integrating and executing flows based on their specific needs and scenarios.
-See detail at here <https://api.voipbin.net/swagger/index.html#/default/post_v1_0_activeflows>.
+See detail about API calling at `here <https://api.voipbin.net/swagger/index.html#/default/post_v1_0_activeflows>`_.
+And due to the absence of any media-based incoming or outgoing elements in the API, certain actions within the flow—such as answer, talk, transcribe, and others—will be ignored. Instead, the execution cursor will proceed to the next action in the sequence.
