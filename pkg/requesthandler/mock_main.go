@@ -2906,18 +2906,18 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageSend(ctx, convers
 }
 
 // CustomerV1CustomerCreate mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+func (m *MockRequestHandler) CustomerV1CustomerCreate(ctx context.Context, requestTimeout int, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerCreate", ctx, requestTimeout, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs)
+	ret := m.ctrl.Call(m, "CustomerV1CustomerCreate", ctx, requestTimeout, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerV1CustomerCreate indicates an expected call of CustomerV1CustomerCreate.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerCreate(ctx, requestTimeout, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerCreate(ctx, requestTimeout, name, detail, email, phoneNumber, address, webhookMethod, webhookURI interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerCreate", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerCreate), ctx, requestTimeout, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerCreate", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerCreate), ctx, requestTimeout, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 }
 
 // CustomerV1CustomerDelete mocks base method.
@@ -3008,51 +3008,6 @@ func (m *MockRequestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx contex
 func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, biillingAccountID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerUpdateBillingAccountID", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerUpdateBillingAccountID), ctx, customerID, biillingAccountID)
-}
-
-// CustomerV1CustomerUpdatePassword mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) (*customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerUpdatePassword", ctx, requestTimeout, id, password)
-	ret0, _ := ret[0].(*customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerV1CustomerUpdatePassword indicates an expected call of CustomerV1CustomerUpdatePassword.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerUpdatePassword(ctx, requestTimeout, id, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerUpdatePassword", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerUpdatePassword), ctx, requestTimeout, id, password)
-}
-
-// CustomerV1CustomerUpdatePermissionIDs mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerUpdatePermissionIDs", ctx, id, permissionIDs)
-	ret0, _ := ret[0].(*customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerV1CustomerUpdatePermissionIDs indicates an expected call of CustomerV1CustomerUpdatePermissionIDs.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerUpdatePermissionIDs(ctx, id, permissionIDs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerUpdatePermissionIDs", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerUpdatePermissionIDs), ctx, id, permissionIDs)
-}
-
-// CustomerV1Login mocks base method.
-func (m *MockRequestHandler) CustomerV1Login(ctx context.Context, timeout int, username, password string) (*customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1Login", ctx, timeout, username, password)
-	ret0, _ := ret[0].(*customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerV1Login indicates an expected call of CustomerV1Login.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1Login(ctx, timeout, username, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1Login", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1Login), ctx, timeout, username, password)
 }
 
 // FlowV1ActionGet mocks base method.

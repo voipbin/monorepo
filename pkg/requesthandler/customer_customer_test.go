@@ -222,8 +222,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		username      string
-		password      string
 		userName      string
 		detail        string
 		email         string
@@ -231,7 +229,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
-		permissionIDs []uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -243,43 +240,27 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 			"normal",
 
 			"test1",
-			"testpassword",
-			"test1",
 			"detail1",
 			"test@test.com",
 			"+821100000001",
 			"somewhere",
 			cscustomer.WebhookMethodPost,
 			"test.com",
-			[]uuid.UUID{
-				uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
-			},
 
 			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
+				Data:     []byte(`{"username":"","password":"","name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":null}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e46cbfd4-7e44-11ec-b7de-a7cfacf1121f","username":"test1","name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
+				Data:       []byte(`{"id":"47943ef0-cb2f-11ee-adbd-136bc293c7e1"}`),
 			},
 			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("e46cbfd4-7e44-11ec-b7de-a7cfacf1121f"),
-				Username:      "test1",
-				Name:          "test1",
-				Detail:        "detail1",
-				Email:         "test@test.com",
-				PhoneNumber:   "+821100000001",
-				Address:       "somewhere",
-				WebhookMethod: cscustomer.WebhookMethodPost,
-				WebhookURI:    "test.com",
-				PermissionIDs: []uuid.UUID{
-					uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
-				},
+				ID: uuid.FromStringOrNil("47943ef0-cb2f-11ee-adbd-136bc293c7e1"),
 			},
 		},
 	}
@@ -301,8 +282,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 			res, err := reqHandler.CustomerV1CustomerCreate(
 				ctx,
 				requestTimeoutDefault,
-				tt.username,
-				tt.password,
 				tt.userName,
 				tt.detail,
 				tt.email,
@@ -310,7 +289,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				tt.address,
 				tt.webhookMethod,
 				tt.webhookURI,
-				tt.permissionIDs,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -394,135 +372,6 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
-		})
-	}
-}
-
-func Test_CustomerV1CustomerUpdatePassword(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id       uuid.UUID
-		password string
-
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
-		expectRes     *cscustomer.Customer
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("3f54d1ec-7e46-11ec-bc5a-8f233b20baaf"),
-			"password1",
-
-			"bin-manager.customer-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/customers/3f54d1ec-7e46-11ec-bc5a-8f233b20baaf/password",
-				Method:   rabbitmqhandler.RequestMethodPut,
-				DataType: ContentTypeJSON,
-				Data:     []byte(`{"password":"password1"}`),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"3f54d1ec-7e46-11ec-bc5a-8f233b20baaf"}`),
-			},
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("3f54d1ec-7e46-11ec-bc5a-8f233b20baaf"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-
-			ctx := context.Background()
-
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.CustomerV1CustomerUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_CustomerV1CustomerUpdatePermission(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id            uuid.UUID
-		permissionIDs []uuid.UUID
-
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
-		expectRes     *cscustomer.Customer
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("af7c2c04-7e46-11ec-845e-ebf1194dd77a"),
-			[]uuid.UUID{
-				uuid.FromStringOrNil("be48c440-7e46-11ec-82c9-2fac536f93e0"),
-			},
-
-			"bin-manager.customer-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/customers/af7c2c04-7e46-11ec-845e-ebf1194dd77a/permission_ids",
-				Method:   rabbitmqhandler.RequestMethodPut,
-				DataType: ContentTypeJSON,
-				Data:     []byte(`{"permission_ids":["be48c440-7e46-11ec-82c9-2fac536f93e0"]}`),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"af7c2c04-7e46-11ec-845e-ebf1194dd77a"}`),
-			},
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("af7c2c04-7e46-11ec-845e-ebf1194dd77a"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-
-			ctx := context.Background()
-
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.CustomerV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-
 		})
 	}
 }
