@@ -70,8 +70,6 @@ func (r *requestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken s
 func (r *requestHandler) CustomerV1CustomerCreate(
 	ctx context.Context,
 	requestTimeout int,
-	username string,
-	password string,
 	name string,
 	detail string,
 	email string,
@@ -79,13 +77,10 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-	permissionIDs []uuid.UUID,
 ) (*cscustomer.Customer, error) {
 	uri := "/v1/customers"
 
 	reqData := csrequest.V1DataCustomersPost{
-		Username:      username,
-		Password:      password,
 		Name:          name,
 		Detail:        detail,
 		Email:         email,
@@ -93,7 +88,6 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 		Address:       address,
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
-		PermissionIDs: permissionIDs,
 	}
 
 	m, err := json.Marshal(reqData)
@@ -164,71 +158,6 @@ func (r *requestHandler) CustomerV1CustomerUpdate(
 		Address:       address,
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
-		return nil, err
-	}
-
-	return &resData, nil
-}
-
-// CustomerV1CustomerUpdate sends a request to customer-manager
-// to update the detail customer info.
-// requestTimeout: milliseconds
-func (r *requestHandler) CustomerV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) (*cscustomer.Customer, error) {
-	uri := fmt.Sprintf("/v1/customers/%s/password", id)
-
-	data := &csrequest.V1DataCustomersIDPasswordPut{
-		Password: password,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCustomerCustomers, requestTimeout, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
-		return nil, err
-	}
-
-	return &resData, nil
-}
-
-// CustomerV1CustomerUpdate sends a request to customer-manager
-// to update the detail customer info.
-func (r *requestHandler) CustomerV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.Customer, error) {
-	uri := fmt.Sprintf("/v1/customers/%s/permission_ids", id)
-
-	data := &csrequest.V1DataCustomersIDPermissionIDsPut{
-		PermissionIDs: permissionIDs,
 	}
 
 	m, err := json.Marshal(data)
