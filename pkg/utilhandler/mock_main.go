@@ -5,6 +5,7 @@
 package utilhandler
 
 import (
+	url "net/url"
 	reflect "reflect"
 	time "time"
 
@@ -89,6 +90,20 @@ func (m *MockUtilHandler) TimeParse(timeString string) time.Time {
 func (mr *MockUtilHandlerMockRecorder) TimeParse(timeString interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeParse", reflect.TypeOf((*MockUtilHandler)(nil).TimeParse), timeString)
+}
+
+// URLParseFilters mocks base method.
+func (m *MockUtilHandler) URLParseFilters(u *url.URL) map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "URLParseFilters", u)
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// URLParseFilters indicates an expected call of URLParseFilters.
+func (mr *MockUtilHandlerMockRecorder) URLParseFilters(u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "URLParseFilters", reflect.TypeOf((*MockUtilHandler)(nil).URLParseFilters), u)
 }
 
 // UUIDCreate mocks base method.
