@@ -18,16 +18,14 @@ import (
 // telnyx
 const (
 	defaultToken              string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
-	defaultConnectionID       string = "1943381594949551263"
+	defaultConnectionID       string = "2054833017033065613"
 	defaultMessagingProfileID string = "40017f8e-49bd-4f16-9e3d-ef103f916228"
 )
 
 // NumberHandlerTelnyx is interface for service handle
 type NumberHandlerTelnyx interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
-	// PurchaseNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
 	PurchaseNumber(num string) (*providernumber.ProviderNumber, error)
-
 	ReleaseNumber(ctx context.Context, num *number.Number) error
 }
 

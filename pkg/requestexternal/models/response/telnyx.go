@@ -13,6 +13,11 @@ type TelnyxV2ResponsePhoneNumbersIDGet struct {
 	Data telnyx.PhoneNumber `json:"data"`
 }
 
+// TelnyxV2ResponsePhoneNumbers struct
+type TelnyxV2ResponsePhoneNumbers struct {
+	Data []telnyx.PhoneNumber `json:"data"`
+}
+
 // TelnyxV2ResponsePhoneNumbersIDDelete struct
 type TelnyxV2ResponsePhoneNumbersIDDelete struct {
 	Data telnyx.PhoneNumber `json:"data"`

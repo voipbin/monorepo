@@ -79,6 +79,21 @@ func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersGet(token, size, ta
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersGet", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersGet), token, size, tag, number)
 }
 
+// TelnyxPhoneNumbersGetByNumber mocks base method.
+func (m *MockRequestExternal) TelnyxPhoneNumbersGetByNumber(token, number string) (*telnyx.PhoneNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersGetByNumber", token, number)
+	ret0, _ := ret[0].(*telnyx.PhoneNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TelnyxPhoneNumbersGetByNumber indicates an expected call of TelnyxPhoneNumbersGetByNumber.
+func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersGetByNumber(token, number interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersGetByNumber", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersGetByNumber), token, number)
+}
+
 // TelnyxPhoneNumbersIDDelete mocks base method.
 func (m *MockRequestExternal) TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.PhoneNumber, error) {
 	m.ctrl.T.Helper()

@@ -87,7 +87,7 @@ func Test_CreateNumber(t *testing.T) {
 
 			numbers := []string{tt.number}
 			mockExternal.EXPECT().TelnyxNumberOrdersPost(defaultToken, numbers, defaultConnectionID, defaultMessagingProfileID).Return(tt.responseOrder, nil)
-			mockExternal.EXPECT().TelnyxPhoneNumbersIDGet(tt.responseOrder.PhoneNumbers[0].ID, defaultToken).Return(tt.responseNumber, nil)
+			mockExternal.EXPECT().TelnyxPhoneNumbersGetByNumber(defaultToken, tt.number).Return(tt.responseNumber, nil)
 			res, err := h.PurchaseNumber(tt.number)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

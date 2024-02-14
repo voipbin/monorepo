@@ -24,12 +24,12 @@ func (h *numberHandlerTelnyx) PurchaseNumber(num string) (*providernumber.Provid
 		log.Errorf("Could not send the order request to the telnyx. err: %v", err)
 		return nil, errors.Wrap(err, "could not send the order request to the telnyx")
 	}
+	log.WithField("ordered_number", resOrder).Debugf("Ordered number correctly. number: %v", resOrder.PhoneNumbers)
 
-	// get ordered number
-	tmp, err := h.requestExternal.TelnyxPhoneNumbersIDGet(resOrder.PhoneNumbers[0].ID, defaultToken)
+	tmp, err := h.requestExternal.TelnyxPhoneNumbersGetByNumber(defaultToken, num)
 	if err != nil {
-		log.Errorf("Could not get ordered number. phone_number_id: %s, err: %v", resOrder.PhoneNumbers[0].ID, err)
-		return nil, errors.Wrap(err, "could not get ordered number")
+		log.Errorf("Could not get ordered number info. err: %v", err)
+		return nil, err
 	}
 
 	res := tmp.ConvertProviderNumber()

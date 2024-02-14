@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
+
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/request"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/response"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
@@ -77,6 +79,12 @@ func (h *requestExternal) TelnyxAvailableNumberGets(token, countryCode, locality
 
 // TelnyxNumberOrdersPost sends the post request to the telnyx number_orders
 func (h *requestExternal) TelnyxNumberOrdersPost(token string, numbers []string, connectionID, profileID string) (*telnyx.OrderNumber, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "TelnyxNumberOrdersPost",
+		"numbers":       numbers,
+		"connection_id": connectionID,
+		"profile_id":    profileID,
+	})
 
 	// create a request uri
 	uri := "https://api.telnyx.com/v2/number_orders"
@@ -95,6 +103,7 @@ func (h *requestExternal) TelnyxNumberOrdersPost(token string, numbers []string,
 	if err != nil {
 		return nil, err
 	}
+	log.WithField("request_data", m).Debugf("Generated request data.")
 
 	// create a request
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(m))
@@ -130,6 +139,52 @@ func (h *requestExternal) TelnyxNumberOrdersPost(token string, numbers []string,
 	}
 
 	return &res.Data, nil
+}
+
+// TelnyxPhoneNumbersGetByNumber returns number info of the given number
+func (h *requestExternal) TelnyxPhoneNumbersGetByNumber(token string, number string) (*telnyx.PhoneNumber, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "TelnyxPhoneNumbersGetByNumber",
+		"number": number,
+	})
+
+	// create a request uri
+	uri := fmt.Sprintf("https://api.telnyx.com/v2/phone_numbers?filter[phone_number]=%s", number)
+
+	// create a request
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create a http request. err: %v", err)
+	}
+
+	client := &http.Client{}
+	authToken := fmt.Sprintf("Bearer %s", token)
+	req.Header.Add("Authorization", authToken)
+
+	// send a request go provider
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("could not get correct response. err: %v", err)
+	}
+	defer resp.Body.Close()
+	log.WithField("response", resp).Debugf("Received response.")
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read the response body. err: %v", err)
+	}
+
+	// parse
+	resParse := response.TelnyxV2ResponsePhoneNumbersGet{}
+	if err := json.Unmarshal(body, &resParse); err != nil {
+		return nil, err
+	}
+
+	return &resParse.Data[0], nil
 }
 
 // TelnyxPhoneNumbersIDGet gets the phone number info from the telnyx and return
