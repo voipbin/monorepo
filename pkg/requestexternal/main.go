@@ -37,6 +37,7 @@ type RequestExternal interface {
 	TelnyxAvailableNumberGets(token, countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error)
 	TelnyxNumberOrdersPost(token string, numbers []string, connectionID, profileID string) (*telnyx.OrderNumber, error)
 	TelnyxPhoneNumbersGet(token string, size uint, tag, number string) ([]*telnyx.PhoneNumber, error)
+	TelnyxPhoneNumbersGetByNumber(token string, number string) (*telnyx.PhoneNumber, error)
 	TelnyxPhoneNumbersIDGet(token, id string) (*telnyx.PhoneNumber, error)
 	TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.PhoneNumber, error)
 }
