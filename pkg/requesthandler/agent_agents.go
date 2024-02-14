@@ -98,8 +98,8 @@ func (r *requestHandler) AgentV1AgentGet(ctx context.Context, agentID uuid.UUID)
 // AgentV1AgentGets sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]amagent.Agent, error) {
-	uri := fmt.Sprintf("/v1/agents?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amagent.Agent, error) {
+	uri := fmt.Sprintf("/v1/agents?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	for k, v := range filters {
 		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)

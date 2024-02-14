@@ -141,18 +141,18 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGet(ctx, agentID interface
 }
 
 // AgentV1AgentGets mocks base method.
-func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]agent.Agent, error) {
+func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1AgentGets", ctx, customerID, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "AgentV1AgentGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AgentV1AgentGets indicates an expected call of AgentV1AgentGets.
-func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGets(ctx, customerID, pageToken, pageSize, filters interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGets", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGets), ctx, customerID, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGets", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGets), ctx, pageToken, pageSize, filters)
 }
 
 // AgentV1AgentUpdate mocks base method.
