@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 )
 
 require (
@@ -22,8 +22,8 @@ require (
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110173312-de5436ad2531
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20231119133841-1f299dcad73a
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240111190515-b5a1404c47e4
-	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20231130225603-8939d436e934
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240212145953-364923003e09
+	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20240213144049-cc83b995da3f
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230705154830-1dd19ba6e804
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240111135024-efb022e5d717
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519
