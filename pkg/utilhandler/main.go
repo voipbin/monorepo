@@ -3,6 +3,7 @@ package utilhandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package utilhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"net/url"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -16,6 +17,8 @@ type UtilHandler interface {
 	TimeGetCurTimeAdd(duration time.Duration) string
 	TimeGetCurTimeRFC3339() string
 	TimeParse(timeString string) time.Time
+
+	URLParseFilters(u *url.URL) map[string]string
 }
 
 type utilHandler struct{}
