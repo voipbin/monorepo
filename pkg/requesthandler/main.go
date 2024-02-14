@@ -652,8 +652,6 @@ type RequestHandler interface {
 	CustomerV1CustomerCreate(
 		ctx context.Context,
 		requestTimeout int,
-		username string,
-		password string,
 		name string,
 		detail string,
 		email string,
@@ -661,7 +659,6 @@ type RequestHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-		permissionIDs []uuid.UUID,
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
@@ -677,13 +674,8 @@ type RequestHandler interface {
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
 	) (*cscustomer.Customer, error)
-	CustomerV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) (*cscustomer.Customer, error)
-	CustomerV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string, count int) (bool, error)
 	CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error)
-
-	// customer-manager login
-	CustomerV1Login(ctx context.Context, timeout int, username, password string) (*cscustomer.Customer, error)
 
 	// conference-manager conference
 	ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
