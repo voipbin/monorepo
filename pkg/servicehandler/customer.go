@@ -7,6 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
@@ -41,7 +43,6 @@ func (h *serviceHandler) CustomerCreate(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-	permissionIDs []uuid.UUID,
 ) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"Username": username,
@@ -55,13 +56,53 @@ func (h *serviceHandler) CustomerCreate(
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs)
+	// check agent existence
+	filters := map[string]string{
+		"deleted":  "false",
+		"username": username,
+	}
+	ags, err := h.AgentGets(ctx, a, 100, "", filters)
+	if err != nil {
+		log.Errorf("Could not get agent info. err: %v", err)
+		return nil, err
+	}
+	if len(ags) > 0 {
+		log.Errorf("The agent username is already exist. username: %s", username)
+		return nil, fmt.Errorf("the agent username is already exist")
+	}
+
+	// create customer
+	cu, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	if err != nil {
 		log.Errorf("Could not create a new customer. err: %v", err)
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
+	// create admin agent
+	ag, err := h.reqHandler.AgentV1AgentCreate(ctx, 30000, cu.ID, username, password, "default admin", "default agent account for admin permission", amagent.RingMethodRingAll, amagent.PermissionCustomerAdmin, []uuid.UUID{}, []commonaddress.Address{})
+	if err != nil {
+		log.Errorf("Could not create admin agent. err: %v", err)
+		return nil, err
+	}
+	log.WithField("agent", ag).Debugf("Created admin agent info. agent_id: %s", ag.ID)
+
+	// create billing account
+	ba, err := h.reqHandler.BillingV1AccountCreate(ctx, cu.ID, "basic billing account", "billing account for default use", bmaccount.PaymentTypePrepaid, bmaccount.PaymentMethodNone)
+	if err != nil {
+		log.Errorf("Could not create billing account. err: %v", err)
+		return nil, err
+	}
+	log.WithField("billing_account", ba).Debugf("Created billing account. billing_account_id: %s", ba.ID)
+
+	// set default billing account
+	cu, err = h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, cu.ID, ba.ID)
+	if err != nil {
+		log.Errorf("Could not update default billing account. err: %v", err)
+		return nil, err
+	}
+	log.WithField("customer", cu).Debugf("Updated customer info. customer_id: %s", cu.ID)
+
+	res := cu.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -197,60 +238,6 @@ func (h *serviceHandler) CustomerDelete(ctx context.Context, a *amagent.Agent, c
 	res, err := h.reqHandler.CustomerV1CustomerDelete(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
-		return nil, err
-	}
-
-	return res.ConvertWebhookMessage(), nil
-}
-
-// CustomerUpdatePassword sends a request to customer-manager
-// to update the customer's password.
-func (h *serviceHandler) CustomerUpdatePassword(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, password string) (*cscustomer.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "CustomerUpdatePassword",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-	})
-
-	c, err := h.customerGet(ctx, a, customerID)
-	if err != nil {
-		log.Errorf("Could not validate the customer info. err: %v", err)
-		return nil, err
-	}
-
-	if !h.hasPermission(ctx, a, c.ID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
-	}
-
-	// send request
-	res, err := h.reqHandler.CustomerV1CustomerUpdatePassword(ctx, 30000, customerID, password)
-	if err != nil {
-		log.Infof("Could not update the customer's password. err: %v", err)
-		return nil, err
-	}
-
-	return res.ConvertWebhookMessage(), nil
-}
-
-// CustomerUpdatePermissionIDs sends a request to customer-manager
-// to update the customer's permission ids.
-func (h *serviceHandler) CustomerUpdatePermissionIDs(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "CustomerUpdatePermissionIDs",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-	})
-
-	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
-	}
-
-	// send request
-	res, err := h.reqHandler.CustomerV1CustomerUpdatePermissionIDs(ctx, customerID, permissionIDs)
-	if err != nil {
-		log.Errorf("Could not update the customer's permission. err: %v", err)
 		return nil, err
 	}
 

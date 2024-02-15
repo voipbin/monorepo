@@ -160,8 +160,9 @@ func Test_AgentsGET(t *testing.T) {
 			11,
 			"2020-09-20T03:23:20.995000",
 			map[string]string{
-				"deleted": "false",
-				"tag_ids": "b79599f2-4f2a-11ec-b49d-df70a67f68d3",
+				"customer_id": "00000000-0000-0000-0000-000000000000",
+				"deleted":     "false",
+				"tag_ids":     "b79599f2-4f2a-11ec-b49d-df70a67f68d3",
 			},
 
 			[]*amagent.WebhookMessage{
@@ -181,9 +182,10 @@ func Test_AgentsGET(t *testing.T) {
 			10,
 			"",
 			map[string]string{
-				"deleted": "false",
-				"tag_ids": "b79599f2-4f2a-11ec-b49d-df70a67f68d3",
-				"status":  string(amagent.StatusAvailable),
+				"customer_id": "00000000-0000-0000-0000-000000000000",
+				"deleted":     "false",
+				"tag_ids":     "b79599f2-4f2a-11ec-b49d-df70a67f68d3",
+				"status":      string(amagent.StatusAvailable),
 			},
 
 			[]*amagent.WebhookMessage{
@@ -203,9 +205,10 @@ func Test_AgentsGET(t *testing.T) {
 			10,
 			"",
 			map[string]string{
-				"deleted": "false",
-				"tag_ids": "b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c",
-				"status":  string(amagent.StatusAvailable),
+				"customer_id": "00000000-0000-0000-0000-000000000000",
+				"deleted":     "false",
+				"tag_ids":     "b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c",
+				"status":      string(amagent.StatusAvailable),
 			},
 
 			[]*amagent.WebhookMessage{

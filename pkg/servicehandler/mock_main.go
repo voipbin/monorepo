@@ -1616,18 +1616,18 @@ func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, a, conversatio
 }
 
 // CustomerCreate mocks base method.
-func (m *MockServiceHandler) CustomerCreate(ctx context.Context, a *agent.Agent, username, password, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerCreate(ctx context.Context, a *agent.Agent, username, password, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerCreate", ctx, a, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs)
+	ret := m.ctrl.Call(m, "CustomerCreate", ctx, a, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerCreate indicates an expected call of CustomerCreate.
-func (mr *MockServiceHandlerMockRecorder) CustomerCreate(ctx, a, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CustomerCreate(ctx, a, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerCreate", reflect.TypeOf((*MockServiceHandler)(nil).CustomerCreate), ctx, a, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerCreate", reflect.TypeOf((*MockServiceHandler)(nil).CustomerCreate), ctx, a, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 }
 
 // CustomerDelete mocks base method.
@@ -1703,36 +1703,6 @@ func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context,
 func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, a, customerID, billingAccountID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateBillingAccountID), ctx, a, customerID, billingAccountID)
-}
-
-// CustomerUpdatePassword mocks base method.
-func (m *MockServiceHandler) CustomerUpdatePassword(ctx context.Context, a *agent.Agent, customerID uuid.UUID, password string) (*customer.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerUpdatePassword", ctx, a, customerID, password)
-	ret0, _ := ret[0].(*customer.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerUpdatePassword indicates an expected call of CustomerUpdatePassword.
-func (mr *MockServiceHandlerMockRecorder) CustomerUpdatePassword(ctx, a, customerID, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdatePassword", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdatePassword), ctx, a, customerID, password)
-}
-
-// CustomerUpdatePermissionIDs mocks base method.
-func (m *MockServiceHandler) CustomerUpdatePermissionIDs(ctx context.Context, a *agent.Agent, customerID uuid.UUID, permissionIDs []uuid.UUID) (*customer.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerUpdatePermissionIDs", ctx, a, customerID, permissionIDs)
-	ret0, _ := ret[0].(*customer.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerUpdatePermissionIDs indicates an expected call of CustomerUpdatePermissionIDs.
-func (mr *MockServiceHandlerMockRecorder) CustomerUpdatePermissionIDs(ctx, a, customerID, permissionIDs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdatePermissionIDs", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdatePermissionIDs), ctx, a, customerID, permissionIDs)
 }
 
 // DomainCreate mocks base method.
