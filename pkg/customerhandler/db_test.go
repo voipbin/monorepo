@@ -18,15 +18,21 @@ import (
 func Test_Gets(t *testing.T) {
 
 	tests := []struct {
-		name   string
-		size   uint64
-		token  string
+		name    string
+		size    uint64
+		token   string
+		filters map[string]string
+
 		result []*customer.Customer
 	}{
 		{
 			"normal",
 			10,
 			"",
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*customer.Customer{},
 		},
 	}
@@ -48,8 +54,8 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token).Return(tt.result, nil)
-			_, err := h.Gets(ctx, tt.size, tt.token)
+			mockDB.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
+			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -9,6 +9,7 @@ import (
 	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/customerhandler"
@@ -22,8 +23,9 @@ func Test_processV1CustomersGet(t *testing.T) {
 		size    uint64
 		token   string
 
-		users     []*customer.Customer
-		expectRes *rabbitmqhandler.Response
+		responseFilters   map[string]string
+		responseCustomers []*customer.Customer
+		expectRes         *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -35,6 +37,9 @@ func Test_processV1CustomersGet(t *testing.T) {
 			10,
 			"2021-11-23 17:55:39.712000",
 
+			map[string]string{
+				"deleted": "false",
+			},
 			[]*customer.Customer{
 				{
 					ID:       uuid.FromStringOrNil("31b08066-7db2-11ec-8786-c7d9cf6c9b5f"),
@@ -59,6 +64,9 @@ func Test_processV1CustomersGet(t *testing.T) {
 			10,
 			"2021-11-23 17:55:39.712000",
 
+			map[string]string{
+				"deleted": "false",
+			},
 			[]*customer.Customer{
 				{
 					ID: uuid.FromStringOrNil("9f8a7880-7db2-11ec-9602-930411a1581f"),
@@ -83,14 +91,17 @@ func Test_processV1CustomersGet(t *testing.T) {
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:      mockSock,
 				reqHandler:      mockReq,
+				utilHandler:     mockUtil,
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token).Return(tt.users, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token, tt.responseFilters).Return(tt.responseCustomers, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

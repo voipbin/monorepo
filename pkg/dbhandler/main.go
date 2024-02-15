@@ -19,7 +19,7 @@ type DBHandler interface {
 	CustomerCreate(ctx context.Context, b *customer.Customer) error
 	CustomerDelete(ctx context.Context, id uuid.UUID) error
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
-	CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
+	CustomerGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error)
 	CustomerSetBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,

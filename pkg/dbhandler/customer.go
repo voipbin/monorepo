@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -205,11 +206,42 @@ func (h *handler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Cust
 }
 
 // CustomerGets returns customers.
-func (h *handler) CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
-	// prepare
-	q := fmt.Sprintf("%s where tm_create < ? order by tm_create desc limit ?", customerSelect)
+func (h *handler) CustomerGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
 
-	rows, err := h.db.Query(q, token, size)
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
+	`, customerSelect)
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "billing_account_id":
+			q = fmt.Sprintf("%s and billing_account_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CustomerGets. err: %v", err)
 	}
