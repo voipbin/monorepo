@@ -27,37 +27,27 @@ func Test_CustomerCreate(t *testing.T) {
 			name: "all",
 
 			customer: &customer.Customer{
-				ID:            uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
-				Username:      "test",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:          "test name",
-				Detail:        "test detail",
-				Email:         "test@test.com",
-				PhoneNumber:   "+821100000001",
-				Address:       "somewhere",
-				WebhookMethod: "POST",
-				WebhookURI:    "test.com",
-				PermissionIDs: []uuid.UUID{
-					uuid.FromStringOrNil("6a6443a4-7c70-11ec-9635-abbaf773da29"),
-				},
+				ID:               uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
+				Name:             "test name",
+				Detail:           "test detail",
+				Email:            "test@test.com",
+				PhoneNumber:      "+821100000001",
+				Address:          "somewhere",
+				WebhookMethod:    "POST",
+				WebhookURI:       "test.com",
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &customer.Customer{
-				ID:            uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
-				Username:      "test",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:          "test name",
-				Detail:        "test detail",
-				Email:         "test@test.com",
-				PhoneNumber:   "+821100000001",
-				Address:       "somewhere",
-				WebhookMethod: "POST",
-				WebhookURI:    "test.com",
-				PermissionIDs: []uuid.UUID{
-					uuid.FromStringOrNil("6a6443a4-7c70-11ec-9635-abbaf773da29"),
-				},
+				ID:               uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
+				Name:             "test name",
+				Detail:           "test detail",
+				Email:            "test@test.com",
+				PhoneNumber:      "+821100000001",
+				Address:          "somewhere",
+				WebhookMethod:    "POST",
+				WebhookURI:       "test.com",
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
 				TMCreate:         "2020-04-18 03:22:17.995000",
 				TMUpdate:         DefaultTimeStamp,
@@ -112,20 +102,15 @@ func TestCustomerDelete(t *testing.T) {
 		{
 			name: "normal",
 			customer: &customer.Customer{
-				ID:           uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
-				Username:     "test",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				ID: uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &customer.Customer{
-				ID:            uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
-				Username:      "test",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				PermissionIDs: []uuid.UUID{},
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      "2020-04-18 03:22:17.995000",
+				ID:       uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: "2020-04-18 03:22:17.995000",
 			},
 		},
 	}
@@ -182,14 +167,10 @@ func Test_CustomerGets(t *testing.T) {
 			name: "normal",
 			customers: []*customer.Customer{
 				{
-					ID:           uuid.FromStringOrNil("500f6624-7c65-11ec-ba0f-8399fe28afb2"),
-					Username:     "test2",
-					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+					ID: uuid.FromStringOrNil("500f6624-7c65-11ec-ba0f-8399fe28afb2"),
 				},
 				{
-					ID:           uuid.FromStringOrNil("5c4b732e-7c65-11ec-8f09-2720f96bb96d"),
-					Username:     "test3",
-					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+					ID: uuid.FromStringOrNil("5c4b732e-7c65-11ec-8f09-2720f96bb96d"),
 				},
 			},
 			size: 2,
@@ -197,22 +178,16 @@ func Test_CustomerGets(t *testing.T) {
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: []*customer.Customer{
 				{
-					ID:            uuid.FromStringOrNil("500f6624-7c65-11ec-ba0f-8399fe28afb2"),
-					Username:      "test2",
-					PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-					PermissionIDs: []uuid.UUID{},
-					TMCreate:      "2020-04-18 03:22:17.995000",
-					TMUpdate:      DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
+					ID:       uuid.FromStringOrNil("500f6624-7c65-11ec-ba0f-8399fe28afb2"),
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:            uuid.FromStringOrNil("5c4b732e-7c65-11ec-8f09-2720f96bb96d"),
-					Username:      "test3",
-					PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-					PermissionIDs: []uuid.UUID{},
-					TMCreate:      "2020-04-18 03:22:17.995000",
-					TMUpdate:      DefaultTimeStamp,
-					TMDelete:      DefaultTimeStamp,
+					ID:       uuid.FromStringOrNil("5c4b732e-7c65-11ec-8f09-2720f96bb96d"),
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -256,69 +231,6 @@ func Test_CustomerGets(t *testing.T) {
 	}
 }
 
-func Test_CustomerGetByUsername(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		customer *customer.Customer
-
-		responseCurTime string
-		expectRes       *customer.Customer
-	}{
-		{
-			name: "normal",
-			customer: &customer.Customer{
-				ID:           uuid.FromStringOrNil("6923c328-7c72-11ec-9624-efe2285c5992"),
-				Username:     "test7",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-			},
-
-			responseCurTime: "2020-04-18 03:22:17.995000",
-			expectRes: &customer.Customer{
-				ID:            uuid.FromStringOrNil("6923c328-7c72-11ec-9624-efe2285c5992"),
-				Username:      "test7",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				PermissionIDs: []uuid.UUID{},
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(ctx, gomock.Any())
-			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			res, err := h.CustomerGetByUsername(ctx, tt.customer.Username)
-			if err != nil {
-				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_CustomerSetBasicInfo(t *testing.T) {
 
 	tests := []struct {
@@ -340,8 +252,6 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 			name: "all",
 			customer: &customer.Customer{
 				ID:            uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
-				Username:      "abc0df18-7c72-11ec-8b18-5f22d10c7abd",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:          "test4",
 				Detail:        "detail4",
 				Email:         "default@test.com",
@@ -362,8 +272,6 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &customer.Customer{
 				ID:            uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
-				Username:      "abc0df18-7c72-11ec-8b18-5f22d10c7abd",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:          "test4 new",
 				Detail:        "detail4 new",
 				Email:         "test@test.com",
@@ -371,7 +279,6 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 				Address:       "middle of nowhere",
 				WebhookMethod: customer.WebhookMethodPost,
 				WebhookURI:    "test.com",
-				PermissionIDs: []uuid.UUID{},
 				TMCreate:      "2020-04-18 03:22:17.995000",
 				TMUpdate:      "2020-04-18 03:22:17.995000",
 				TMDelete:      DefaultTimeStamp,
@@ -381,8 +288,6 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 			name: "empty",
 			customer: &customer.Customer{
 				ID:            uuid.FromStringOrNil("e778f8b0-7c72-11ec-8605-9f86a3f3debe"),
-				Username:      "e778f8b0-7c72-11ec-8605-9f86a3f3debe",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:          "test4",
 				Detail:        "detail4",
 				Email:         "default@test.com",
@@ -403,13 +308,10 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &customer.Customer{
 				ID:            uuid.FromStringOrNil("e778f8b0-7c72-11ec-8605-9f86a3f3debe"),
-				Username:      "e778f8b0-7c72-11ec-8605-9f86a3f3debe",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:          "",
 				Detail:        "",
 				WebhookMethod: "",
 				WebhookURI:    "",
-				PermissionIDs: []uuid.UUID{},
 				TMCreate:      "2020-04-18 03:22:17.995000",
 				TMUpdate:      "2020-04-18 03:22:17.995000",
 				TMDelete:      DefaultTimeStamp,
@@ -467,231 +369,6 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_CustomerSetPermissionIDs(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		customer *customer.Customer
-
-		permissionIDs   []uuid.UUID
-		responseCurTime string
-
-		expectRes *customer.Customer
-	}{
-		{
-			"normal",
-			&customer.Customer{
-				ID:            uuid.FromStringOrNil("300d0788-7c73-11ec-930a-4f107f248651"),
-				Username:      "300d0788-7c73-11ec-930a-4f107f248651",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:          "test5",
-				Detail:        "detail5",
-				PermissionIDs: []uuid.UUID{},
-			},
-
-			[]uuid.UUID{
-				uuid.FromStringOrNil("8b61102a-7c73-11ec-83dd-73e46fe6b1da"),
-			},
-			"2020-04-18 03:22:17.995000",
-
-			&customer.Customer{
-				ID:           uuid.FromStringOrNil("300d0788-7c73-11ec-930a-4f107f248651"),
-				Username:     "300d0788-7c73-11ec-930a-4f107f248651",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:         "test5",
-				Detail:       "detail5",
-				PermissionIDs: []uuid.UUID{
-					uuid.FromStringOrNil("8b61102a-7c73-11ec-83dd-73e46fe6b1da"),
-				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
-			},
-		},
-		{
-			"set to no permssion",
-			&customer.Customer{
-				ID:           uuid.FromStringOrNil("bc1c9af4-7c73-11ec-81c8-538f743bc72f"),
-				Username:     "300d0788-7c73-11ec-930a-4f107f248651",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:         "test5",
-				Detail:       "detail5",
-				PermissionIDs: []uuid.UUID{
-					uuid.FromStringOrNil("bc4b0916-7c73-11ec-a413-6341b2b8f254"),
-				},
-			},
-
-			[]uuid.UUID{},
-			"2020-04-18 03:22:17.995000",
-
-			&customer.Customer{
-				ID:            uuid.FromStringOrNil("bc1c9af4-7c73-11ec-81c8-538f743bc72f"),
-				Username:      "300d0788-7c73-11ec-930a-4f107f248651",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:          "test5",
-				Detail:        "detail5",
-				PermissionIDs: []uuid.UUID{},
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      "2020-04-18 03:22:17.995000",
-				TMDelete:      DefaultTimeStamp,
-			},
-		},
-		{
-			"set 2 items",
-			&customer.Customer{
-				ID:           uuid.FromStringOrNil("db4489dc-7c73-11ec-841c-ffb70daba8fb"),
-				Username:     "db4489dc-7c73-11ec-841c-ffb70daba8fb",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:         "test5",
-				Detail:       "detail5",
-				PermissionIDs: []uuid.UUID{
-					uuid.FromStringOrNil("bc4b0916-7c73-11ec-a413-6341b2b8f254"),
-				},
-			},
-
-			[]uuid.UUID{
-				uuid.FromStringOrNil("db6ea6ea-7c73-11ec-add0-d7584d01f278"),
-				uuid.FromStringOrNil("dba3c276-7c73-11ec-8157-bb712a7969d0"),
-			},
-			"2020-04-18 03:22:17.995000",
-
-			&customer.Customer{
-				ID:           uuid.FromStringOrNil("db4489dc-7c73-11ec-841c-ffb70daba8fb"),
-				Username:     "db4489dc-7c73-11ec-841c-ffb70daba8fb",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:         "test5",
-				Detail:       "detail5",
-				PermissionIDs: []uuid.UUID{
-					uuid.FromStringOrNil("db6ea6ea-7c73-11ec-add0-d7584d01f278"),
-					uuid.FromStringOrNil("dba3c276-7c73-11ec-8157-bb712a7969d0"),
-				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.CustomerSetPermissionIDs(ctx, tt.customer.ID, tt.permissionIDs); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			res, err := h.CustomerGet(ctx, tt.customer.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_CustomerSetPasswordHash(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		customer *customer.Customer
-
-		passwordHash string
-
-		responseCurTime string
-		expectRes       *customer.Customer
-	}{
-		{
-			"normal",
-			&customer.Customer{
-				ID:            uuid.FromStringOrNil("2d08b194-7c74-11ec-b055-e757dd189346"),
-				Username:      "2d08b194-7c74-11ec-b055-e757dd189346",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:          "test6",
-				Detail:        "detail6",
-				PermissionIDs: []uuid.UUID{},
-			},
-
-			"ttttttttttiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-
-			"2020-04-18 03:22:17.995000",
-			&customer.Customer{
-				ID:            uuid.FromStringOrNil("2d08b194-7c74-11ec-b055-e757dd189346"),
-				Username:      "2d08b194-7c74-11ec-b055-e757dd189346",
-				PasswordHash:  "ttttttttttiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:          "test6",
-				Detail:        "detail6",
-				PermissionIDs: []uuid.UUID{},
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      "2020-04-18 03:22:17.995000",
-				TMDelete:      DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.CustomerSetPasswordHash(ctx, tt.customer.ID, tt.passwordHash); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			res, err := h.CustomerGet(ctx, tt.customer.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_CustomerSetBillingAccountID(t *testing.T) {
 
 	tests := []struct {
@@ -707,11 +384,8 @@ func Test_CustomerSetBillingAccountID(t *testing.T) {
 			"normal",
 			&customer.Customer{
 				ID:               uuid.FromStringOrNil("fb6946f8-0f8e-11ee-b6e8-0b5d7cba3ef2"),
-				Username:         "fb9baf3a-0f8e-11ee-8c61-b721b93cc040",
-				PasswordHash:     "sifD7dbCmUiBA4XqRMpWil7fwCcH8fhezEPwSNopzO",
 				Name:             "test7",
 				Detail:           "detail7",
-				PermissionIDs:    []uuid.UUID{},
 				BillingAccountID: uuid.FromStringOrNil("fbd77aba-0f8e-11ee-a59f-cb37ae45541e"),
 			},
 
@@ -720,11 +394,8 @@ func Test_CustomerSetBillingAccountID(t *testing.T) {
 			"2020-04-18 03:22:17.995000",
 			&customer.Customer{
 				ID:               uuid.FromStringOrNil("fb6946f8-0f8e-11ee-b6e8-0b5d7cba3ef2"),
-				Username:         "fb9baf3a-0f8e-11ee-8c61-b721b93cc040",
-				PasswordHash:     "sifD7dbCmUiBA4XqRMpWil7fwCcH8fhezEPwSNopzO",
 				Name:             "test7",
 				Detail:           "detail7",
-				PermissionIDs:    []uuid.UUID{},
 				BillingAccountID: uuid.FromStringOrNil("fc1bc1fc-0f8e-11ee-970b-b75ca3799e1f"),
 				TMCreate:         "2020-04-18 03:22:17.995000",
 				TMUpdate:         "2020-04-18 03:22:17.995000",

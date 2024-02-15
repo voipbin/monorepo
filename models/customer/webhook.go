@@ -10,8 +10,6 @@ import (
 type WebhookMessage struct {
 	ID uuid.UUID `json:"id"` // Customer's ID
 
-	Username string `json:"username"` // Customer's username
-
 	Name   string `json:"name"`   // name
 	Detail string `json:"detail"` // detail
 
@@ -22,8 +20,6 @@ type WebhookMessage struct {
 	// webhook info
 	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
 	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
-
-	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids
 
 	BillingAccountID uuid.UUID `json:"billing_account_id"` // default billing account id
 
@@ -37,9 +33,8 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID: h.ID,
 
-		Username: h.Username,
-		Name:     h.Name,
-		Detail:   h.Detail,
+		Name:   h.Name,
+		Detail: h.Detail,
 
 		Email:       h.Email,
 		PhoneNumber: h.PhoneNumber,
@@ -47,8 +42,6 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 
 		WebhookMethod: h.WebhookMethod,
 		WebhookURI:    h.WebhookURI,
-
-		PermissionIDs: h.PermissionIDs,
 
 		BillingAccountID: h.BillingAccountID,
 

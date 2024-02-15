@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
@@ -42,8 +41,6 @@ func (h *customerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.Cust
 // Create creates a new customer.
 func (h *customerHandler) Create(
 	ctx context.Context,
-	username string,
-	password string,
 	name string,
 	detail string,
 	email string,
@@ -51,11 +48,9 @@ func (h *customerHandler) Create(
 	address string,
 	webhookMethod customer.WebhookMethod,
 	webhookURI string,
-	permissionIDs []uuid.UUID,
 ) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
-		"username":       username,
 		"name":           name,
 		"detail":         detail,
 		"email":          email,
@@ -63,39 +58,14 @@ func (h *customerHandler) Create(
 		"address":        address,
 		"webhook_method": webhookMethod,
 		"webhook_uri":    webhookURI,
-		"permission_ids": permissionIDs,
 	})
 	log.Debug("Creating a new customer.")
 
-	// verify the username is unique
-	tmp, _ := h.db.CustomerGetByUsername(ctx, username)
-	if tmp != nil {
-		log.Errorf("The customer is already existing. username: %s", username)
-		return nil, fmt.Errorf("customer already exist")
-	}
-
 	id := h.utilHandler.UUIDCreate()
-
-	// create billingAccount
-	billingAccount, err := h.reqHandler.BillingV1AccountCreate(ctx, id, "basic billing account", "billing account for default use", account.PaymentTypePrepaid, account.PaymentMethodNone)
-	if err != nil {
-		log.Errorf("Could not create a billing account info. err: %v", err)
-		return nil, errors.Wrap(err, "could not create a billing account info")
-	}
-	log.WithField("billing_account", billingAccount).Debugf("Created a billing account for new customer. customer_id: %s", id)
-
-	// generate hash password
-	hashPassword, err := h.helpHandler.HashGenerate(password)
-	if err != nil {
-		log.Errorf("Could not generate hash. err: %v", err)
-		return nil, err
-	}
 
 	// create customer
 	u := &customer.Customer{
-		ID:           id,
-		Username:     username,
-		PasswordHash: hashPassword,
+		ID: id,
 
 		Name:   name,
 		Detail: detail,
@@ -106,9 +76,6 @@ func (h *customerHandler) Create(
 
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
-
-		PermissionIDs:    permissionIDs,
-		BillingAccountID: billingAccount.ID,
 	}
 
 	if err := h.db.CustomerCreate(ctx, u); err != nil {
@@ -208,65 +175,6 @@ func (h *customerHandler) UpdateBasicInfo(
 	}
 
 	// get updated customer
-	res, err := h.db.CustomerGet(ctx, id)
-	if err != nil {
-		// we couldn't get updated item. but we've updated the customer already, just return here.
-		log.Errorf("Could not get updated customer. err: %v", err)
-		return nil, fmt.Errorf("could not get updated customer")
-	}
-
-	// notify
-	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
-
-	return res, nil
-}
-
-// UpdatePassword updates the customer's password.
-func (h *customerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "UpdatePassword",
-		"customer_id": id,
-	})
-	log.Debug("Updating the customer's password.")
-
-	// generate hash password
-	hashPassword, err := h.helpHandler.HashGenerate(password)
-	if err != nil {
-		log.Errorf("Could not generate hash. err: %v", err)
-		return nil, err
-	}
-
-	if err := h.db.CustomerSetPasswordHash(ctx, id, hashPassword); err != nil {
-		log.Errorf("Could not update the password. err: %v", err)
-		return nil, err
-	}
-
-	res, err := h.db.CustomerGet(ctx, id)
-	if err != nil {
-		// we couldn't get updated item. but we've updated the customer already, just return here.
-		log.Errorf("Could not get updated customer. err: %v", err)
-		return nil, fmt.Errorf("could not get updated customer")
-	}
-
-	// notify
-	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
-
-	return res, nil
-}
-
-// UpdatePermissionIDs updates the customer's permission ids.
-func (h *customerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "UpdatePermissionIDs",
-		"user_id": id,
-	})
-	log.Debug("Updating the customer's permission ids.")
-
-	if err := h.db.CustomerSetPermissionIDs(ctx, id, permissionIDs); err != nil {
-		log.Errorf("Could not update the permission. err: %v", err)
-		return nil, err
-	}
-
 	res, err := h.db.CustomerGet(ctx, id)
 	if err != nil {
 		// we couldn't get updated item. but we've updated the customer already, just return here.
