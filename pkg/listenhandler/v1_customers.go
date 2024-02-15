@@ -34,7 +34,10 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *rabbitmqha
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	tmp, err := h.customerHandler.Gets(ctx, pageSize, pageToken)
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
+
+	tmp, err := h.customerHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get customers info. err: %v", err)
 		return simpleResponse(500), nil

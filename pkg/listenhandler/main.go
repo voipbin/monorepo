@@ -13,6 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/customerhandler"
 )
@@ -32,6 +33,7 @@ type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	reqHandler      requesthandler.RequestHandler
+	utilHandler     utilhandler.UtilHandler
 	customerHandler customerhandler.CustomerHandler
 }
 
@@ -85,6 +87,7 @@ func NewListenHandler(
 	h := &listenHandler{
 		rabbitSock:      rabbitSock,
 		reqHandler:      reqHandler,
+		utilHandler:     utilhandler.NewUtilHandler(),
 		customerHandler: customerHandler,
 	}
 

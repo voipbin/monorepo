@@ -13,10 +13,10 @@ import (
 )
 
 // Gets returns list of customers
-func (h *customerHandler) Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
+func (h *customerHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
 	log := logrus.WithField("func", "Gets")
 
-	res, err := h.db.CustomerGets(ctx, size, token)
+	res, err := h.db.CustomerGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get customer info. err: %v", err)
 		return nil, err
