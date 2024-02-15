@@ -129,11 +129,13 @@ func (h *serviceHandler) CustomerGet(ctx context.Context, a *amagent.Agent, cust
 }
 
 // CustomerGets returns list of all customers
-func (h *serviceHandler) CustomerGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "CustomerGets",
-		"size":  size,
-		"token": token,
+		"func":    "CustomerGets",
+		"agent":   a,
+		"size":    size,
+		"token":   token,
+		"filters": filters,
 	})
 	log.Debug("Received request detail.")
 
@@ -150,7 +152,7 @@ func (h *serviceHandler) CustomerGets(ctx context.Context, a *amagent.Agent, siz
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	tmp, err := h.reqHandler.CustomerV1CustomerGets(ctx, token, size)
+	tmp, err := h.reqHandler.CustomerV1CustomerGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get customers info. err: %v", err)
 		return nil, err
