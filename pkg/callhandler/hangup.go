@@ -82,6 +82,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	// hangup the chained call
 	for _, callID := range cc.ChainedCallIDs {
 		// hang up the call
+		log.Debugf("Haningup the chained call. chained_call_id: %s", callID)
 		_, err = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		if err != nil {
 			// we don't do any error handle here.
