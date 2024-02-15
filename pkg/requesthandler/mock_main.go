@@ -2951,18 +2951,18 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGet(ctx, customerID 
 }
 
 // CustomerV1CustomerGets mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64) ([]customer.Customer, error) {
+func (m *MockRequestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerGets", ctx, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "CustomerV1CustomerGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerV1CustomerGets indicates an expected call of CustomerV1CustomerGets.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGets(ctx, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerGets", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerGets), ctx, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerGets", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerGets), ctx, pageToken, pageSize, filters)
 }
 
 // CustomerV1CustomerIsValidBalance mocks base method.

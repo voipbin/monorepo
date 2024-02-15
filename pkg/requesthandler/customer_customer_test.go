@@ -20,6 +20,7 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -32,10 +33,13 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 
 			"2021-03-02 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"bin-manager.customer-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/customers?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/customers?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -46,19 +50,14 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 			},
 			[]cscustomer.Customer{
 				{
-					ID:            uuid.FromStringOrNil("30071608-7e43-11ec-b04a-bb4270e3e223"),
-					Username:      "test1",
-					Name:          "test user 1",
-					Detail:        "test user 1 detail",
-					PermissionIDs: []uuid.UUID{},
+					ID:     uuid.FromStringOrNil("30071608-7e43-11ec-b04a-bb4270e3e223"),
+					Name:   "test user 1",
+					Detail: "test user 1 detail",
 				},
 				{
-					ID:            uuid.FromStringOrNil("5ca81a9a-7e43-11ec-b271-5b65823bfdd3"),
-					Username:      "test2",
-					PasswordHash:  "",
-					Name:          "test user 2",
-					Detail:        "test user 2 detail",
-					PermissionIDs: []uuid.UUID{},
+					ID:     uuid.FromStringOrNil("5ca81a9a-7e43-11ec-b271-5b65823bfdd3"),
+					Name:   "test user 2",
+					Detail: "test user 2 detail",
 				},
 			},
 		},
@@ -78,7 +77,7 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CustomerV1CustomerGets(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CustomerV1CustomerGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -120,11 +119,9 @@ func Test_CustomerV1CustomerGet(t *testing.T) {
 				Data:       []byte(`{"id":"951a4038-7e43-11ec-bc59-4f1dc0de20b0","username":"test1","name":"test user 1","detail":"test user 1 detail","permission_ids":[]}`),
 			},
 			&cscustomer.Customer{
-				ID:            uuid.FromStringOrNil("951a4038-7e43-11ec-bc59-4f1dc0de20b0"),
-				Username:      "test1",
-				Name:          "test user 1",
-				Detail:        "test user 1 detail",
-				PermissionIDs: []uuid.UUID{},
+				ID:     uuid.FromStringOrNil("951a4038-7e43-11ec-bc59-4f1dc0de20b0"),
+				Name:   "test user 1",
+				Detail: "test user 1 detail",
 			},
 		},
 	}
@@ -252,7 +249,7 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"username":"","password":"","name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":null}`),
+				Data:     []byte(`{"name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
