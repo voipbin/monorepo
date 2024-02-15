@@ -159,6 +159,7 @@ func Test_CustomerGets(t *testing.T) {
 		name      string
 		customers []*customer.Customer
 		size      uint64
+		filters   map[string]string
 
 		responseCurTime string
 		expectRes       []*customer.Customer
@@ -174,6 +175,9 @@ func Test_CustomerGets(t *testing.T) {
 				},
 			},
 			size: 2,
+			filters: map[string]string{
+				"deleted": "false",
+			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: []*customer.Customer{
@@ -219,7 +223,7 @@ func Test_CustomerGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.CustomerGets(ctx, tt.size, utilhandler.TimeGetCurTime())
+			res, err := h.CustomerGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
