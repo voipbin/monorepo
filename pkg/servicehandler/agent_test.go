@@ -100,7 +100,7 @@ func Test_AgentCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentCreate(ctx, 30, tt.agent.CustomerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentCreate(ctx, 30000, tt.agent.CustomerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.response, nil)
 
 			res, err := h.AgentCreate(ctx, tt.agent, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
@@ -256,7 +256,7 @@ func Test_AgentGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {

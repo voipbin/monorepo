@@ -59,7 +59,6 @@ func customersPost(c *gin.Context) {
 		req.Address,
 		req.WebhookMethod,
 		req.WebhookURI,
-		req.PermissionIDs,
 	)
 	if err != nil {
 		log.Errorf("Could not create a customer. err: %v", err)
@@ -259,100 +258,6 @@ func customersIDDelete(c *gin.Context) {
 	res, err := serviceHandler.CustomerDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-// customersIDPermissionIDsPut handles PUT /customers/{id}/permission_ids request.
-// It updates a customer's permission_ids info with the given info.
-// @Summary     Update a customer's permission_ids.
-// @Description Update a customer's permission_ids.
-// @Produce     json
-// @Success     200 {object} customer.Customer
-// @Router      /v1.0/customers/{id}/permissions_ids [put]
-func customersIDPermissionIDsPut(c *gin.Context) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "customersIDPermissionIDsPut",
-		"request_address": c.ClientIP,
-	})
-
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	log = log.WithField("target_id", id)
-
-	var req request.BodyCustomersIDPermissionIDsPUT
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	// update a customer
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerUpdatePermissionIDs(c.Request.Context(), &a, id, req.PermissionIDs)
-	if err != nil {
-		log.Errorf("Could not update the customer. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-// customersIDPasswordPut handles PUT /customers/{id}/password request.
-// It updates a customer's password.
-// @Summary     Update a customer's password.
-// @Description Update a customer's password.
-// @Produce     json
-// @Success     200 {object} customer.Customer
-// @Router      /v1.0/customers/{id}/password [put]
-func customersIDPasswordPut(c *gin.Context) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "customersIDPasswordPut",
-		"request_address": c.ClientIP,
-	})
-
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	log = log.WithField("target_id", id)
-
-	var req request.BodyCustomersIDPasswordPUT
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	// update a customer
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerUpdatePassword(c.Request.Context(), &a, id, req.Password)
-	if err != nil {
-		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

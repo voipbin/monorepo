@@ -325,7 +325,6 @@ type ServiceHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-		permissionIDs []uuid.UUID,
 	) (*cscustomer.WebhookMessage, error)
 	CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cscustomer.WebhookMessage, error)
@@ -342,8 +341,6 @@ type ServiceHandler interface {
 		webhookURI string,
 	) (*cscustomer.WebhookMessage, error)
 	CustomerDelete(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
-	CustomerUpdatePassword(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, password string) (*cscustomer.WebhookMessage, error)
-	CustomerUpdatePermissionIDs(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
 
 	// domain handlers
