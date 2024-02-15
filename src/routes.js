@@ -46,6 +46,7 @@ const FlowsDetail = React.lazy(() => import('./views/flows/flows_detail'))
 const FlowsCreate = React.lazy(() => import('./views/flows/flows_create'))
 const FlowsActiveflowsList = React.lazy(() => import('./views/flows/activeflows_list'))
 const FlowsActiveflowsDetail = React.lazy(() => import('./views/flows/activeflows_detail'))
+const FlowsActiveflowsCreate = React.lazy(() => import('./views/flows/activeflows_create'))
 
 // agents
 const AgentsList = React.lazy(() => import('./views/agents/agents_list'))
@@ -179,7 +180,8 @@ const routes = [
   { path: '/resources/flows/flows_list', name: 'FlowsList', element: FlowsList },
   { path: '/resources/flows/flows_create', name: 'FlowsCreate', element: FlowsCreate },
   { path: '/resources/flows/flows_detail/:id', name: 'FlowsDetail', element: FlowsDetail },
-  { path: '/resources/flows/activeflows_list', name: 'Activeflows', element: FlowsActiveflowsList },
+  { path: '/resources/flows/activeflows_list', name: 'ActiveflowsList', element: FlowsActiveflowsList },
+  { path: '/resources/flows/activeflows_create', name: 'ActiveflowsCreate', element: FlowsActiveflowsCreate },
   { path: '/resources/flows/activeflows_detail/:id', name: 'ActiveflowsDetail', element: FlowsActiveflowsDetail },
 
   { path: '/resources/agents/agents_list', name: 'AgentsList', element: AgentsList },

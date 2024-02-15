@@ -33,7 +33,6 @@ const CustomersDetail = () => {
   const ref_billingaccount_id = useRef(null);
   const ref_webhook_uri = useRef(null);
   const ref_webhook_method = useRef(null);
-  const ref_permission_ids = useRef(null);
 
   const routeParams = useParams();
   const GetDetail = () => {
@@ -77,6 +76,7 @@ const CustomersDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -98,7 +98,6 @@ const CustomersDetail = () => {
                     />
                   </CCol>
                 </CRow>
-
 
 
                 <CRow>
@@ -137,11 +136,6 @@ const CustomersDetail = () => {
                 </CRow>
 
 
-
-
-
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Webhook URI</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -173,7 +167,6 @@ const CustomersDetail = () => {
                 </CRow>
 
 
-
                 <CButton type="submit" onClick={() => UpdateBasic()}>Update</CButton>
                 <br/>
                 <br/>
@@ -193,25 +186,6 @@ const CustomersDetail = () => {
                     <CButton type="submit" onClick={() => UpdateBillingAccountID()}>Update Billing Account ID</CButton>
                   </CCol>
                 </CRow>
-
-
-                {/* <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Permission IDs</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_permission_ids}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.permission_ids, null, 2)}
-                      rows={5}
-                    />
-                  </CCol>
-                  <CCol className="mb-3 align-items-auto">
-                    <CButton type="submit" onClick={() => UpdatePermissionIDs()}>Update Permission IDs</CButton>
-                  </CCol>
-                </CRow> */}
-
-
 
 
                 <CRow>
@@ -259,7 +233,6 @@ const CustomersDetail = () => {
       "address": ref_address.current.value,
       "webhook_method": ref_webhook_method.current.value,
       "webhook_uri": ref_webhook_uri.current.value,
-      "permission_ids": JSON.parse(ref_permission_ids.current.value),
     };
 
     const body = JSON.stringify(tmpData);
@@ -279,21 +252,6 @@ const CustomersDetail = () => {
 
     const body = JSON.stringify(tmpData);
     const target = "customers/" + ref_id.current.value +"/billing_account_id";
-    console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-    });
-  };
-
-  const UpdatePermissionIDs = () => {
-    console.log("Update UpdatePermissionIDs");
-
-    const tmpData = {
-      "permission_ids": JSON.parse(ref_permission_ids.current.value),
-    };
-
-    const body = JSON.stringify(tmpData);
-    const target = "customers/" + ref_id.current.value +"/permission_ids";
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));

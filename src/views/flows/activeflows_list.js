@@ -9,6 +9,7 @@ import {
 } from '@coreui/react'
 import {
   Box,
+  Button,
   IconButton,
   Tooltip,
 } from '@mui/material';
@@ -82,6 +83,11 @@ const Activeflows = () => {
     console.log("navigate target: ", target);
     navigate(target);
   }
+  const Create = (row) => {
+    const target = "/resources/flows/activeflows_create";
+    console.log("navigate target: ", target);
+    navigate(target);
+  }
 
   return (
     <>
@@ -107,6 +113,17 @@ const Activeflows = () => {
             Detail(row);
           },
         })}
+        renderTopToolbarCustomActions={() => (
+          <Button
+            color="secondary"
+            onClick={() => {
+              Create();
+            }}
+            variant="contained"
+          >
+            Create
+          </Button>
+        )}
       />
     </>
   )
