@@ -31,16 +31,10 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *rabbitmqhan
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	// get filters
-	filters := map[string]string{}
-	if u.Query().Has("filter_deleted") {
-		filters["deleted"] = u.Query().Get("filter_deleted")
-	}
-	if u.Query().Has("filter_status") {
-		filters["status"] = u.Query().Get("filter_status")
-	}
-	if u.Query().Has("filter_tag_ids") {
-		filters["tag_ids"] = u.Query().Get("filter_tag_ids")
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
+	if customerID != uuid.Nil {
+		filters["customer_id"] = customerID.String()
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -51,7 +45,7 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *rabbitmqhan
 		"filters":     filters,
 	})
 
-	tmp, err := h.agentHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
+	tmp, err := h.agentHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return simpleResponse(500), nil

@@ -237,21 +237,24 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 }
 
 // AgentGets returns agents.
-func (h *handler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
+func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, agentSelect)
 
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id":
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
@@ -283,6 +286,10 @@ func (h *handler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint
 			}
 
 			q = fmt.Sprintf("%s and (%s)", q, tmp)
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
 		}
 	}
 

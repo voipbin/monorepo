@@ -256,9 +256,8 @@ func Test_AgentGets(t *testing.T) {
 		name   string
 		agents []*agent.Agent
 
-		customerID uuid.UUID
-		size       uint64
-		filters    map[string]string
+		size    uint64
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*agent.Agent
@@ -280,10 +279,10 @@ func Test_AgentGets(t *testing.T) {
 				},
 			},
 
-			customerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
-			size:       2,
+			size: 2,
 			filters: map[string]string{
-				"deleted": "false",
+				"customer_id": "48788c16-7fde-11ec-80e1-33e6bbba4dac",
+				"deleted":     "false",
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -303,6 +302,38 @@ func Test_AgentGets(t *testing.T) {
 					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
 					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 					Username:     "test3",
+					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+					TagIDs:       []uuid.UUID{},
+					Addresses:    []commonaddress.Address{},
+					TMCreate:     "2020-04-18 03:22:17.995000",
+					TMUpdate:     DefaultTimeStamp,
+					TMDelete:     DefaultTimeStamp,
+				},
+			},
+		},
+		{
+			name: "gets by username",
+			agents: []*agent.Agent{
+				{
+					ID:           uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
+					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Username:     "test3@test.com",
+					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				},
+			},
+
+			size: 2,
+			filters: map[string]string{
+				"username": "test3@test.com",
+				"deleted":  "false",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: []*agent.Agent{
+				{
+					ID:           uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
+					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Username:     "test3@test.com",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
@@ -336,7 +367,7 @@ func Test_AgentGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AgentGets(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.AgentGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

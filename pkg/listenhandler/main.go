@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 )
@@ -31,6 +32,7 @@ type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	agentHandler agenthandler.AgentHandler
+	utilHandler  utilhandler.UtilHandler
 }
 
 var (
@@ -88,6 +90,7 @@ func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandl
 		rabbitSock: rabbitSock,
 
 		agentHandler: agentHandler,
+		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
 	return h
@@ -145,13 +148,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
-		uri = "could not unescape uri"
+		response := simpleResponse(400)
+		return response, nil
 	}
+	m.URI = uri
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request": m,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"request": m,
+	})
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
@@ -243,11 +247,9 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response = simpleResponse(400)
 		err = nil
 	} else {
-		log.WithFields(
-			logrus.Fields{
-				"response": response,
-			},
-		).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+		log.WithFields(logrus.Fields{
+			"response": response,
+		}).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 	}
 
 	return response, err
