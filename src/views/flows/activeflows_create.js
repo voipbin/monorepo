@@ -21,11 +21,11 @@ import {
   ParseData,
 } from '../../provider';
 
-const FlowsCreate = () => {
-  console.log("FlowsCreate");
+const ActiveflowsCreate = () => {
+  console.log("ActiveflowsCreate");
 
-  const ref_name = useRef(null);
-  const ref_detail = useRef(null);
+  const ref_id = useRef(null);
+  const ref_flow_id = useRef(null);
   const ref_actions = useRef(null);
 
   const routeParams = useParams();
@@ -44,21 +44,26 @@ const FlowsCreate = () => {
               <CCardBody>
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_name}
+                      ref={ref_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000000"
                     />
                   </CCol>
+                </CRow>
 
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
-                  <CCol>
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Flow ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_detail}
+                      ref={ref_flow_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000000"
                     />
                   </CCol>
                 </CRow>
@@ -92,13 +97,13 @@ const FlowsCreate = () => {
     console.log("Create info");
 
     const tmpData = {
-      "name": ref_name.current.value,
-      "detail": ref_detail.current.value,
+      "id": ref_id.current.value,
+      "flow_id": ref_flow_id.current.value,
       "actions": JSON.parse(ref_actions.current.value),
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "flows";
+    const target = "activeflows";
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
@@ -112,4 +117,4 @@ const FlowsCreate = () => {
   )
 }
 
-export default FlowsCreate
+export default ActiveflowsCreate
