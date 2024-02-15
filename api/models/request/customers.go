@@ -23,7 +23,6 @@ type BodyCustomersPOST struct {
 	Address       string                   `json:"address,omitempty"`
 	WebhookMethod cscustomer.WebhookMethod `json:"webhook_method,omitempty"`
 	WebhookURI    string                   `json:"webhook_uri,omitempty"`
-	PermissionIDs []uuid.UUID              `json:"permission_ids,omitempty"`
 }
 
 // BodyCustomersIDPUT is rquest body define for

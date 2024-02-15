@@ -13,7 +13,6 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -44,7 +43,6 @@ func Test_customersPOST(t *testing.T) {
 		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
-		permissionIDs []uuid.UUID
 
 		expectRes *cscustomer.WebhookMessage
 	}{
@@ -66,9 +64,6 @@ func Test_customersPOST(t *testing.T) {
 				Address:       "somewhere",
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
 			},
 			"test",
 			"test password",
@@ -79,9 +74,6 @@ func Test_customersPOST(t *testing.T) {
 			"somewhere",
 			cscustomer.WebhookMethodPost,
 			"test.com",
-			[]uuid.UUID{
-				cspermission.PermissionAdmin.ID,
-			},
 
 			&cscustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("271353a8-83f3-11ec-9386-8be19d563155"),
@@ -126,7 +118,6 @@ func Test_customersPOST(t *testing.T) {
 				tt.address,
 				tt.webhookMethod,
 				tt.webhookURI,
-				tt.permissionIDs,
 			).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
@@ -393,132 +384,6 @@ func Test_customersIDDelete(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().CustomerDelete(req.Context(), &tt.agent, tt.id).Return(&cscustomer.WebhookMessage{}, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-		})
-	}
-}
-
-func Test_customersIDPermissionIDsPut(t *testing.T) {
-
-	tests := []struct {
-		name   string
-		agent  amagent.Agent
-		target string
-
-		req request.BodyCustomersIDPermissionIDsPUT
-
-		id uuid.UUID
-	}{
-		{
-			"normal",
-			amagent.Agent{
-				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				Permission: amagent.PermissionProjectSuperAdmin,
-			},
-			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f/permission_ids",
-
-			request.BodyCustomersIDPermissionIDsPUT{
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
-			},
-
-			uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// create mock
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("agent", tt.agent)
-			})
-			setupServer(r)
-
-			// create request
-			body, err := json.Marshal(tt.req)
-			if err != nil {
-				t.Errorf("Wong match. expect: ok, got: %v", err)
-			}
-			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
-
-			mockSvc.EXPECT().CustomerUpdatePermissionIDs(req.Context(), &tt.agent, tt.id, tt.req.PermissionIDs).Return(&cscustomer.WebhookMessage{}, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-		})
-	}
-}
-
-func Test_customersIDPasswordPut(t *testing.T) {
-
-	tests := []struct {
-		name   string
-		agent  amagent.Agent
-		target string
-
-		req request.BodyCustomersIDPasswordPUT
-
-		id uuid.UUID
-	}{
-		{
-			"normal",
-			amagent.Agent{
-				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-				Permission: amagent.PermissionProjectSuperAdmin,
-			},
-			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f/password",
-
-			request.BodyCustomersIDPasswordPUT{
-				Password: "new password",
-			},
-
-			uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// create mock
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("agent", tt.agent)
-			})
-			setupServer(r)
-
-			// create request
-			body, err := json.Marshal(tt.req)
-			if err != nil {
-				t.Errorf("Wong match. expect: ok, got: %v", err)
-			}
-			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
-
-			mockSvc.EXPECT().CustomerUpdatePassword(req.Context(), &tt.agent, tt.id, tt.req.Password).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

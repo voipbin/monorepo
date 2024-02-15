@@ -9,9 +9,10 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -31,38 +32,49 @@ func Test_CustomerCreate(t *testing.T) {
 		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
-		permissionIDs []uuid.UUID
 
-		responseCustomer *cscustomer.Customer
-		expectRes        *cscustomer.WebhookMessage
+		responseCustomer       *cscustomer.Customer
+		responseAgent          *amagent.Agent
+		responseBillingAccount *bmaccount.Account
+
+		expectFilters map[string]string
+		expectRes     *cscustomer.WebhookMessage
 	}
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			&amagent.Agent{
+			agent: &amagent.Agent{
 				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
-			"test",
-			"testpassword",
-			"test",
-			"test detail",
-			"test@test.com",
-			"+821100000001",
-			"somewhere",
-			cscustomer.WebhookMethodPost,
-			"test.com",
-			[]uuid.UUID{
-				cspermission.PermissionAdmin.ID,
-			},
+			username:      "test@test.com",
+			password:      "testpassword",
+			customerName:  "test",
+			detail:        "test detail",
+			email:         "test@test.com",
+			phoneNumber:   "+821100000001",
+			address:       "somewhere",
+			webhookMethod: cscustomer.WebhookMethodPost,
+			webhookURI:    "test.com",
 
-			&cscustomer.Customer{
+			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("ade4707c-837d-11ec-a600-f30a3ccf56ae"),
 			},
-			&cscustomer.WebhookMessage{
+			responseAgent: &amagent.Agent{
+				ID: uuid.FromStringOrNil("0dae6fb4-cbaf-11ee-a779-4b088feeb56e"),
+			},
+			responseBillingAccount: &bmaccount.Account{
+				ID: uuid.FromStringOrNil("504e0afa-cbaf-11ee-8184-cfce50394145"),
+			},
+
+			expectFilters: map[string]string{
+				"deleted":  "false",
+				"username": "test@test.com",
+			},
+			expectRes: &cscustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("ade4707c-837d-11ec-a600-f30a3ccf56ae"),
 			},
 		},
@@ -75,17 +87,23 @@ func Test_CustomerCreate(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return([]amagent.Agent{}, nil)
+			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().AgentV1AgentCreate(ctx, 30000, tt.responseCustomer.ID, tt.username, tt.password, gomock.Any(), gomock.Any(), gomock.Any(), amagent.PermissionCustomerAdmin, []uuid.UUID{}, []commonaddress.Address{}).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.responseCustomer.ID, gomock.Any(), gomock.Any(), bmaccount.PaymentTypePrepaid, bmaccount.PaymentMethodNone).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.responseCustomer.ID, tt.responseBillingAccount.ID).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerCreate(ctx, tt.agent, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
+			res, err := h.CustomerCreate(ctx, tt.agent, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -351,134 +369,6 @@ func Test_CustomerDelete(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, tt.id).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerDelete(ctx, tt.agent, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_CustomerUpdatePassword(t *testing.T) {
-
-	type test struct {
-		name string
-
-		agent    *amagent.Agent
-		id       uuid.UUID
-		password string
-
-		responseCustomers *cscustomer.Customer
-		expectRes         *cscustomer.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			"normal",
-
-			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
-				Permission: amagent.PermissionCustomerAdmin,
-			},
-			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
-			"new password",
-
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
-			},
-			&cscustomer.WebhookMessage{
-				ID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CustomerV1CustomerUpdatePassword(ctx, 30000, tt.id, tt.password).Return(tt.responseCustomers, nil)
-
-			res, err := h.CustomerUpdatePassword(ctx, tt.agent, tt.id, tt.password)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_CustomerUpdatePermissionIDs(t *testing.T) {
-
-	type test struct {
-		name string
-
-		agent         *amagent.Agent
-		id            uuid.UUID
-		permissionIDs []uuid.UUID
-
-		responseCustomer *cscustomer.Customer
-		expectRes        *cscustomer.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			"normal",
-
-			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("3e6fe9c8-837e-11ec-84ef-b762e8a7a8fc"),
-				Permission: amagent.PermissionProjectSuperAdmin,
-			},
-			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
-			[]uuid.UUID{
-				uuid.FromStringOrNil("fb0baf8e-8380-11ec-8083-43ca175f4211"),
-			},
-
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
-			},
-			&cscustomer.WebhookMessage{
-				ID: uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().CustomerV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
-
-			res, err := h.CustomerUpdatePermissionIDs(ctx, tt.agent, tt.id, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

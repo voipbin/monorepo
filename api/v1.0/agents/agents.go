@@ -200,7 +200,8 @@ func agentsGET(c *gin.Context) {
 
 	// filters
 	filters := map[string]string{
-		"deleted": "false",
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false",
 	}
 
 	if req.TagIDs != "" {

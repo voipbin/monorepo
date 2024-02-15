@@ -57,7 +57,7 @@ func (h *serviceHandler) AgentCreate(
 
 	// send request
 	log.Debug("Creating a new agent.")
-	tmp, err := h.reqHandler.AgentV1AgentCreate(ctx, 30, a.CustomerID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	tmp, err := h.reqHandler.AgentV1AgentCreate(ctx, 30000, a.CustomerID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -97,11 +97,10 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 // it returns agent info if it succeed.
 func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "AgentGets",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"size":        size,
-		"token":       token,
+		"func":  "AgentGets",
+		"agent": a,
+		"size":  size,
+		"token": token,
 	})
 
 	if token == "" {
@@ -112,7 +111,7 @@ func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size u
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmps, err := h.reqHandler.AgentV1AgentGets(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.AgentV1AgentGets(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get agents info. err: %v", err)
 		return nil, err
