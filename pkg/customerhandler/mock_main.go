@@ -83,18 +83,18 @@ func (mr *MockCustomerHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call
 }
 
 // Gets mocks base method.
-func (m *MockCustomerHandler) Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
+func (m *MockCustomerHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockCustomerHandlerMockRecorder) Gets(ctx, size, token interface{}) *gomock.Call {
+func (mr *MockCustomerHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCustomerHandler)(nil).Gets), ctx, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCustomerHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // IsValidBalance mocks base method.

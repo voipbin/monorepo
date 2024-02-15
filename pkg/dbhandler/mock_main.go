@@ -80,18 +80,18 @@ func (mr *MockDBHandlerMockRecorder) CustomerGet(ctx, id interface{}) *gomock.Ca
 }
 
 // CustomerGets mocks base method.
-func (m *MockDBHandler) CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
+func (m *MockDBHandler) CustomerGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerGets", ctx, size, token)
+	ret := m.ctrl.Call(m, "CustomerGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerGets indicates an expected call of CustomerGets.
-func (mr *MockDBHandlerMockRecorder) CustomerGets(ctx, size, token interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CustomerGets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockDBHandler)(nil).CustomerGets), ctx, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockDBHandler)(nil).CustomerGets), ctx, size, token, filters)
 }
 
 // CustomerSetBasicInfo mocks base method.
