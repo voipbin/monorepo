@@ -16,8 +16,6 @@ const (
 	customerSelect = `
 	select
 		id,
-		username,
-		password_hash,
 
 		name,
 		detail,
@@ -28,8 +26,6 @@ const (
 
 		webhook_method,
 		webhook_uri,
-
-		permission_ids,
 
 		billing_account_id,
 
@@ -43,13 +39,9 @@ const (
 
 // customerGetFromRow gets the customer from the row.
 func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) {
-	var permissionIDs string
-
 	res := &customer.Customer{}
 	if err := row.Scan(
 		&res.ID,
-		&res.Username,
-		&res.PasswordHash,
 
 		&res.Name,
 		&res.Detail,
@@ -61,8 +53,6 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 		&res.WebhookMethod,
 		&res.WebhookURI,
 
-		&permissionIDs,
-
 		&res.BillingAccountID,
 
 		&res.TMCreate,
@@ -72,13 +62,6 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 		return nil, fmt.Errorf("dbhandler: Could not scan the row. customerGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(permissionIDs), &res.PermissionIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the permission_ids. customerGetFromRow. err: %v", err)
-	}
-	if res.PermissionIDs == nil {
-		res.PermissionIDs = []uuid.UUID{}
-	}
-
 	return res, nil
 }
 
@@ -86,8 +69,6 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) error {
 	q := `insert into customers(
 		id,
-		username,
-		password_hash,
 
 		name,
 		detail,
@@ -99,7 +80,6 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		webhook_method,
 		webhook_uri,
 
-		permission_ids,
 
 		billing_account_id,
 
@@ -107,29 +87,18 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?,
-		?, ?,
-		?, ?, ?,
-		?, ?,
 		?,
+		?, ?,
+		?, ?, ?,
+		?, ?,
 		?,
 		?, ?, ?
 		)
 	`
 
-	if c.PermissionIDs == nil {
-		c.PermissionIDs = []uuid.UUID{}
-	}
-	tmpPermissionIDs, err := json.Marshal(c.PermissionIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the permission_ids. CustomerCreate. err: %v", err)
-	}
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err = h.db.Exec(q,
+	_, err := h.db.Exec(q,
 		c.ID.Bytes(),
-		c.Username,
-		c.PasswordHash,
 
 		c.Name,
 		c.Detail,
@@ -140,8 +109,6 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 
 		c.WebhookMethod,
 		c.WebhookURI,
-
-		tmpPermissionIDs,
 
 		c.BillingAccountID.Bytes(),
 
@@ -283,29 +250,6 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 	_ = h.customerUpdateToCache(ctx, id)
 
 	return nil
-}
-
-// CustomerGetByUsername returns customer.
-func (h *handler) CustomerGetByUsername(ctx context.Context, username string) (*customer.Customer, error) {
-	// prepare
-	q := fmt.Sprintf("%s where username = ?", customerSelect)
-
-	row, err := h.db.Query(q, username)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. CustomerGetByUsername. err: %v", err)
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.customerGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. CustomerGetByUsername. err: %v", err)
-	}
-
-	return res, nil
 }
 
 // CustomerSetBasicInfo sets the customer's basic info.

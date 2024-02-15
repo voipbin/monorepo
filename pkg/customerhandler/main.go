@@ -13,15 +13,12 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/helphandler"
 )
 
 // CustomerHandler interface
 type CustomerHandler interface {
 	Create(
 		ctx context.Context,
-		username string,
-		password string,
 		name string,
 		detail string,
 		email string,
@@ -29,12 +26,10 @@ type CustomerHandler interface {
 		address string,
 		webhookMethod customer.WebhookMethod,
 		webhookURI string,
-		permissionIDs []uuid.UUID,
 	) (*customer.Customer, error)
 	Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
-	Login(ctx context.Context, username, password string) (*customer.Customer, error)
 	UpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
@@ -46,8 +41,6 @@ type CustomerHandler interface {
 		webhookMethod customer.WebhookMethod,
 		webhookURI string,
 	) (*customer.Customer, error)
-	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error)
-	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error)
 	UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error)
 
 	IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
@@ -58,8 +51,6 @@ type customerHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
-
-	helpHandler helphandler.HelpHandler
 }
 
 // NewCustomerHandler return UserHandler interface
@@ -69,7 +60,5 @@ func NewCustomerHandler(reqHandler requesthandler.RequestHandler, dbHandler dbha
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyHandler: notifyHandler,
-
-		helpHandler: helphandler.NewHelpHandler(),
 	}
 }

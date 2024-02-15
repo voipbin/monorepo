@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/customerhandler"
 )
 
@@ -38,19 +37,16 @@ func Test_processV1CustomersGet(t *testing.T) {
 
 			[]*customer.Customer{
 				{
-					ID:            uuid.FromStringOrNil("31b08066-7db2-11ec-8786-c7d9cf6c9b5f"),
-					Username:      "test1",
-					PasswordHash:  "",
-					PermissionIDs: []uuid.UUID{},
-					TMCreate:      "",
-					TMUpdate:      "",
-					TMDelete:      "",
+					ID:       uuid.FromStringOrNil("31b08066-7db2-11ec-8786-c7d9cf6c9b5f"),
+					TMCreate: "",
+					TMUpdate: "",
+					TMDelete: "",
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","username":"test1","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 		{
@@ -65,20 +61,16 @@ func Test_processV1CustomersGet(t *testing.T) {
 
 			[]*customer.Customer{
 				{
-					ID:            uuid.FromStringOrNil("9f8a7880-7db2-11ec-9602-930411a1581f"),
-					Username:      "test1",
-					PermissionIDs: []uuid.UUID{},
+					ID: uuid.FromStringOrNil("9f8a7880-7db2-11ec-9602-930411a1581f"),
 				},
 				{
-					ID:            uuid.FromStringOrNil("a032c710-7db2-11ec-bfe0-83fa85a82603"),
-					Username:      "test2",
-					PermissionIDs: []uuid.UUID{},
+					ID: uuid.FromStringOrNil("a032c710-7db2-11ec-bfe0-83fa85a82603"),
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","username":"test1","billing_account_id":"00000000-0000-0000-0000-000000000000"},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","username":"test2","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","billing_account_id":"00000000-0000-0000-0000-000000000000"},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -119,8 +111,6 @@ func Test_processV1CustomersPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		username         string
-		password         string
 		customerName     string
 		detail           string
 		email            string
@@ -128,7 +118,6 @@ func Test_processV1CustomersPost(t *testing.T) {
 		address          string
 		webhookMethod    customer.WebhookMethod
 		webhookURI       string
-		permissionIDs    []uuid.UUID
 		billingAccountID uuid.UUID
 
 		responseCustomer *customer.Customer
@@ -143,23 +132,17 @@ func Test_processV1CustomersPost(t *testing.T) {
 				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "email": "test@test.com", "phone_number": "+821100000001", "address": "somewhere", "webhook_method": "POST", "webhook_uri": "test.com", "line_secret": "335671d0-ed3f-11ec-95d5-bb7d97d73379", "line_token": "339c9ebc-ed3f-11ec-bb15-4f3b18e06796", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
 			},
 
-			username:      "test",
-			password:      "password",
-			customerName:  "name test",
-			detail:        "detail test",
-			email:         "test@test.com",
-			phoneNumber:   "+821100000001",
-			address:       "somewhere",
-			webhookMethod: customer.WebhookMethodPost,
-			webhookURI:    "test.com",
-			permissionIDs: []uuid.UUID{
-				permission.PermissionAdmin.ID,
-			},
+			customerName:     "name test",
+			detail:           "detail test",
+			email:            "test@test.com",
+			phoneNumber:      "+821100000001",
+			address:          "somewhere",
+			webhookMethod:    customer.WebhookMethodPost,
+			webhookURI:       "test.com",
 			billingAccountID: uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
 
 			responseCustomer: &customer.Customer{
-				ID:       uuid.FromStringOrNil("2043c49e-7db4-11ec-92b7-73af5ed663c9"),
-				Username: "test",
+				ID: uuid.FromStringOrNil("2043c49e-7db4-11ec-92b7-73af5ed663c9"),
 
 				Name:          "name test",
 				Detail:        "detail test",
@@ -169,15 +152,12 @@ func Test_processV1CustomersPost(t *testing.T) {
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 
-				PermissionIDs: []uuid.UUID{
-					permission.PermissionAdmin.ID,
-				},
 				BillingAccountID: uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
 			},
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","username":"test","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
+				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
 			},
 		},
 	}
@@ -199,8 +179,6 @@ func Test_processV1CustomersPost(t *testing.T) {
 
 			mockCustomer.EXPECT().Create(
 				gomock.Any(),
-				tt.username,
-				tt.password,
 				tt.customerName,
 				tt.detail,
 				tt.email,
@@ -208,7 +186,6 @@ func Test_processV1CustomersPost(t *testing.T) {
 				tt.address,
 				tt.webhookMethod,
 				tt.webhookURI,
-				tt.permissionIDs,
 			).Return(tt.responseCustomer, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -246,14 +223,12 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			uuid.FromStringOrNil("2cfbb148-7dc7-11ec-85df-47cf2c8492f0"),
 
 			&customer.Customer{
-				ID:            uuid.FromStringOrNil("2cfbb148-7dc7-11ec-85df-47cf2c8492f0"),
-				Username:      "test",
-				PermissionIDs: []uuid.UUID{},
+				ID: uuid.FromStringOrNil("2cfbb148-7dc7-11ec-85df-47cf2c8492f0"),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","username":"test","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -422,135 +397,6 @@ func Test_processV1UsersIDPut(t *testing.T) {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
 
-		})
-	}
-}
-
-func Test_processV1UsersIDPasswordPut(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		request *rabbitmqhandler.Request
-
-		id       uuid.UUID
-		password string
-
-		responseCustomer *customer.Customer
-		expectRes        *rabbitmqhandler.Response
-	}{
-		{
-			"normal",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/customers/1887f2d6-7dd5-11ec-9141-f7f46aaf294c/password",
-				Method:   rabbitmqhandler.RequestMethodPut,
-				DataType: "application/json",
-				Data:     []byte(`{"password":"password2"}`),
-			},
-
-			uuid.FromStringOrNil("1887f2d6-7dd5-11ec-9141-f7f46aaf294c"),
-			"password2",
-
-			&customer.Customer{
-				ID: uuid.FromStringOrNil("1887f2d6-7dd5-11ec-9141-f7f46aaf294c"),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"1887f2d6-7dd5-11ec-9141-f7f46aaf294c","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:      mockSock,
-				reqHandler:      mockReq,
-				customerHandler: mockCustomer,
-			}
-
-			mockCustomer.EXPECT().UpdatePassword(gomock.Any(), tt.id, tt.password).Return(tt.responseCustomer, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
-
-		})
-	}
-}
-
-func Test_processV1CustomersIDPermissionIDsPut(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		request *rabbitmqhandler.Request
-
-		id            uuid.UUID
-		permissionIDs []uuid.UUID
-
-		responseCustomer *customer.Customer
-		expectRes        *rabbitmqhandler.Response
-	}{
-		{
-			"normal",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/customers/e00b4e98-7dd5-11ec-82c1-8b583557f04d/permission_ids",
-				Method:   rabbitmqhandler.RequestMethodPut,
-				DataType: "application/json",
-				Data:     []byte(`{"permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"]}`),
-			},
-
-			uuid.FromStringOrNil("e00b4e98-7dd5-11ec-82c1-8b583557f04d"),
-			[]uuid.UUID{
-				permission.PermissionAdmin.ID,
-			},
-
-			&customer.Customer{
-				ID: uuid.FromStringOrNil("e00b4e98-7dd5-11ec-82c1-8b583557f04d"),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"e00b4e98-7dd5-11ec-82c1-8b583557f04d","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:      mockSock,
-				reqHandler:      mockReq,
-				customerHandler: mockCustomer,
-			}
-
-			mockCustomer.EXPECT().UpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
 		})
 	}
 }
