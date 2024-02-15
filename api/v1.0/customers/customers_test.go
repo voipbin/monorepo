@@ -133,11 +133,12 @@ func Test_customersGet(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		customer amagent.Agent
-		target   string
+		agent    amagent.Agent
+		reqQuery string
 
-		size  uint64
-		token string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		resCustomers []*cscustomer.WebhookMessage
 		expectRes    *response.BodyCustomersGET
@@ -151,6 +152,9 @@ func Test_customersGet(t *testing.T) {
 
 			20,
 			"2020-09-20 03:23:20.995000",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]*cscustomer.WebhookMessage{
 				{
@@ -180,16 +184,16 @@ func Test_customersGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("agent", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			// create request
-			req, _ := http.NewRequest("GET", tt.target, nil)
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGets(req.Context(), &tt.customer, tt.size, tt.token).Return(tt.resCustomers, nil)
+			mockSvc.EXPECT().CustomerGets(req.Context(), &tt.agent, tt.size, tt.token, tt.filters).Return(tt.resCustomers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

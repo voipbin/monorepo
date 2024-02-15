@@ -1661,18 +1661,18 @@ func (mr *MockServiceHandlerMockRecorder) CustomerGet(ctx, a, customerID interfa
 }
 
 // CustomerGets mocks base method.
-func (m *MockServiceHandler) CustomerGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerGets(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "CustomerGets", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerGets indicates an expected call of CustomerGets.
-func (mr *MockServiceHandlerMockRecorder) CustomerGets(ctx, a, size, token interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CustomerGets(ctx, a, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockServiceHandler)(nil).CustomerGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockServiceHandler)(nil).CustomerGets), ctx, a, size, token, filters)
 }
 
 // CustomerUpdate mocks base method.

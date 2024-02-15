@@ -181,9 +181,10 @@ func Test_CustomerGets(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
-		size  uint64
-		token string
+		agent   *amagent.Agent
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseCustomers []cscustomer.Customer
 		expectRes         []*cscustomer.WebhookMessage
@@ -200,6 +201,9 @@ func Test_CustomerGets(t *testing.T) {
 
 			10,
 			"2020-09-20T03:23:20.995000",
+			map[string]string{
+				"deleted": "false",
+			},
 
 			[]cscustomer.Customer{
 				{
@@ -226,12 +230,11 @@ func Test_CustomerGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.CustomerGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
