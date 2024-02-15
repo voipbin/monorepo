@@ -22,17 +22,15 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
-		filters    map[string]string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		result []*agent.Agent
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 			10,
 			"2021-11-23 17:55:39.712000",
 			map[string]string{
@@ -60,8 +58,8 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, tt.size, tt.token, tt.filters).Return(tt.result, nil)
-			_, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
+			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

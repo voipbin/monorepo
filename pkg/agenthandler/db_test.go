@@ -57,8 +57,8 @@ func Test_dbGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseAgents, nil)
-			_, err := h.dbGets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.responseAgents, nil)
+			_, err := h.dbGets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

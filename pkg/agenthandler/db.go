@@ -12,16 +12,15 @@ import (
 )
 
 // dbGets returns agents
-func (h *agentHandler) dbGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
+func (h *agentHandler) dbGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "dbGets",
-		"customer_id": customerID,
-		"size":        size,
-		"token":       token,
-		"filters":     filters,
+		"func":    "dbGets",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
 	})
 
-	res, err := h.db.AgentGets(ctx, customerID, size, token, filters)
+	res, err := h.db.AgentGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
