@@ -327,7 +327,7 @@ type ServiceHandler interface {
 		webhookURI string,
 	) (*cscustomer.WebhookMessage, error)
 	CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
-	CustomerGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cscustomer.WebhookMessage, error)
+	CustomerGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error)
 	CustomerUpdate(
 		ctx context.Context,
 		a *amagent.Agent,

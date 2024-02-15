@@ -97,10 +97,11 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 // it returns agent info if it succeed.
 func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "AgentGets",
-		"agent": a,
-		"size":  size,
-		"token": token,
+		"func":    "AgentGets",
+		"agent":   a,
+		"size":    size,
+		"token":   token,
+		"filters": filters,
 	})
 
 	if token == "" {

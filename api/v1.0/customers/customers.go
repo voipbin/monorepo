@@ -110,11 +110,16 @@ func customersGet(c *gin.Context) {
 	}
 	log.Debugf("customersGET. Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
 
+	// filters
+	filters := map[string]string{
+		"deleted": "false",
+	}
+
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get customers
-	customers, err := serviceHandler.CustomerGets(c.Request.Context(), &a, pageSize, req.PageToken)
+	customers, err := serviceHandler.CustomerGets(c.Request.Context(), &a, pageSize, req.PageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get a customers list. err: %v", err)
 		c.AbortWithStatus(400)
