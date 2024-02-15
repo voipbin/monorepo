@@ -79,21 +79,6 @@ func (mr *MockDBHandlerMockRecorder) CustomerGet(ctx, id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGet", reflect.TypeOf((*MockDBHandler)(nil).CustomerGet), ctx, id)
 }
 
-// CustomerGetByUsername mocks base method.
-func (m *MockDBHandler) CustomerGetByUsername(ctx context.Context, username string) (*customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerGetByUsername", ctx, username)
-	ret0, _ := ret[0].(*customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerGetByUsername indicates an expected call of CustomerGetByUsername.
-func (mr *MockDBHandlerMockRecorder) CustomerGetByUsername(ctx, username interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGetByUsername", reflect.TypeOf((*MockDBHandler)(nil).CustomerGetByUsername), ctx, username)
-}
-
 // CustomerGets mocks base method.
 func (m *MockDBHandler) CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()
@@ -135,32 +120,4 @@ func (m *MockDBHandler) CustomerSetBillingAccountID(ctx context.Context, id, bil
 func (mr *MockDBHandlerMockRecorder) CustomerSetBillingAccountID(ctx, id, billingAccountID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSetBillingAccountID", reflect.TypeOf((*MockDBHandler)(nil).CustomerSetBillingAccountID), ctx, id, billingAccountID)
-}
-
-// CustomerSetPasswordHash mocks base method.
-func (m *MockDBHandler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerSetPasswordHash", ctx, id, passwordHash)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CustomerSetPasswordHash indicates an expected call of CustomerSetPasswordHash.
-func (mr *MockDBHandlerMockRecorder) CustomerSetPasswordHash(ctx, id, passwordHash interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSetPasswordHash", reflect.TypeOf((*MockDBHandler)(nil).CustomerSetPasswordHash), ctx, id, passwordHash)
-}
-
-// CustomerSetPermissionIDs mocks base method.
-func (m *MockDBHandler) CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerSetPermissionIDs", ctx, id, permissionIDs)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CustomerSetPermissionIDs indicates an expected call of CustomerSetPermissionIDs.
-func (mr *MockDBHandlerMockRecorder) CustomerSetPermissionIDs(ctx, id, permissionIDs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSetPermissionIDs", reflect.TypeOf((*MockDBHandler)(nil).CustomerSetPermissionIDs), ctx, id, permissionIDs)
 }
