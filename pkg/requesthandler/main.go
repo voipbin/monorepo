@@ -662,7 +662,7 @@ type RequestHandler interface {
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64) ([]cscustomer.Customer, error)
+	CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cscustomer.Customer, error)
 	CustomerV1CustomerUpdate(
 		ctx context.Context,
 		id uuid.UUID,
