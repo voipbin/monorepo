@@ -17,9 +17,11 @@ type Extension struct {
 
 	Extension string `json:"extension"`
 
-	DomainName string `json:"domain_name"` // same as the CustomerID. This used by the kamailio's INVITE validation
-	Username   string `json:"username"`    // same as the Extension. This used by the kamailio's INVITE validation
-	Password   string `json:"password"`
+	DomainName string `json:"domain_name"`
+
+	Realm    string `json:"realm,omitempty"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Username string `json:"username"`        // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Password string `json:"password"`        // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

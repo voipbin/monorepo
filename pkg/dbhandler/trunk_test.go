@@ -35,6 +35,7 @@ func Test_TrunkCreate(t *testing.T) {
 				Detail:     "test detail",
 				DomainName: "test",
 				AuthTypes:  []trunk.AuthType{trunk.AuthTypeBasic},
+				Realm:      "test.trunk.voipbin.net",
 				Username:   "testusername",
 				Password:   "testpassword",
 				AllowedIPs: []string{
@@ -51,6 +52,7 @@ func Test_TrunkCreate(t *testing.T) {
 				Detail:     "test detail",
 				DomainName: "test",
 				AuthTypes:  []trunk.AuthType{trunk.AuthTypeBasic},
+				Realm:      "test.trunk.voipbin.net",
 				Username:   "testusername",
 				Password:   "testpassword",
 				AllowedIPs: []string{
@@ -65,12 +67,12 @@ func Test_TrunkCreate(t *testing.T) {
 		{
 			"empty",
 			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("7158cd86-519b-11ee-90e4-cffeca8a2ec8"),
+				ID: uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
 			},
 
 			"2021-02-26 18:26:49.000",
 			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("7158cd86-519b-11ee-90e4-cffeca8a2ec8"),
+				ID:         uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
 				AuthTypes:  []trunk.AuthType{},
 				AllowedIPs: []string{},
 				TMCreate:   "2021-02-26 18:26:49.000",
