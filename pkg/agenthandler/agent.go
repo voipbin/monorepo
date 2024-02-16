@@ -2,6 +2,7 @@ package agenthandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -51,6 +52,19 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 		"permission":  permission,
 	})
 	log.Debug("Creating a new user.")
+
+	// validate username
+	if !isEmailValid(username) {
+		log.Infof("Wrong username type. The username must be email format. username: %s", username)
+		return nil, fmt.Errorf("wrong username format")
+	}
+
+	// check existence
+	tmpAgent, err := h.db.AgentGetByUsername(ctx, username)
+	if err == nil {
+		log.WithField("agent", tmpAgent).Errorf("The agent is already exist.")
+		return nil, fmt.Errorf("already exist")
+	}
 
 	res, err := h.dbCreate(ctx, customerID, username, password, name, detail, ringMethod, permission, tags, addresses)
 	if err != nil {

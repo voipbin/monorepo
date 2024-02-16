@@ -6,12 +6,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 )
 
 func Test_EventGroupcallCreated(t *testing.T) {
@@ -126,6 +129,72 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 			}
 
 			if err := h.EventGroupcallProgressing(ctx, tt.groupcall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventCustomerDeleted(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer       *cmcustomer.Customer
+		responseAgents []*agent.Agent
+
+		expectFilter map[string]string
+	}{
+		{
+			name: "normal",
+
+			customer: &cmcustomer.Customer{
+				ID: uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+			},
+			responseAgents: []*agent.Agent{
+				{
+					ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e39bfb34-ccca-11ee-9c3e-2fba9dd3bf35"),
+				},
+			},
+
+			expectFilter: map[string]string{
+				"customer_id": "82ed53fa-ccca-11ee-be19-17f582a54cf4",
+				"deleted":     "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().AgentGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseAgents, nil)
+
+			for _, ag := range tt.responseAgents {
+				mockDB.EXPECT().AgentDelete(ctx, ag.ID).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, ag.ID).Return(ag, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, ag.CustomerID, agent.EventTypeAgentDeleted, ag)
+			}
+
+			if err := h.EventCustomerDeleted(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

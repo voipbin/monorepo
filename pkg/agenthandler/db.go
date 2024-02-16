@@ -55,13 +55,6 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 	})
 	log.Debug("Creating a new user.")
 
-	// get agent
-	tmpAgent, err := h.db.AgentGetByUsername(ctx, username)
-	if err == nil {
-		log.WithField("agent", tmpAgent).Errorf("The agent is already exist.")
-		return nil, fmt.Errorf("already exist")
-	}
-
 	if ringMethod != agent.RingMethodRingAll {
 		log.Errorf("Unsupported ring method. Currently, support ringall only. ringMethod: %s", ringMethod)
 		return nil, fmt.Errorf("wrong ring_method")

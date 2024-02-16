@@ -4,6 +4,7 @@ package agenthandler
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/gofrs/uuid"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
@@ -11,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
@@ -33,6 +35,7 @@ type AgentHandler interface {
 
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
+	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
 }
 
 type agentHandler struct {
@@ -65,4 +68,11 @@ func checkHash(password, hashString string) bool {
 func generateHash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	return string(bytes), err
+}
+
+// isEmailValid checks if the email provided is valid by regex.
+// get from https://stackoverflow.com/questions/66624011/how-to-validate-an-email-address-in-go
+func isEmailValid(e string) bool {
+	emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	return emailRegex.MatchString(e)
 }

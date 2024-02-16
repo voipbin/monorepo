@@ -33,7 +33,7 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "comma separated rabbitmq exchange name for subscribe")
+var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event,bin-manager.customer-manager.event", "comma separated rabbitmq exchange name for subscribe")
 
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.agent-manager.request", "rabbitmq queue name for request listen")
 var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.agent-manager.event", "rabbitmq exchange name for event notify")
