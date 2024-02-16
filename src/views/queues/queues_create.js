@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,25 +20,21 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const QueuesCreate = () => {
   console.log("QueuesCreate");
 
-  const ref_id = useRef(null);
+  const [buttonDisable, setButtonDisable] = useState(false);
+
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
   const ref_routing_method = useRef(null);
   const ref_service_timeout = useRef(null);
   const ref_wait_timeout = useRef(null);
-  const ref_service_queuecall_ids = useRef(null);
-  const ref_wait_queuecall_ids = useRef(null);
   const ref_wait_actions = useRef(null);
   const ref_tag_ids = useRef(null);
-  const ref_total_abandoned_count = useRef(null);
-  const ref_total_incoming_count = useRef(null);
-  const ref_total_serviced_count = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
 
     return (
@@ -89,7 +85,6 @@ const QueuesCreate = () => {
                 </CRow>
 
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Timeout(ms)</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -127,7 +122,6 @@ const QueuesCreate = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Tag IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
@@ -140,7 +134,7 @@ const QueuesCreate = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
               </CCardBody>
             </CCard>
@@ -150,8 +144,10 @@ const QueuesCreate = () => {
     )
   };
 
+  const navigate = useNavigate();
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -168,6 +164,8 @@ const QueuesCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/queues/queues_list";
+      navigate(navi);
     });
   };
 

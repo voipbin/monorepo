@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const MessagesDetail = () => {
   console.log("MessagesDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_type = useRef(null);
@@ -31,7 +36,6 @@ const MessagesDetail = () => {
   const ref_targets = useRef(null);
   const ref_text = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -156,7 +160,7 @@ const MessagesDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -172,12 +176,15 @@ const MessagesDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "messages/" + ref_id.current.value;
     console.log("Deleting message info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/messages/messages_list";
+      navigate(navi);
     });
   }
 

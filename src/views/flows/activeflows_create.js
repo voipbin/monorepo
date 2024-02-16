@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,15 +20,19 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const ActiveflowsCreate = () => {
   console.log("ActiveflowsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_flow_id = useRef(null);
   const ref_actions = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -82,7 +86,7 @@ const ActiveflowsCreate = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
               </CCardBody>
             </CCard>
@@ -95,6 +99,7 @@ const ActiveflowsCreate = () => {
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "id": ref_id.current.value,
@@ -107,6 +112,8 @@ const ActiveflowsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/flows/activeflows_list";
+      navigate(navi);
     });
   };
 

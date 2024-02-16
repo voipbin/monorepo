@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,12 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const CallsCreate = () => {
   console.log("CallsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
 
   const ref_source = useRef(null);
   const ref_destinations = useRef(null);
@@ -96,7 +99,7 @@ const CallsCreate = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
               </CCardBody>
             </CCard>
@@ -106,8 +109,10 @@ const CallsCreate = () => {
     )
   };
 
+  const navigate = useNavigate();
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "source": JSON.parse(ref_source.current.value),
@@ -121,6 +126,8 @@ const CallsCreate = () => {
     console.log("Creating call info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created call info.", JSON.stringify(response));
+      const navi = "/resources/calls/calls_list";
+      navigate(navi);
     });
   };
 

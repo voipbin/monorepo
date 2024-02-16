@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,12 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const GroupcallsCreate = () => {
   console.log("CallsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
 
   const ref_source = useRef(null);
   const ref_destinations = useRef(null);
@@ -30,7 +33,6 @@ const GroupcallsCreate = () => {
   const ref_actions = useRef(null);
   const ref_ring_method = useRef(null);
   const ref_answer_method = useRef(null);
-
 
   const routeParams = useParams();
   const Create = () => {
@@ -69,8 +71,8 @@ const GroupcallsCreate = () => {
                       rows={10}
                     />
                   </CCol>
-
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Ring Method</b></CFormLabel>
@@ -86,7 +88,6 @@ const GroupcallsCreate = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Answer Method</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormSelect
@@ -99,7 +100,6 @@ const GroupcallsCreate = () => {
                     />
                   </CCol>
                 </CRow>
-
 
 
                 <CRow>
@@ -129,21 +129,19 @@ const GroupcallsCreate = () => {
                 </CRow>
 
 
-
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
-
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
               </CCardBody>
             </CCard>
           </CCol>
         </CRow>
-
       </>
     )
   };
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "source": ref_source.current.value,
@@ -157,8 +155,10 @@ const GroupcallsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "groupcalls";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(() => {
-      console.log("Created info.");
+    ProviderPost(target, body).then((response) => {
+      console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/groupcalls/groupcalls_list";
+      navigate(navi);
     });
   };
 

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const AgentsCreate = () => {
   console.log("AgentsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_username = useRef(null);
   const ref_password = useRef(null);
@@ -33,7 +38,6 @@ const AgentsCreate = () => {
   const ref_addresses = useRef(null);
   const ref_tag_ids = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -48,7 +52,6 @@ const AgentsCreate = () => {
 
               <CCardBody>
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Username</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -60,7 +63,7 @@ const AgentsCreate = () => {
                   </CCol>
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Password</b></CFormLabel>
-                  <CCol>
+                  <CCol className="mb-3 align-items-auto">
                     <CFormInput
                       ref={ref_password}
                       type="password"
@@ -68,7 +71,6 @@ const AgentsCreate = () => {
                     />
                   </CCol>
                 </CRow>
-
 
 
                 <CRow>
@@ -82,7 +84,7 @@ const AgentsCreate = () => {
                   </CCol>
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
-                  <CCol>
+                  <CCol className="mb-3 align-items-auto">
                     <CFormInput
                       ref={ref_detail}
                       type="text"
@@ -90,7 +92,6 @@ const AgentsCreate = () => {
                     />
                   </CCol>
                 </CRow>
-
 
 
                 <CRow>
@@ -107,7 +108,7 @@ const AgentsCreate = () => {
                   </CCol>
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Permission</b></CFormLabel>
-                  <CCol>
+                  <CCol className="mb-3 align-items-auto">
                     <CFormInput
                       ref={ref_permission}
                       type="text"
@@ -115,12 +116,6 @@ const AgentsCreate = () => {
                     />
                   </CCol>
                 </CRow>
-
-
-
-
-
-
 
 
                 <CRow>
@@ -145,23 +140,23 @@ const AgentsCreate = () => {
                       rows={20}
                     />
                   </CCol>
-
                 </CRow>
 
 
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
       </>
     )
   };
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "username": ref_username.current.value,
@@ -177,8 +172,10 @@ const AgentsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(() => {
-      console.log("Created info.");
+    ProviderPost(target, body).then((response) => {
+      console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/agents/agents_list";
+      navigate(navi);
     });
   };
 

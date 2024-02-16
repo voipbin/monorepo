@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const ConferencesDetail = () => {
   console.log("ConferencesDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_balance = useRef(null);
@@ -36,7 +41,6 @@ const ConferencesDetail = () => {
   const ref_conferencecall_ids = useRef(null);
   const ref_recording_ids = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -77,15 +81,13 @@ const ConferencesDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
 
 
                 <CRow>
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Status</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                  <CFormInput
+                    <CFormInput
                       ref={ref_status}
                       type="text"
                       id="colFormLabelSm"
@@ -96,15 +98,13 @@ const ConferencesDetail = () => {
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Timeout</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                  <CFormInput
+                    <CFormInput
                       ref={ref_timeout}
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={detailData.timeout}
                     />
                   </CCol>
-
-
                 </CRow>
 
 
@@ -129,7 +129,6 @@ const ConferencesDetail = () => {
                     />
                   </CCol>
                 </CRow>
-
 
 
                 <CRow>
@@ -171,15 +170,14 @@ const ConferencesDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateBasicInfo()}>Update</CButton>
                 <br />
                 <br />
 
                 <CRow>
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Conferencecall IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                  <CFormTextarea
+                    <CFormTextarea
                       ref={ref_conferencecall_ids}
                       type="text"
                       id="colFormLabelSm"
@@ -189,10 +187,9 @@ const ConferencesDetail = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Recording IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                  <CFormTextarea
+                    <CFormTextarea
                       ref={ref_recording_ids}
                       type="text"
                       id="colFormLabelSm"
@@ -201,7 +198,6 @@ const ConferencesDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
 
 
@@ -227,7 +223,7 @@ const ConferencesDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -240,6 +236,7 @@ const ConferencesDetail = () => {
 
   const UpdateBasicInfo = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -254,6 +251,8 @@ const ConferencesDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", response);
+      const navi = "/resources/conferences/conferences_list";
+      navigate(navi);
     });
   };
 
@@ -263,12 +262,15 @@ const ConferencesDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "conferences/" + ref_id.current.value;
     console.log("Deleting conference info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/conferences/conferences_list";
+      navigate(navi);
     });
   }
 

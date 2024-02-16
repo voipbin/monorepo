@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const CustomersDetail = () => {
   console.log("CustomersDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_name = useRef(null);
@@ -34,7 +39,6 @@ const CustomersDetail = () => {
   const ref_webhook_uri = useRef(null);
   const ref_webhook_method = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -167,7 +171,7 @@ const CustomersDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" onClick={() => UpdateBasic()}>Update</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateBasic()}>Update</CButton>
                 <br/>
                 <br/>
 
@@ -183,7 +187,7 @@ const CustomersDetail = () => {
                     />
                   </CCol>
                   <CCol className="mb-3 align-items-auto">
-                    <CButton type="submit" onClick={() => UpdateBillingAccountID()}>Update Billing Account ID</CButton>
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateBillingAccountID()}>Update Billing Account ID</CButton>
                   </CCol>
                 </CRow>
 
@@ -212,7 +216,7 @@ const CustomersDetail = () => {
 
 
                 <br />
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -224,6 +228,7 @@ const CustomersDetail = () => {
 
   const UpdateBasic = () => {
     console.log("Update UpdateBasic");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -240,11 +245,14 @@ const CustomersDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/customers/customers_list";
+      navigate(navi);
     });
   };
 
   const UpdateBillingAccountID = () => {
     console.log("Update UpdateBillingAccountID");
+    setButtonDisable(true);
 
     const tmpData = {
       "billing_account_id": ref_billingaccount_id.current.value,
@@ -255,6 +263,8 @@ const CustomersDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/customers/customers_list";
+      navigate(navi);
     });
   };
 
@@ -264,12 +274,15 @@ const CustomersDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "customers/" + ref_id.current.value;
     console.log("Deleting customer info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/customers/customers_list";
+      navigate(navi);
     });
   }
 
