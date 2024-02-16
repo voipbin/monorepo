@@ -46,6 +46,7 @@ func (h *trunkHandler) Create(
 
 	// create new trunk
 	id := h.utilHandler.UUIDCreate()
+	realm := fmt.Sprintf("%s.%s", domainName, basicDomainName)
 	t := &trunk.Trunk{
 		ID:         id,
 		CustomerID: customerID,
@@ -56,6 +57,7 @@ func (h *trunkHandler) Create(
 		DomainName: domainName,
 		AuthTypes:  authTypes,
 
+		Realm:    realm,
 		Username: username,
 		Password: password,
 

@@ -10,6 +10,7 @@ create table registrar_trunks(
   auth_types  json,
 
   -- basic auth
+  realm    varchar(255),
   username varchar(255),
   password varchar(255),
 
@@ -26,3 +27,4 @@ create table registrar_trunks(
 
 create index idx_registrar_trunks_customer_id on registrar_trunks(customer_id);
 create index idx_registrar_trunks_domain_name on registrar_trunks(domain_name);
+create index idx_registrar_trunks_realm on registrar_trunks(realm);

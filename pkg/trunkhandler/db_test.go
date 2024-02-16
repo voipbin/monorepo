@@ -63,6 +63,7 @@ func Test_Create(t *testing.T) {
 				Detail:     "test detail",
 				DomainName: "test-domain",
 				AuthTypes:  []trunk.AuthType{trunk.AuthTypeBasic, trunk.AuthTypeIP},
+				Realm:      "test-domain.trunk.voipbin.net",
 				Username:   "testusername",
 				Password:   "testpassword",
 				AllowedIPs: []string{
