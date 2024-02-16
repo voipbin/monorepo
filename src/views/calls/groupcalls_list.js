@@ -32,7 +32,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 
-const Calls = () => {
+const Groupcalls = () => {
 
   const [listData, setListData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -149,4 +149,4 @@ const Calls = () => {
   )
 }
 
-export default Calls
+export default Groupcalls

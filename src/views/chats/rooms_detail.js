@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import {
@@ -25,6 +25,10 @@ import {
 const RoomsDetail = () => {
   console.log("RoomsDetail");
 
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
+
   const ref_id = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -32,7 +36,6 @@ const RoomsDetail = () => {
   const ref_type = useRef(null);
   const ref_participant_ids = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -180,7 +183,6 @@ const RoomsDetail = () => {
     )
   };
 
-  const navigate = useNavigate();
   const Messages = () => {
     console.log("Messages info");
 
@@ -191,6 +193,7 @@ const RoomsDetail = () => {
 
   const Update = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -202,6 +205,8 @@ const RoomsDetail = () => {
     console.log("Updating conversation info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/chats/rooms_list";
+      navigate(navi);
     });
   };
 
@@ -211,12 +216,15 @@ const RoomsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "chatrooms/" + ref_id.current.value;
     console.log("Deleting chat info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/chats/rooms_list";
+      navigate(navi);
     });
   }
 

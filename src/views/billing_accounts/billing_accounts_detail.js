@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,12 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const BillingAccountsDetail = () => {
   console.log("BillingAccountsDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
 
   const ref_id = useRef(null);
   const ref_balance = useRef(null);
@@ -34,7 +37,6 @@ const BillingAccountsDetail = () => {
   const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
-
 
     const tmp = localStorage.getItem("billing_accounts");
     const datas = JSON.parse(tmp);
@@ -61,7 +63,6 @@ const BillingAccountsDetail = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel className="col-sm-2 col-form-label"><b>Balance(USD)</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
@@ -72,9 +73,7 @@ const BillingAccountsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
-
 
 
                 <CRow>
@@ -99,9 +98,11 @@ const BillingAccountsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
+
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateBasicInfo()}>Update</CButton>
                 <br />
                 <br />
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Payment Method</b></CFormLabel>
@@ -123,12 +124,13 @@ const BillingAccountsDetail = () => {
                       defaultValue={detailData.payment_type}
                     />
                   </CCol>
-
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdatePaymentInfo()}>Update Payment</CButton>
+
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdatePaymentInfo()}>Update Payment</CButton>
                 <br />
                 <br />
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
@@ -152,19 +154,21 @@ const BillingAccountsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
           </CCol>
         </CRow>
-
       </>
     )
   };
 
+  const navigate = useNavigate();
   const UpdateBasicInfo = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -178,11 +182,14 @@ const BillingAccountsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
+      const navi = "/resources/billing_accounts/billing_accounts_list";
+      navigate(navi);
     });
   };
 
   const UpdatePaymentInfo = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "payment_method": ref_payment_method.current.value,
@@ -194,6 +201,8 @@ const BillingAccountsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
+      const navi = "/resources/billing_accounts/billing_accounts_list";
+      navigate(navi);
     });
   };
 
@@ -203,12 +212,15 @@ const BillingAccountsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "billing_accounts/" + ref_id.current.value;
     console.log("Deleting billing account info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted billing account. response: " + JSON.stringify(response));
+      const navi = "/resources/billing_accounts/billing_accounts_list";
+      navigate(navi);
     });
   }
 

@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const OutdialsDetail = () => {
   console.log("OutdialsDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_name = useRef(null);
@@ -40,8 +45,6 @@ const OutdialsDetail = () => {
   const ref_try_count_3 = useRef(null);
   const ref_try_count_4 = useRef(null);
   const ref_data = useRef(null);
-
-  const routeParams = useParams();
 
   const GetDetail = () => {
     const outdial_id = routeParams.outdial_id;
@@ -296,7 +299,7 @@ const OutdialsDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -308,6 +311,7 @@ const OutdialsDetail = () => {
 
   const UpdateBasicInfo = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -331,6 +335,8 @@ const OutdialsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
+      const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
+      navigate(navi);
     });
   };
 
@@ -340,12 +346,15 @@ const OutdialsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "outdials/" + outdial_id + "/targets/" + ref_id.current.value;
     console.log("Deleting outdial target info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
+      navigate(navi);
     });
   }
 

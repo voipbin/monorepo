@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -23,16 +23,20 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const OutdialsCreate = () => {
   console.log("OutdialsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
   const ref_campaign_id = useRef(null);
   const ref_data = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -80,8 +84,6 @@ const OutdialsCreate = () => {
                 </CRow>
 
 
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Data</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -96,20 +98,19 @@ const OutdialsCreate = () => {
                 </CRow>
 
 
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
-
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -123,6 +124,8 @@ const OutdialsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/outdials/outdials_list";
+      navigate(navi);
     });
   };
 

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const CampaignsDetail = () => {
   console.log("CampaignsDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_status = useRef(null);
@@ -37,7 +42,6 @@ const CampaignsDetail = () => {
   const ref_queue_id = useRef(null);
   const ref_actions = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -45,10 +49,6 @@ const CampaignsDetail = () => {
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
     console.log("detailData", detailData);
-
-    // const storeData = store.getState();
-    // const detailData = storeData["campaigns"][id];
-    // console.log("detailData", detailData);
 
     return (
       <>
@@ -74,7 +74,6 @@ const CampaignsDetail = () => {
                 </CRow>
 
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -96,7 +95,6 @@ const CampaignsDetail = () => {
                     />
                   </CCol>
                 </CRow>
-
 
 
                 <CRow>
@@ -123,8 +121,8 @@ const CampaignsDetail = () => {
                       defaultValue={detailData.service_level}
                     />
                   </CCol>
-
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>End Handle</b></CFormLabel>
@@ -142,15 +140,12 @@ const CampaignsDetail = () => {
                 </CRow>
 
 
-
-                <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => Update()}>Update</CButton>
                 <br />
                 <br />
-
 
 
                 <CRow>
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outplan ID</b></CFormLabel>
                   <CCol>
                     <CFormInput
@@ -161,7 +156,6 @@ const CampaignsDetail = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outdial ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
@@ -171,9 +165,7 @@ const CampaignsDetail = () => {
                       defaultValue={detailData.outdial_id}
                     />
                   </CCol>
-
                 </CRow>
-
 
 
                 <CRow>
@@ -199,7 +191,7 @@ const CampaignsDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" onClick={() => UpdateResource()}>Update Resource</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateResource()}>Update Resource</CButton>
                 <br />
                 <br />
 
@@ -215,10 +207,10 @@ const CampaignsDetail = () => {
                       rows={15}
                     />
                   </CCol>
-
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdateActions()}>Update Actions</CButton>
+
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateActions()}>Update Actions</CButton>
                 <br />
                 <br />
 
@@ -239,7 +231,7 @@ const CampaignsDetail = () => {
                   </CCol>
 
                   <CCol>
-                    <CButton type="submit" onClick={() => UpdateStatus()}>Update Status</CButton>
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateStatus()}>Update Status</CButton>
                   </CCol>
 
                 </CRow>
@@ -281,7 +273,7 @@ const CampaignsDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -293,6 +285,7 @@ const CampaignsDetail = () => {
 
   const Update = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -312,11 +305,14 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/campaigns/campaigns_list";
+      navigate(navi);
     });
   };
 
   const UpdateResource = () => {
     console.log("UpdateResource");
+    setButtonDisable(true);
 
     const tmpData = {
       "outplan_id": ref_outplan_id.current.value,
@@ -330,11 +326,14 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/campaigns/campaigns_list";
+      navigate(navi);
     });
   };
 
   const UpdateActions = () => {
     console.log("UpdateActions");
+    setButtonDisable(true);
 
     const tmpData = {
       "actions": JSON.parse(ref_actions.current.value),
@@ -345,11 +344,14 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/campaigns/campaigns_list";
+      navigate(navi);
     });
   };
 
   const UpdateStatus = () => {
     console.log("UpdateStatus");
+    setButtonDisable(true);
 
     const tmpData = {
       "status": ref_status.current.value,
@@ -360,6 +362,8 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/campaigns/campaigns_list";
+      navigate(navi);
     });
   };
 
@@ -369,12 +373,15 @@ const CampaignsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "campaigns/" + ref_id.current.value;
     console.log("Deleting campaign info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/campaigns/campaigns_list";
+      navigate(navi);
     });
   }
 

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,16 +20,20 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const ChatbotsCreate = () => {
   console.log("ChatbotsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
   const ref_engine_type = useRef(null);
   const ref_init_prompt = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -43,7 +47,6 @@ const ChatbotsCreate = () => {
               </CCardHeader>
 
               <CCardBody>
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
@@ -66,7 +69,6 @@ const ChatbotsCreate = () => {
                 </CRow>
 
 
-
                 <CRow>
                 <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Engine Type</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -82,7 +84,6 @@ const ChatbotsCreate = () => {
                 </CRow>
 
 
-
                 <CRow>
                 <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Init Prompt</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -94,23 +95,23 @@ const ChatbotsCreate = () => {
                       rows={15}
                     />
                   </CCol>
-
                 </CRow>
 
 
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
       </>
     )
   };
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -124,6 +125,8 @@ const ChatbotsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/chatbots/chatbots_list";
+      navigate(navi);
     });
   };
 

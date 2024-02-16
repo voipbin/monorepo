@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const ChatsDetail = () => {
   console.log("ChatsDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_name = useRef(null);
@@ -31,7 +36,6 @@ const ChatsDetail = () => {
   const ref_type = useRef(null);
   const ref_participant_ids = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -59,7 +63,6 @@ const ChatsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
 
 
@@ -112,7 +115,7 @@ const ChatsDetail = () => {
 
 
                 <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Participant IDs</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Participant IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
                       ref={ref_participant_ids}
@@ -148,9 +151,9 @@ const ChatsDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => Update()}>Update</CButton>
                 &nbsp;
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -163,6 +166,7 @@ const ChatsDetail = () => {
 
   const Update = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -174,6 +178,8 @@ const ChatsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/chats/chats_list";
+      navigate(navi);
     });
   };
 
@@ -183,12 +189,15 @@ const ChatsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "chats/" + ref_id.current.value;
     console.log("Deleting chat info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/chats/chats_list";
+      navigate(navi);
     });
   }
 

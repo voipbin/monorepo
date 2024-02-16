@@ -39,181 +39,184 @@ const GroupcallsDetail = () => {
     }
 
     return (
-      <CRow>
-        <CCol xs={12}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <strong>Detail</strong> <small>Detail of the resource</small>
-            </CCardHeader>
+      <>
+        <CRow>
+          <CCol xs={12}>
+            <CCard className="mb-4">
+              <CCardHeader>
+                <strong>Detail</strong> <small>Detail of the resource</small>
+              </CCardHeader>
 
-            <CCardBody>
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>ID</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    ref={ref_id}
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.id}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
-
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Answer Method</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.answer_method}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
+              <CCardBody>
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_id}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.id}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
 
 
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Source</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormTextarea
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={JSON.stringify(detailData.source, null, 2)}
-                    rows={10}
-                    readOnly plainText
-                  />
-                </CCol>
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Answer Method</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.answer_method}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
 
 
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Destinations</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormTextarea
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={JSON.stringify(detailData.destinations, null, 2)}
-                    rows={10}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Source</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormTextarea
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={JSON.stringify(detailData.source, null, 2)}
+                      rows={10}
+                      readOnly plainText
+                    />
+                  </CCol>
 
 
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Call Count</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.call_count}
-                    readOnly plainText
-                  />
-                </CCol>
-
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Groupcall Count</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.groupcall_count}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Destinations</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormTextarea
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={JSON.stringify(detailData.destinations, null, 2)}
+                      rows={10}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
 
 
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Call IDs</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormTextarea
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={JSON.stringify(detailData.call_ids, null, 2)}
-                    rows={5}
-                    readOnly plainText
-                  />
-                </CCol>
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Call Count</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.call_count}
+                      readOnly plainText
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Groupcall Count</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.groupcall_count}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
 
 
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Groupcall IDs</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormTextarea
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={JSON.stringify(detailData.groupcall_ids, null, 2)}
-                    rows={5}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Call IDs</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormTextarea
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={JSON.stringify(detailData.call_ids, null, 2)}
+                      rows={5}
+                      readOnly plainText
+                    />
+                  </CCol>
 
 
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Answer Call ID</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.answer_call_id}
-                    readOnly plainText
-                  />
-                </CCol>
-
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Answer Groupcall ID</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.answer_groupcall_id}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
-
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Master Call ID</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.master_call_id}
-                    readOnly plainText
-                  />
-                </CCol>
-
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Master Groupcall ID</b></CFormLabel>
-                <CCol className="mb-3 align-items-auto">
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.master_groupcall_id}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Groupcall IDs</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormTextarea
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={JSON.stringify(detailData.groupcall_ids, null, 2)}
+                      rows={5}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
 
 
-              <CRow>
-                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Update Timestamp</b></CFormLabel>
-                <CCol>
-                  <CFormInput
-                    type="text"
-                    id="colFormLabelSm"
-                    defaultValue={detailData.tm_update}
-                    readOnly plainText
-                  />
-                </CCol>
-              </CRow>
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Answer Call ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.answer_call_id}
+                      readOnly plainText
+                    />
+                  </CCol>
 
-              <br />
-              <CButton type="submit" disabled={hangupDisabled} onClick={() => Hangup()}>Hangup</CButton>
-              &nbsp;
-              <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Answer Groupcall ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.answer_groupcall_id}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
 
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Master Call ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.master_call_id}
+                      readOnly plainText
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Master Groupcall ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.master_groupcall_id}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Update Timestamp</b></CFormLabel>
+                  <CCol>
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.tm_update}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
+
+                <br />
+                <CButton type="submit" disabled={hangupDisabled} onClick={() => Hangup()}>Hangup</CButton>
+                &nbsp;
+                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      </>
     )
   };
 

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,12 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const QueuesDetail = () => {
   console.log("QueuesDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
 
   const ref_id = useRef(null);
   const ref_name = useRef(null);
@@ -34,9 +37,6 @@ const QueuesDetail = () => {
   const ref_wait_queuecall_ids = useRef(null);
   const ref_wait_actions = useRef(null);
   const ref_tag_ids = useRef(null);
-  const ref_total_abandoned_count = useRef(null);
-  const ref_total_incoming_count = useRef(null);
-  const ref_total_serviced_count = useRef(null);
 
 
   const routeParams = useParams();
@@ -46,10 +46,6 @@ const QueuesDetail = () => {
     const tmp = localStorage.getItem("queues");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
-
-    // const storeData = store.getState();
-    // const detailData = storeData["queues"][id];
-    // console.log("detailData", detailData);
 
     return (
       <>
@@ -73,6 +69,7 @@ const QueuesDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
@@ -112,6 +109,7 @@ const QueuesDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Timeout(ms)</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -135,6 +133,7 @@ const QueuesDetail = () => {
                     />
                   </CCol>
                 </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Queuecall IDs</b></CFormLabel>
@@ -162,6 +161,7 @@ const QueuesDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -186,6 +186,7 @@ const QueuesDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -208,9 +209,10 @@ const QueuesDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => Update()}>Update</CButton>
+
+                <CButton type="submit" disabled={buttonDisable} onClick={() => Update()}>Update</CButton>
                 &nbsp;
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -220,8 +222,10 @@ const QueuesDetail = () => {
     )
   };
 
+  const navigate = useNavigate();
   const Update = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -238,6 +242,8 @@ const QueuesDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/queues/queues_list";
+      navigate(navi);
     });
   };
 
@@ -247,12 +253,15 @@ const QueuesDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "queues/" + ref_id.current.value;
     console.log("Deleting queue info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/queues/queues_list";
+      navigate(navi);
     });
   }
 

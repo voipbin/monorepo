@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,30 +20,19 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const MessagesCreate = () => {
   console.log("MessagesCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_source = useRef(null);
   const ref_destinations = useRef(null);
   const ref_text = useRef(null);
 
-
-  const ref_id = useRef(null);
-  const ref_name = useRef(null);
-  const ref_detail = useRef(null);
-  const ref_routing_method = useRef(null);
-  const ref_service_timeout = useRef(null);
-  const ref_wait_timeout = useRef(null);
-  const ref_service_queuecall_ids = useRef(null);
-  const ref_wait_queuecall_ids = useRef(null);
-  const ref_wait_actions = useRef(null);
-  const ref_tag_ids = useRef(null);
-  const ref_total_abandoned_count = useRef(null);
-  const ref_total_incoming_count = useRef(null);
-  const ref_total_serviced_count = useRef(null);
-
-  const routeParams = useParams();
   const Create = () => {
 
     return (
@@ -96,7 +85,7 @@ const MessagesCreate = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
               </CCardBody>
             </CCard>
           </CCol>
@@ -108,6 +97,7 @@ const MessagesCreate = () => {
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "source": JSON.parse(ref_source.current.value),
@@ -120,6 +110,8 @@ const MessagesCreate = () => {
     console.log("Creating message info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created message info.", JSON.stringify(response));
+      const navi = "/resources/messages/messages_list";
+      navigate(navi);
     });
   };
 

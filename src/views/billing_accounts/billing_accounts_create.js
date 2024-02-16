@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,12 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
-const FlowsCreate = () => {
-  console.log("FlowsCreate");
+const BillingAccountCreate = () => {
+  console.log("BillingAccountCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -66,7 +69,6 @@ const FlowsCreate = () => {
                 </CRow>
 
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Payment Method</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -87,19 +89,20 @@ const FlowsCreate = () => {
                   </CCol>
                 </CRow>
 
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
 
+  const navigate = useNavigate();
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -113,6 +116,8 @@ const FlowsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/billing_accounts/billing_accounts_list";
+      navigate(navi);
     });
   };
 
@@ -123,4 +128,4 @@ const FlowsCreate = () => {
   )
 }
 
-export default FlowsCreate
+export default BillingAccountCreate

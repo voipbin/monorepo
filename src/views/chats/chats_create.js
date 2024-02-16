@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const ChatsCreate = () => {
   console.log("ChatsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -30,7 +35,6 @@ const ChatsCreate = () => {
   const ref_owner_id = useRef(null);
   const ref_participant_ids = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -104,7 +108,8 @@ const ChatsCreate = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
               </CCardBody>
             </CCard>
           </CCol>
@@ -115,6 +120,7 @@ const ChatsCreate = () => {
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -129,6 +135,8 @@ const ChatsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/chats/chats_list";
+      navigate(navi);
     });
   };
 

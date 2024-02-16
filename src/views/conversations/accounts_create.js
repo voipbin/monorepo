@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const AccountsCreate = () => {
-  console.log("CallsCreate");
+  console.log("AccountsCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_type = useRef(null);
   const ref_name = useRef(null);
@@ -30,7 +35,6 @@ const AccountsCreate = () => {
   const ref_secret = useRef(null);
   const ref_token = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -107,7 +111,7 @@ const AccountsCreate = () => {
                 </CRow>
 
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
               </CCardBody>
             </CCard>
@@ -119,13 +123,14 @@ const AccountsCreate = () => {
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
-      "type": JSON.parse(ref_type.current.value),
-      "name": JSON.parse(ref_name.current.value),
-      "detail": JSON.parse(ref_detail.current.value),
-      "secret": JSON.parse(ref_secret.current.value),
-      "token": JSON.parse(ref_token.current.value),
+      "type": ref_type.current.value,
+      "name": ref_name.current.value,
+      "detail": ref_detail.current.value,
+      "secret": ref_secret.current.value,
+      "token": ref_token.current.value,
     };
 
     const body = JSON.stringify(tmpData);
@@ -133,6 +138,8 @@ const AccountsCreate = () => {
     console.log("Creating conversation accounts info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created conversation accounts info.", JSON.stringify(response));
+      const navi = "/resources/conversations/accounts_list";
+      navigate(navi);
     });
   };
 

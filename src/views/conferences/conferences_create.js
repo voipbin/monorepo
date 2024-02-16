@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
-const FlowsCreate = () => {
-  console.log("FlowsCreate");
+const ConferencesCreate = () => {
+  console.log("ConferencesCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -32,7 +37,6 @@ const FlowsCreate = () => {
   const ref_pre_actions = useRef(null);
   const ref_post_actions = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -46,8 +50,6 @@ const FlowsCreate = () => {
               </CCardHeader>
 
               <CCardBody>
-
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
@@ -71,7 +73,6 @@ const FlowsCreate = () => {
 
 
                 <CRow>
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormSelect
@@ -84,7 +85,6 @@ const FlowsCreate = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Timeout</b></CFormLabel>
                   <CCol>
                     <CFormInput
@@ -96,7 +96,6 @@ const FlowsCreate = () => {
                     />
                   </CCol>
                 </CRow>
-
 
 
                 <CRow>
@@ -131,13 +130,13 @@ const FlowsCreate = () => {
                       ref={ref_data}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue="[]"
+                      defaultValue="{}"
                       rows={5}
                     />
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
           </CCardBody>
         </CCard>
@@ -150,6 +149,7 @@ const FlowsCreate = () => {
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -166,6 +166,8 @@ const FlowsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/conferences/conferences_list";
+      navigate(navi);
     });
   };
 
@@ -176,4 +178,4 @@ const FlowsCreate = () => {
   )
 }
 
-export default FlowsCreate
+export default ConferencesCreate

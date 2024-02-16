@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -24,11 +24,14 @@ import { useNavigate } from "react-router-dom";
 const ConversationsDetail = () => {
   console.log("ConversationsDetail");
 
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
+
   const ref_id = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -164,14 +167,14 @@ const ConversationsDetail = () => {
 
 
               <CRow>
-                <CButton type="submit" onClick={() => Messages()}>Messages</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => Messages()}>Messages</CButton>
               </CRow>
 
 
               <br />
-              <CButton type="submit" onClick={() => Update()}>Update</CButton>
+              <CButton type="submit" disabled={buttonDisable} onClick={() => Update()}>Update</CButton>
               &nbsp;
-              <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+              <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
             </CCardBody>
           </CCard>
         </CCol>
@@ -179,7 +182,6 @@ const ConversationsDetail = () => {
     )
   };
 
-  const navigate = useNavigate();
   const Messages = () => {
     console.log("Messages info");
 
@@ -190,6 +192,7 @@ const ConversationsDetail = () => {
 
   const Update = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -201,6 +204,8 @@ const ConversationsDetail = () => {
     console.log("Updating conversation info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/conversations/conversations_list";
+      navigate(navi);
     });
   };
 
@@ -210,12 +215,15 @@ const ConversationsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "conversations/" + ref_id.current.value;
     console.log("Deleting conversation info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted conversation info. response: " + JSON.stringify(response));
+      const navi = "/resources/conversations/conversations_list";
+      navigate(navi);
     });
   }
 

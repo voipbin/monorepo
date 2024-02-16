@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -24,6 +24,10 @@ import { useNavigate } from "react-router-dom";
 const AccountsDetail = () => {
   console.log("AccountsDetail");
 
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
+
   const ref_id = useRef(null);
   const ref_type = useRef(null);
   const ref_secret = useRef(null);
@@ -31,7 +35,6 @@ const AccountsDetail = () => {
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -146,9 +149,9 @@ const AccountsDetail = () => {
 
 
               <br />
-              <CButton type="submit" onClick={() => Update()}>Update</CButton>
+              <CButton type="submit" disabled={buttonDisable} onClick={() => Update()}>Update</CButton>
               &nbsp;
-              <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+              <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
             </CCardBody>
           </CCard>
         </CCol>
@@ -159,6 +162,7 @@ const AccountsDetail = () => {
 
   const Update = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -172,6 +176,8 @@ const AccountsDetail = () => {
     console.log("Updating conversation info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/conversations/accounts_list";
+      navigate(navi);
     });
   };
 
@@ -181,12 +187,15 @@ const AccountsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "conversation_accounts/" + ref_id.current.value;
     console.log("Deleting conversation info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted conversation info. response: " + JSON.stringify(response));
+      const navi = "/resources/conversations/accounts_list";
+      navigate(navi);
     });
   }
 

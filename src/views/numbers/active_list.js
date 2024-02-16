@@ -47,10 +47,6 @@ const ActiveList = () => {
       const tmpData = JSON.stringify(tmp);
       localStorage.setItem("numbers", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("numbers"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list

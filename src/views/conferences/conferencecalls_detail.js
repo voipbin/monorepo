@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const ConferencecallsDetail = () => {
   console.log("ConferencesDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_status = useRef(null);
@@ -30,7 +35,6 @@ const ConferencecallsDetail = () => {
   const ref_reference_type = useRef(null);
   const ref_reference_id = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -76,9 +80,7 @@ const ConferencecallsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
-
 
 
                 <CRow>
@@ -92,9 +94,7 @@ const ConferencecallsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
-
 
 
                 <CRow>
@@ -121,6 +121,7 @@ const ConferencecallsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -146,7 +147,7 @@ const ConferencecallsDetail = () => {
 
                 <CButton type="submit" disabled={hangupDisabled} onClick={() => Kick()}>Kick</CButton>
                 &nbsp;
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
                 <br />
                 <br />
 
@@ -154,7 +155,6 @@ const ConferencecallsDetail = () => {
             </CCard>
           </CCol>
         </CRow>
-
       </>
     )
   };
@@ -167,6 +167,8 @@ const ConferencecallsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then((response) => {
       console.log("Kick info.", JSON.stringify(response));
+      const navi = "/resources/conferences/conferences_list";
+      navigate(navi);
     });
   };
 
@@ -176,15 +178,17 @@ const ConferencecallsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "conferencecalls/" + ref_id.current.value;
     console.log("Deleting conferencecall info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/conferences/conferences_list";
+      navigate(navi);
     });
   }
-
 
   return (
     <>

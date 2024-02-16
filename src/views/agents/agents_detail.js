@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,9 +20,12 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const AgentsDetail = () => {
   console.log("AgentsDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
 
   const ref_id = useRef(null);
   const ref_username = useRef(null);
@@ -95,6 +98,7 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -117,6 +121,7 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Ring Method</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -132,7 +137,7 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdateBasic()}>Update</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateBasic()}>Update</CButton>
                 <br />
                 <br/>
 
@@ -148,7 +153,7 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdatePermission()}>Update Permission</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdatePermission()}>Update Permission</CButton>
                 <br />
                 <br/>
 
@@ -165,7 +170,7 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdateAddresse()}>Update Addresses</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateAddresse()}>Update Addresses</CButton>
                 <br />
                 <br/>
 
@@ -182,7 +187,7 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdateTagIDs()}>Update Tag IDs</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateTagIDs()}>Update Tag IDs</CButton>
                 <br />
                 <br/>
 
@@ -208,7 +213,7 @@ const AgentsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -218,8 +223,10 @@ const AgentsDetail = () => {
     )
   };
 
+  const navigate = useNavigate();
   const UpdateBasic = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -235,12 +242,15 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/agents/agents_list";
+      navigate(navi);
     });
   };
 
 
   const UpdateAddresse = () => {
     console.log("Update addresses info");
+    setButtonDisable(true);
 
     const tmpData = {
       "addresses": JSON.parse(ref_addresses.current.value),
@@ -251,11 +261,14 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/agents/agents_list";
+      navigate(navi);
     });
   };
 
   const UpdateTagIDs = () => {
     console.log("Update tag ids info");
+    setButtonDisable(true);
 
     const tmpData = {
       "tag_ids": JSON.parse(ref_tag_ids.current.value),
@@ -266,11 +279,14 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/agents/agents_list";
+      navigate(navi);
     });
   };
 
   const UpdatePermission = () => {
     console.log("Update permission info");
+    setButtonDisable(true);
 
     const tmpData = {
       "permission": JSON.parse(ref_permission.current.value),
@@ -281,6 +297,8 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/agents/agents_list";
+      navigate(navi);
     });
   };
 
@@ -290,15 +308,17 @@ const AgentsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "agents/" + ref_id.current.value;
     console.log("Deleting agent info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/agents/agents_list";
+      navigate(navi);
     });
   }
-
 
   return (
     <>

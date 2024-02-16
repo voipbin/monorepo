@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -23,9 +23,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const TrunkCreate = () => {
   console.log("TrunkCreate");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -37,7 +42,6 @@ const TrunkCreate = () => {
   const ref_password = useRef(null);
   const ref_allowed_ips = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
     const id = routeParams.id;
 
@@ -52,7 +56,7 @@ const TrunkCreate = () => {
 
               <CCardBody>
 
-              <CRow>
+                <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Domain Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
@@ -61,7 +65,6 @@ const TrunkCreate = () => {
                       id="colFormLabelSm"
                     />
                   </CCol>
-
                 </CRow>
 
 
@@ -86,7 +89,6 @@ const TrunkCreate = () => {
                 </CRow>
 
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Auth Types</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -102,8 +104,6 @@ const TrunkCreate = () => {
                 </CRow>
 
 
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Username</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -115,7 +115,6 @@ const TrunkCreate = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Password</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
@@ -125,9 +124,7 @@ const TrunkCreate = () => {
                       defaultValue=""
                     />
                   </CCol>
-
                 </CRow>
-
 
 
                 <CRow>
@@ -144,20 +141,19 @@ const TrunkCreate = () => {
                 </CRow>
 
 
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
-                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
-
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
 
   const CreateResource = () => {
     console.log("Create info");
+    setButtonDisable(true);
 
     let tmpAuth = []
     {
@@ -184,6 +180,8 @@ const TrunkCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
+      const navi = "/resources/trunks/trunks_list";
+      navigate(navi);
     });
   };
 

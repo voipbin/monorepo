@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,16 +20,20 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const FlowsDetail = () => {
   console.log("FlowsDetail");
+
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
   const ref_actions = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -129,9 +133,9 @@ const FlowsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                <CButton type="submit" disabled={buttonDisable} onClick={() => Update()}>Update</CButton>
                 &nbsp;
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -143,6 +147,7 @@ const FlowsDetail = () => {
 
   const Update = () => {
     console.log("Update info");
+    setButtonDisable(true);
 
     const tmpData = {
       "name": ref_name.current.value,
@@ -155,6 +160,8 @@ const FlowsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      const navi = "/resources/flows/flows_list";
+      navigate(navi);
     });
   };
 
@@ -164,12 +171,15 @@ const FlowsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "flows/" + ref_id.current.value;
     console.log("Deleting flow info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      const navi = "/resources/flows/flows_list";
+      navigate(navi);
     });
   }
 
