@@ -244,6 +244,10 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 		tm_create < ?
 	`, agentSelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
 		token,
 	}
@@ -321,25 +325,22 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 
 // AgentGetByUsername returns agent of the given username.
 func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error) {
-	// prepare
-	q := fmt.Sprintf("%s where username = ?", agentSelect)
 
-	row, err := h.db.Query(q, username)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AgentGetByUsername. err: %v", err)
+	filters := map[string]string{
+		"deleted":  "false",
+		"username": username,
 	}
-	defer row.Close()
 
-	if !row.Next() {
+	tmp, err := h.AgentGets(ctx, 1, h.utilHandler.TimeGetCurTime(), filters)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(tmp) == 0 {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.agentGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. AgentGetByUsername. err: %v", err)
-	}
-
-	return res, nil
+	return tmp[0], nil
 }
 
 // AgentDelete deletes the agent.

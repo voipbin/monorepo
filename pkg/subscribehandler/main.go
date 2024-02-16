@@ -12,13 +12,15 @@ import (
 	"github.com/sirupsen/logrus"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 )
 
 // list of publishers
 const (
-	publisherCallManager = "call-manager"
+	publisherCallManager     = "call-manager"
+	publisherCustomerManager = "customer-manager"
 )
 
 // SubscribeHandler interface
@@ -128,13 +130,17 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	switch {
 
 	//// call-manager
-
 	// groupcall
 	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallCreated)):
 		err = h.processEventCMGroupcallCreated(ctx, m)
 
 	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallProgressing)):
 		err = h.processEventCMGroupcallProgressing(ctx, m)
+
+	//// customer-manager
+	// customer
+	case m.Publisher == publisherCustomerManager && (m.Type == string(cmcustomer.EventTypeCustomerDeleted)):
+		err = h.processEventCMCustomerDeleted(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

@@ -13,6 +13,7 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // MockAgentHandler is a mock of AgentHandler interface.
@@ -66,6 +67,20 @@ func (m *MockAgentHandler) Delete(ctx context.Context, id uuid.UUID) (*agent.Age
 func (mr *MockAgentHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAgentHandler)(nil).Delete), ctx, id)
+}
+
+// EventCustomerDeleted mocks base method.
+func (m *MockAgentHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCustomerDeleted indicates an expected call of EventCustomerDeleted.
+func (mr *MockAgentHandlerMockRecorder) EventCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerDeleted", reflect.TypeOf((*MockAgentHandler)(nil).EventCustomerDeleted), ctx, cu)
 }
 
 // EventGroupcallCreated mocks base method.
