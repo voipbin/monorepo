@@ -87,11 +87,12 @@ func (h *extensionHandler) Create(
 		AORID:      *aor.ID,
 		AuthID:     *auth.ID,
 
-		Extension: ext,
-
+		Extension:  ext,
 		DomainName: customerID.String(),
-		Username:   ext,
-		Password:   password,
+
+		Realm:    realm,
+		Username: ext,
+		Password: password,
 	}
 	if errCreate := h.dbBin.ExtensionCreate(ctx, e); errCreate != nil {
 		log.Errorf("Could not create extension. err: %v", errCreate)

@@ -23,6 +23,7 @@ const (
 		domain_name,
 		auth_types,
 
+		realm,
 		username,
 		password,
 
@@ -52,6 +53,7 @@ func (h *handler) trunkGetFromRow(row *sql.Rows) (*trunk.Trunk, error) {
 		&res.DomainName,
 		&authTypes,
 
+		&res.Realm,
 		&res.Username,
 		&res.Password,
 
@@ -100,6 +102,7 @@ func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 		domain_name,
 		auth_types,
 
+		realm,
 		username,
 		password,
 
@@ -112,7 +115,7 @@ func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 		?, ?,
 		?, ?,
 		?, ?,
-		?, ?,
+		?, ?, ?,
 		?,
 		?, ?, ?
 	)
@@ -138,6 +141,7 @@ func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 		t.DomainName,
 		authTypes,
 
+		t.Realm,
 		t.Username,
 		t.Password,
 

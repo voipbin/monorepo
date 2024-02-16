@@ -10,11 +10,12 @@ type Trunk struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	DomainName string     `json:"domain_name,omitempty"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	AuthTypes  []AuthType `json:"auth_types,omitempty"`  // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	DomainName string `json:"domain_name,omitempty"`
 
-	Username string `json:"username,omitempty"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Password string `json:"password,omitempty"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	AuthTypes []AuthType `json:"auth_types,omitempty"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Realm     string     `json:"realm,omitempty"`      // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Username  string     `json:"username,omitempty"`   // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Password  string     `json:"password,omitempty"`   // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
 	AllowedIPs []string `json:"allowed_ips,omitempty"`
 

@@ -39,11 +39,12 @@ func Test_ExtensionCreate(t *testing.T) {
 				AORID:      "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 				AuthID:     "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 
-				Extension: "608cbfae-6ebc-11eb-a74b-671d17dda173",
-
+				Extension:  "608cbfae-6ebc-11eb-a74b-671d17dda173",
 				DomainName: "83db3318-7fec-11ec-a205-736ad70c9180",
-				Username:   "608cbfae-6ebc-11eb-a74b-671d17dda173",
-				Password:   "7818abce-6ebc-11eb-b4fe-e748480c228a",
+
+				Realm:    "83db3318-7fec-11ec-a205-736ad70c9180.registrar.voipbin.net",
+				Username: "608cbfae-6ebc-11eb-a74b-671d17dda173",
+				Password: "7818abce-6ebc-11eb-b4fe-e748480c228a",
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -58,11 +59,12 @@ func Test_ExtensionCreate(t *testing.T) {
 				AORID:      "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 				AuthID:     "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 
-				Extension: "608cbfae-6ebc-11eb-a74b-671d17dda173",
-
+				Extension:  "608cbfae-6ebc-11eb-a74b-671d17dda173",
 				DomainName: "83db3318-7fec-11ec-a205-736ad70c9180",
-				Username:   "608cbfae-6ebc-11eb-a74b-671d17dda173",
-				Password:   "7818abce-6ebc-11eb-b4fe-e748480c228a",
+
+				Realm:    "83db3318-7fec-11ec-a205-736ad70c9180.registrar.voipbin.net",
+				Username: "608cbfae-6ebc-11eb-a74b-671d17dda173",
+				Password: "7818abce-6ebc-11eb-b4fe-e748480c228a",
 
 				TMCreate: "2021-02-26 18:26:49.000",
 				TMUpdate: DefaultTimeStamp,
