@@ -24,8 +24,9 @@ const (
 		auth_id,
 
 		extension,
-
 		domain_name,
+
+		realm,
 		username,
 		password,
 
@@ -52,8 +53,9 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 		&res.AuthID,
 
 		&res.Extension,
-
 		&res.DomainName,
+
+		&res.Realm,
 		&res.Username,
 		&res.Password,
 
@@ -81,8 +83,9 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		auth_id,
 
 		extension,
-
 		domain_name,
+
+		realm,
 		username,
 		password,
 
@@ -93,7 +96,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		?, ?,
 		?, ?,
 		?, ?, ?,
-		?,
+		?, ?,
 		?, ?, ?,
 		?, ?, ?
 	)
@@ -111,8 +114,9 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		b.AuthID,
 
 		b.Extension,
-
 		b.DomainName,
+
+		b.Realm,
 		b.Username,
 		b.Password,
 
