@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -205,6 +206,18 @@ func (h *handler) extensionGetByEndpointIDFromCache(ctx context.Context, endpoin
 	return res, nil
 }
 
+// extensionGetByEndpointIDFromCache returns Extension from the cache.
+func (h *handler) extensionGetByCustomerIDANDExtensionFromCache(ctx context.Context, customerID uuid.UUID, endpoint string) (*extension.Extension, error) {
+
+	// get from cache
+	res, err := h.cache.ExtensionGetByCustomerIDANDExtension(ctx, customerID, endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // ExtensionGet returns extension.
 func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
@@ -266,6 +279,11 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 // ExtensionGetByExtension returns extension of the given extension.
 func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error) {
 
+	res, err := h.extensionGetByCustomerIDANDExtensionFromCache(ctx, customerID, ext)
+	if err == nil {
+		return res, nil
+	}
+
 	// prepare
 	q := fmt.Sprintf(`
 		%s
@@ -287,7 +305,7 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 		return nil, ErrNotFound
 	}
 
-	res, err := h.extensionGetFromRow(row)
+	res, err = h.extensionGetFromRow(row)
 	if err != nil {
 		return nil, fmt.Errorf("could not scan the row. ExtensionGetByExtension. err: %v", err)
 	}
@@ -347,32 +365,55 @@ func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, name string
 	return nil
 }
 
-// ExtensionGetsByCustomerID returns list of extensions.
-func (h *handler) ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
-
+// ExtensionGets returns list extensions.
+func (h *handler) ExtensionGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*extension.Extension, error) {
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc, id desc
-		limit ?
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
 	`, extensionSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, limit)
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id":
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ExtensionGets. err: %v", err)
 	}
 	defer rows.Close()
 
-	res := []*extension.Extension{}
+	var res []*extension.Extension
 	for rows.Next() {
 		u, err := h.extensionGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGets. err: %v", err)
 		}
 
 		res = append(res, u)

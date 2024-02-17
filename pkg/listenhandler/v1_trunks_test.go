@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
@@ -96,12 +97,14 @@ func Test_processV1TrunksPost(t *testing.T) {
 func Test_processV1TrunksGet(t *testing.T) {
 
 	type test struct {
-		name           string
-		customerID     uuid.UUID
-		pageToken      string
-		pageSize       uint64
-		request        *rabbitmqhandler.Request
-		responseTrunks []*trunk.Trunk
+		name       string
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+		request    *rabbitmqhandler.Request
+
+		responseFilters map[string]string
+		responseTrunks  []*trunk.Trunk
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -113,9 +116,13 @@ func Test_processV1TrunksGet(t *testing.T) {
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
+				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
+			},
+
+			map[string]string{
+				"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
 			},
 			[]*trunk.Trunk{
 				{
@@ -138,9 +145,13 @@ func Test_processV1TrunksGet(t *testing.T) {
 			"2020-10-10T03:30:17.000000",
 			10,
 			&rabbitmqhandler.Request{
-				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
+				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
+			},
+
+			map[string]string{
+				"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
 			},
 			[]*trunk.Trunk{},
 			&rabbitmqhandler.Response{
@@ -159,14 +170,17 @@ func Test_processV1TrunksGet(t *testing.T) {
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:   mockSock,
 				reqHandler:   mockReq,
+				utilHandler:  mockUtil,
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseTrunks, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockTrunk.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseTrunks, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

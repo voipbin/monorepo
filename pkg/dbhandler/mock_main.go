@@ -404,19 +404,19 @@ func (mr *MockDBHandlerMockRecorder) ExtensionGetByExtension(ctx, customerID, ex
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetByExtension", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGetByExtension), ctx, customerID, ext)
 }
 
-// ExtensionGetsByCustomerID mocks base method.
-func (m *MockDBHandler) ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
+// ExtensionGets mocks base method.
+func (m *MockDBHandler) ExtensionGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionGetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "ExtensionGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionGetsByCustomerID indicates an expected call of ExtensionGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) ExtensionGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+// ExtensionGets indicates an expected call of ExtensionGets.
+func (mr *MockDBHandlerMockRecorder) ExtensionGets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGets", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGets), ctx, size, token, filters)
 }
 
 // ExtensionUpdate mocks base method.
@@ -533,34 +533,19 @@ func (mr *MockDBHandlerMockRecorder) TrunkGet(ctx, id interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGet", reflect.TypeOf((*MockDBHandler)(nil).TrunkGet), ctx, id)
 }
 
-// TrunkGetByDomainName mocks base method.
-func (m *MockDBHandler) TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
+// TrunkGets mocks base method.
+func (m *MockDBHandler) TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrunkGetByDomainName", ctx, domainName)
-	ret0, _ := ret[0].(*trunk.Trunk)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TrunkGetByDomainName indicates an expected call of TrunkGetByDomainName.
-func (mr *MockDBHandlerMockRecorder) TrunkGetByDomainName(ctx, domainName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGetByDomainName", reflect.TypeOf((*MockDBHandler)(nil).TrunkGetByDomainName), ctx, domainName)
-}
-
-// TrunkGetsByCustomerID mocks base method.
-func (m *MockDBHandler) TrunkGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*trunk.Trunk, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrunkGetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "TrunkGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*trunk.Trunk)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TrunkGetsByCustomerID indicates an expected call of TrunkGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) TrunkGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+// TrunkGets indicates an expected call of TrunkGets.
+func (mr *MockDBHandlerMockRecorder) TrunkGets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).TrunkGetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGets", reflect.TypeOf((*MockDBHandler)(nil).TrunkGets), ctx, size, token, filters)
 }
 
 // TrunkUpdateBasicInfo mocks base method.

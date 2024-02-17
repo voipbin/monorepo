@@ -52,6 +52,7 @@ type CacheHandler interface {
 
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionGetByEndpointID(ctx context.Context, endpointID string) (*extension.Extension, error)
+	ExtensionGetByCustomerIDANDExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	ExtensionSet(ctx context.Context, e *extension.Extension) error
 
 	TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)

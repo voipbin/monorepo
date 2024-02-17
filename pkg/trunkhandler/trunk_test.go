@@ -2,7 +2,6 @@ package trunkhandler
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -34,6 +33,7 @@ func Test_Create(t *testing.T) {
 		responseUUID  uuid.UUID
 		responseTrunk *trunk.Trunk
 
+		expectFilters map[string]string
 		expectTrunk   *trunk.Trunk
 		expectSIPAuth *sipauth.SIPAuth
 	}
@@ -65,6 +65,10 @@ func Test_Create(t *testing.T) {
 				},
 			},
 
+			expectFilters: map[string]string{
+				"deleted":     "false",
+				"domain_name": "test-domain",
+			},
 			expectTrunk: &trunk.Trunk{
 				ID:         uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
 				CustomerID: uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
@@ -109,7 +113,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.expectTrunk.DomainName).Return(nil, fmt.Errorf(""))
+			mockDBBin.EXPECT().TrunkGets(ctx, uint64(1), "", tt.expectFilters).Return([]*trunk.Trunk{}, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDBBin.EXPECT().TrunkCreate(ctx, tt.expectTrunk)
 			mockDBBin.EXPECT().TrunkGet(ctx, tt.expectTrunk.ID).Return(tt.responseTrunk, nil)
@@ -178,9 +182,9 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseGets []*trunk.Trunk
 		expectRes    []*trunk.Trunk
@@ -188,9 +192,12 @@ func Test_Gets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("aa2be0f0-5234-11ee-960c-43d098822966"),
 			10,
 			"2020-05-03%2021:35:02.809",
+			map[string]string{
+				"deleted":     "false",
+				"customer_id": "aa2be0f0-5234-11ee-960c-43d098822966",
+			},
 
 			[]*trunk.Trunk{
 				{
@@ -219,12 +226,11 @@ func Test_Gets(t *testing.T) {
 				db:            mockDB,
 				notifyHandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().TrunkGetsByCustomerID(ctx, tt.customerID, tt.token, tt.size).Return(tt.responseGets, nil)
+			mockDB.EXPECT().TrunkGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseGets, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.token, tt.size)
+			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -244,7 +250,10 @@ func Test_GetByDomainName(t *testing.T) {
 
 		domainName string
 
-		responseTrunk *trunk.Trunk
+		responseTrunks []*trunk.Trunk
+
+		expectFilters map[string]string
+		expectRes     *trunk.Trunk
 	}
 
 	tests := []test{
@@ -253,8 +262,18 @@ func Test_GetByDomainName(t *testing.T) {
 
 			"test",
 
+			[]*trunk.Trunk{
+				{
+					ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
+				},
+			},
+
+			map[string]string{
+				"deleted":     "false",
+				"domain_name": "test",
+			},
 			&trunk.Trunk{
-				CustomerID: uuid.FromStringOrNil("34dce34a-5229-11ee-ac53-470b6e1ee43b"),
+				ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
 			},
 		},
 	}
@@ -271,14 +290,14 @@ func Test_GetByDomainName(t *testing.T) {
 		}
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(tt.responseTrunk, nil)
+		mockDBBin.EXPECT().TrunkGets(ctx, uint64(1), "", tt.expectFilters).Return(tt.responseTrunks, nil)
 		res, err := h.GetByDomainName(ctx, tt.domainName)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
 
-		if !reflect.DeepEqual(tt.responseTrunk, res) {
-			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseTrunk, res)
+		if !reflect.DeepEqual(tt.expectRes, res) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 		}
 	}
 }
