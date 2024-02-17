@@ -11,6 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
@@ -34,7 +35,7 @@ func Test_TrunkCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
-				AuthTypes:  []trunk.AuthType{trunk.AuthTypeBasic},
+				AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
 				Realm:      "test.trunk.voipbin.net",
 				Username:   "testusername",
 				Password:   "testpassword",
@@ -51,7 +52,7 @@ func Test_TrunkCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
-				AuthTypes:  []trunk.AuthType{trunk.AuthTypeBasic},
+				AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
 				Realm:      "test.trunk.voipbin.net",
 				Username:   "testusername",
 				Password:   "testpassword",
@@ -73,7 +74,7 @@ func Test_TrunkCreate(t *testing.T) {
 			"2021-02-26 18:26:49.000",
 			&trunk.Trunk{
 				ID:         uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
-				AuthTypes:  []trunk.AuthType{},
+				AuthTypes:  []sipauth.AuthType{},
 				AllowedIPs: []string{},
 				TMCreate:   "2021-02-26 18:26:49.000",
 				TMUpdate:   DefaultTimeStamp,
@@ -143,7 +144,7 @@ func Test_TrunkGetByDomainName(t *testing.T) {
 				ID:         uuid.FromStringOrNil("a9d6d5fe-519b-11ee-8163-e7430f1f57e9"),
 				CustomerID: uuid.FromStringOrNil("aa120048-519b-11ee-9517-57f1fff1e66a"),
 				DomainName: "aa5196a4-519b-11ee-ae22-4f0cb01a1c2d",
-				AuthTypes:  []trunk.AuthType{},
+				AuthTypes:  []sipauth.AuthType{},
 				AllowedIPs: []string{},
 				TMCreate:   "2021-02-26 18:26:49.000",
 				TMUpdate:   DefaultTimeStamp,
@@ -224,7 +225,7 @@ func Test_TrunkGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("6c81fb1a-519c-11ee-93c0-db2b2381cc85"),
 					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
 					DomainName: "6cb7323a-519c-11ee-8bfe-576b2eee20db",
-					AuthTypes:  []trunk.AuthType{},
+					AuthTypes:  []sipauth.AuthType{},
 					AllowedIPs: []string{},
 					TMCreate:   "2021-02-26 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
@@ -234,7 +235,7 @@ func Test_TrunkGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("05c29e76-6ee5-11eb-bc50-6b162fbf37b3"),
 					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
 					DomainName: "841e7938-519c-11ee-837e-bf90de21ed5f",
-					AuthTypes:  []trunk.AuthType{},
+					AuthTypes:  []sipauth.AuthType{},
 					AllowedIPs: []string{},
 					TMCreate:   "2021-02-26 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
@@ -289,7 +290,7 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 		id         uuid.UUID
 		domainN    string
 		detail     string
-		authTypes  []trunk.AuthType
+		authTypes  []sipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -311,7 +312,7 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 			uuid.FromStringOrNil("cbf0af5e-519e-11ee-a4c4-9f155401d234"),
 			"update name",
 			"update detail",
-			[]trunk.AuthType{trunk.AuthTypeBasic},
+			[]sipauth.AuthType{sipauth.AuthTypeBasic},
 			"test_username",
 			"test_password",
 			[]string{
@@ -327,7 +328,7 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 				Name:       "update name",
 				Detail:     "update detail",
 				DomainName: "cc1fa35e-519e-11ee-adcf-1f15aa304cb4",
-				AuthTypes:  []trunk.AuthType{trunk.AuthTypeBasic},
+				AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
 				Username:   "test_username",
 				Password:   "test_password",
 				AllowedIPs: []string{

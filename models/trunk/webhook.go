@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 )
 
 // WebhookMessage defines
@@ -14,8 +16,8 @@ type WebhookMessage struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	DomainName string     `json:"domain_name,omitempty"`
-	AuthTypes  []AuthType `json:"auth_types,omitempty"`
+	DomainName string             `json:"domain_name,omitempty"`
+	AuthTypes  []sipauth.AuthType `json:"auth_types,omitempty"`
 
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`

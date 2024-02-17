@@ -1,6 +1,10 @@
 package extension
 
-import "github.com/gofrs/uuid"
+import (
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
+)
 
 // Extension struct
 type Extension struct {
@@ -26,4 +30,18 @@ type Extension struct {
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
+}
+
+// GenerateSIPAuth returns sipauth of the given extension
+func (h *Extension) GenerateSIPAuth() *sipauth.SIPAuth {
+	return &sipauth.SIPAuth{
+		ID:            h.ID,
+		ReferenceType: sipauth.ReferenceTypeExtension,
+
+		AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic},
+		Realm:      h.Realm,
+		Username:   h.Username,
+		Password:   h.Password,
+		AllowedIPs: []string{},
+	}
 }

@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
@@ -25,7 +26,7 @@ func Test_Create(t *testing.T) {
 		trunkName  string
 		detail     string
 		domainName string
-		authTypes  []trunk.AuthType
+		authTypes  []sipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -44,7 +45,7 @@ func Test_Create(t *testing.T) {
 			"test name",
 			"test detail",
 			"test-domain",
-			[]trunk.AuthType{trunk.AuthTypeBasic, trunk.AuthTypeIP},
+			[]sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
 			"testusername",
 			"testpassword",
 			[]string{
@@ -62,7 +63,7 @@ func Test_Create(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test-domain",
-				AuthTypes:  []trunk.AuthType{trunk.AuthTypeBasic, trunk.AuthTypeIP},
+				AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
 				Realm:      "test-domain.trunk.voipbin.net",
 				Username:   "testusername",
 				Password:   "testpassword",
@@ -270,7 +271,7 @@ func Test_Update(t *testing.T) {
 		id         uuid.UUID
 		trunkName  string
 		detail     string
-		authTypes  []trunk.AuthType
+		authTypes  []sipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -285,7 +286,7 @@ func Test_Update(t *testing.T) {
 			uuid.FromStringOrNil("80a7dd20-5229-11ee-bf8c-a3fb6b428056"),
 			"update name",
 			"update detail",
-			[]trunk.AuthType{trunk.AuthTypeBasic},
+			[]sipauth.AuthType{sipauth.AuthTypeBasic},
 			"updateusername",
 			"updatepassword",
 			[]string{

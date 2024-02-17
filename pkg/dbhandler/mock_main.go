@@ -16,6 +16,7 @@ import (
 	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
@@ -432,6 +433,63 @@ func (mr *MockDBHandlerMockRecorder) ExtensionUpdate(ctx, id, name, detail, pass
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockDBHandler)(nil).ExtensionUpdate), ctx, id, name, detail, password)
 }
 
+// SIPAuthCreate mocks base method.
+func (m *MockDBHandler) SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SIPAuthCreate", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SIPAuthCreate indicates an expected call of SIPAuthCreate.
+func (mr *MockDBHandlerMockRecorder) SIPAuthCreate(ctx, t interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthCreate", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthCreate), ctx, t)
+}
+
+// SIPAuthDelete mocks base method.
+func (m *MockDBHandler) SIPAuthDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SIPAuthDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SIPAuthDelete indicates an expected call of SIPAuthDelete.
+func (mr *MockDBHandlerMockRecorder) SIPAuthDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthDelete", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthDelete), ctx, id)
+}
+
+// SIPAuthGet mocks base method.
+func (m *MockDBHandler) SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAuth, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SIPAuthGet", ctx, id)
+	ret0, _ := ret[0].(*sipauth.SIPAuth)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SIPAuthGet indicates an expected call of SIPAuthGet.
+func (mr *MockDBHandlerMockRecorder) SIPAuthGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthGet", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthGet), ctx, id)
+}
+
+// SIPAuthUpdateAll mocks base method.
+func (m *MockDBHandler) SIPAuthUpdateAll(ctx context.Context, t *sipauth.SIPAuth) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SIPAuthUpdateAll", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SIPAuthUpdateAll indicates an expected call of SIPAuthUpdateAll.
+func (mr *MockDBHandlerMockRecorder) SIPAuthUpdateAll(ctx, t interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthUpdateAll", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthUpdateAll), ctx, t)
+}
+
 // TrunkCreate mocks base method.
 func (m *MockDBHandler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 	m.ctrl.T.Helper()
@@ -506,7 +564,7 @@ func (mr *MockDBHandlerMockRecorder) TrunkGetsByCustomerID(ctx, customerID, toke
 }
 
 // TrunkUpdateBasicInfo mocks base method.
-func (m *MockDBHandler) TrunkUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) error {
+func (m *MockDBHandler) TrunkUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkUpdateBasicInfo", ctx, id, name, detail, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(error)
