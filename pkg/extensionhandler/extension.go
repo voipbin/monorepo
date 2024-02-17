@@ -104,6 +104,14 @@ func (h *extensionHandler) Create(
 		log.Errorf("Could not get created extension. err: %v", err)
 		return nil, err
 	}
+
+	// create sipauth
+	sip := res.GenerateSIPAuth()
+	if err := h.dbBin.SIPAuthCreate(ctx, sip); err != nil {
+		log.Errorf("Could not create sip auth. err: %v", err)
+		return nil, err
+	}
+
 	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionCreated, res)
 	promExtensionCreateTotal.Inc()
 
@@ -174,6 +182,14 @@ func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, name string
 		log.Errorf("Could not get updated extension info. err: %v", err)
 		return nil, err
 	}
+
+	// update sipauth
+	sip := res.GenerateSIPAuth()
+	if err := h.dbBin.SIPAuthUpdateAll(ctx, sip); err != nil {
+		log.Errorf("Could not update sip auth. err: %v", err)
+		return nil, err
+	}
+
 	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionUpdated, res)
 
 	return res, nil
@@ -223,6 +239,13 @@ func (h *extensionHandler) Delete(ctx context.Context, id uuid.UUID) (*extension
 		log.Errorf("Could not get deleted extension info. err: %v", err)
 		return nil, err
 	}
+
+	// delete sipauth
+	if err := h.dbBin.SIPAuthDelete(ctx, res.ID); err != nil {
+		log.Errorf("Could not delete sip auth. err: %v", err)
+		return nil, err
+	}
+
 	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionDeleted, res)
 	promExtensionDeleteTotal.Inc()
 

@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
@@ -18,7 +19,7 @@ func (h *trunkHandler) Create(
 	name string,
 	detail string,
 	domainName string,
-	authTypes []trunk.AuthType,
+	authTypes []sipauth.AuthType,
 	username string,
 	password string,
 	allowedIPs []string,
@@ -75,6 +76,14 @@ func (h *trunkHandler) Create(
 		log.Errorf("Could not get created trunk info. err: %v", err)
 		return nil, err
 	}
+
+	// create sipauth
+	sip := res.GenerateSIPAuth()
+	if err := h.db.SIPAuthCreate(ctx, sip); err != nil {
+		log.Errorf("Could not create sip auth. err: %v", err)
+		return nil, err
+	}
+
 	h.notifyHandler.PublishEvent(ctx, trunk.EventTypeTrunkCreated, res)
 	promTrunkCreateTotal.Inc()
 
@@ -118,7 +127,7 @@ func (h *trunkHandler) Gets(ctx context.Context, customerID uuid.UUID, token str
 }
 
 // Update updates the trunk info
-func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, authTypes []trunk.AuthType, username string, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, authTypes []sipauth.AuthType, username string, password string, allowedIPs []string) (*trunk.Trunk, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Update",
 		"trunk_id":    id,
@@ -140,6 +149,14 @@ func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, name string, de
 	if err != nil {
 		return nil, err
 	}
+
+	// update sipauth
+	sip := res.GenerateSIPAuth()
+	if err := h.db.SIPAuthUpdateAll(ctx, sip); err != nil {
+		log.Errorf("Could not update sip auth. err: %v", err)
+		return nil, err
+	}
+
 	h.notifyHandler.PublishEvent(ctx, trunk.EventTypeTrunkUpdated, res)
 
 	return res, nil
@@ -163,6 +180,13 @@ func (h *trunkHandler) Delete(ctx context.Context, id uuid.UUID) (*trunk.Trunk, 
 		log.Errorf("Could not get deleted trunk. err: %v", err)
 		return nil, err
 	}
+
+	// delete sipauth
+	if err := h.db.SIPAuthDelete(ctx, res.ID); err != nil {
+		log.Errorf("Could not delete sip auth. err: %v", err)
+		return nil, err
+	}
+
 	h.notifyHandler.PublishEvent(ctx, trunk.EventTypeTrunkDeleted, res)
 	promTrunkDeleteTotal.Inc()
 

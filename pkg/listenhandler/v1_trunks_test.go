@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/trunkhandler"
 )
@@ -22,7 +23,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 		trunkName  string
 		detail     string
 		domainName string
-		authTypes  []trunk.AuthType
+		authTypes  []sipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -40,7 +41,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 			"test name",
 			"test detail",
 			"21b7ae32-5231-11ee-b7da-7f436158317b",
-			[]trunk.AuthType{trunk.AuthTypeBasic},
+			[]sipauth.AuthType{sipauth.AuthTypeBasic},
 			"testusername",
 			"testpassword",
 			[]string{
@@ -187,7 +188,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 		id         uuid.UUID
 		trunkName  string
 		detail     string
-		authTypes  []trunk.AuthType
+		authTypes  []sipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -204,8 +205,8 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 			uuid.FromStringOrNil("a3e97272-5232-11ee-acd9-bbb3933eed48"),
 			"update name",
 			"update detail",
-			[]trunk.AuthType{
-				trunk.AuthTypeBasic,
+			[]sipauth.AuthType{
+				sipauth.AuthTypeBasic,
 			},
 			"testusername",
 			"testpassword",
