@@ -34,30 +34,38 @@ func Test_Create(t *testing.T) {
 		responseUUID  uuid.UUID
 		responseTrunk *trunk.Trunk
 
-		expectTrunk *trunk.Trunk
+		expectTrunk   *trunk.Trunk
+		expectSIPAuth *sipauth.SIPAuth
 	}
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
-			"test name",
-			"test detail",
-			"test-domain",
-			[]sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
-			"testusername",
-			"testpassword",
-			[]string{
+			customerID: uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
+			trunkName:  "test name",
+			detail:     "test detail",
+			domainName: "test-domain",
+			authTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
+			username:   "testusername",
+			password:   "testpassword",
+			allowedIPs: []string{
 				"1.2.3.4",
 			},
 
-			uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
-			&trunk.Trunk{
-				ID: uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
+			responseUUID: uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
+			responseTrunk: &trunk.Trunk{
+				ID:        uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
+				AuthTypes: []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
+				Realm:     "test-domain.trunk.voipbin.net",
+				Username:  "testusername",
+				Password:  "testpassword",
+				AllowedIPs: []string{
+					"1.2.3.4",
+				},
 			},
 
-			&trunk.Trunk{
+			expectTrunk: &trunk.Trunk{
 				ID:         uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
 				CustomerID: uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
 				Name:       "test name",
@@ -67,6 +75,17 @@ func Test_Create(t *testing.T) {
 				Realm:      "test-domain.trunk.voipbin.net",
 				Username:   "testusername",
 				Password:   "testpassword",
+				AllowedIPs: []string{
+					"1.2.3.4",
+				},
+			},
+			expectSIPAuth: &sipauth.SIPAuth{
+				ID:            uuid.FromStringOrNil("1e9d3fb8-5228-11ee-a4d1-f34adf6b433e"),
+				ReferenceType: sipauth.ReferenceTypeTrunk,
+				AuthTypes:     []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
+				Realm:         "test-domain.trunk.voipbin.net",
+				Username:      "testusername",
+				Password:      "testpassword",
 				AllowedIPs: []string{
 					"1.2.3.4",
 				},
@@ -94,6 +113,7 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDBBin.EXPECT().TrunkCreate(ctx, tt.expectTrunk)
 			mockDBBin.EXPECT().TrunkGet(ctx, tt.expectTrunk.ID).Return(tt.responseTrunk, nil)
+			mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth).Return(nil)
 			mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkCreated, tt.responseTrunk)
 
 			res, err := h.Create(ctx, tt.customerID, tt.trunkName, tt.detail, tt.domainName, tt.authTypes, tt.username, tt.password, tt.allowedIPs)
@@ -277,6 +297,8 @@ func Test_Update(t *testing.T) {
 		allowedIPs []string
 
 		responseTrunk *trunk.Trunk
+
+		expectSIPAuth *sipauth.SIPAuth
 	}
 
 	tests := []test{
@@ -296,6 +318,11 @@ func Test_Update(t *testing.T) {
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("80a7dd20-5229-11ee-bf8c-a3fb6b428056"),
 			},
+
+			&sipauth.SIPAuth{
+				ID:            uuid.FromStringOrNil("80a7dd20-5229-11ee-bf8c-a3fb6b428056"),
+				ReferenceType: sipauth.ReferenceTypeTrunk,
+			},
 		},
 	}
 
@@ -312,9 +339,10 @@ func Test_Update(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkUpdateBasicInfo(gomock.Any(), tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(nil)
-		mockDBBin.EXPECT().TrunkGet(gomock.Any(), tt.responseTrunk.ID).Return(tt.responseTrunk, nil)
-		mockNotify.EXPECT().PublishEvent(gomock.Any(), trunk.EventTypeTrunkUpdated, tt.responseTrunk)
+		mockDBBin.EXPECT().TrunkUpdateBasicInfo(ctx, tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(nil)
+		mockDBBin.EXPECT().TrunkGet(ctx, tt.responseTrunk.ID).Return(tt.responseTrunk, nil)
+		mockDBBin.EXPECT().SIPAuthUpdateAll(ctx, tt.expectSIPAuth).Return(nil)
+		mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkUpdated, tt.responseTrunk)
 		_, err := h.Update(ctx, tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -362,6 +390,7 @@ func Test_Delete(t *testing.T) {
 
 		mockDBBin.EXPECT().TrunkDelete(ctx, tt.trunkID).Return(nil)
 		mockDBBin.EXPECT().TrunkGet(ctx, tt.trunkID).Return(tt.responseTrunk, nil)
+		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseTrunk.ID).Return(nil)
 		mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkDeleted, tt.responseTrunk)
 		res, err := h.Delete(ctx, tt.trunkID)
 		if err != nil {

@@ -15,13 +15,13 @@ import (
 func (h *contactHandler) ContactGetsByExtension(ctx context.Context, customerID uuid.UUID, ext string) ([]*astcontact.AstContact, error) {
 	logrus.Debugf("Getting a contact info. endpoint: %s", ext)
 
-	endpoint := common.GenerateEndpoint(customerID, ext)
+	endpoint := common.GenerateEndpointExtension(customerID, ext)
 	contacts, err := h.dbAst.AstContactGetsByEndpoint(ctx, endpoint)
 	if err != nil {
 		logrus.Errorf("Could not get contacts info. endpoint: %s, target_endpoint: %s, err: %v", ext, endpoint, err)
 		return nil, err
 	}
-	
+
 	return contacts, err
 }
 
@@ -33,7 +33,7 @@ func (h *contactHandler) ContactRefreshByEndpoint(ctx context.Context, customerI
 		"extension":   ext,
 	})
 
-	endpoint := common.GenerateEndpoint(customerID, ext)
+	endpoint := common.GenerateEndpointExtension(customerID, ext)
 	log.Debugf("Refreshing the contacts of the endpoint. endpoint: %s", endpoint)
 
 	if err := h.dbAst.AstContactDeleteFromCache(ctx, endpoint); err != nil {
