@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -23,7 +24,7 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 		trunkName  string
 		detail     string
 		domainName string
-		authTypes  []rmtrunk.AuthType
+		authTypes  []rmsipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -41,7 +42,7 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 			trunkName:  "test name",
 			detail:     "test detail",
 			domainName: "test-domain",
-			authTypes:  []rmtrunk.AuthType{rmtrunk.AuthTypeBasic, rmtrunk.AuthTypeIP},
+			authTypes:  []rmsipauth.AuthType{rmsipauth.AuthTypeBasic, rmsipauth.AuthTypeIP},
 			username:   "testusername",
 			password:   "testpassword",
 			allowedIPs: []string{"1.2.3.4"},
@@ -343,7 +344,7 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 		trunkID    uuid.UUID
 		trunkName  string
 		detail     string
-		authTypes  []rmtrunk.AuthType
+		authTypes  []rmsipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -360,7 +361,7 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 			trunkID:    uuid.FromStringOrNil("f27448ce-549c-11ee-b466-57162d71a670"),
 			trunkName:  "update name",
 			detail:     "update detail",
-			authTypes:  []rmtrunk.AuthType{rmtrunk.AuthTypeBasic, rmtrunk.AuthTypeIP},
+			authTypes:  []rmsipauth.AuthType{rmsipauth.AuthTypeBasic, rmsipauth.AuthTypeIP},
 			username:   "updateusername",
 			password:   "updatepassword",
 			allowedIPs: []string{"1.2.3.4"},
