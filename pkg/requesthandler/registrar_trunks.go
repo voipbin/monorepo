@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
+	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 
@@ -16,7 +17,7 @@ import (
 // RegistrarV1TrunkCreate sends a request to registrar-manager
 // to creating a trunk.
 // it returns created trunk if it succeed.
-func (r *requestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error) {
+func (r *requestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error) {
 	uri := "/v1/trunks"
 
 	data := &rmrequest.V1DataTrunksPost{
@@ -157,7 +158,7 @@ func (r *requestHandler) RegistrarV1TrunkDelete(ctx context.Context, trunkID uui
 // RegistrarV1TrunkUpdateBasicInfo sends a request to registrar-manager
 // to update the basic trunk info.
 // it returns updated trunk info if it succeed.
-func (r *requestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error) {
+func (r *requestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error) {
 	uri := fmt.Sprintf("/v1/trunks/%s", trunkID)
 
 	data := &rmrequest.V1DataTrunksIDPut{

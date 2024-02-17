@@ -59,6 +59,7 @@ import (
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
@@ -4277,7 +4278,7 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionUpdate(ctx, id, na
 }
 
 // RegistrarV1TrunkCreate mocks base method.
-func (m *MockRequestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name, detail, domainName string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (m *MockRequestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name, detail, domainName string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegistrarV1TrunkCreate", ctx, customerID, name, detail, domainName, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.Trunk)
@@ -4352,7 +4353,7 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkGetsByCustomerID(ctx, 
 }
 
 // RegistrarV1TrunkUpdateBasicInfo mocks base method.
-func (m *MockRequestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name, detail string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (m *MockRequestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegistrarV1TrunkUpdateBasicInfo", ctx, trunkID, name, detail, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.Trunk)
