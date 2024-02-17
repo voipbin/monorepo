@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
@@ -66,6 +67,12 @@ type DBHandler interface {
 	ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) error
 
+	// SIPAuth
+	SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error
+	SIPAuthUpdateAll(ctx context.Context, t *sipauth.SIPAuth) error
+	SIPAuthDelete(ctx context.Context, id uuid.UUID) error
+	SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAuth, error)
+
 	// Trunk
 	TrunkCreate(ctx context.Context, t *trunk.Trunk) error
 	TrunkUpdateBasicInfo(
@@ -73,7 +80,7 @@ type DBHandler interface {
 		id uuid.UUID,
 		name string,
 		detail string,
-		authTypes []trunk.AuthType,
+		authTypes []sipauth.AuthType,
 		username string,
 		password string,
 		allowedIPs []string,

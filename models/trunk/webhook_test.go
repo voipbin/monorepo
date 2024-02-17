@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 )
 
 func Test_ConvertWebhookMessage(t *testing.T) {
@@ -25,7 +27,7 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
-				AuthTypes:  []AuthType{AuthTypeBasic, AuthTypeIP},
+				AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
 				Username:   "testusername",
 				Password:   "testpassword",
 				AllowedIPs: []string{
@@ -42,7 +44,7 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
-				AuthTypes:  []AuthType{AuthTypeBasic, AuthTypeIP},
+				AuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
 				Username:   "testusername",
 				Password:   "testpassword",
 				AllowedIPs: []string{

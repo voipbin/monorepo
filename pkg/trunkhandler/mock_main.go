@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
@@ -37,7 +38,7 @@ func (m *MockTrunkHandler) EXPECT() *MockTrunkHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockTrunkHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail, domainName string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (m *MockTrunkHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail, domainName string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, domainName, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.Trunk)
@@ -112,7 +113,7 @@ func (mr *MockTrunkHandlerMockRecorder) Gets(ctx, customerID, token, limit inter
 }
 
 // Update mocks base method.
-func (m *MockTrunkHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (m *MockTrunkHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.Trunk)

@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
@@ -24,7 +25,7 @@ type TrunkHandler interface {
 		name string,
 		detail string,
 		domainName string,
-		authTypes []trunk.AuthType,
+		authTypes []sipauth.AuthType,
 		username string,
 		password string,
 		allowedIPs []string,
@@ -32,7 +33,7 @@ type TrunkHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
 	GetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
 	Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*trunk.Trunk, error)
-	Update(ctx context.Context, id uuid.UUID, name string, detail string, authTypes []trunk.AuthType, username string, password string, allowedIPs []string) (*trunk.Trunk, error)
+	Update(ctx context.Context, id uuid.UUID, name string, detail string, authTypes []sipauth.AuthType, username string, password string, allowedIPs []string) (*trunk.Trunk, error)
 	Delete(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
 }
 

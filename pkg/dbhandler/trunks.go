@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
@@ -73,7 +74,7 @@ func (h *handler) trunkGetFromRow(row *sql.Rows) (*trunk.Trunk, error) {
 		}
 	}
 	if res.AuthTypes == nil {
-		res.AuthTypes = []trunk.AuthType{}
+		res.AuthTypes = []sipauth.AuthType{}
 	}
 
 	// allowedIPs
@@ -251,7 +252,7 @@ func (h *handler) TrunkUpdateBasicInfo(
 	id uuid.UUID,
 	name string,
 	detail string,
-	authTypes []trunk.AuthType,
+	authTypes []sipauth.AuthType,
 	username string,
 	password string,
 	allowedIPs []string,
