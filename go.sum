@@ -159,6 +159,8 @@ gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231206180144-5fd8f
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231206180144-5fd8f608cf0d/go.mod h1:AjkGM7tBT2p3cAdy998zkVGdIE0/1gnHttFF17FCQW0=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240217163436-88fe695818c4 h1:Bw5fAfCetbLU+Gf92idLOgGY2VcUzkICF345Gy6pBH4=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240217163436-88fe695818c4/go.mod h1:xhVpVtRFwIVCZwTQlqHwurpGNW1dA6Db+5SuEzHnjMc=
+gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240217175850-5ec2ad17b7f1 h1:/y9hTOaRpISD+qHMVKPSqGtQqx6ciWmQhJr4ThttDPQ=
+gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240217175850-5ec2ad17b7f1/go.mod h1:MICqURGdEfU8Bgsv//tBuI4LiSqv0nTyvr1nPvDZoWs=
 gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20231011084545-910083006050 h1:DftNZQWGuEPsfi+k9K95oxNnlOmpHNJLUKW2zykijgg=
 gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20231011084545-910083006050/go.mod h1:tOCWiL/Rmjv6zGK3cxeoSAYnBPBKOoQRVzL99vMsOv8=
 gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20231015150838-40ee333c9936 h1:0T6Yd/bISyNcapU057bdVPr3DfV14ACb2A/5ACIUHIc=
