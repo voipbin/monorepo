@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
@@ -47,7 +48,7 @@ func (h *trunkHandler) Create(
 
 	// create new trunk
 	id := h.utilHandler.UUIDCreate()
-	realm := fmt.Sprintf("%s.%s", domainName, basicDomainName)
+	realm := common.GenerateRealmTrunkDomain(domainName)
 	t := &trunk.Trunk{
 		ID:         id,
 		CustomerID: customerID,

@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func Test_GenerateEndpoint(t *testing.T) {
+func Test_GenerateEndpointExtension(t *testing.T) {
 
 	type test struct {
 		name string
@@ -34,7 +34,7 @@ func Test_GenerateEndpoint(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			res := GenerateEndpoint(tt.customerID, tt.extension)
+			res := GenerateEndpointExtension(tt.customerID, tt.extension)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -43,7 +43,7 @@ func Test_GenerateEndpoint(t *testing.T) {
 	}
 }
 
-func Test_GenerateRealm(t *testing.T) {
+func Test_GenerateRealmExtension(t *testing.T) {
 
 	type test struct {
 		name string
@@ -67,7 +67,40 @@ func Test_GenerateRealm(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			res := GenerateRealm(tt.customerID)
+			res := GenerateRealmExtension(tt.customerID)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+
+	}
+}
+
+func Test_GenerateRealmTrunk(t *testing.T) {
+
+	type test struct {
+		name string
+
+		trunkDomain string
+
+		expectRes string
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"test",
+			"test.trunk.voipbin.net",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			res := GenerateRealmTrunkDomain(tt.trunkDomain)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
