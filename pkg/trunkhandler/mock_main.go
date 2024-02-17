@@ -98,18 +98,18 @@ func (mr *MockTrunkHandlerMockRecorder) GetByDomainName(ctx, domainName interfac
 }
 
 // Gets mocks base method.
-func (m *MockTrunkHandler) Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*trunk.Trunk, error) {
+func (m *MockTrunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*trunk.Trunk)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockTrunkHandlerMockRecorder) Gets(ctx, customerID, token, limit interface{}) *gomock.Call {
+func (mr *MockTrunkHandlerMockRecorder) Gets(ctx, token, limit, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTrunkHandler)(nil).Gets), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTrunkHandler)(nil).Gets), ctx, token, limit, filters)
 }
 
 // Update mocks base method.

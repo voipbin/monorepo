@@ -119,81 +119,14 @@ func Test_TrunkCreate(t *testing.T) {
 	}
 }
 
-func Test_TrunkGetByDomainName(t *testing.T) {
+func Test_TrunkGets(t *testing.T) {
 	type test struct {
-		name  string
-		trunk *trunk.Trunk
+		name string
+		data []trunk.Trunk
 
-		responseCurTime string
-
-		expectRes *trunk.Trunk
-	}
-
-	tests := []test{
-		{
-			"normal",
-			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("a9d6d5fe-519b-11ee-8163-e7430f1f57e9"),
-				CustomerID: uuid.FromStringOrNil("aa120048-519b-11ee-9517-57f1fff1e66a"),
-				DomainName: "aa5196a4-519b-11ee-ae22-4f0cb01a1c2d",
-			},
-
-			"2021-02-26 18:26:49.000",
-
-			&trunk.Trunk{
-				ID:         uuid.FromStringOrNil("a9d6d5fe-519b-11ee-8163-e7430f1f57e9"),
-				CustomerID: uuid.FromStringOrNil("aa120048-519b-11ee-9517-57f1fff1e66a"),
-				DomainName: "aa5196a4-519b-11ee-ae22-4f0cb01a1c2d",
-				AuthTypes:  []sipauth.AuthType{},
-				AllowedIPs: []string{},
-				TMCreate:   "2021-02-26 18:26:49.000",
-				TMUpdate:   DefaultTimeStamp,
-				TMDelete:   DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().TrunkSet(gomock.Any(), gomock.Any())
-			if errCreate := h.TrunkCreate(ctx, tt.trunk); errCreate != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
-			}
-
-			mockCache.EXPECT().TrunkGetByDomainName(ctx, tt.trunk.DomainName).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().TrunkSet(gomock.Any(), gomock.Any())
-			res, err := h.TrunkGetByDomainName(ctx, tt.trunk.DomainName)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_TrunkGetsByCustomerID(t *testing.T) {
-	type test struct {
-		name       string
-		customerID uuid.UUID
-		limit      uint64
-		domains    []trunk.Trunk
+		limit   uint64
+		token   string
+		filters map[string]string
 
 		responseCurTime string
 
@@ -203,38 +136,33 @@ func Test_TrunkGetsByCustomerID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
-			10,
 			[]trunk.Trunk{
 				{
-					ID:         uuid.FromStringOrNil("6c81fb1a-519c-11ee-93c0-db2b2381cc85"),
+					ID:         uuid.FromStringOrNil("1c4b4fd8-cdc1-11ee-914a-67975f17aab4"),
 					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
-					DomainName: "6cb7323a-519c-11ee-8bfe-576b2eee20db",
+					DomainName: "test1",
 				},
 				{
-					ID:         uuid.FromStringOrNil("05c29e76-6ee5-11eb-bc50-6b162fbf37b3"),
+					ID:         uuid.FromStringOrNil("1c829d94-cdc1-11ee-9ae0-0700acee5380"),
 					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
-					DomainName: "841e7938-519c-11ee-837e-bf90de21ed5f",
+					DomainName: "test2",
 				},
+			},
+
+			10,
+			"",
+			map[string]string{
+				"deleted":     "false",
+				"domain_name": "test2",
 			},
 
 			"2021-02-26 18:26:49.000",
 
 			[]*trunk.Trunk{
 				{
-					ID:         uuid.FromStringOrNil("6c81fb1a-519c-11ee-93c0-db2b2381cc85"),
+					ID:         uuid.FromStringOrNil("1c829d94-cdc1-11ee-9ae0-0700acee5380"),
 					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
-					DomainName: "6cb7323a-519c-11ee-8bfe-576b2eee20db",
-					AuthTypes:  []sipauth.AuthType{},
-					AllowedIPs: []string{},
-					TMCreate:   "2021-02-26 18:26:49.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
-				},
-				{
-					ID:         uuid.FromStringOrNil("05c29e76-6ee5-11eb-bc50-6b162fbf37b3"),
-					CustomerID: uuid.FromStringOrNil("423ec352-7fec-11ec-a715-a3caa41c981c"),
-					DomainName: "841e7938-519c-11ee-837e-bf90de21ed5f",
+					DomainName: "test2",
 					AuthTypes:  []sipauth.AuthType{},
 					AllowedIPs: []string{},
 					TMCreate:   "2021-02-26 18:26:49.000",
@@ -261,7 +189,7 @@ func Test_TrunkGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			for _, d := range tt.domains {
+			for _, d := range tt.data {
 				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().TrunkSet(gomock.Any(), gomock.Any())
 				if err := h.TrunkCreate(ctx, &d); err != nil {
@@ -269,13 +197,13 @@ func Test_TrunkGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			domains, err := h.TrunkGetsByCustomerID(ctx, tt.customerID, utilhandler.TimeGetCurTime(), tt.limit)
+			res, err := h.TrunkGets(ctx, tt.limit, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(domains, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, domains)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
 			}
 		})
 	}

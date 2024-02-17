@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -319,68 +320,55 @@ func (h *handler) TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, err
 	return res, nil
 }
 
-// TrunkGetByDomainName gets the trunk by the given domain_name.
-func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
-
-	res, err := h.trunkGetByDomainNameFromCache(ctx, domainName)
-	if err == nil {
-		return res, nil
-	}
-
-	q := fmt.Sprintf(`%s
-		where
-			domain_name = ?
-		order by
-			tm_create desc
-		`, trunkSelect)
-
-	row, err := h.db.Query(q, domainName)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. TrunkGetByDomainName. err: %v", err)
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err = h.trunkGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. TrunkGetByDomainName. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.trunkSetToCache(ctx, res)
-
-	return res, nil
-}
-
-// TrunkGetsByCustomerID returns list of trunks.
-func (h *handler) TrunkGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*trunk.Trunk, error) {
-
+// TrunkGets returns trunks.
+func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error) {
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc, id desc
-		limit ?
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
 	`, trunkSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, limit)
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id":
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TrunkGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. TrunkGets. err: %v", err)
 	}
 	defer rows.Close()
 
-	res := []*trunk.Trunk{}
+	var res []*trunk.Trunk
 	for rows.Next() {
 		u, err := h.trunkGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. TrunkGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. TrunkGets. err: %v", err)
 		}
 
 		res = append(res, u)

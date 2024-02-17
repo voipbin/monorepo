@@ -197,13 +197,19 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqh
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	resExts, err := h.extensionHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
+	if customerID != uuid.Nil {
+		filters["customer_id"] = customerID.String()
+	}
+
+	extensions, err := h.extensionHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get extensions. err: %v", err)
 		return nil, err
 	}
 
-	data, err := json.Marshal(resExts)
+	data, err := json.Marshal(extensions)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err

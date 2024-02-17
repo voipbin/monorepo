@@ -96,19 +96,19 @@ func (mr *MockExtensionHandlerMockRecorder) GetByExtension(ctx, customerID, ext 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByExtension", reflect.TypeOf((*MockExtensionHandler)(nil).GetByExtension), ctx, customerID, ext)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockExtensionHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
+// Gets mocks base method.
+func (m *MockExtensionHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockExtensionHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockExtensionHandlerMockRecorder) Gets(ctx, token, limit, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockExtensionHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockExtensionHandler)(nil).Gets), ctx, token, limit, filters)
 }
 
 // Update mocks base method.
