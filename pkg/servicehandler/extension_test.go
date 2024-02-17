@@ -299,13 +299,14 @@ func Test_ExtensionGet(t *testing.T) {
 	}
 }
 
-func Test_ExtensionGetsByCustomerID(t *testing.T) {
+func Test_ExtensionGets(t *testing.T) {
 
 	type test struct {
-		name      string
-		agent     *amagent.Agent
-		pageToken string
-		pageSize  uint64
+		name          string
+		agent         *amagent.Agent
+		pageToken     string
+		pageSize      uint64
+		expectFilters map[string]string
 
 		response  []rmextension.Extension
 		expectRes []*rmextension.WebhookMessage
@@ -321,6 +322,10 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
+			},
 
 			[]rmextension.Extension{
 				{
@@ -355,9 +360,9 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
-			res, err := h.ExtensionGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.ExtensionGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

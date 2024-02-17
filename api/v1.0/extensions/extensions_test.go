@@ -140,7 +140,7 @@ func Test_ExtensionsGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionGetsByCustomerID(req.Context(), &tt.agent, uint64(10), "").Return(tt.expectExt, nil)
+			mockSvc.EXPECT().ExtensionGets(req.Context(), &tt.agent, uint64(10), "").Return(tt.expectExt, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
