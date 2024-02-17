@@ -483,80 +483,31 @@ func Test_ExtensionGet(t *testing.T) {
 	}
 }
 
-// func Test_ExtensionGetsByDomainID(t *testing.T) {
-
-// 	type test struct {
-// 		name     string
-// 		domainID uuid.UUID
-// 		token    string
-// 		exts     []*extension.Extension
-// 	}
-
-// 	tests := []test{
-// 		{
-// 			"test normal",
-// 			uuid.FromStringOrNil("bd57214a-6f4b-11eb-aad8-579de27e6b7f"),
-// 			"2021-02-15 17:31:59.519672",
-// 			[]*extension.Extension{
-// 				{
-// 					ID:         uuid.FromStringOrNil("c9c736a4-6f4b-11eb-899a-575b7ce222e6"),
-// 					CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
-// 					Name:       "test name",
-// 					Detail:     "test detail",
-// 					AuthID:     "d1f16192-6f4b-11eb-83aa-27a0be9dffd1@test.sip.voipbin.net",
-// 					EndpointID: "d1f16192-6f4b-11eb-83aa-27a0be9dffd1@test.sip.voipbin.net",
-// 					AORID:      "d1f16192-6f4b-11eb-83aa-27a0be9dffd1@test.sip.voipbin.net",
-// 					Extension:  "d1f16192-6f4b-11eb-83aa-27a0be9dffd1",
-// 					Password:   "test password",
-// 					TMCreate:   "2021-02-14 17:31:59.519672",
-// 				},
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		mc := gomock.NewController(t)
-// 		defer mc.Finish()
-
-// 		mockDBAst := dbhandler.NewMockDBHandler(mc)
-// 		mockDBBin := dbhandler.NewMockDBHandler(mc)
-// 		h := &extensionHandler{
-// 			dbAst: mockDBAst,
-// 			dbBin: mockDBBin,
-// 		}
-
-// 		ctx := context.Background()
-
-// 		mockDBBin.EXPECT().ExtensionGetsByDomainID(gomock.Any(), tt.domainID, tt.token, uint64(10)).Return(tt.exts, nil)
-// 		res, err := h.GetsByDomainID(ctx, tt.domainID, tt.token, uint64(10))
-// 		if err != nil {
-// 			t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 		}
-
-// 		if reflect.DeepEqual(tt.exts, res) == false {
-// 			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.exts, res)
-// 		}
-
-// 	}
-// }
-
-func Test_ExtensionGetsByCustomerID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	type test struct {
-		name       string
-		customerID uuid.UUID
-		token      string
-		exts       []*extension.Extension
+		name string
+
+		token   string
+		limit   uint64
+		filters map[string]string
+
+		exts []*extension.Extension
 	}
 
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("f415f9b8-4fef-11ee-a071-0f13ee41a35d"),
+
 			"2021-02-15 17:31:59.519672",
+			10,
+			map[string]string{
+				"deleted": "false",
+			},
+
 			[]*extension.Extension{
 				{
-					ID: uuid.FromStringOrNil("f449ace0-4fef-11ee-a0f8-c71aa984ea34"),
+					ID: uuid.FromStringOrNil("2ccb7cd0-cdca-11ee-be37-a33e4200ba32"),
 				},
 			},
 		},
@@ -575,8 +526,8 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGetsByCustomerID(gomock.Any(), tt.customerID, tt.token, uint64(10)).Return(tt.exts, nil)
-		res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, uint64(10))
+		mockDBBin.EXPECT().ExtensionGets(gomock.Any(), tt.limit, tt.token, tt.filters).Return(tt.exts, nil)
+		res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

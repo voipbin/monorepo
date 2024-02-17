@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/common"
@@ -39,11 +40,9 @@ func (h *trunkHandler) Create(
 
 	// check duplicated trunk
 	tmp, err := h.GetByDomainName(ctx, domainName)
-	if err == nil {
-		if tmp.TMDelete < dbhandler.DefaultTimeStamp {
-			log.Errorf("The given trunk is already existed. err: %v", err)
-			return nil, fmt.Errorf("already exists")
-		}
+	if err == nil || tmp != nil {
+		log.Errorf("The given domain name is already existed. err: %v", err)
+		return nil, fmt.Errorf("already exists")
 	}
 
 	// create new trunk
@@ -103,22 +102,38 @@ func (h *trunkHandler) Get(ctx context.Context, id uuid.UUID) (*trunk.Trunk, err
 
 // GetByDomainName returns trunk of the given domain name
 func (h *trunkHandler) GetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
-	res, err := h.db.TrunkGetByDomainName(ctx, domainName)
-	if err != nil {
-		return nil, err
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetByDomainName",
+		"domain_name": domainName,
+	})
+
+	filters := map[string]string{
+		"deleted":     "false",
+		"domain_name": domainName,
 	}
 
+	tmp, err := h.db.TrunkGets(ctx, 1, "", filters)
+	if err != nil {
+		log.Errorf("Could not get trunk info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get trunk info")
+	}
+
+	if len(tmp) == 0 {
+		return nil, dbhandler.ErrNotFound
+	}
+
+	res := tmp[0]
 	return res, nil
 }
 
 // Gets returns list of trunks
-func (h *trunkHandler) Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*trunk.Trunk, error) {
+func (h *trunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*trunk.Trunk, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Gets",
-		"customer_id": customerID,
+		"func":    "Gets",
+		"filters": filters,
 	})
 
-	res, err := h.db.TrunkGetsByCustomerID(ctx, customerID, token, limit)
+	res, err := h.db.TrunkGets(ctx, limit, token, filters)
 	if err != nil {
 		log.Errorf("Could not get trunks. err: %v", err)
 		return nil, err
