@@ -136,11 +136,15 @@ func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid
 	return &res, nil
 }
 
-// RegistrarV1ExtensionGetsByCustomerID sends a request to registrar-manager
+// RegistrarV1ExtensionGets sends a request to registrar-manager
 // to getting a list of extension info.
 // it returns detail list of extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
-	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]rmextension.Extension, error) {
+	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
