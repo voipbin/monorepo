@@ -55,11 +55,15 @@ func (r *requestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID 
 	return &res, nil
 }
 
-// RegistrarV1TrunkGetsByCustomerID sends a request to registrar-manager
+// RegistrarV1TrunkGets sends a request to registrar-manager
 // to getting a list of trunk info.
 // it returns detail list of trunk info if it succeed.
-func (r *requestHandler) RegistrarV1TrunkGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmtrunk.Trunk, error) {
-	uri := fmt.Sprintf("/v1/trunks?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]rmtrunk.Trunk, error) {
+	uri := fmt.Sprintf("/v1/trunks?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
