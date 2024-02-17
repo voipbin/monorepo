@@ -203,6 +203,7 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().ExtensionGetByCustomerIDANDExtension(ctx, tt.customerID, tt.exten).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			res, err := h.ExtensionGetByExtension(ctx, tt.customerID, tt.exten)
 			if err != nil {
@@ -414,13 +415,14 @@ func Test_ExtensionUpdate(t *testing.T) {
 	}
 }
 
-func Test_ExtensionGetsByCustomerID(t *testing.T) {
+func Test_ExtensionGets(t *testing.T) {
 
 	type test struct {
 		name       string
-		customerID uuid.UUID
-		limit      uint64
 		extensions []extension.Extension
+
+		limit   uint64
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*extension.Extension
@@ -429,35 +431,39 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
-			10,
 			[]extension.Extension{
 				{
-					ID:         uuid.FromStringOrNil("60774088-4fed-11ee-9650-1f8bc913315f"),
-					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
+					ID:         uuid.FromStringOrNil("f3672bd4-cdc8-11ee-843b-1f9dbb177486"),
+					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 					Name:       "test1",
 				},
 				{
-					ID:         uuid.FromStringOrNil("60a529da-4fed-11ee-aad8-b72b9a8b3741"),
-					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
+					ID:         uuid.FromStringOrNil("f39e3124-cdc8-11ee-8e67-fb88ad978691"),
+					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 					Name:       "test2",
 				},
+			},
+
+			10,
+			map[string]string{
+				"deleted":     "false",
+				"customer_id": "f3bcb6d0-cdc8-11ee-82a8-430793535c91",
 			},
 
 			"2021-02-26 18:26:49.000",
 			[]*extension.Extension{
 				{
-					ID:         uuid.FromStringOrNil("60a529da-4fed-11ee-aad8-b72b9a8b3741"),
-					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
-					Name:       "test2",
+					ID:         uuid.FromStringOrNil("f3672bd4-cdc8-11ee-843b-1f9dbb177486"),
+					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
+					Name:       "test1",
 					TMCreate:   "2021-02-26 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("60774088-4fed-11ee-9650-1f8bc913315f"),
-					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
-					Name:       "test1",
+					ID:         uuid.FromStringOrNil("f39e3124-cdc8-11ee-8e67-fb88ad978691"),
+					CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
+					Name:       "test2",
 					TMCreate:   "2021-02-26 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
@@ -490,7 +496,7 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			exts, err := h.ExtensionGetsByCustomerID(ctx, tt.customerID, utilhandler.TimeGetCurTime(), tt.limit)
+			exts, err := h.ExtensionGets(ctx, tt.limit, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

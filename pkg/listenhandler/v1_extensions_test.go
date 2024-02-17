@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
@@ -106,28 +107,34 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 func Test_processV1ExtensionsGet(t *testing.T) {
 
 	type test struct {
-		name       string
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		request    *rabbitmqhandler.Request
-		exts       []*extension.Extension
+		name string
+
+		pageToken string
+		pageSize  uint64
+		request   *rabbitmqhandler.Request
+
+		responseFilters    map[string]string
+		responseExtensions []*extension.Extension
 
 		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
-			name:       "normal customer id",
-			customerID: uuid.FromStringOrNil("1b642fde-4ff1-11ee-8b2f-2f40ea091b7d"),
-			pageToken:  "2020-10-10T03:30:17.000000",
-			pageSize:   10,
+			name: "normal customer id",
+
+			pageToken: "2020-10-10T03:30:17.000000",
+			pageSize:  10,
 			request: &rabbitmqhandler.Request{
-				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=1b642fde-4ff1-11ee-8b2f-2f40ea091b7d",
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=1b642fde-4ff1-11ee-8b2f-2f40ea091b7d",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			exts: []*extension.Extension{
+
+			responseFilters: map[string]string{
+				"filter_customer_id": "1b642fde-4ff1-11ee-8b2f-2f40ea091b7d",
+			},
+			responseExtensions: []*extension.Extension{
 				{
 					ID:         uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
 					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
@@ -143,16 +150,20 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			},
 		},
 		{
-			name:       "empty",
-			customerID: uuid.FromStringOrNil("1b991686-4ff1-11ee-89fd-2f283e362ada"),
-			pageToken:  "2020-10-10T03:30:17.000000",
-			pageSize:   10,
+			name: "empty",
+
+			pageToken: "2020-10-10T03:30:17.000000",
+			pageSize:  10,
 			request: &rabbitmqhandler.Request{
-				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=1b991686-4ff1-11ee-89fd-2f283e362ada",
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=1b991686-4ff1-11ee-89fd-2f283e362ada",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			exts: []*extension.Extension{},
+
+			responseFilters: map[string]string{
+				"filter_customer_id": "1b991686-4ff1-11ee-89fd-2f283e362ada",
+			},
+			responseExtensions: []*extension.Extension{},
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -170,15 +181,18 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDomain := domainhandler.NewMockDomainHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:       mockSock,
 				reqHandler:       mockReq,
+				utilHandler:      mockUtil,
 				domainHandler:    mockDomain,
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.exts, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockExtension.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseExtensions, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

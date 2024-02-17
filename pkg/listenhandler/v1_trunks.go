@@ -71,13 +71,19 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *rabbitmqhan
 	// get user_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	resDomains, err := h.trunkHandler.Gets(ctx, customerID, pageToken, pageSize)
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
+	if customerID != uuid.Nil {
+		filters["customer_id"] = customerID.String()
+	}
+
+	trunks, err := h.trunkHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get trunks. err: %v", err)
 		return nil, err
 	}
 
-	data, err := json.Marshal(resDomains)
+	data, err := json.Marshal(trunks)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err

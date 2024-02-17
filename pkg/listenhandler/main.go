@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
@@ -33,6 +34,7 @@ type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	reqHandler       requesthandler.RequestHandler
+	utilHandler      utilhandler.UtilHandler
 	domainHandler    domainhandler.DomainHandler
 	trunkHandler     trunkhandler.TrunkHandler
 	extensionHandler extensionhandler.ExtensionHandler
@@ -108,6 +110,7 @@ func NewListenHandler(
 	h := &listenHandler{
 		rabbitSock:       rabbitSock,
 		reqHandler:       reqHandler,
+		utilHandler:      utilhandler.NewUtilHandler(),
 		domainHandler:    domainHandler,
 		trunkHandler:     trunkHandler,
 		extensionHandler: extensionHandler,
