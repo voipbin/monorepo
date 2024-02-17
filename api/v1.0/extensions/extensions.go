@@ -102,7 +102,7 @@ func extensionsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get extensions
-	exts, err := serviceHandler.ExtensionGetsByCustomerID(c.Request.Context(), &a, pageSize, req.PageToken)
+	exts, err := serviceHandler.ExtensionGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)

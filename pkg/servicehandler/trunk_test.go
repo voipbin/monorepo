@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -23,7 +24,7 @@ func Test_TrunkCreate(t *testing.T) {
 		trunkName  string
 		detail     string
 		domainName string
-		authTypes  []rmtrunk.AuthType
+		authTypes  []rmsipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -44,7 +45,7 @@ func Test_TrunkCreate(t *testing.T) {
 			trunkName:  "test name",
 			detail:     "test detail",
 			domainName: "test-domain",
-			authTypes:  []rmtrunk.AuthType{rmtrunk.AuthTypeBasic, rmtrunk.AuthTypeIP},
+			authTypes:  []rmsipauth.AuthType{rmsipauth.AuthTypeBasic, rmsipauth.AuthTypeIP},
 			username:   "testusername",
 			password:   "testpassword",
 			allowedIPs: []string{"1.2.3.4"},
@@ -216,8 +217,10 @@ func Test_TrunkGets(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		response  []rmtrunk.Trunk
-		expectRes []*rmtrunk.WebhookMessage
+		response []rmtrunk.Trunk
+
+		expectFilters map[string]string
+		expectRes     []*rmtrunk.WebhookMessage
 	}
 
 	tests := []test{
@@ -238,6 +241,11 @@ func Test_TrunkGets(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("6af5fe56-54a6-11ee-8db0-b750622f6cc0"),
 				},
+			},
+
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*rmtrunk.WebhookMessage{
 				{
@@ -264,7 +272,7 @@ func Test_TrunkGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1TrunkGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1TrunkGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.TrunkGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -287,7 +295,7 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 		id         uuid.UUID
 		trunkName  string
 		detail     string
-		authTypes  []rmtrunk.AuthType
+		authTypes  []rmsipauth.AuthType
 		username   string
 		password   string
 		allowedIPs []string
@@ -308,7 +316,7 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 			uuid.FromStringOrNil("bdf14732-54a6-11ee-b262-1f9dcbae10b2"),
 			"update name",
 			"update detail",
-			[]rmtrunk.AuthType{rmtrunk.AuthTypeBasic},
+			[]rmsipauth.AuthType{rmsipauth.AuthTypeBasic},
 			"updateusername",
 			"updatepassword",
 			[]string{"1.2.3.4"},

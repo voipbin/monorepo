@@ -113,13 +113,12 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *amagent.Agent, id 
 
 // ExtensionGetsByCustomerID gets the list of extensions of the given customer id.
 // It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ExtensionGetsByCustomerID",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"size":        size,
-		"token":       token,
+		"func":  "ExtensionGetsByCustomerID",
+		"agent": a,
+		"size":  size,
+		"token": token,
 	})
 	log.Debug("Getting a extensions.")
 
@@ -132,8 +131,13 @@ func (h *serviceHandler) ExtensionGetsByCustomerID(ctx context.Context, a *amage
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	filters := map[string]string{
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false",
+	}
+
 	// get extensions
-	exts, err := h.reqHandler.RegistrarV1ExtensionGetsByCustomerID(ctx, a.CustomerID, token, size)
+	exts, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
