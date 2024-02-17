@@ -596,6 +596,8 @@ github.com/prometheus/client_model v0.4.0 h1:5lQXD3cAg1OXBf4Wq03gTrXHeaV0TQvGfUo
 github.com/prometheus/client_model v0.4.0/go.mod h1:oMQmHW1/JoDwqLtg57MGgP/Fb1CJEYF2imWWhWtMkYU=
 github.com/prometheus/client_model v0.5.0 h1:VQw1hfvPvk3Uv6Qf29VrPF32JB6rtbgI6cYPYQjL0Qw=
 github.com/prometheus/client_model v0.5.0/go.mod h1:dTiFglRmd66nLR9Pv9f0mZi7B7fk5Pm3gvsjB5tr+kI=
+github.com/prometheus/client_model v0.6.0 h1:k1v3CzpSRUTrKMppY35TLwPvxHqBu0bYgxZzqGIgaos=
+github.com/prometheus/client_model v0.6.0/go.mod h1:NTQHnmxFpouOD0DpvP4XujX3CdOAGQPoaGhyTchlyt8=
 github.com/prometheus/common v0.41.0 h1:npo01n6vUlRViIj5fgwiK8vlNIh8bnoxqh3gypKsyAw=
 github.com/prometheus/common v0.41.0/go.mod h1:xBwqVerjNdUDjgODMpudtOMwlOwf2SaTr1yjz4b7Zbc=
 github.com/prometheus/common v0.44.0 h1:+5BrQJwiBB9xsMygAB3TNvpQKOwlkc25LbISbrdOOfY=
@@ -655,6 +657,8 @@ gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20231202164255-4c07add25
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20231202164255-4c07add2531e/go.mod h1:8oZS80FqEE1g50dNzzjnFENMXyrR4vqTi7t94RyQM70=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240215043849-217ee6157b29 h1:PrczJ51tqzaqqIbPeeYSO8obvMgN7zjAowxl5B0c+Ug=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240215043849-217ee6157b29/go.mod h1:hrTWMqKg+S+rhg7ke6ExeWxuqAZVrSjwRLlVV8VneaM=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240216131513-cde03cb72fe1 h1:O89YSTDSfKBTN69p3GQoPVLWaHBXBzEGXOMuW1kYaO0=
+gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240216131513-cde03cb72fe1/go.mod h1:gcRWA98nKlHOWqPrbdgkRvj4GB2CEdLpapsM2k/ENHM=
 gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285 h1:IksDab2IBvBJdwSj4JBQtWaz+vfLWT6Y2DHXrmlAnkI=
 gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285/go.mod h1:BUttjNtuIynmiulvrsoKCJwMQRgg0oDthcX1E5IgX2M=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230307161757-243572bb1bca h1:SJ7cdFKNSL/0f4oWcMu9adq6owSi7q719HRzlrrzh5w=

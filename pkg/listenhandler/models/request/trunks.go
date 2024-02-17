@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 )
 
 // V1DataTrunksPost is
@@ -15,8 +15,8 @@ type V1DataTrunksPost struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	DomainName string           `json:"domain_name,omitempty"`
-	Authtypes  []trunk.AuthType `json:"auth_types,omitempty"`
+	DomainName string             `json:"domain_name,omitempty"`
+	Authtypes  []sipauth.AuthType `json:"auth_types,omitempty"`
 
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
@@ -31,7 +31,7 @@ type V1DataTrunksIDPut struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
-	Authtypes []trunk.AuthType `json:"auth_types,omitempty"`
+	Authtypes []sipauth.AuthType `json:"auth_types,omitempty"`
 
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
