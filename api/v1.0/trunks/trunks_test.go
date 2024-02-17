@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -46,8 +47,8 @@ func Test_trunksPOST(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
-				AuthTypes: []rmtrunk.AuthType{
-					rmtrunk.AuthTypeBasic,
+				AuthTypes: []rmsipauth.AuthType{
+					rmsipauth.AuthTypeBasic,
 				},
 				Username:   "testusername",
 				Password:   "testpassword",
@@ -120,8 +121,8 @@ func Test_trunksGET(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				DomainName: "test",
-				AuthTypes: []rmtrunk.AuthType{
-					rmtrunk.AuthTypeBasic,
+				AuthTypes: []rmsipauth.AuthType{
+					rmsipauth.AuthTypeBasic,
 				},
 				Username:   "testusername",
 				Password:   "testpassword",
@@ -247,7 +248,7 @@ func Test_TrunksIDPUT(t *testing.T) {
 			reqBody: request.BodyTrunksIDPUT{
 				Name:       "test name",
 				Detail:     "test detail",
-				AuthTypes:  []rmtrunk.AuthType{rmtrunk.AuthTypeBasic},
+				AuthTypes:  []rmsipauth.AuthType{rmsipauth.AuthTypeBasic},
 				Username:   "testusername",
 				Password:   "testpassword",
 				AllowedIPs: []string{"1.2.3.4"},
