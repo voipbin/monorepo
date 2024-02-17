@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
@@ -30,7 +31,7 @@ func (h *serviceHandler) trunkGet(ctx context.Context, a *amagent.Agent, id uuid
 }
 
 // TrunkCreate is a service handler for trunk creation.
-func (h *serviceHandler) TrunkCreate(ctx context.Context, a *amagent.Agent, name string, detail string, domainName string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkCreate(ctx context.Context, a *amagent.Agent, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TrunkCreate",
 		"customer_id": a.CustomerID,
@@ -137,8 +138,13 @@ func (h *serviceHandler) TrunkGets(ctx context.Context, a *amagent.Agent, size u
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
+	filters := map[string]string{
+		"deleted":     "false",
+		"customer_id": a.CustomerID.String(),
+	}
+
 	// get tmps
-	tmps, err := h.reqHandler.RegistrarV1TrunkGetsByCustomerID(ctx, a.CustomerID, token, size)
+	tmps, err := h.reqHandler.RegistrarV1TrunkGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get trunks info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find trunks info. err: %v", err)
@@ -156,7 +162,7 @@ func (h *serviceHandler) TrunkGets(ctx context.Context, a *amagent.Agent, size u
 
 // TrunkUpdateBasicInfo updates the trunk info.
 // It returns updated trunk if it succeed.
-func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TrunkUpdateBasicInfo",
 		"customer_id": a.CustomerID,

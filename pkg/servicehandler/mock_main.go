@@ -46,6 +46,7 @@ import (
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
@@ -1825,19 +1826,19 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGet(ctx, a, id interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGet), ctx, a, id)
 }
 
-// ExtensionGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) ExtensionGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*extension.WebhookMessage, error) {
+// ExtensionGets mocks base method.
+func (m *MockServiceHandler) ExtensionGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionGetsByCustomerID", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ExtensionGets", ctx, a, size, token)
 	ret0, _ := ret[0].([]*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionGetsByCustomerID indicates an expected call of ExtensionGetsByCustomerID.
-func (mr *MockServiceHandlerMockRecorder) ExtensionGetsByCustomerID(ctx, a, size, token interface{}) *gomock.Call {
+// ExtensionGets indicates an expected call of ExtensionGets.
+func (mr *MockServiceHandlerMockRecorder) ExtensionGets(ctx, a, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGetsByCustomerID), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGets", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGets), ctx, a, size, token)
 }
 
 // ExtensionUpdate mocks base method.
@@ -3026,7 +3027,7 @@ func (mr *MockServiceHandlerMockRecorder) TransferStart(ctx, a, transferType, tr
 }
 
 // TrunkCreate mocks base method.
-func (m *MockServiceHandler) TrunkCreate(ctx context.Context, a *agent.Agent, name, detail, domainName string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkCreate(ctx context.Context, a *agent.Agent, name, detail, domainName string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkCreate", ctx, a, name, detail, domainName, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.WebhookMessage)
@@ -3086,7 +3087,7 @@ func (mr *MockServiceHandlerMockRecorder) TrunkGets(ctx, a, size, token interfac
 }
 
 // TrunkUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkUpdateBasicInfo", ctx, a, id, name, detail, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.WebhookMessage)
