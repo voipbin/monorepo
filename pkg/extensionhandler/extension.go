@@ -31,10 +31,10 @@ func (h *extensionHandler) Create(
 	})
 
 	// create realm
-	realm := common.GenerateRealm(customerID)
+	realm := common.GenerateRealmExtension(customerID)
 
 	// create aor id
-	aorID := common.GenerateEndpoint(customerID, ext)
+	aorID := common.GenerateEndpointExtension(customerID, ext)
 
 	// create aor
 	maxContacts := defaultMaxContacts

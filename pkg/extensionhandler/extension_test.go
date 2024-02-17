@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
@@ -37,6 +38,7 @@ func Test_Create(t *testing.T) {
 		expectAuth      *astauth.AstAuth
 		expectEndpoint  *astendpoint.AstEndpoint
 		expectExtension *extension.Extension
+		expectSIPAuth   *sipauth.SIPAuth
 	}
 
 	tests := []test{
@@ -55,7 +57,11 @@ func Test_Create(t *testing.T) {
 			},
 			responseUUIDExtensionID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
 			responseExtension: &extension.Extension{
-				ID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+				ID:        uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+				Extension: "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+				Realm:     "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
+				Username:  "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+				Password:  "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 			},
 
 			expectAOR: &astaor.AstAOR{
@@ -89,7 +95,19 @@ func Test_Create(t *testing.T) {
 				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				Username:   "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
-			}},
+			},
+			expectSIPAuth: &sipauth.SIPAuth{
+				ID:            uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+				ReferenceType: sipauth.ReferenceTypeExtension,
+				AuthTypes:     []sipauth.AuthType{sipauth.AuthTypeBasic},
+				Realm:         "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
+				Username:      "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+				Password:      "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
+				AllowedIPs:    []string{},
+				TMCreate:      "",
+				TMUpdate:      "",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -115,11 +133,16 @@ func Test_Create(t *testing.T) {
 		mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExtensionID)
 		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID).Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth).Return(nil)
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionCreated, tt.responseExtension)
 
-		_, err := h.Create(ctx, tt.customerID, tt.extName, tt.detail, tt.ext, tt.password)
+		res, err := h.Create(ctx, tt.customerID, tt.extName, tt.detail, tt.ext, tt.password)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if !reflect.DeepEqual(res, tt.responseExtension) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseExtension, res)
 		}
 	}
 }
@@ -242,6 +265,8 @@ func Test_Update(t *testing.T) {
 		updateAuth        *astauth.AstAuth
 		updateExt         *extension.Extension
 		updatedExt        *extension.Extension
+
+		expectSIPAuth *sipauth.SIPAuth
 	}
 
 	tests := []test{
@@ -258,13 +283,16 @@ func Test_Update(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
 				Name:       "update name",
 				Detail:     "update detail",
-				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net",
+				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
 				Extension:  "66f6b86c-6f44-11eb-ab55-934942c23f91",
+				DomainName: "",
+				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
+				Username:   "66f6b86c-6f44-11eb-ab55-934942c23f91",
 				Password:   "update password",
 			},
 
 			updateAuth: &astauth.AstAuth{
-				ID:       getStringPointer("66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net"),
+				ID:       getStringPointer("66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net"),
 				Password: getStringPointer("update password"),
 			},
 			updateExt: &extension.Extension{
@@ -272,7 +300,7 @@ func Test_Update(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
 				Name:       "update name",
 				Detail:     "update detail",
-				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net",
+				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
 				Extension:  "66f6b86c-6f44-11eb-ab55-934942c23f91",
 				Password:   "update password",
 			},
@@ -281,9 +309,24 @@ func Test_Update(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
 				Name:       "update name",
 				Detail:     "update detail",
-				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.sip.voipbin.net",
+				AuthID:     "66f6b86c-6f44-11eb-ab55-934942c23f91@test.registrar.voipbin.net",
 				Extension:  "66f6b86c-6f44-11eb-ab55-934942c23f91",
+				DomainName: "",
+				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
+				Username:   "66f6b86c-6f44-11eb-ab55-934942c23f91",
 				Password:   "update password",
+			},
+
+			expectSIPAuth: &sipauth.SIPAuth{
+				ID:            uuid.FromStringOrNil("66f6b86c-6f44-11eb-ab55-934942c23f91"),
+				ReferenceType: sipauth.ReferenceTypeExtension,
+				AuthTypes: []sipauth.AuthType{
+					sipauth.AuthTypeBasic,
+				},
+				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
+				Username:   "66f6b86c-6f44-11eb-ab55-934942c23f91",
+				Password:   "update password",
+				AllowedIPs: []string{},
 			},
 		},
 	}
@@ -307,7 +350,9 @@ func Test_Update(t *testing.T) {
 		mockDBAst.EXPECT().AstAuthUpdate(gomock.Any(), tt.updateAuth).Return(nil)
 		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.id, tt.extensionName, tt.detail, tt.password).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.responseExtension.ID).Return(tt.updatedExt, nil)
-		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionUpdated, tt.updateExt)
+		mockDBBin.EXPECT().SIPAuthUpdateAll(ctx, tt.expectSIPAuth).Return(nil)
+
+		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionUpdated, tt.updatedExt)
 		_, err := h.Update(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -318,8 +363,8 @@ func Test_Update(t *testing.T) {
 func Test_ExtensionDelete(t *testing.T) {
 
 	type test struct {
-		name string
-		ext  *extension.Extension
+		name              string
+		responseExtension *extension.Extension
 
 		expectRes *extension.Extension
 	}
@@ -368,15 +413,16 @@ func Test_ExtensionDelete(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
-		mockDBBin.EXPECT().ExtensionDelete(ctx, tt.ext.ID).Return(nil)
-		mockDBAst.EXPECT().AstEndpointDelete(ctx, tt.ext.EndpointID).Return(nil)
-		mockDBAst.EXPECT().AstAuthDelete(ctx, tt.ext.AuthID).Return(nil)
-		mockDBAst.EXPECT().AstAORDelete(ctx, tt.ext.AORID).Return(nil)
-		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
-		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, tt.ext)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID).Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().ExtensionDelete(ctx, tt.responseExtension.ID).Return(nil)
+		mockDBAst.EXPECT().AstEndpointDelete(ctx, tt.responseExtension.EndpointID).Return(nil)
+		mockDBAst.EXPECT().AstAuthDelete(ctx, tt.responseExtension.AuthID).Return(nil)
+		mockDBAst.EXPECT().AstAORDelete(ctx, tt.responseExtension.AORID).Return(nil)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID).Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseExtension.ID).Return(nil)
+		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, tt.responseExtension)
 
-		res, err := h.Delete(ctx, tt.ext.ID)
+		res, err := h.Delete(ctx, tt.responseExtension.ID)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
