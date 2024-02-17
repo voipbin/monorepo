@@ -90,14 +90,14 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 	}
 }
 
-func Test_RegistrarV1TrunkGetsByCustomerID(t *testing.T) {
+func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -108,9 +108,12 @@ func Test_RegistrarV1TrunkGetsByCustomerID(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("b1e8f6c0-549b-11ee-a209-a7fe0fc532fa"),
-			pageToken:  "2020-09-20 03:23:20.995000",
-			pageSize:   10,
+			pageToken: "2020-09-20 03:23:20.995000",
+			pageSize:  10,
+			filters: map[string]string{
+				"customer_id": "b1e8f6c0-549b-11ee-a209-a7fe0fc532fa",
+				"deleted":     "false",
+			},
 
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -119,7 +122,7 @@ func Test_RegistrarV1TrunkGetsByCustomerID(t *testing.T) {
 
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/trunks?page_token=%s&page_size=10&customer_id=b1e8f6c0-549b-11ee-a209-a7fe0fc532fa", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/trunks?page_token=%s&page_size=10&filter_customer_id=b1e8f6c0-549b-11ee-a209-a7fe0fc532fa&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -144,7 +147,7 @@ func Test_RegistrarV1TrunkGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1TrunkGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RegistrarV1TrunkGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
