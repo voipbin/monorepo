@@ -47,7 +47,6 @@ type trunkHandler struct {
 }
 
 var (
-	basicDomainName  = "trunk.voipbin.net"
 	metricsNamespace = "registrar_manager"
 
 	promTrunkCreateTotal = prometheus.NewCounter(

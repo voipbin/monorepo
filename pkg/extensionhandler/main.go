@@ -42,7 +42,6 @@ type extensionHandler struct {
 }
 
 var (
-	basicDomainName  = "registrar.voipbin.net"
 	metricsNamespace = "registrar_manager"
 
 	promExtensionCreateTotal = prometheus.NewCounter(
