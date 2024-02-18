@@ -4,6 +4,12 @@ Trunking
 ========
 SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.
 
+Server address
+--------------
+Once you created trunk, the voipbin generates the trunk server address for you.
+
+`sip:{your voipbin trunk domain name}.trunk.voipbin.net`
+
 Authentication
 --------------
 Currently, The VoIPBin's trunking authentication supports only the Basic authentication.
