@@ -21,6 +21,8 @@ import {
   ParseData,
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
+import { NULL } from 'sass';
+import { NIL } from 'uuid';
 
 const TrunksDetail = () => {
   console.log("TrunksDetail");
@@ -52,7 +54,7 @@ const TrunksDetail = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Detail</strong> <small>Detail of the resource</small>
+                <strong>Detail</strong> <small>You can find more details about trunk at <a href="https://api.voipbin.net/docs/trunk.html" target="_blank">here</a>.</small>
               </CCardHeader>
 
               <CCardBody>
@@ -75,6 +77,19 @@ const TrunksDetail = () => {
                       type="text"
                       id="id"
                       defaultValue={detailData.domain_name}
+                      readOnly plainText
+                    />
+                  </CCol>
+                </CRow>
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Trunk address</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.domain_name + ".trunk.voipbin.net"}
                       readOnly plainText
                     />
                   </CCol>
