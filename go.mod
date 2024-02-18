@@ -13,7 +13,7 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240217164651-4cb7c3096fdf
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240217195214-a38eb8866364
 	golang.org/x/sys v0.17.0 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect

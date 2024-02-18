@@ -10,23 +10,23 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id,omitempty"`
-	CustomerID uuid.UUID `json:"customer_id,omitempty"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 
-	DomainName string             `json:"domain_name,omitempty"`
-	AuthTypes  []sipauth.AuthType `json:"auth_types,omitempty"`
+	DomainName string             `json:"domain_name"`
+	AuthTypes  []sipauth.AuthType `json:"auth_types"`
 
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 
-	AllowedIPs []string `json:"allowed_ips,omitempty"`
+	AllowedIPs []string `json:"allowed_ips"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event
