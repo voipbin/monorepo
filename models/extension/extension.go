@@ -23,9 +23,9 @@ type Extension struct {
 
 	DomainName string `json:"domain_name"`
 
-	Realm    string `json:"realm,omitempty"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Username string `json:"username"`        // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Password string `json:"password"`        // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Realm    string `json:"realm"`    // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Username string `json:"username"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Password string `json:"password"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
