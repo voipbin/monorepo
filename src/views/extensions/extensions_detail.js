@@ -28,6 +28,7 @@ const ExtensionsDetail = () => {
   const [buttonDisable, setButtonDisable] = useState(false);
   const routeParams = useParams();
   const navigate = useNavigate();
+  const agent = JSON.parse(localStorage.getItem("agent_info"));
 
   const ref_id = useRef(null);
   const ref_name = useRef(null);
@@ -49,7 +50,7 @@ const ExtensionsDetail = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Detail</strong> <small>Detail of the resource</small>
+                <strong>Detail</strong> <small>You can find more details about extension at <a href="https://api.voipbin.net/docs/extension.html" target="_blank">here</a>.</small>
               </CCardHeader>
 
               <CCardBody>
@@ -86,6 +87,19 @@ const ExtensionsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={detailData.password}
+                    />
+                  </CCol>
+                </CRow>
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Registration address</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.extension + "@" + agent["customer_id"] + ".registrar.voipbin.net"}
+                      readOnly plainText
                     />
                   </CCol>
                 </CRow>
