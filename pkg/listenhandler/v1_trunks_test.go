@@ -61,7 +61,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1744ccb4-6e13-11eb-b08d-bb42431b2fb3","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"1744ccb4-6e13-11eb-b08d-bb42431b2fb3","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -136,7 +136,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"abd3467a-6ee6-11eb-824f-c386fbaad128","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c"},{"id":"af6488da-6ee6-11eb-8d4d-0f848f8e1aee","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c"}]`),
+				Data:       []byte(`[{"id":"abd3467a-6ee6-11eb-824f-c386fbaad128","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"af6488da-6ee6-11eb-8d4d-0f848f8e1aee","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -240,7 +240,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a3e97272-5232-11ee-acd9-bbb3933eed48","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"a3e97272-5232-11ee-acd9-bbb3933eed48","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -301,7 +301,7 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"4e1f3c12-5234-11ee-ad7f-ef5be37113b2","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"4e1f3c12-5234-11ee-ad7f-ef5be37113b2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -361,7 +361,7 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d5829769-dacf-420e-9260-c8931560331e","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"d5829769-dacf-420e-9260-c8931560331e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -421,7 +421,7 @@ func Test_processV1TrunksDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"09e94cb4-6f32-11eb-af29-27dcd65a7064","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"09e94cb4-6f32-11eb-af29-27dcd65a7064","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
