@@ -21,10 +21,10 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240215192728-b61c81105fa6
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240217195214-a38eb8866364
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240218150854-a1b63b831589
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240212145953-364923003e09
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240214182731-ed12d5a9070a
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240217175850-5ec2ad17b7f1
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240218150038-ea25463aaa61
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
 	golang.org/x/crypto v0.19.0 // indirect
@@ -59,7 +59,7 @@ require (
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bytedance/sonic v1.10.2 // indirect
+	github.com/bytedance/sonic v1.11.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect

@@ -66,6 +66,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Trunk</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#trunking">Trunking</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#server-address">Server address</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#authentication">Authentication</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#basic-authentication">Basic authentication</a></li>
 </ul>
@@ -75,10 +76,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#realy-hangup-cause">Realy hangup cause</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#registration">Registration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#registration-handle">Registration handle</a></li>
 </ul>
 </li>
 </ul>
@@ -123,6 +120,11 @@
 <section id="trunking">
 <h2>Trunking<a class="headerlink" href="#trunking" title="Permalink to this headline"></a></h2>
 <p>SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.</p>
+<section id="server-address">
+<h3>Server address<a class="headerlink" href="#server-address" title="Permalink to this headline"></a></h3>
+<p>Once you created trunk, the voipbin generates the trunk server address for you.</p>
+<p><cite>sip:{your voipbin trunk domain name}.trunk.voipbin.net</cite></p>
+</section>
 <section id="authentication">
 <h3>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline"></a></h3>
 <p>Currently, The VoIPBin’s trunking authentication supports only the Basic authentication.</p>
@@ -213,39 +215,6 @@ It executes the follow features:</p>
 </pre></div>
 </div>
 </section>
-</section>
-</section>
-<section id="registration">
-<h2>Registration<a class="headerlink" href="#registration" title="Permalink to this headline"></a></h2>
-<p>SIP registration is the process of identifying and authenticating a user or device on a SIP network. When a device wants to make or receive calls or messages on the network, it must first register with the VoIPBin by sending a REGISTER message.</p>
-<p>This message includes information about the user or device, such as its address, phone number, and authentication credentials (e.g., username and password). The VoIPBin verifies the user’s credentials and then responds with a confirmation message, such as a 200 OK response.</p>
-<p>Once the device is registered, it can make and receive calls and messages on the SIP network. SIP registration is important for ensuring secure and reliable communication between devices on the network, as well as for enabling advanced features like call forwarding, voicemail, and presence.</p>
-<section id="registration-handle">
-<h3>Registration handle<a class="headerlink" href="#registration-handle" title="Permalink to this headline"></a></h3>
-<p>When a user or device sends a SIP REGISTER message to a VoIPBin with basic authentication, the VoIPBin will typically respond with a 407 Proxy Authentication Required message if the user’s credentials are not valid or not provided.</p>
-<p>Here is an example of this process:</p>
-<ol class="arabic simple">
-<li><p>The user or device sends a REGISTER message to the VoIPBin with its identification information.</p></li>
-<li><p>The VoIPBin checks the user’s credentials, and if they are not valid or not provided, it responds with a 407 Proxy Authentication Required message.</p></li>
-<li><p>The 407 response includes a “Nonce” value, which is a unique and random number used to help prevent replay attacks. The user’s device must use this “Nonce” value, along with the username, password, and other information, to create an “Authorization” header for the next REGISTER message.</p></li>
-<li><p>The user’s device sends a second REGISTER message with the Authorization header, including the “Nonce” value and other authentication information.</p></li>
-<li><p>The VoIPBin verifies the user’s credentials using the basic authentication method, and if they are valid, it sends a 200 OK response, confirming the registration.</p></li>
-</ol>
-<p>Once the user’s device is registered, it can receive calls and messages on the SIP network.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>
-
-<span class="o">|</span>                                        <span class="o">|</span>
-<span class="o">|--------------</span> <span class="n">REGISTER</span> <span class="o">---------------&gt;|</span>
-<span class="o">|</span>                                        <span class="o">|</span>
-<span class="o">|&lt;--</span> <span class="mi">407</span> <span class="n">Proxy</span> <span class="n">Authentication</span> <span class="n">Required</span> <span class="o">--|</span>
-<span class="o">|----------------</span> <span class="n">ACK</span> <span class="o">------------------&gt;|</span>
-<span class="o">|</span>                                        <span class="o">|</span>
-<span class="o">|-----</span> <span class="n">REGISTER</span> <span class="k">with</span> <span class="n">Authorization</span> <span class="o">-----&gt;|</span>
-<span class="o">|</span>                                        <span class="o">|</span>
-<span class="o">|&lt;-------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">------------------|</span>
-<span class="o">|--------------</span> <span class="n">ACK</span> <span class="o">--------------------&gt;|</span>
-</pre></div>
-</div>
 </section>
 </section>
 </section>
