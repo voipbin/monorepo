@@ -14,7 +14,6 @@ import (
 	astauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
@@ -242,93 +241,6 @@ func (m *MockDBHandler) AstEndpointGet(ctx context.Context, id string) (*astendp
 func (mr *MockDBHandlerMockRecorder) AstEndpointGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstEndpointGet", reflect.TypeOf((*MockDBHandler)(nil).AstEndpointGet), ctx, id)
-}
-
-// DomainCreate mocks base method.
-func (m *MockDBHandler) DomainCreate(ctx context.Context, b *domain.Domain) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainCreate", ctx, b)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DomainCreate indicates an expected call of DomainCreate.
-func (mr *MockDBHandlerMockRecorder) DomainCreate(ctx, b interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainCreate", reflect.TypeOf((*MockDBHandler)(nil).DomainCreate), ctx, b)
-}
-
-// DomainDelete mocks base method.
-func (m *MockDBHandler) DomainDelete(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DomainDelete indicates an expected call of DomainDelete.
-func (mr *MockDBHandlerMockRecorder) DomainDelete(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDelete", reflect.TypeOf((*MockDBHandler)(nil).DomainDelete), ctx, id)
-}
-
-// DomainGet mocks base method.
-func (m *MockDBHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGet", ctx, id)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGet indicates an expected call of DomainGet.
-func (mr *MockDBHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockDBHandler)(nil).DomainGet), ctx, id)
-}
-
-// DomainGetByDomainName mocks base method.
-func (m *MockDBHandler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGetByDomainName", ctx, domainName)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGetByDomainName indicates an expected call of DomainGetByDomainName.
-func (mr *MockDBHandlerMockRecorder) DomainGetByDomainName(ctx, domainName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetByDomainName", reflect.TypeOf((*MockDBHandler)(nil).DomainGetByDomainName), ctx, domainName)
-}
-
-// DomainGetsByCustomerID mocks base method.
-func (m *MockDBHandler) DomainGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGetsByCustomerID", ctx, customerID, token, limit)
-	ret0, _ := ret[0].([]*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGetsByCustomerID indicates an expected call of DomainGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) DomainGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).DomainGetsByCustomerID), ctx, customerID, token, limit)
-}
-
-// DomainUpdateBasicInfo mocks base method.
-func (m *MockDBHandler) DomainUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainUpdateBasicInfo", ctx, id, name, detail)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DomainUpdateBasicInfo indicates an expected call of DomainUpdateBasicInfo.
-func (mr *MockDBHandlerMockRecorder) DomainUpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).DomainUpdateBasicInfo), ctx, id, name, detail)
 }
 
 // ExtensionCreate mocks base method.
