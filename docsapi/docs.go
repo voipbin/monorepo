@@ -2907,139 +2907,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1.0/customers/{id}/password": {
-            "put": {
-                "description": "Update a customer's password.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update a customer's password.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/customer.Customer"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1.0/customers/{id}/permissions_ids": {
-            "put": {
-                "description": "Update a customer's permission_ids.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update a customer's permission_ids.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/customer.Customer"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1.0/domains": {
-            "get": {
-                "description": "Gets a list of domains",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Gets a list of domains.",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "The size of results. Max 100",
-                        "name": "page_size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "The token. tm_create",
-                        "name": "page_token",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.BodyDomainsGET"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new domain and returns detail created domain info.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Create a new domain and returns detail created domain info.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/domain.Domain"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1.0/domains/{id}": {
-            "get": {
-                "description": "Returns detail domain info of the given domain id.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Returns detail domain info.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The ID of the domain",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/domain.Domain"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update a domain and returns detail updated domain info.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update a domain and reuturns updated domain info.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/domain.Domain"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a existing domain.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Delete a existing domain.",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/v1.0/extension/{id}": {
             "get": {
                 "description": "Returns detail extension info of the given extension id.",
@@ -5257,7 +5124,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.BodyDomainsGET"
+                            "$ref": "#/definitions/response.BodyTrunksGET"
                         }
                     }
                 }
@@ -6665,13 +6532,6 @@ const docTemplate = `{
                     "description": "name",
                     "type": "string"
                 },
-                "permission_ids": {
-                    "description": "customer's permission ids",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "phone_number": {
                     "type": "string"
                 },
@@ -6685,10 +6545,6 @@ const docTemplate = `{
                 },
                 "tm_update": {
                     "description": "Updated timestamp.",
-                    "type": "string"
-                },
-                "username": {
-                    "description": "Customer's username",
                     "type": "string"
                 },
                 "webhook_method": {
@@ -6726,13 +6582,6 @@ const docTemplate = `{
                     "description": "name",
                     "type": "string"
                 },
-                "permission_ids": {
-                    "description": "customer's permission ids",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "phone_number": {
                     "type": "string"
                 },
@@ -6748,74 +6597,12 @@ const docTemplate = `{
                     "description": "Updated timestamp.",
                     "type": "string"
                 },
-                "username": {
-                    "description": "Customer's username",
-                    "type": "string"
-                },
                 "webhook_method": {
                     "description": "webhook info",
                     "type": "string"
                 },
                 "webhook_uri": {
                     "description": "webhook uri",
-                    "type": "string"
-                }
-            }
-        },
-        "domain.Domain": {
-            "type": "object",
-            "properties": {
-                "customer_id": {
-                    "type": "string"
-                },
-                "detail": {
-                    "type": "string"
-                },
-                "domain_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "tm_create": {
-                    "type": "string"
-                },
-                "tm_delete": {
-                    "type": "string"
-                },
-                "tm_update": {
-                    "type": "string"
-                }
-            }
-        },
-        "domain.WebhookMessage": {
-            "type": "object",
-            "properties": {
-                "customer_id": {
-                    "type": "string"
-                },
-                "detail": {
-                    "type": "string"
-                },
-                "domain_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "tm_create": {
-                    "type": "string"
-                },
-                "tm_delete": {
-                    "type": "string"
-                },
-                "tm_update": {
                     "type": "string"
                 }
             }
@@ -6836,7 +6623,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "domain_name": {
-                    "description": "same as the CustomerID. This used by the kamailio's INVITE validation",
                     "type": "string"
                 },
                 "endpoint_id": {
@@ -6853,6 +6639,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
+                    "type": "string"
+                },
+                "realm": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
                     "type": "string"
                 },
                 "tm_create": {
@@ -6865,7 +6656,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "description": "same as the Extension. This used by the kamailio's INVITE validation",
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
                     "type": "string"
                 }
             }
@@ -8574,12 +8365,6 @@ const docTemplate = `{
                 "password": {
                     "type": "string"
                 },
-                "permission_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "phone_number": {
                     "type": "string"
                 },
@@ -9263,20 +9048,6 @@ const docTemplate = `{
                 }
             }
         },
-        "response.BodyDomainsGET": {
-            "type": "object",
-            "properties": {
-                "next_page_token": {
-                    "type": "string"
-                },
-                "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/domain.WebhookMessage"
-                    }
-                }
-            }
-        },
         "response.BodyFlowsGET": {
             "type": "object",
             "properties": {
@@ -9438,6 +9209,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/transcribe.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyTrunksGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/trunk.WebhookMessage"
                     }
                 }
             }
@@ -9755,13 +9540,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "allowed_ips": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "auth_types": {
-                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
+                    "description": "sip info",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -9774,7 +9560,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "domain_name": {
-                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
                     "type": "string"
                 },
                 "id": {
@@ -9784,6 +9569,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
+                    "type": "string"
+                },
+                "realm": {
                     "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
                     "type": "string"
                 },
@@ -9798,6 +9587,53 @@ const docTemplate = `{
                 },
                 "username": {
                     "description": "DO NOT CHANGE. This used by the kamailio's INVITE validation",
+                    "type": "string"
+                }
+            }
+        },
+        "trunk.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "allowed_ips": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "auth_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "domain_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
