@@ -14,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/trunkhandler"
 )
@@ -35,7 +34,6 @@ type listenHandler struct {
 
 	reqHandler       requesthandler.RequestHandler
 	utilHandler      utilhandler.UtilHandler
-	domainHandler    domainhandler.DomainHandler
 	trunkHandler     trunkhandler.TrunkHandler
 	extensionHandler extensionhandler.ExtensionHandler
 	contactHandler   contacthandler.ContactHandler
@@ -48,12 +46,6 @@ var (
 	// v1
 	// contacts
 	regV1ContactsGet = regexp.MustCompile(`/v1/contacts\?`)
-
-	// domains
-	regV1Domains           = regexp.MustCompile("/v1/domains$")
-	regV1DomainsGet        = regexp.MustCompile(`/v1/domains\?`)
-	regV1DomainsID         = regexp.MustCompile("/v1/domains/" + regUUID + "$")
-	regV1DomainsDomainName = regexp.MustCompile("/v1/domains/domain_name/" + regAny)
 
 	// extensions
 	regV1Extensions    = regexp.MustCompile("/v1/extensions$")
@@ -102,7 +94,6 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	reqHandler requesthandler.RequestHandler,
-	domainHandler domainhandler.DomainHandler,
 	trunkHandler trunkhandler.TrunkHandler,
 	extensionHandler extensionhandler.ExtensionHandler,
 	contactHandler contacthandler.ContactHandler,
@@ -111,7 +102,6 @@ func NewListenHandler(
 		rabbitSock:       rabbitSock,
 		reqHandler:       reqHandler,
 		utilHandler:      utilhandler.NewUtilHandler(),
-		domainHandler:    domainHandler,
 		trunkHandler:     trunkHandler,
 		extensionHandler: extensionHandler,
 		contactHandler:   contactHandler,
@@ -198,33 +188,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ContactsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1ContactsPut(ctx, m)
 		requestType = "/v1/contacts"
-
-	////////////
-	// domains
-	////////////
-	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1DomainsIDGet(ctx, m)
-		requestType = "/v1/domains/<domain-id>"
-
-	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1DomainsIDPut(ctx, m)
-		requestType = "/v1/domains/<domain-id>"
-
-	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1DomainsIDDelete(ctx, m)
-		requestType = "/v1/domains/<domain-id>"
-
-	case regV1Domains.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1DomainsPost(ctx, m)
-		requestType = "/v1/domains"
-
-	case regV1DomainsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1DomainsGet(ctx, m)
-		requestType = "/v1/domains"
-
-	case regV1DomainsDomainName.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1DomainsDomainNameDomainNameGet(ctx, m)
-		requestType = "/v1/domains/domain_name/<domain-name>"
 
 	/////////////
 	// extensions

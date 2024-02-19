@@ -240,7 +240,7 @@ func (h *handler) trunkGetByDomainNameFromCache(ctx context.Context, domainName 
 func (h *handler) trunkDeleteFromCache(ctx context.Context, id uuid.UUID, name string) error {
 
 	// get from cache
-	if err := h.cache.DomainDel(ctx, id, name); err != nil {
+	if err := h.cache.TrunkDel(ctx, id, name); err != nil {
 		return err
 	}
 

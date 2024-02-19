@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
@@ -44,11 +43,6 @@ type CacheHandler interface {
 	AstEndpointDel(ctx context.Context, id string) error
 	AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
 	AstEndpointSet(ctx context.Context, e *astendpoint.AstEndpoint) error
-
-	DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
-	DomainSet(ctx context.Context, e *domain.Domain) error
-	DomainDel(ctx context.Context, id uuid.UUID, name string) error
-	DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error)
 
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionGetByEndpointID(ctx context.Context, endpointID string) (*extension.Extension, error)

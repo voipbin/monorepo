@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 )
 
@@ -75,12 +74,10 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDomain := domainhandler.NewMockDomainHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 			h := &listenHandler{
 				rabbitSock:       mockSock,
 				reqHandler:       mockReq,
-				domainHandler:    mockDomain,
 				extensionHandler: mockExtension,
 			}
 
@@ -179,7 +176,6 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDomain := domainhandler.NewMockDomainHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
@@ -187,7 +183,6 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 				rabbitSock:       mockSock,
 				reqHandler:       mockReq,
 				utilHandler:      mockUtil,
-				domainHandler:    mockDomain,
 				extensionHandler: mockExtension,
 			}
 
@@ -263,13 +258,11 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDomain := domainhandler.NewMockDomainHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:       mockSock,
 				reqHandler:       mockReq,
-				domainHandler:    mockDomain,
 				extensionHandler: mockExtension,
 			}
 
@@ -324,13 +317,11 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDomain := domainhandler.NewMockDomainHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:       mockSock,
 				reqHandler:       mockReq,
-				domainHandler:    mockDomain,
 				extensionHandler: mockExtension,
 			}
 
@@ -390,13 +381,11 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDomain := domainhandler.NewMockDomainHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:       mockSock,
 				reqHandler:       mockReq,
-				domainHandler:    mockDomain,
 				extensionHandler: mockExtension,
 			}
 

@@ -14,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
@@ -49,14 +48,6 @@ type DBHandler interface {
 	AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpoint) error
 	AstEndpointDelete(ctx context.Context, id string) error
 	AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
-
-	// Domain
-	DomainCreate(ctx context.Context, b *domain.Domain) error
-	DomainDelete(ctx context.Context, id uuid.UUID) error
-	DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
-	DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error)
-	DomainGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error)
-	DomainUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 
 	// Extension
 	ExtensionCreate(ctx context.Context, b *extension.Extension) error
