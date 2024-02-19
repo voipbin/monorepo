@@ -13,7 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
@@ -30,7 +29,6 @@ func Test_Create(t *testing.T) {
 		ext        string
 		password   string
 
-		responseDomain          *domain.Domain
 		responseUUIDExtensionID uuid.UUID
 		responseExtension       *extension.Extension
 
@@ -51,10 +49,6 @@ func Test_Create(t *testing.T) {
 			ext:        "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 			password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 
-			responseDomain: &domain.Domain{
-				ID:         uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
-				DomainName: "test",
-			},
 			responseUUIDExtensionID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
 			responseExtension: &extension.Extension{
 				ID:        uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),

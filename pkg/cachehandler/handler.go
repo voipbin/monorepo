@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
@@ -145,60 +144,6 @@ func (h *handler) AstAORDel(ctx context.Context, id string) error {
 	key := fmt.Sprintf("ast_aor:%s", id)
 
 	return h.delKey(ctx, key)
-}
-
-// DomainGet returns cached Domain info
-func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
-	key := fmt.Sprintf("registrar:domain:%s", id)
-
-	var res domain.Domain
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// DomainSet sets the domain info into the cache.
-func (h *handler) DomainSet(ctx context.Context, e *domain.Domain) error {
-	key := fmt.Sprintf("registrar:domain:%s", e.ID)
-	if err := h.setSerialize(ctx, key, e); err != nil {
-		return err
-	}
-
-	keyName := fmt.Sprintf("registrar:domain_name:%s", e.DomainName)
-	if err := h.setSerialize(ctx, keyName, e); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DomainGetByDomainName returns cached Domain info
-func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
-	key := fmt.Sprintf("registrar:domain_name:%s", domainName)
-
-	var res domain.Domain
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// DomainDel deletes the domain info from the cache.
-func (h *handler) DomainDel(ctx context.Context, id uuid.UUID, name string) error {
-	key := fmt.Sprintf("registrar:domain:%s", id)
-	if errDel := h.delKey(ctx, key); errDel != nil {
-		return errDel
-	}
-
-	keyName := fmt.Sprintf("registrar:domain_name:%s", name)
-	if errDel := h.delKey(ctx, keyName); errDel != nil {
-		return errDel
-	}
-
-	return nil
 }
 
 // ExtensionGet returns cached Domain info

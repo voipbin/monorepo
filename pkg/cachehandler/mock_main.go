@@ -14,7 +14,6 @@ import (
 	astauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
@@ -226,64 +225,6 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
-}
-
-// DomainDel mocks base method.
-func (m *MockCacheHandler) DomainDel(ctx context.Context, id uuid.UUID, name string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainDel", ctx, id, name)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DomainDel indicates an expected call of DomainDel.
-func (mr *MockCacheHandlerMockRecorder) DomainDel(ctx, id, name interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDel", reflect.TypeOf((*MockCacheHandler)(nil).DomainDel), ctx, id, name)
-}
-
-// DomainGet mocks base method.
-func (m *MockCacheHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGet", ctx, id)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGet indicates an expected call of DomainGet.
-func (mr *MockCacheHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockCacheHandler)(nil).DomainGet), ctx, id)
-}
-
-// DomainGetByDomainName mocks base method.
-func (m *MockCacheHandler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGetByDomainName", ctx, domainName)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGetByDomainName indicates an expected call of DomainGetByDomainName.
-func (mr *MockCacheHandlerMockRecorder) DomainGetByDomainName(ctx, domainName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetByDomainName", reflect.TypeOf((*MockCacheHandler)(nil).DomainGetByDomainName), ctx, domainName)
-}
-
-// DomainSet mocks base method.
-func (m *MockCacheHandler) DomainSet(ctx context.Context, e *domain.Domain) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainSet", ctx, e)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DomainSet indicates an expected call of DomainSet.
-func (mr *MockCacheHandlerMockRecorder) DomainSet(ctx, e interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainSet", reflect.TypeOf((*MockCacheHandler)(nil).DomainSet), ctx, e)
 }
 
 // ExtensionGet mocks base method.
