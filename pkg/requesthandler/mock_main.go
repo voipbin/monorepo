@@ -57,7 +57,6 @@ import (
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	service1 "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
@@ -4110,96 +4109,6 @@ func (m *MockRequestHandler) RegistrarV1ContactRefresh(ctx context.Context, cust
 func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactRefresh(ctx, customerID, extension interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactRefresh", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactRefresh), ctx, customerID, extension)
-}
-
-// RegistrarV1DomainCreate mocks base method.
-func (m *MockRequestHandler) RegistrarV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1DomainCreate", ctx, customerID, domainName, name, detail)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1DomainCreate indicates an expected call of RegistrarV1DomainCreate.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainCreate(ctx, customerID, domainName, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainCreate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainCreate), ctx, customerID, domainName, name, detail)
-}
-
-// RegistrarV1DomainDelete mocks base method.
-func (m *MockRequestHandler) RegistrarV1DomainDelete(ctx context.Context, domainID uuid.UUID) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1DomainDelete", ctx, domainID)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1DomainDelete indicates an expected call of RegistrarV1DomainDelete.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainDelete(ctx, domainID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainDelete", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainDelete), ctx, domainID)
-}
-
-// RegistrarV1DomainGet mocks base method.
-func (m *MockRequestHandler) RegistrarV1DomainGet(ctx context.Context, domainID uuid.UUID) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1DomainGet", ctx, domainID)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1DomainGet indicates an expected call of RegistrarV1DomainGet.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainGet(ctx, domainID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainGet), ctx, domainID)
-}
-
-// RegistrarV1DomainGetByDomainName mocks base method.
-func (m *MockRequestHandler) RegistrarV1DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1DomainGetByDomainName", ctx, domainName)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1DomainGetByDomainName indicates an expected call of RegistrarV1DomainGetByDomainName.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainGetByDomainName(ctx, domainName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainGetByDomainName", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainGetByDomainName), ctx, domainName)
-}
-
-// RegistrarV1DomainGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1DomainGets", ctx, customerID, pageToken, pageSize)
-	ret0, _ := ret[0].([]domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1DomainGets indicates an expected call of RegistrarV1DomainGets.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainGets", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainGets), ctx, customerID, pageToken, pageSize)
-}
-
-// RegistrarV1DomainUpdate mocks base method.
-func (m *MockRequestHandler) RegistrarV1DomainUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*domain.Domain, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1DomainUpdate", ctx, id, name, detail)
-	ret0, _ := ret[0].(*domain.Domain)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1DomainUpdate indicates an expected call of RegistrarV1DomainUpdate.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainUpdate(ctx, id, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainUpdate), ctx, id, name, detail)
 }
 
 // RegistrarV1ExtensionCreate mocks base method.
