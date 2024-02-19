@@ -43,13 +43,13 @@ VoIPBIN Conversations allow developers to build conversational and cross-channel
 
 See detail at :ref:`here <conversation-overview>`.
 
-.. _intro-applications-domain:
+.. _intro-applications-trunk:
 
-Domain
+Trunk
 ------
-A SIP Domain resource in VoIPBIN describes a custom DNS hostname that can accept SIP traffic for a user's account. This feature facilitates efficient SIP communication, allowing users to manage custom DNS settings for their VoIPBIN account.
+A SIP Trunk resource in VoIPBIN describes a custom DNS hostname that can accept SIP traffic for a user's account. This feature facilitates efficient SIP communication, allowing users to manage custom DNS settings for their VoIPBIN account.
 
-See detail at :ref:`here <domain-overview>`.
+See detail at :ref:`here <trunk-overview>`.
 
 .. _intro-applications-queue:
 

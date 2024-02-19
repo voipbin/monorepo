@@ -42,7 +42,6 @@ import (
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
@@ -343,13 +342,6 @@ type ServiceHandler interface {
 	) (*cscustomer.WebhookMessage, error)
 	CustomerDelete(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
-
-	// domain handlers
-	DomainCreate(ctx context.Context, a *amagent.Agent, domainName string, name string, detail string) (*rmdomain.WebhookMessage, error)
-	DomainDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdomain.WebhookMessage, error)
-	DomainGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmdomain.WebhookMessage, error)
-	DomainGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmdomain.WebhookMessage, error)
-	DomainUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error)
 
 	// extension handlers
 	ExtensionCreate(ctx context.Context, a *amagent.Agent, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error)

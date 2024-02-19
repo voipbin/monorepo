@@ -20,7 +20,6 @@ Welcome to voipbin's documentation!
    agent
    conference
    conversation
-   domain
    extension
    number
    queue

@@ -44,7 +44,6 @@ import (
 	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
@@ -1704,81 +1703,6 @@ func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context,
 func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, a, customerID, billingAccountID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateBillingAccountID), ctx, a, customerID, billingAccountID)
-}
-
-// DomainCreate mocks base method.
-func (m *MockServiceHandler) DomainCreate(ctx context.Context, a *agent.Agent, domainName, name, detail string) (*domain.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainCreate", ctx, a, domainName, name, detail)
-	ret0, _ := ret[0].(*domain.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainCreate indicates an expected call of DomainCreate.
-func (mr *MockServiceHandlerMockRecorder) DomainCreate(ctx, a, domainName, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainCreate", reflect.TypeOf((*MockServiceHandler)(nil).DomainCreate), ctx, a, domainName, name, detail)
-}
-
-// DomainDelete mocks base method.
-func (m *MockServiceHandler) DomainDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*domain.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainDelete", ctx, a, id)
-	ret0, _ := ret[0].(*domain.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainDelete indicates an expected call of DomainDelete.
-func (mr *MockServiceHandlerMockRecorder) DomainDelete(ctx, a, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDelete", reflect.TypeOf((*MockServiceHandler)(nil).DomainDelete), ctx, a, id)
-}
-
-// DomainGet mocks base method.
-func (m *MockServiceHandler) DomainGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*domain.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGet", ctx, a, id)
-	ret0, _ := ret[0].(*domain.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGet indicates an expected call of DomainGet.
-func (mr *MockServiceHandlerMockRecorder) DomainGet(ctx, a, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockServiceHandler)(nil).DomainGet), ctx, a, id)
-}
-
-// DomainGets mocks base method.
-func (m *MockServiceHandler) DomainGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*domain.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*domain.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainGets indicates an expected call of DomainGets.
-func (mr *MockServiceHandlerMockRecorder) DomainGets(ctx, a, size, token interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGets", reflect.TypeOf((*MockServiceHandler)(nil).DomainGets), ctx, a, size, token)
-}
-
-// DomainUpdate mocks base method.
-func (m *MockServiceHandler) DomainUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string) (*domain.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainUpdate", ctx, a, id, name, detail)
-	ret0, _ := ret[0].(*domain.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DomainUpdate indicates an expected call of DomainUpdate.
-func (mr *MockServiceHandlerMockRecorder) DomainUpdate(ctx, a, id, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainUpdate", reflect.TypeOf((*MockServiceHandler)(nil).DomainUpdate), ctx, a, id, name, detail)
 }
 
 // ExtensionCreate mocks base method.

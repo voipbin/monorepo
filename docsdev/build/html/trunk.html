@@ -46,7 +46,6 @@
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
 <li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
@@ -78,6 +77,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#domain-name">Domain name</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
@@ -216,6 +216,11 @@ It executes the follow features:</p>
 </div>
 </section>
 </section>
+</section>
+<section id="domain-name">
+<span id="trunk-overview-domain-name"></span><h2>Domain name<a class="headerlink" href="#domain-name" title="Permalink to this headline"></a></h2>
+<p>The SIP Domain resource in Voipbin entails a personalized DNS hostname designed to accept SIP (Session Initiation Protocol) traffic for your account. When a SIP request is directed to this domain, like <a class="reference external" href="sip:alice&#64;example.trunk.voipbin.net">sip:alice&#64;example.trunk.voipbin.net</a>, it is directed to Voipbin. Subsequently, Voipbin verifies the request’s authenticity and channels it to the designated voice_url linked with the SIP domain.</p>
+<p>This pivotal component facilitates the management of SIP traffic within your Voipbin account. It accommodates incoming SIP requests from diverse sources, ensuring seamless communication and integration with Voipbin services. Businesses and developers can leverage the SIP Domain resource to create bespoke DNS hostnames, seamlessly integrate Voipbin services into existing systems, and construct scalable, reliable SIP-based communication solutions. This capability is particularly beneficial for organizations seeking to manage SIP-based communications securely and efficiently.</p>
 </section>
 </section>
 
