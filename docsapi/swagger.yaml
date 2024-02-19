@@ -905,11 +905,6 @@ definitions:
       name:
         description: name
         type: string
-      permission_ids:
-        description: customer's permission ids
-        items:
-          type: string
-        type: array
       phone_number:
         type: string
       tm_create:
@@ -920,9 +915,6 @@ definitions:
         type: string
       tm_update:
         description: Updated timestamp.
-        type: string
-      username:
-        description: Customer's username
         type: string
       webhook_method:
         description: webhook info
@@ -949,11 +941,6 @@ definitions:
       name:
         description: name
         type: string
-      permission_ids:
-        description: customer's permission ids
-        items:
-          type: string
-        type: array
       phone_number:
         type: string
       tm_create:
@@ -965,52 +952,11 @@ definitions:
       tm_update:
         description: Updated timestamp.
         type: string
-      username:
-        description: Customer's username
-        type: string
       webhook_method:
         description: webhook info
         type: string
       webhook_uri:
         description: webhook uri
-        type: string
-    type: object
-  domain.Domain:
-    properties:
-      customer_id:
-        type: string
-      detail:
-        type: string
-      domain_name:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      tm_create:
-        type: string
-      tm_delete:
-        type: string
-      tm_update:
-        type: string
-    type: object
-  domain.WebhookMessage:
-    properties:
-      customer_id:
-        type: string
-      detail:
-        type: string
-      domain_name:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      tm_create:
-        type: string
-      tm_delete:
-        type: string
-      tm_update:
         type: string
     type: object
   extension.Extension:
@@ -1024,7 +970,6 @@ definitions:
       detail:
         type: string
       domain_name:
-        description: same as the CustomerID. This used by the kamailio's INVITE validation
         type: string
       endpoint_id:
         description: asterisk resources
@@ -1036,6 +981,10 @@ definitions:
       name:
         type: string
       password:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
+        type: string
+      realm:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
         type: string
       tm_create:
         type: string
@@ -1044,7 +993,7 @@ definitions:
       tm_update:
         type: string
       username:
-        description: same as the Extension. This used by the kamailio's INVITE validation
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
         type: string
     type: object
   flow.Flow:
@@ -2200,10 +2149,6 @@ definitions:
         type: string
       password:
         type: string
-      permission_ids:
-        items:
-          type: string
-        type: array
       phone_number:
         type: string
       username:
@@ -2647,15 +2592,6 @@ definitions:
           $ref: '#/definitions/customer.WebhookMessage'
         type: array
     type: object
-  response.BodyDomainsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/domain.WebhookMessage'
-        type: array
-    type: object
   response.BodyFlowsGET:
     properties:
       next_page_token:
@@ -2760,6 +2696,15 @@ definitions:
       result:
         items:
           $ref: '#/definitions/transcribe.WebhookMessage'
+        type: array
+    type: object
+  response.BodyTrunksGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/trunk.WebhookMessage'
         type: array
     type: object
   route.Route:
@@ -2979,11 +2924,12 @@ definitions:
   trunk.Trunk:
     properties:
       allowed_ips:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
         items:
           type: string
         type: array
       auth_types:
-        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
+        description: sip info
         items:
           type: string
         type: array
@@ -2992,13 +2938,15 @@ definitions:
       detail:
         type: string
       domain_name:
-        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
         type: string
       id:
         type: string
       name:
         type: string
       password:
+        description: DO NOT CHANGE. This used by the kamailio's INVITE validation
+        type: string
+      realm:
         description: DO NOT CHANGE. This used by the kamailio's INVITE validation
         type: string
       tm_create:
@@ -3009,6 +2957,37 @@ definitions:
         type: string
       username:
         description: DO NOT CHANGE. This used by the kamailio's INVITE validation
+        type: string
+    type: object
+  trunk.WebhookMessage:
+    properties:
+      allowed_ips:
+        items:
+          type: string
+        type: array
+      auth_types:
+        items:
+          type: string
+        type: array
+      customer_id:
+        type: string
+      detail:
+        type: string
+      domain_name:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      username:
         type: string
     type: object
 host: api.voipbin.net
@@ -4926,93 +4905,6 @@ paths:
           schema:
             $ref: '#/definitions/customer.Customer'
       summary: Update a customer's billing account id.
-  /v1.0/customers/{id}/password:
-    put:
-      description: Update a customer's password.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/customer.Customer'
-      summary: Update a customer's password.
-  /v1.0/customers/{id}/permissions_ids:
-    put:
-      description: Update a customer's permission_ids.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/customer.Customer'
-      summary: Update a customer's permission_ids.
-  /v1.0/domains:
-    get:
-      description: Gets a list of domains
-      parameters:
-      - description: The size of results. Max 100
-        in: query
-        name: page_size
-        type: integer
-      - description: The token. tm_create
-        in: query
-        name: page_token
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.BodyDomainsGET'
-      summary: Gets a list of domains.
-    post:
-      description: Create a new domain and returns detail created domain info.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/domain.Domain'
-      summary: Create a new domain and returns detail created domain info.
-  /v1.0/domains/{id}:
-    delete:
-      description: Delete a existing domain.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Delete a existing domain.
-    get:
-      description: Returns detail domain info of the given domain id.
-      parameters:
-      - description: The ID of the domain
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/domain.Domain'
-      summary: Returns detail domain info.
-    put:
-      description: Update a domain and returns detail updated domain info.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/domain.Domain'
-      summary: Update a domain and reuturns updated domain info.
   /v1.0/extension/{id}:
     get:
       description: Returns detail extension info of the given extension id.
@@ -6470,7 +6362,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyDomainsGET'
+            $ref: '#/definitions/response.BodyTrunksGET'
       summary: Gets a list of trunks.
     post:
       description: Create a new trunk and returns detail created trunk info.
