@@ -21,7 +21,6 @@ import (
 	conversationaccounts "gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/conversation_accounts"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/conversations"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/customers"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/domains"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/extensions"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/flows"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/groupcalls"
@@ -67,7 +66,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conversations.ApplyRoutes(v1)
 	conversationaccounts.ApplyRoutes(v1)
 	customers.ApplyRoutes(v1)
-	domains.ApplyRoutes(v1)
 	extensions.ApplyRoutes(v1)
 	flows.ApplyRoutes(v1)
 	groupcalls.ApplyRoutes(v1)
