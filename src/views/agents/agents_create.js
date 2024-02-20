@@ -26,7 +26,6 @@ const AgentsCreate = () => {
   console.log("AgentsCreate");
 
   const [buttonDisable, setButtonDisable] = useState(false);
-  const routeParams = useParams();
   const navigate = useNavigate();
 
   const ref_username = useRef(null);
@@ -34,12 +33,26 @@ const AgentsCreate = () => {
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
   const ref_ring_method = useRef(null);
-  const ref_permission = useRef(null);
   const ref_addresses = useRef(null);
   const ref_tag_ids = useRef(null);
 
+  var permission_val = 16;
+
   const Create = () => {
-    const id = routeParams.id;
+    var selectedAgent = true;
+    var selectedManager = false;
+    var selectedAdmin = false;
+
+    const onChangeSelect = (e) => {
+      var permission = 0;
+      for (let i = 0; i < e.target.length; i++) {
+        const tmp = e.target[i];
+        if (tmp["selected"] == true) {
+          permission += parseInt(tmp["value"]);
+        }
+      }
+      permission_val = permission;
+    }
 
     return (
       <>
@@ -109,11 +122,11 @@ const AgentsCreate = () => {
 
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Permission</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_permission}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
+                    <select class="form-select" multiple aria-label="multiple select example" size="3" onChange={onChangeSelect}>
+                      <option value="16" selected={selectedAgent}>Agent</option>
+                      <option value="32" selected={selectedManager}>Manager</option>
+                      <option value="64" selected={selectedAdmin}>Admin</option>
+                    </select>
                   </CCol>
                 </CRow>
 
@@ -149,7 +162,6 @@ const AgentsCreate = () => {
             </CCard>
           </CCol>
         </CRow>
-
       </>
     )
   };
@@ -164,7 +176,7 @@ const AgentsCreate = () => {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
       "ring_method": ref_ring_method.current.value,
-      "permission": Number(ref_permission.current.value),
+      "permission": Number(permission_val),
       "addresses": JSON.parse(ref_addresses.current.value),
       "tag_ids": JSON.parse(ref_tag_ids.current.value),
     };

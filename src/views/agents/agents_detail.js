@@ -32,10 +32,11 @@ const AgentsDetail = () => {
   const ref_status = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
-  const ref_permission = useRef(null);
   const ref_ring_method = useRef(null);
   const ref_addresses = useRef(null);
   const ref_tag_ids = useRef(null);
+
+  var permission_val = 0;
 
   const routeParams = useParams();
   const GetDetail = () => {
@@ -44,6 +45,33 @@ const AgentsDetail = () => {
     const tmp = localStorage.getItem("agents");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
+
+    var selectedAgent = false;
+    var selectedManager = false;
+    var selectedAdmin = false;
+
+    if (detailData["permission"] & 16) {
+      selectedAgent = true;
+    }
+    if (detailData["permission"] & 64) {
+      selectedManager = true;
+    }
+    if (detailData["permission"] & 32) {
+      selectedAdmin = true;
+    }
+    permission_val = detailData["permission"];
+
+    const onChangeSelect = (e) => {
+      var permission = 0;
+      for (let i = 0; i < e.target.length; i++) {
+        const tmp = e.target[i];
+        if (tmp["selected"] == true) {
+          permission += parseInt(tmp["value"]);
+        }
+      }
+      permission_val = permission;
+    }
+
     return (
       <>
         <CRow>
@@ -65,7 +93,6 @@ const AgentsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
                 </CRow>
 
 
@@ -141,17 +168,18 @@ const AgentsDetail = () => {
                 <br />
                 <br/>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Permission</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_permission}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={detailData.permission}
-                    />
+                    <select class="form-select" multiple aria-label="multiple select example" size="3" onChange={onChangeSelect}>
+                      <option value="16" selected={selectedAgent}>Agent</option>
+                      <option value="32" selected={selectedManager}>Manager</option>
+                      <option value="64" selected={selectedAdmin}>Admin</option>
+                    </select>
                   </CCol>
                 </CRow>
+
 
                 <CButton type="submit" disabled={buttonDisable} onClick={() => UpdatePermission()}>Update Permission</CButton>
                 <br />
@@ -232,7 +260,7 @@ const AgentsDetail = () => {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
       "ring_method": ref_ring_method.current.value,
-      "permission": Number(ref_permission.current.value),
+      "permission": Number(permission_val),
       "addresses": JSON.parse(ref_addresses.current.value),
       "tag_ids": JSON.parse(ref_tag_ids.current.value),
     };
@@ -289,7 +317,7 @@ const AgentsDetail = () => {
     setButtonDisable(true);
 
     const tmpData = {
-      "permission": JSON.parse(ref_permission.current.value),
+      "permission": JSON.parse(permission_val),
     };
 
     const body = JSON.stringify(tmpData);
