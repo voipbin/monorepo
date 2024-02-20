@@ -95,6 +95,10 @@ func (h *serviceHandler) TagGets(ctx context.Context, a *amagent.Agent, size uin
 		"username":    a.Username,
 	})
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")

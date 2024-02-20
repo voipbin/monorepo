@@ -21,10 +21,10 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240215192728-b61c81105fa6
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240218150854-a1b63b831589
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240219093232-95c2cbb72acf
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240212145953-364923003e09
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240214182731-ed12d5a9070a
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240218150038-ea25463aaa61
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240219100316-af55ebba9ea0
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
 	golang.org/x/crypto v0.19.0 // indirect
