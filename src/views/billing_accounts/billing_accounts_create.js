@@ -42,7 +42,7 @@ const BillingAccountCreate = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Create</strong> <small>Creating resource</small>
+                <strong>Create</strong> <small>You can find more details at <a href="https://api.voipbin.net/docs/billing_account.html" target="_blank">here</a>.</small>
               </CCardHeader>
 
               <CCardBody>

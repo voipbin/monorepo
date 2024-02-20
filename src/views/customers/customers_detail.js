@@ -53,7 +53,7 @@ const CustomersDetail = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Detail</strong> <small>Detail of the resource</small>
+                <strong>Detail</strong> <small>You can find more details at <a href="https://api.voipbin.net/docs/customer.html" target="_blank">here</a>.</small>
               </CCardHeader>
 
               <CCardBody>

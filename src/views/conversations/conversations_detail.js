@@ -44,7 +44,7 @@ const ConversationsDetail = () => {
         <CCol xs={12}>
           <CCard className="mb-4">
             <CCardHeader>
-              <strong>Conversation detail</strong> <small>Detail of the conversation</small>
+              <strong>Conversation detail</strong> <small>You can find more details at <a href="https://api.voipbin.net/docs/conversation.html" target="_blank">here</a>.</small>
             </CCardHeader>
 
             <CCardBody>

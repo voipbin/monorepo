@@ -22,20 +22,16 @@ import {
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
 
-const ExtensionsCreate = () => {
-  console.log("ExtensionsCreate");
+const TagsCreate = () => {
+  console.log("TagsCreate");
 
   const [buttonDisable, setButtonDisable] = useState(false);
-  const routeParams = useParams();
   const navigate = useNavigate();
 
-  const ref_extension = useRef(null);
-  const ref_password = useRef(null);
-  const ref_name = useRef(null);
-  const ref_detail = useRef(null);
+  const ref_name = useRef("");
+  const ref_detail = useRef("");
 
   const Create = () => {
-    const id = routeParams.id;
 
     return (
       <>
@@ -43,31 +39,10 @@ const ExtensionsCreate = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Detail</strong> <small>You can find more details at <a href="https://api.voipbin.net/docs/extension.html" target="_blank">here</a>.</small>
+                <strong>Detail</strong> <small>You can find more details about tag at <a href="https://api.voipbin.net/docs/tag.html" target="_blank">here</a>.</small>
               </CCardHeader>
 
               <CCardBody>
-
-              <CRow>
-                  <CFormLabel className="col-sm-2 col-form-label"><b>*Extension</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_extension}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
-
-                  <CFormLabel className="col-sm-2 col-form-label"><b>*Password</b></CFormLabel>
-                  <CCol>
-                    <CFormInput
-                      ref={ref_password}
-                      type="password"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
-                </CRow>
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
@@ -76,22 +51,25 @@ const ExtensionsCreate = () => {
                       ref={ref_name}
                       type="text"
                       id="colFormLabelSm"
-                    />
-                  </CCol>
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
-                  <CCol>
-                    <CFormInput
-                      ref={ref_detail}
-                      type="text"
-                      id="colFormLabelSm"
+                      defaultValue=""
                     />
                   </CCol>
                 </CRow>
 
 
-                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
+                <CRow>
+                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_detail}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue=""
+                    />
+                  </CCol>
+                </CRow>
 
+                <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
               </CCardBody>
             </CCard>
           </CCol>
@@ -108,16 +86,14 @@ const ExtensionsCreate = () => {
     const tmpData = {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "extension": ref_extension.current.value,
-      "password": ref_password.current.value,
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "extensions";
-    console.log("Create info. target: " + target + ", body: " + body);
+    const target = "tags";
+    console.log("Creating tag info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/extensions/extensions_list";
+      console.log("Created tag info.", JSON.stringify(response));
+      const navi = "/resources/tags/tags_list";
       navigate(navi);
     });
   };
@@ -129,4 +105,4 @@ const ExtensionsCreate = () => {
   )
 }
 
-export default ExtensionsCreate
+export default TagsCreate

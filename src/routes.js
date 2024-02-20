@@ -118,6 +118,11 @@ const RoutesList = React.lazy(() => import('./views/routes/routes_list'))
 const RoutesDetail = React.lazy(() => import('./views/routes/routes_detail'))
 const RoutesCreate = React.lazy(() => import('./views/routes/routes_create'))
 
+// tags
+const TagsList = React.lazy(() => import('./views/tags/tags_list'))
+const TagsDetail = React.lazy(() => import('./views/tags/tags_detail'))
+const TagsCreate = React.lazy(() => import('./views/tags/tags_create'))
+
 
 //
 // outbound campaign ----------------------------------------------------------------
@@ -244,6 +249,10 @@ const routes = [
   { path: '/resources/routes/routes_list', name: 'RoutesList', element: RoutesList },
   { path: '/resources/routes/routes_create/:id', name: 'RoutesCreate', element: RoutesCreate },
   { path: '/resources/routes/routes_detail/:id', name: 'RoutesDetail', element: RoutesDetail },
+
+  { path: '/resources/tags/tags_list', name: 'TagsList', element: TagsList },
+  { path: '/resources/tags/tags_create', name: 'TagsCreate', element: TagsCreate },
+  { path: '/resources/tags/tags_detail/:id', name: 'TagsDetail', element: TagsDetail },
 
 
   //
