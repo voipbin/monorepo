@@ -13,9 +13,7 @@ import {
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import store from '../../store'
-import {
-  MaterialReactTable,
-} from 'material-react-table';
+import { MaterialReactTable } from 'material-react-table';
 import {
   Get as ProviderGet,
   Post as ProviderPost,
@@ -25,7 +23,8 @@ import {
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
 
-const QueuecallsList = () => {
+const TagsList = () => {
+  console.log("TagsList");
 
   const [listData, setListData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,10 +32,10 @@ const QueuecallsList = () => {
   useEffect(() => {
     getList();
     return;
-  },[]);
+  }, []);
 
   const getList = (() => {
-    const target = "queuecalls?page_size=100";
+    const target = "tags?page_size=100";
 
     ProviderGet(target).then(result => {
       const data = result.result;
@@ -45,81 +44,46 @@ const QueuecallsList = () => {
 
       const tmp = ParseData(data);
       const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("queuecalls", tmpData);
+      localStorage.setItem("tags", tmpData);
     });
   });
 
-  // show list
   const listColumns = useMemo(
     () => [
       {
         accessorKey: 'id',
-        header: 'ID',
-        enableEditing: false,
+        header: 'id',
+        size: 250,
       },
       {
-        accessorKey: 'duration_service',
-        header: 'Duration Service(ms)',
+        accessorKey: 'name',
+        header: 'name',
         size: 150,
       },
       {
-        accessorKey: 'duration_waiting',
-        header: 'Duration Waiting(ms)',
+        accessorKey: 'detail',
+        header: 'detail',
         size: 150,
-      },
-      {
-        accessorKey: 'reference_type',
-        header: 'Reference Type',
-        size: 100,
-      },
-      {
-        accessorKey: 'reference_id',
-        header: 'Reference ID',
-        size: 100,
-      },
-      {
-        accessorKey: 'service_agent_id',
-        header: 'Service Agent ID',
-        size: 250,
-      },
-      {
-        accessorKey: 'status',
-        header: 'Status',
-        size: 250,
-      },
-      {
-        accessorKey: 'tm_create',
-        header: 'create time',
-        enableEditing: false,
-        size: 250,
       },
       {
         accessorKey: 'tm_update',
-        header: 'update time',
-        enableEditing: false,
-        size: 250,
-      },
-      {
-        accessorKey: 'tm_delete',
-        header: 'delete time',
-        enableEditing: false,
+        header: 'last update',
         size: 250,
       }
     ],
     [],
   );
 
-  const columnVisibility = {
-    id: false,
-    reference_type: false,
-    reference_id: false,
-    tm_create: false,
-    tm_delete: false,
-  };
 
   const navigate = useNavigate();
   const Detail = (row) => {
-    const target = "/resources/queues/queuecalls_detail/" + row.original.id;
+    const target = "/resources/tags/tags_detail/" + row.original.id;
+    console.log("navigate target: ", target);
+    navigate(target);
+  }
+
+  const Create = () => {
+    const target = "/resources/tags/tags_create";
     console.log("navigate target: ", target);
     navigate(target);
   }
@@ -128,7 +92,7 @@ const QueuecallsList = () => {
     <>
       <MaterialReactTable
         columns={listColumns}
-        data={listData ?? []} // data?.data ?? []
+        data={listData}
         state={{
           isLoading: isLoading,
         }}
@@ -137,31 +101,34 @@ const QueuecallsList = () => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => Detail(row)}>
+              <IconButton onClick={() => {
+                Detail(row);
+              }}>
                 <Edit />
               </IconButton>
             </Tooltip>
           </Box>
         )}
-
-        muiTableBodyRowProps={({ row, table }) => ({
+        muiTableBodyRowProps={({ row }) => ({
           onDoubleClick: (event) => {
             Detail(row);
           },
         })}
-        initialState={{
-          columnVisibility: columnVisibility
-        }}
+        renderTopToolbarCustomActions={() => (
+          <Button
+            color="secondary"
+            onClick={() => {
+              Create();
+            }}
+            variant="contained"
+          >
+            Create
+          </Button>
+        )}
 
-        displayColumnDefOptions={{
-          'mrt-row-numbers': {
-            enableResizing: true,
-            enableHiding: true
-          }
-        }}
       />
     </>
   )
 }
 
-export default QueuecallsList
+export default TagsList

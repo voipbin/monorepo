@@ -47,7 +47,7 @@ const RoutesDetail = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Detail</strong> <small>Detail of the resource</small>
+                <strong>Detail</strong> <small>You can find more details at <a href="https://api.voipbin.net/docs" target="_blank">here</a>.</small>
               </CCardHeader>
 
               <CCardBody>

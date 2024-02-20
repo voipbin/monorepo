@@ -33,6 +33,7 @@ import {
   cilCommentSquare,
   cilLocomotive,
   cilLoopCircular,
+  cilPaperclip,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { useEffect } from 'react'
@@ -101,6 +102,19 @@ const queues = {
       name: 'Queuecalls',
       to: '/resources/queues/queuecalls_list',
     }
+  ]
+};
+
+const tags = {
+  component: CNavGroup,
+  name: 'Tags',
+  icon: <CIcon icon={cilPaperclip} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Tags',
+      to: '/resources/tags/tags_list',
+    },
   ]
 };
 
@@ -355,10 +369,11 @@ const navProjectAdmin = [
   },
   calls,
   customers,
-  queues,
   numbers,
   flows,
   agents,
+  queues,
+  tags,
   billing_accounts,
   conferences,
   chatbots,
@@ -389,10 +404,11 @@ const navCustomerAdmin = [
     name: 'Resource',
   },
   calls,
-  queues,
   numbers,
   flows,
   agents,
+  queues,
+  tags,
   billing_accounts,
   conferences,
   conversations,
@@ -421,9 +437,10 @@ const navCustomerManager = [
     name: 'Resource',
   },
   calls,
-  queues,
   flows,
   agents,
+  queues,
+  tags,
   conferences,
   chatbots,
   conversations,

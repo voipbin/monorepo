@@ -22,25 +22,23 @@ import {
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
 
-const ChatbotsDetail = () => {
-  console.log("ChatbotsDetail");
+const TagsDetail = () => {
+  console.log("TagsDetail");
 
   const [buttonDisable, setButtonDisable] = useState(false);
   const routeParams = useParams();
   const navigate = useNavigate();
 
   const ref_id = useRef(null);
-  const ref_name = useRef(null);
-  const ref_detail = useRef(null);
-  const ref_engine_type = useRef(null);
-  const ref_init_prompt = useRef(null);
+  const ref_name = useRef("");
+  const ref_detail = useRef("");
 
   const GetDetail = () => {
     const id = routeParams.id;
-    const tmp = localStorage.getItem("chatbots");
+
+    const tmp = localStorage.getItem("tags");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
-    console.log("detailData", detailData);
 
     return (
       <>
@@ -48,7 +46,7 @@ const ChatbotsDetail = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Detail</strong> <small>You can find more details at <a href="https://api.voipbin.net/docs/chatbot.html" target="_blank">here</a>.</small>
+                <strong>Detail</strong> <small>You can find more details about tag at <a href="https://api.voipbin.net/docs/tag.html" target="_blank">here</a>.</small>
               </CCardHeader>
 
               <CCardBody>
@@ -61,19 +59,6 @@ const ChatbotsDetail = () => {
                       id="id"
                       defaultValue={detailData.id}
                       readOnly plainText
-                    />
-                  </CCol>
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Engine Type</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormSelect
-                      ref={ref_engine_type}
-                      type="text"
-                      id="colFormLabelSm"
-                      options={[
-                        detailData.engine_type,
-                        { label: 'chatGPT', value: 'chatGPT' },
-                      ]}
                     />
                   </CCol>
                 </CRow>
@@ -89,28 +74,17 @@ const ChatbotsDetail = () => {
                       defaultValue={detailData.name}
                     />
                   </CCol>
+                </CRow>
 
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
-                  <CCol>
+
+                <CRow>
+                <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
                     <CFormInput
                       ref={ref_detail}
                       type="text"
                       id="colFormLabelSm"
                       defaultValue={detailData.detail}
-                    />
-                  </CCol>
-                </CRow>
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Init Prompt</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_init_prompt}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={detailData.init_prompt}
-                      rows={15}
                     />
                   </CCol>
                 </CRow>
@@ -151,6 +125,11 @@ const ChatbotsDetail = () => {
     )
   };
 
+  const naviList = () => {
+    const navi = "/resources/tags/tags_list";
+    navigate(navi);
+  }
+
   const Update = () => {
     console.log("Update info");
     setButtonDisable(true);
@@ -158,17 +137,14 @@ const ChatbotsDetail = () => {
     const tmpData = {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "engine_type": ref_engine_type.current.value,
-      "init_prompt": ref_init_prompt.current.value,
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "chatbots/" + ref_id.current.value;
+    const target = "tags/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/chatbots/chatbots_list";
-      navigate(navi);
+      naviList();
     });
   };
 
@@ -181,14 +157,14 @@ const ChatbotsDetail = () => {
     setButtonDisable(true);
 
     const body = JSON.stringify("");
-    const target = "chatbots/" + ref_id.current.value;
-    console.log("Deleting chatbot info. target: " + target + ", body: " + body);
+    const target = "tags/" + ref_id.current.value;
+    console.log("Deleting tag info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/chatbots/chatbots_list";
-      navigate(navi);
+      naviList();
     });
   }
+
 
   return (
     <>
@@ -197,4 +173,4 @@ const ChatbotsDetail = () => {
   )
 }
 
-export default ChatbotsDetail
+export default TagsDetail
