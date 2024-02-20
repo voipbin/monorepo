@@ -53,6 +53,7 @@ func NewOutplanHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 ) OutplanHandler {
 	h := &outplanHandler{
+		util:          utilhandler.NewUtilHandler(),
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
