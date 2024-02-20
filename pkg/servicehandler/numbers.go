@@ -45,6 +45,10 @@ func (h *serviceHandler) NumberGets(ctx context.Context, a *amagent.Agent, size 
 		"token":       "token",
 	})
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
