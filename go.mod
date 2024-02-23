@@ -1,63 +1,83 @@
 module gitlab.com/voipbin/bin-manager/storage-manager.git
 
-go 1.17
+go 1.20
 
 require (
-	cloud.google.com/go/storage v1.28.1
-	github.com/gofrs/uuid v4.3.1+incompatible
+	cloud.google.com/go/storage v1.38.0
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0
-	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
-	github.com/prometheus/client_golang v1.14.0
-	github.com/prometheus/common v0.39.0 // indirect
-	github.com/sirupsen/logrus v1.9.0
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230105090643-2473bce7cd05
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230106060517-f01389adf836
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/oauth2 v0.4.0
-	golang.org/x/text v0.6.0 // indirect
-	google.golang.org/api v0.106.0
-	google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf // indirect
-	google.golang.org/grpc v1.51.0 // indirect
+	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
+	github.com/prometheus/client_golang v1.18.0
+	github.com/prometheus/common v0.48.0 // indirect
+	github.com/sirupsen/logrus v1.9.3
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240215192728-b61c81105fa6
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240219093232-95c2cbb72acf
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/oauth2 v0.17.0
+	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/api v0.167.0
+	google.golang.org/genproto v0.0.0-20240221002015-b0ce06bbee7c // indirect
+	google.golang.org/grpc v1.62.0 // indirect
 )
 
 require (
-	cloud.google.com/go v0.107.0 // indirect
-	cloud.google.com/go/compute v1.15.0 // indirect
+	cloud.google.com/go v0.112.0 // indirect
+	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/iam v0.10.0 // indirect
+	cloud.google.com/go/iam v1.1.6 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.2.1 // indirect
-	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
+	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/s2a-go v0.1.7 // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
+	github.com/googleapis/gax-go/v2 v2.12.1 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
-	github.com/prometheus/client_model v0.3.0 // indirect
-	github.com/prometheus/procfs v0.9.0 // indirect
-	github.com/streadway/amqp v1.0.0 // indirect
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20221123170257-20a7f901c1fc // indirect
-	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20221207172609-98006dd828f9 // indirect
-	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 // indirect
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220807174531-0227483c904d // indirect
-	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a // indirect
-	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 // indirect
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae // indirect
-	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600 // indirect
-	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20221216125212-e74e4c409422 // indirect
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9 // indirect
-	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901 // indirect
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20221124180605-39b41a7a1ada // indirect
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20221206185501-ee71428c9199 // indirect
-	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097 // indirect
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20221222181305-2411870946f6 // indirect
-	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220628160222-ca61e7d2d60b // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/prometheus/client_model v0.6.0 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/rabbitmq/amqp091-go v1.9.0 // indirect
+	github.com/streadway/amqp v1.1.0 // indirect
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240216131513-cde03cb72fe1 // indirect
+	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285 // indirect
+	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20240220173549-7ed4feb732d3 // indirect
+	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20240126152850-7ff75ece56d2 // indirect
+	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20240116170346-73b2d21c2bd4 // indirect
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240110173312-de5436ad2531 // indirect
+	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4 // indirect
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20240215075724-ff0374d05dc9 // indirect
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240212145953-364923003e09 // indirect
+	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20240213144049-cc83b995da3f // indirect
+	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230705154830-1dd19ba6e804 // indirect
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240214182731-ed12d5a9070a // indirect
+	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519 // indirect
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20240114160851-ee0475eb1ef6 // indirect
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240219100316-af55ebba9ea0 // indirect
+	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20231015150838-40ee333c9936 // indirect
+	gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20230727164950-43d37418e642 // indirect
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450 // indirect
+	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34 // indirect
+	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230716174942-b6a22e86ff12 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
+	go.opentelemetry.io/otel v1.24.0 // indirect
+	go.opentelemetry.io/otel/metric v1.24.0 // indirect
+	go.opentelemetry.io/otel/trace v1.24.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240221002015-b0ce06bbee7c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240221002015-b0ce06bbee7c // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
 )

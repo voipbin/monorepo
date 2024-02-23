@@ -44,7 +44,7 @@ func Test_RecordingGet(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
 				ReferenceType: cmrecording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-				Status:        cmrecording.StatusEnd,
+				Status:        cmrecording.StatusEnded,
 				Filenames: []string{
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_in.wav",
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_out.wav",
@@ -121,7 +121,7 @@ func Test_RecordingDelete(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
 				ReferenceType: cmrecording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-				Status:        cmrecording.StatusEnd,
+				Status:        cmrecording.StatusEnded,
 				Filenames: []string{
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_in.wav",
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_out.wav",
