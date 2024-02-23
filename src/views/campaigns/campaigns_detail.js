@@ -283,6 +283,11 @@ const CampaignsDetail = () => {
     )
   };
 
+  const navigateList = () => {
+    const navi = "/resources/campaigns/campaigns_list";
+    navigate(navi);
+  }
+
   const Update = () => {
     console.log("Update info");
     setButtonDisable(true);
@@ -305,8 +310,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/campaigns/campaigns_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -326,8 +330,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/campaigns/campaigns_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -344,8 +347,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/campaigns/campaigns_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -362,8 +364,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/campaigns/campaigns_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -380,8 +381,7 @@ const CampaignsDetail = () => {
     console.log("Deleting campaign info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/campaigns/campaigns_list";
-      navigate(navi);
+      navigateList();
     });
   }
 

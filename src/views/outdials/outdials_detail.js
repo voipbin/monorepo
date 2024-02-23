@@ -89,6 +89,7 @@ const OutdialsDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Data</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -99,13 +100,6 @@ const OutdialsDetail = () => {
                       defaultValue={detailData.data}
                       rows={5}
                     />
-                  </CCol>
-                </CRow>
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Targets</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CButton type="submit" color="info" disabled={buttonDisable} onClick={() => ListOutdialtargets()}>Outdial target list</CButton>
                   </CCol>
                 </CRow>
 
@@ -133,6 +127,11 @@ const OutdialsDetail = () => {
                 </CRow>
 
 
+                <CRow>
+                  <CButton type="submit" color="info" disabled={buttonDisable} onClick={() => ListOutdialtargets()}>Outdial target list</CButton>
+                </CRow>
+
+                <br/>
                 <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
                 &nbsp;
                 <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
@@ -145,6 +144,16 @@ const OutdialsDetail = () => {
       </>
     )
   };
+
+  const navigateList = () => {
+    const navi = "/resources/outdials/outdials_list";
+    navigate(navi);
+  }
+
+  const navigateTargetList = () => {
+    const navi = "/resources/outdials/" + id + "/outdialtargets_list";
+    navigate(navi);
+  }
 
   const UpdateBasicInfo = () => {
     console.log("Update info");
@@ -161,17 +170,13 @@ const OutdialsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
-      const navi = "/resources/outdials/outdials_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
   const ListOutdialtargets = () => {
     console.log("ListOutdialtargets");
-
-    const target = "/resources/outdials/" + id + "/outdialtargets_list";
-    console.log("navigate target: ", target);
-    navigate(target);
+    navigateTargetList();
   };
 
   const Delete = () => {
@@ -187,8 +192,7 @@ const OutdialsDetail = () => {
     console.log("Deleting outdial info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/outdials/outdials_list";
-      navigate(navi);
+      navigateList();
     });
   }
 

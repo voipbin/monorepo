@@ -79,6 +79,7 @@ const OutdialsCreate = () => {
                       ref={ref_campaign_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000000"
                     />
                   </CCol>
                 </CRow>
@@ -91,7 +92,7 @@ const OutdialsCreate = () => {
                       ref={ref_data}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue=""
+                      defaultValue="{}"
                       rows={5}
                     />
                   </CCol>

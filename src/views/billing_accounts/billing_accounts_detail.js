@@ -26,6 +26,7 @@ const BillingAccountsDetail = () => {
   console.log("BillingAccountsDetail");
 
   const [buttonDisable, setButtonDisable] = useState(false);
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_balance = useRef(null);
@@ -165,7 +166,11 @@ const BillingAccountsDetail = () => {
     )
   };
 
-  const navigate = useNavigate();
+  const navigateList = () => {
+    const navi = "/resources/billing_accounts/billing_accounts_list";
+    navigate(navi);
+  }
+
   const UpdateBasicInfo = () => {
     console.log("Update info");
     setButtonDisable(true);
@@ -182,8 +187,7 @@ const BillingAccountsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
-      const navi = "/resources/billing_accounts/billing_accounts_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -201,8 +205,7 @@ const BillingAccountsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
-      const navi = "/resources/billing_accounts/billing_accounts_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -219,8 +222,7 @@ const BillingAccountsDetail = () => {
     console.log("Deleting billing account info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted billing account. response: " + JSON.stringify(response));
-      const navi = "/resources/billing_accounts/billing_accounts_list";
-      navigate(navi);
+      navigateList();
     });
   }
 

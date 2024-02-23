@@ -161,7 +161,7 @@ const OutdialtargetsCreate = () => {
                       ref={ref_data}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue=""
+                      defaultValue="{}"
                       rows={5}
                     />
                   </CCol>

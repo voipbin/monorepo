@@ -24,6 +24,7 @@ const CallsDetail = () => {
   console.log("CallsDetail");
 
   const [buttonDisable, setButtonDisable] = useState(false);
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
 
@@ -225,7 +226,11 @@ const CallsDetail = () => {
     )
   };
 
-  const navigate = useNavigate();
+  const navigateList = () => {
+    const navi = "/resources/calls/calls_list";
+    navigate(navi);
+  }
+
   const Hangup = () => {
     console.log("Hangup");
     setButtonDisable(true);
@@ -235,8 +240,7 @@ const CallsDetail = () => {
     console.log("Hangup call info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/calls/calls_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -253,8 +257,7 @@ const CallsDetail = () => {
     console.log("Deleting call info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/calls/calls_list";
-      navigate(navi);
+      navigateList();
     });
   }
 

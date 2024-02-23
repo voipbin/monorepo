@@ -121,6 +121,7 @@ const FlowsCreate = () => {
                       ref={ref_next_campaign_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000000"
                     />
                   </CCol>
                 </CRow>
@@ -133,6 +134,7 @@ const FlowsCreate = () => {
                       ref={ref_outdial_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000000"
                     />
                   </CCol>
 
@@ -142,6 +144,7 @@ const FlowsCreate = () => {
                       ref={ref_outplan_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000000"
                     />
                   </CCol>
                 </CRow>
@@ -154,6 +157,7 @@ const FlowsCreate = () => {
                       ref={ref_queue_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000000"
                     />
                   </CCol>
                 </CRow>
@@ -182,6 +186,11 @@ const FlowsCreate = () => {
     )
   };
 
+  const navigateList = () => {
+    const navi = "/resources/campaigns/campaigns_list";
+    navigate(navi);
+  }
+
   const CreateResource = () => {
     console.log("Create info");
     setButtonDisable(true);
@@ -204,8 +213,7 @@ const FlowsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/campaigns/campaigns_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
