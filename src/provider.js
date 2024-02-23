@@ -98,7 +98,8 @@ export const Delete = (target) => {
                 }
                 return resolve(response.json());
             })
-            .catch(() => {
+            .catch(response => {
+                console.log("Could not handle the request")
                 throw new Error('Network error')
             });
     });

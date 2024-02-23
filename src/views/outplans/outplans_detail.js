@@ -151,7 +151,7 @@ const OutplansDetail = () => {
                       ref={ref_max_try_count_1}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.ref_max_try_count_1}
+                      defaultValue={detailData.max_try_count_1}
                     />
                   </CCol>
                 </CRow>
@@ -164,7 +164,7 @@ const OutplansDetail = () => {
                       ref={ref_max_try_count_2}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.ref_max_try_count_2}
+                      defaultValue={detailData.max_try_count_2}
                     />
                   </CCol>
 
@@ -174,7 +174,7 @@ const OutplansDetail = () => {
                       ref={ref_max_try_count_3}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.ref_max_try_count_3}
+                      defaultValue={detailData.max_try_count_3}
                     />
                   </CCol>
                 </CRow>
@@ -187,7 +187,7 @@ const OutplansDetail = () => {
                       ref={ref_max_try_count_4}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.ref_max_try_count_4}
+                      defaultValue={detailData.max_try_count_4}
                     />
                   </CCol>
 

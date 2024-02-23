@@ -166,6 +166,11 @@ const AgentsCreate = () => {
     )
   };
 
+  const navigateList = () => {
+    const navi = "/resources/agents/agents_list";
+    navigate(navi);
+  }
+
   const CreateResource = () => {
     console.log("Create info");
     setButtonDisable(true);
@@ -186,8 +191,7 @@ const AgentsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/agents/agents_list";
-      navigate(navi);
+      navigateList();
     });
   };
 

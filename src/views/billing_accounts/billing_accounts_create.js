@@ -26,6 +26,7 @@ const BillingAccountCreate = () => {
   console.log("BillingAccountCreate");
 
   const [buttonDisable, setButtonDisable] = useState(false);
+  const navigate = useNavigate();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -99,7 +100,11 @@ const BillingAccountCreate = () => {
     )
   };
 
-  const navigate = useNavigate();
+  const navigateList = () => {
+    const navi = "/resources/billing_accounts/billing_accounts_list";
+    navigate(navi);
+  }
+
   const CreateResource = () => {
     console.log("Create info");
     setButtonDisable(true);
@@ -116,8 +121,7 @@ const BillingAccountCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/billing_accounts/billing_accounts_list";
-      navigate(navi);
+      navigateList();
     });
   };
 

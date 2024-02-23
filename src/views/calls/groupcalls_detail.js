@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -19,13 +19,17 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
 const GroupcallsDetail = () => {
   console.log("GroupcallsDetail");
 
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const routeParams = useParams();
+  const navigate = useNavigate();
+
   const ref_id = useRef(null);
 
-  const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
@@ -210,7 +214,7 @@ const GroupcallsDetail = () => {
                 <br />
                 <CButton type="submit" disabled={hangupDisabled} onClick={() => Hangup()}>Hangup</CButton>
                 &nbsp;
-                <CButton type="submit" color="dark" onClick={() => Delete()}>Delete</CButton>
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
@@ -220,6 +224,11 @@ const GroupcallsDetail = () => {
     )
   };
 
+  const navigateList = () => {
+    const navi = "/resources/calls/groupcalls_list";
+    navigate(navi);
+  }
+
   const Hangup = () => {
     console.log("Hangup");
 
@@ -228,6 +237,7 @@ const GroupcallsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
+      navigateList();
     });
   };
 
@@ -237,15 +247,16 @@ const GroupcallsDetail = () => {
     if (!confirm(`Are you sure you want to delete?`)) {
       return;
     }
+    setButtonDisable(true);
 
     const body = JSON.stringify("");
     const target = "groupcalls/" + ref_id.current.value;
     console.log("Deleting call info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+      navigateList();
     });
   }
-
 
   return (
     <>

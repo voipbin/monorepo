@@ -29,11 +29,11 @@ const BuyCreate = () => {
   const routeParams = useParams();
   const navigate = useNavigate();
 
-  const ref_number = useRef(null);
-  const ref_name = useRef(null);
-  const ref_detail = useRef(null);
-  const ref_call_flow_id = useRef(null);
-  const ref_message_flow_id = useRef(null);
+  const ref_number = useRef("");
+  const ref_name = useRef("");
+  const ref_detail = useRef("");
+  const ref_call_flow_id = useRef("");
+  const ref_message_flow_id = useRef("");
 
   const Create = () => {
     const number = routeParams.id;
@@ -114,6 +114,11 @@ const BuyCreate = () => {
     )
   };
 
+  const navigateList = () => {
+    const navi = "/resources/numbers/buy_list";
+    navigate(navi);
+  }
+
   const CreateResource = () => {
     console.log("Create info");
     setButtonDisable(true);
@@ -127,12 +132,11 @@ const BuyCreate = () => {
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "customers";
+    const target = "numbers";
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/numbers/buy_list";
-      navigate(navi);
+      navigateList();
     });
   };
 

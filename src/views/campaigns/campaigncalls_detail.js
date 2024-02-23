@@ -263,7 +263,7 @@ const CampaigncallsDetail = () => {
                 </CRow>
 
 
-                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
+                {/* <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton> */}
 
               </CCardBody>
             </CCard>
@@ -272,6 +272,11 @@ const CampaigncallsDetail = () => {
       </>
     )
   };
+
+  const navigateList = () => {
+    const navi = "/resources/campaigns/campaigncalls_list";
+    navigate(navi);
+  }
 
   const Delete = () => {
     console.log("Delete info");
@@ -286,8 +291,10 @@ const CampaigncallsDetail = () => {
     console.log("Deleting campaigncall info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/campaigns/campaigncalls_list";
-      navigate(navi);
+      navigateList();
+    }).catch(response => {
+      console.log("Could not delete the info. response: " + JSON.stringify(response));
+      navigateList();
     });
   }
 

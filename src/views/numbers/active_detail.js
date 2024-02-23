@@ -20,13 +20,14 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
-const [buttonDisable, setButtonDisable] = useState(false);
+import { useNavigate } from "react-router-dom";
 
 const ActivesDetail = () => {
   console.log("ActivesDetail");
 
   const [buttonDisable, setButtonDisable] = useState(false);
   const routeParams = useParams();
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_status = useRef(null);
@@ -199,7 +200,11 @@ const ActivesDetail = () => {
     )
   };
 
-  const navigate = useNavigate();
+  const navigateList = () => {
+    const navi = "/resources/numbers/active_list";
+    navigate(navi);
+  }
+
   const Update = () => {
     console.log("Update info");
     setButtonDisable(true);
@@ -216,8 +221,7 @@ const ActivesDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/numbers/active_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -234,8 +238,7 @@ const ActivesDetail = () => {
     console.log("Deleting call info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/numbers/active_list";
-      navigate(navi);
+      navigateList();
     });
   }
 

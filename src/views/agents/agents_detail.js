@@ -26,6 +26,7 @@ const AgentsDetail = () => {
   console.log("AgentsDetail");
 
   const [buttonDisable, setButtonDisable] = useState(false);
+  const navigate = useNavigate();
 
   const ref_id = useRef(null);
   const ref_username = useRef(null);
@@ -251,7 +252,11 @@ const AgentsDetail = () => {
     )
   };
 
-  const navigate = useNavigate();
+  const navigateList = () => {
+    const navi = "/resources/agents/agents_list";
+    navigate(navi);
+  }
+
   const UpdateBasic = () => {
     console.log("Update info");
     setButtonDisable(true);
@@ -270,8 +275,7 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/agents/agents_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -289,8 +293,7 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/agents/agents_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -307,8 +310,7 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/agents/agents_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -325,8 +327,7 @@ const AgentsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/agents/agents_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
@@ -343,8 +344,7 @@ const AgentsDetail = () => {
     console.log("Deleting agent info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/agents/agents_list";
-      navigate(navi);
+      navigateList();
     });
   }
 

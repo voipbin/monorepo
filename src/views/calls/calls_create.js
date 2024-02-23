@@ -26,6 +26,7 @@ const CallsCreate = () => {
   console.log("CallsCreate");
 
   const [buttonDisable, setButtonDisable] = useState(false);
+  const navigate = useNavigate();
 
   const ref_source = useRef(null);
   const ref_destinations = useRef(null);
@@ -109,7 +110,11 @@ const CallsCreate = () => {
     )
   };
 
-  const navigate = useNavigate();
+  const navigateList = () => {
+    const navi = "/resources/calls/calls_list";
+    navigate(navi);
+  }
+
   const CreateResource = () => {
     console.log("Create info");
     setButtonDisable(true);
@@ -126,8 +131,7 @@ const CallsCreate = () => {
     console.log("Creating call info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created call info.", JSON.stringify(response));
-      const navi = "/resources/calls/calls_list";
-      navigate(navi);
+      navigateList();
     });
   };
 
