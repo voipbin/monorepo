@@ -68,6 +68,7 @@ type DBHandler interface {
 
 	// campaigncall
 	CampaigncallCreate(ctx context.Context, t *campaigncall.Campaigncall) error
+	CampaigncallDelete(ctx context.Context, id uuid.UUID) error
 	CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
 	CampaigncallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error)
 	CampaigncallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)

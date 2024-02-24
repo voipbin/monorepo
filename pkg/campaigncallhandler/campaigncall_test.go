@@ -515,3 +515,58 @@ func Test_updateStatusDone(t *testing.T) {
 		})
 	}
 }
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseCampaigncall *campaigncall.Campaigncall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("ef3feb86-db79-4dab-a55d-41d65a231c10"),
+
+			&campaigncall.Campaigncall{
+				ID:         uuid.FromStringOrNil("ef3feb86-db79-4dab-a55d-41d65a231c10"),
+				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				FlowID:     uuid.FromStringOrNil("60e0f90a-db73-4aaf-add8-6b7cd8edc82c"),
+				Status:     campaigncall.StatusDone,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaigncallHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
+			mockDB.EXPECT().CampaigncallDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, gomock.Any()).Return(tt.responseCampaigncall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaigncall.CustomerID, campaigncall.EventTypeCampaigncallDeleted, tt.responseCampaigncall)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseCampaigncall) {
+				t.Errorf("Wrong match.\ngot: %v\n, expect: %v\n", res, tt.responseCampaigncall)
+			}
+		})
+	}
+}

@@ -230,6 +230,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/v1/campaigncalls/<campaigncall-id>"
 		response, err = h.v1CampaigncallsIDGet(ctx, m)
 
+	// /v1/campaigncalls/<campaigncall_id>
+	case regV1CampaigncallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/v1/campaigncalls/<campaigncall-id>"
+		response, err = h.v1CampaigncallsIDDelete(ctx, m)
+
 	// outplans
 	// /v1/outplans
 	case regV1Outplans.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:

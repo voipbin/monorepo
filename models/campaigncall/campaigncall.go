@@ -32,6 +32,7 @@ type Campaigncall struct {
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // ReferenceType defines

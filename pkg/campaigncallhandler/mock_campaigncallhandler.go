@@ -53,6 +53,21 @@ func (mr *MockCampaigncallHandlerMockRecorder) Create(ctx, customerID, campaignI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCampaigncallHandler)(nil).Create), ctx, customerID, campaignID, outplanID, outdialID, outdialTargetID, queueID, activeflowID, flowID, referenceType, referenceID, source, destination, destinationIndex, tryCount)
 }
 
+// Delete mocks base method.
+func (m *MockCampaigncallHandler) Delete(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCampaigncallHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCampaigncallHandler)(nil).Delete), ctx, id)
+}
+
 // Done mocks base method.
 func (m *MockCampaigncallHandler) Done(ctx context.Context, id uuid.UUID, result campaigncall.Result) (*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()

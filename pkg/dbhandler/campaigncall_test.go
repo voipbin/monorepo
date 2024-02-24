@@ -76,6 +76,7 @@ func Test_CampaigncallCreate(t *testing.T) {
 				TryCount:         1,
 				TMCreate:         "2020-04-18 03:22:17.995000",
 				TMUpdate:         DefaultTimeStamp,
+				TMDelete:         DefaultTimeStamp,
 			},
 		},
 	}
@@ -174,6 +175,7 @@ func Test_CampaigncallGetByReferenceID(t *testing.T) {
 				TryCount:         1,
 				TMCreate:         "2020-04-18 03:22:17.995000",
 				TMUpdate:         DefaultTimeStamp,
+				TMDelete:         DefaultTimeStamp,
 			},
 		},
 	}
@@ -271,6 +273,7 @@ func Test_CampaigncallGetByActiveflowID(t *testing.T) {
 				TryCount:         1,
 				TMCreate:         "2020-04-18 03:22:17.995000",
 				TMUpdate:         DefaultTimeStamp,
+				TMDelete:         DefaultTimeStamp,
 			},
 		},
 	}
@@ -340,6 +343,7 @@ func Test_CampaigncallGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("3d286678-6e30-11ee-82b1-d7f075ddecab"),
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
@@ -450,6 +454,7 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:17.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 			},
 		},
@@ -534,6 +539,7 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:17.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 				{
 					ID:              uuid.FromStringOrNil("da5fbd24-b4ff-11ec-9317-fb5fd7c5fd4f"),
@@ -559,6 +565,7 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:17.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 			},
 		},
@@ -671,6 +678,7 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:17.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 			},
 		},
@@ -756,6 +764,7 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:18.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 				{
 					ID:              uuid.FromStringOrNil("6275f0ac-b500-11ec-b356-b3eb98e5d2cb"),
@@ -781,6 +790,7 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:18.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 			},
 		},
@@ -891,6 +901,7 @@ func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:17.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 			},
 		},
@@ -975,6 +986,7 @@ func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:18.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 				{
 					ID:              uuid.FromStringOrNil("33139c3c-c447-11ec-ba59-6312277c868c"),
@@ -1000,6 +1012,7 @@ func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
 					TryCount:         1,
 					TMCreate:         "2020-04-18 03:22:18.995000",
 					TMUpdate:         DefaultTimeStamp,
+					TMDelete:         DefaultTimeStamp,
 				},
 			},
 		},
@@ -1103,6 +1116,7 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 				TryCount:         1,
 				TMCreate:         "2020-04-18 03:22:18.995000",
 				TMUpdate:         "2020-04-18 03:22:18.995000",
+				TMDelete:         DefaultTimeStamp,
 			},
 		},
 	}
@@ -1215,6 +1229,7 @@ func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 				TryCount:         1,
 				TMCreate:         "2020-04-18 03:22:18.995000",
 				TMUpdate:         "2020-04-18 03:22:18.995000",
+				TMDelete:         DefaultTimeStamp,
 			},
 		},
 	}
@@ -1255,6 +1270,67 @@ func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CampaigncallDelete(t *testing.T) {
+
+	tests := []struct {
+		name         string
+		campaigncall *campaigncall.Campaigncall
+	}{
+		{
+			"normal",
+			&campaigncall.Campaigncall{
+				ID:         uuid.FromStringOrNil("1cc92874-b480-11ec-b7cf-4f5d95304498"),
+				CustomerID: uuid.FromStringOrNil("1cf4905e-b480-11ec-8e27-038c9a252614"),
+				OutplanID:  uuid.FromStringOrNil("ba29f006-b3ce-11ec-80d2-a71d2212a7d7"),
+				OutdialID:  uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
+				QueueID:    uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
+				TMCreate:   "2020-04-18 03:22:17.995000",
+				TMUpdate:   "2020-04-18 03:22:17.995000",
+				TMDelete:   DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCache.EXPECT().CampaigncallSet(ctx, gomock.Any())
+			if err := h.CampaigncallCreate(ctx, tt.campaigncall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCache.EXPECT().CampaigncallSet(ctx, gomock.Any())
+			if err := h.CampaigncallDelete(ctx, tt.campaigncall.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaigncallSet(ctx, gomock.Any())
+			res, err := h.CampaigncallGet(ctx, tt.campaigncall.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.TMDelete == DefaultTimeStamp {
+				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
 			}
 		})
 	}

@@ -97,3 +97,40 @@ func (h *listenHandler) v1CampaigncallsIDGet(ctx context.Context, m *rabbitmqhan
 
 	return res, nil
 }
+
+// v1CampaigncallsIDDelete handles /v1/campaigncalls/{id} DELETE request
+func (h *listenHandler) v1CampaigncallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaigncallsIDDelete",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpVals := strings.Split(u.Path, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+	log.WithField("request", m).Debug("Received request.")
+
+	tmp, err := h.campaigncallHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get campaign info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
