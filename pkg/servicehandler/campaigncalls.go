@@ -139,8 +139,7 @@ func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *amagent.Agent, 
 func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CampaigncallDelete",
-		"customer_id":     a.CustomerID,
-		"username":        a.Username,
+		"agent":           a,
 		"campaigncall_id": campaigncallID,
 	})
 	log.Debug("Deleting a campaigncall.")
@@ -152,13 +151,13 @@ func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *amagent.Agen
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaigncallDelete(ctx, campaigncallID)
 	if err != nil {
-		log.Errorf("Could not delete the campaign. err: %v", err)
+		log.Errorf("Could not delete the campaign call. err: %v", err)
 		return nil, err
 	}
 
