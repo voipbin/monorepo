@@ -170,8 +170,8 @@ func Test_CampaignCreate(t *testing.T) {
 func Test_CampaignDelete(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		outplan *campaign.Campaign
+		name     string
+		campaign *campaign.Campaign
 	}{
 		{
 			"normal",
@@ -202,18 +202,18 @@ func Test_CampaignDelete(t *testing.T) {
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CampaignSet(gomock.Any(), gomock.Any())
-			if err := h.CampaignCreate(context.Background(), tt.outplan); err != nil {
+			if err := h.CampaignCreate(context.Background(), tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().CampaignSet(gomock.Any(), gomock.Any())
-			if err := h.CampaignDelete(context.Background(), tt.outplan.ID); err != nil {
+			if err := h.CampaignDelete(context.Background(), tt.campaign.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.outplan.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.campaign.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(gomock.Any(), gomock.Any())
-			res, err := h.CampaignGet(context.Background(), tt.outplan.ID)
+			res, err := h.CampaignGet(context.Background(), tt.campaign.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

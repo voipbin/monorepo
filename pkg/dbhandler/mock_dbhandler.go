@@ -252,6 +252,20 @@ func (mr *MockDBHandlerMockRecorder) CampaigncallCreate(ctx, t interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallCreate", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallCreate), ctx, t)
 }
 
+// CampaigncallDelete mocks base method.
+func (m *MockDBHandler) CampaigncallDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CampaigncallDelete indicates an expected call of CampaigncallDelete.
+func (mr *MockDBHandlerMockRecorder) CampaigncallDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallDelete", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallDelete), ctx, id)
+}
+
 // CampaigncallGet mocks base method.
 func (m *MockDBHandler) CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()

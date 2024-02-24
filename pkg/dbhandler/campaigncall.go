@@ -39,7 +39,8 @@ const (
 		try_count,
 
 		tm_create,
-		tm_update
+		tm_update,
+		tm_delete
 	from
 		campaigncalls
 	`
@@ -78,6 +79,7 @@ func (h *handler) campaigncallGetFromRow(row *sql.Rows) (*campaigncall.Campaignc
 
 		&res.TMCreate,
 		&res.TMUpdate,
+		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. campaignGetFromRow. err: %v", err)
 	}
@@ -120,7 +122,8 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		try_count,
 
 		tm_create,
-		tm_update
+		tm_update,
+		tm_delete
 	) values(
 		?, ?, ?,
 		?, ?, ?, ?,
@@ -128,7 +131,7 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		?, ?,
 		?, ?,
 		?, ?, ?, ?,
-		?, ?
+		?, ?, ?
 	)`
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
@@ -171,6 +174,7 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		t.TryCount,
 
 		h.util.TimeGetCurTime(),
+		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
 	if err != nil {
@@ -499,6 +503,27 @@ func (h *handler) CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid
 	}
 
 	// set to the cache
+	_ = h.campaigncallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CampaigncallDelete deletes the given campaigncall
+func (h *handler) CampaigncallDelete(ctx context.Context, id uuid.UUID) error {
+	q := `
+	update campaigncalls set
+		tm_delete = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.util.TimeGetCurTime()
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. CampaigncallDelete. err: %v", err)
+	}
+
+	// update cache
 	_ = h.campaigncallUpdateToCache(ctx, id)
 
 	return nil

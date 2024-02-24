@@ -46,6 +46,7 @@ type CampaigncallHandler interface {
 		destinationIndex int,
 		tryCount int,
 	) (*campaigncall.Campaigncall, error)
+	Delete(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
 	Get(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error)
 	GetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)

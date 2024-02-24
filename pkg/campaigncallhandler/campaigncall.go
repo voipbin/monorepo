@@ -246,3 +246,39 @@ func (h *campaigncallHandler) updateStatusDone(ctx context.Context, id uuid.UUID
 
 	return res, nil
 }
+
+// Delete deletes the campaigncall
+func (h *campaigncallHandler) Delete(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "Delete",
+		"campaigncall_id": id,
+	})
+	log.Debugf("Deleting a campaigncall. campaigncall_id: %s", id)
+
+	c, err := h.db.CampaigncallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get campaign. err: %v", err)
+		return nil, err
+	}
+
+	if c.Status != campaigncall.StatusDone {
+		log.Errorf("The campaigncall is not stop. status: %s", c.Status)
+		return nil, err
+	}
+	log.WithField("campaigncall", c).Debugf("Deleting campaigncall. campaigncall_id: %s", c.ID)
+
+	if errDelete := h.db.CampaigncallDelete(ctx, id); errDelete != nil {
+		log.Errorf("Could not delete campaign. err: %v", errDelete)
+		return nil, errDelete
+	}
+
+	res, err := h.db.CampaigncallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted campaigncall. err: %v", err)
+		return nil, err
+	}
+	log.WithField("campaigncall", res).Debugf("Deleted campaigncall. campaign_id: %s", res.ID)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaigncall.EventTypeCampaigncallDeleted, res)
+
+	return res, nil
+}
