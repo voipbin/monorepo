@@ -263,7 +263,7 @@ const CampaigncallsDetail = () => {
                 </CRow>
 
 
-                {/* <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton> */}
+                <CButton type="submit" color="dark" disabled={buttonDisable} onClick={() => Delete()}>Delete</CButton>
 
               </CCardBody>
             </CCard>
