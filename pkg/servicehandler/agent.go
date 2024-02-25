@@ -318,7 +318,39 @@ func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *amagent.A
 	// send request
 	tmp, err := h.reqHandler.AgentV1AgentUpdatePermission(ctx, agentID, permission)
 	if err != nil {
-		log.Infof("Could not update the agent addresses. err: %v", err)
+		log.Infof("Could not update the agent permission. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// AgentUpdatePassword sends a request to agent-manager
+// to update the agent password.
+func (h *serviceHandler) AgentUpdatePassword(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, password string) (*amagent.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "AgentUpdatePassword",
+		"agent":    a,
+		"password": len(password),
+	})
+
+	af, err := h.agentGet(ctx, a, agentID)
+	if err != nil {
+		log.Errorf("Could not validate the agent info. err: %v", err)
+		return nil, err
+	}
+	log.Debugf("Updating agent password. agent_id: %s, password: %d", agentID, len(password))
+
+	if a.ID != af.ID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionProjectSuperAdmin|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Debugf("The agent has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// send request
+	tmp, err := h.reqHandler.AgentV1AgentUpdatePassword(ctx, 30000, agentID, password)
+	if err != nil {
+		log.Infof("Could not update the agent password. err: %v", err)
 		return nil, err
 	}
 
