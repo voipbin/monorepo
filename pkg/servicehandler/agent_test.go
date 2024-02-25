@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -646,6 +647,62 @@ func Test_AgentUpdatePermission(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
+		})
+	}
+}
+
+func Test_AgentUpdatePassword(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent    *amagent.Agent
+		agentID  uuid.UUID
+		password string
+
+		responseAgent *amagent.Agent
+		expectRes     *amagent.WebhookMessage
+	}{
+		{
+			"normal",
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("b1d714c0-d3ce-11ee-9b07-b791568f3fa9"),
+				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			uuid.FromStringOrNil("b1d714c0-d3ce-11ee-9b07-b791568f3fa9"),
+			"update password",
+
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("b1d714c0-d3ce-11ee-9b07-b791568f3fa9"),
+				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+			},
+			&amagent.WebhookMessage{
+				ID:         uuid.FromStringOrNil("b1d714c0-d3ce-11ee-9b07-b791568f3fa9"),
+				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdatePassword(ctx, 30000, tt.agentID, tt.password).Return(tt.responseAgent, nil)
+
+			res, err := h.AgentUpdatePassword(ctx, tt.agent, tt.agentID, tt.password)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectRes, res)
 		})
 	}
 }

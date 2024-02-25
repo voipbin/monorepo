@@ -358,3 +358,57 @@ func Test_agentsIDPermissionPUT(t *testing.T) {
 		})
 	}
 }
+
+func Test_agentsIDPasswordPUT(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent    amagent.Agent
+		reqQuery string
+		reqBody  []byte
+
+		agentID  uuid.UUID
+		password string
+	}{
+		{
+			"normal",
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("d3481932-d3cf-11ee-ab64-5b6368efe4ce"),
+			},
+			"/v1.0/agents/d3481932-d3cf-11ee-ab64-5b6368efe4ce/password",
+			[]byte(`{"password":"updatepassword"}`),
+
+			uuid.FromStringOrNil("d3481932-d3cf-11ee-ab64-5b6368efe4ce"),
+			"updatepassword",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("agent", tt.agent)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+
+			mockSvc.EXPECT().AgentUpdatePassword(req.Context(), &tt.agent, tt.agentID, tt.password).Return(&amagent.WebhookMessage{}, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
