@@ -59,3 +59,9 @@ type BodyAgentsIDStatusPUT struct {
 type BodyAgentsIDPermissionPUT struct {
 	Permission amagent.Permission `json:"permission" binding:"required"`
 }
+
+// BodyAgentsIDPasswordPUT is rquest body define for
+// PUT /v1.0/agents/<agent-id>/password
+type BodyAgentsIDPasswordPUT struct {
+	Password string `json:"password" binding:"required"`
+}
