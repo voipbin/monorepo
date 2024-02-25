@@ -33,6 +33,8 @@ const AgentsDetail = () => {
   const ref_status = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
+  const ref_password = useRef("");
+  const ref_password_check = useRef("");
   const ref_ring_method = useRef(null);
   const ref_addresses = useRef(null);
   const ref_tag_ids = useRef(null);
@@ -166,6 +168,34 @@ const AgentsDetail = () => {
                 </CRow>
 
                 <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateBasic()}>Update</CButton>
+                <br />
+                <br/>
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Password</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                  <CFormInput
+                      ref={ref_password}
+                      type="password"
+                      id="colFormLabelSm"
+                      defaultValue={"dummy_default_password_with_long_length_0"}
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Password Check</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                  <CFormInput
+                    ref={ref_password_check}
+                    type="password"
+                    id="colFormLabelSm"
+                    defaultValue={"dummy_default_password_with_long_length_1"}
+                    />
+                  </CCol>
+                </CRow>
+
+
+                <CButton type="submit" disabled={buttonDisable} onClick={() => UpdatePassword()}>Update Password</CButton>
                 <br />
                 <br/>
 
@@ -324,6 +354,28 @@ const AgentsDetail = () => {
 
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/permission";
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
+      navigateList();
+    });
+  };
+
+  const UpdatePassword = () => {
+    console.log("Update password info");
+    
+    if (ref_password.current.value !== ref_password_check.current.value) {
+      confirm(`Please check the password.`)
+      return;
+    }
+    setButtonDisable(true);
+
+    const tmpData = {
+      "password": ref_password.current.value,
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "agents/" + ref_id.current.value + "/password";
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
