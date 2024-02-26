@@ -84,7 +84,7 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if a.ID != agentID && !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -175,7 +175,7 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, a *amagent.Agent, agen
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if a.ID != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -268,7 +268,7 @@ func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *amagent.Agent
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if a.ID != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -342,7 +342,7 @@ func (h *serviceHandler) AgentUpdatePassword(ctx context.Context, a *amagent.Age
 	}
 	log.Debugf("Updating agent password. agent_id: %s, password: %d", agentID, len(password))
 
-	if a.ID != af.ID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionProjectSuperAdmin|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if a.ID != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionProjectSuperAdmin|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Debugf("The agent has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
