@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import CIcon from '@coreui/icons-react'
 import {
   cilBell,
@@ -38,6 +38,7 @@ import {
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { useEffect } from 'react'
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux'
 
 const dashboard = {
   component: CNavItem,
@@ -359,7 +360,7 @@ const outplans = {
 
 
 
-const navProjectAdmin = [
+export const navProjectAdmin = [
   dashboard,
 
   // resource -----------------------------------------------------------------------
@@ -395,7 +396,7 @@ const navProjectAdmin = [
   outplans,
 ]
 
-const navCustomerAdmin = [
+export const navCustomerAdmin = [
   dashboard,
 
   // resource -----------------------------------------------------------------------
@@ -428,7 +429,7 @@ const navCustomerAdmin = [
   outplans,
 ]
 
-const navCustomerManager = [
+export const navCustomerManager = [
   dashboard,
 
   // resource -----------------------------------------------------------------------
@@ -459,7 +460,7 @@ const navCustomerManager = [
   outplans,
 ]
 
-const navCustomerAgent = [
+export const navCustomerAgent = [
   dashboard,
 
   // resource -----------------------------------------------------------------------
@@ -473,29 +474,3 @@ const navCustomerAgent = [
   chats,
   messages,
 ]
-
-var _nav = [];
-
-const agentInfo = JSON.parse(localStorage.getItem("agent_info"));
-if (agentInfo === null) {
-  console.log("The customer has no agent info.");
-  // _nav = navCustomerAgent;
-  _nav = navProjectAdmin;  // todo: need to be fixed
-} else if (agentInfo["permission"] & 0x0001) {  // project super admin
-  console.log("The customer has project admin permission." + 0x0001);
-  _nav = navProjectAdmin;
-} else if (agentInfo["permission"] & 0x0010) {
-  console.log("The customer has customer agent permission.");
-  _nav = navCustomerAgent;
-} else if (agentInfo["permission"] & 0x0020) {
-  console.log("The customer has customer admin permission.");
-  _nav = navCustomerAdmin;
-} else if (agentInfo["permission"] & 0x0040) {
-  console.log("The customer has customer manager permission.");
-  _nav = navCustomerManager;
-} else {
-  console.log("The customer has no permission.");
-  _nav = navCustomerAgent;
-}
-
-export default _nav
