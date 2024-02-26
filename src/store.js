@@ -7,6 +7,7 @@ const initialState = {
   sidebarUnfoldable: false,
 }
 
+///////////////////////////////////////////////////////////
 // resource chatroommessages
 const resourceChatroommessagesInitial = {
   data: {},
@@ -54,6 +55,7 @@ const resourceChatroommessagesReducer = (state = resourceChatroommessagesInitial
   }
 }
 
+///////////////////////////////////////////////////////////
 // resource currentcall
 const resourceCurrentcallInitial = {
   "session": {},
@@ -90,6 +92,10 @@ const resourceCurrentcallReducer = (state = resourceCurrentcallInitial, action) 
       newState["id"] = action.data.id;
       newState["direction"] = action.data.direction;
 
+      if (action.data.remote_identity == null) {
+        return newState;
+      }
+
       if (newState['direction'] == 'incoming') {
         // incoming
         newState['source'] = action.data.remote_identity.uri.user;
@@ -116,7 +122,36 @@ const resourceCurrentcallReducer = (state = resourceCurrentcallInitial, action) 
   }
 }
 
+///////////////////////////////////////////////////////////
+// resource agent info
+const resourceAgentInfoInitial = {
+  "data": {},
+}
 
+export const AGENTINFO_SET = 'AGENTINFO_SET';
+export const AgentInfoSet = (data) => {
+  return {
+    type: AGENTINFO_SET,
+    data: data,
+  }
+}
+
+const resourceAgentInfoReducer = (state = resourceAgentInfoInitial, action) => {
+  let newState = state;
+
+  switch (action.type) {
+    case AGENTINFO_SET:
+      console.log("Setting the agent info data. action: ", action)
+      newState["data"] = action.data;
+      return newState;
+
+    default:
+      return newState;
+  }
+}
+
+///////////////////////////////////////////////////////////
+// 
 const resourceReducer = (state = initialState, action) => {
 
   switch (action.type) {
@@ -129,10 +164,12 @@ const resourceReducer = (state = initialState, action) => {
   }
 }
 
+///////////////////////////////////////////////////////////
 const storeAll = combineReducers({
   resourceReducer,
   resourceChatroommessagesReducer,
   resourceCurrentcallReducer,
+  resourceAgentReducer: resourceAgentInfoReducer,
 });
 
 const store = createStore(storeAll);

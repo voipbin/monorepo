@@ -29,7 +29,9 @@ import {
 import { Base64 } from "js-base64";
 import { NewPhone } from "../../../phone";
 import { useDispatch } from 'react-redux';
-import { ChatroommessagesAddWithChatroomID } from 'src/store';
+import { ChatroommessagesAddWithChatroomID, AgentInfoSet } from 'src/store';
+
+
 
 const Login = () => {
 
@@ -91,6 +93,8 @@ const Login = () => {
         NewPhone(dispatch);
         const phone = localStorage.getItem("phone");
         console.log("Detailed phone info. phone: ", phone)
+
+        dispatch(AgentInfoSet(agentInfo));
 
         // websocket
         Connect();
