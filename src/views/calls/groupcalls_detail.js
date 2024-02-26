@@ -224,9 +224,8 @@ const GroupcallsDetail = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/calls/groupcalls_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const Hangup = () => {
@@ -237,7 +236,7 @@ const GroupcallsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -254,7 +253,7 @@ const GroupcallsDetail = () => {
     console.log("Deleting call info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   }
 

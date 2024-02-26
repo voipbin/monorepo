@@ -21,11 +21,20 @@ import {
   cilUser,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-
+import { useNavigate } from "react-router-dom";
 import avatar8 from './../../assets/images/avatars/8.jpg'
 
 const AppHeaderDropdown = () => {
-  const logout = () => {
+  const navigate = useNavigate();
+
+  const onProfile = () => {
+    console.log("Move to the profile");
+    const target = "/resources/agents/agents_profile";
+    console.log("navigate target: ", target);
+    navigate(target);
+  }
+
+  const onLogout = () => {
     localStorage.setItem('token', "");
     localStorage.setItem('agent_info', null);
   }
@@ -36,7 +45,7 @@ const AppHeaderDropdown = () => {
         <CAvatar src={avatar8} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownHeader className="bg-light fw-semibold py-2">Account</CDropdownHeader>
+        {/* <CDropdownHeader className="bg-light fw-semibold py-2">Account</CDropdownHeader>
         <CDropdownItem href="#">
           <CIcon icon={cilBell} className="me-2" />
           Updates
@@ -64,36 +73,36 @@ const AppHeaderDropdown = () => {
           <CBadge color="warning" className="ms-2">
             42
           </CBadge>
-        </CDropdownItem>
-        <CDropdownHeader className="bg-light fw-semibold py-2">Settings</CDropdownHeader>
+        </CDropdownItem> */}
+        {/* <CDropdownHeader className="bg-light fw-semibold py-2">Settings</CDropdownHeader>
         <CDropdownItem href="#">
           <CIcon icon={cilUser} className="me-2" />
           Profile
-        </CDropdownItem>
-        <CDropdownItem href="#">
+        </CDropdownItem> */}
+        <CDropdownItem onClick={onProfile}>
           <CIcon icon={cilSettings} className="me-2" />
           Settings
         </CDropdownItem>
-        <CDropdownItem href="#">
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilCreditCard} className="me-2" />
           Payments
           <CBadge color="secondary" className="ms-2">
             42
           </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
+        </CDropdownItem> */}
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilFile} className="me-2" />
           Projects
           <CBadge color="primary" className="ms-2">
             42
           </CBadge>
-        </CDropdownItem>
+        </CDropdownItem> */}
         <CDropdownDivider />
-        <CDropdownItem href="#">
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilLockLocked} className="me-2" />
           Lock Account
-        </CDropdownItem>
-        <CDropdownItem href="/login" onClick={logout}>
+        </CDropdownItem> */}
+        <CDropdownItem href="/login" onClick={onLogout}>
           <CIcon icon={cilLockLocked} className="me-2" />
           Logout
         </CDropdownItem>

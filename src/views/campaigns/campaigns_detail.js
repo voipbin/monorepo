@@ -283,9 +283,8 @@ const CampaignsDetail = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/campaigns/campaigns_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const Update = () => {
@@ -310,7 +309,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -330,7 +329,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -347,7 +346,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -364,7 +363,7 @@ const CampaignsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -381,7 +380,7 @@ const CampaignsDetail = () => {
     console.log("Deleting campaign info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   }
 

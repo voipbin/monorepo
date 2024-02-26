@@ -145,9 +145,8 @@ const OutdialsDetail = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/outdials/outdials_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const navigateTargetList = () => {
@@ -170,7 +169,7 @@ const OutdialsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -192,7 +191,7 @@ const OutdialsDetail = () => {
     console.log("Deleting outdial info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   }
 

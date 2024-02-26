@@ -52,6 +52,7 @@ const FlowsActiveflowsCreate = React.lazy(() => import('./views/flows/activeflow
 const AgentsList = React.lazy(() => import('./views/agents/agents_list'))
 const AgentsDetail = React.lazy(() => import('./views/agents/agents_detail'))
 const AgentsCreate = React.lazy(() => import('./views/agents/agents_create'))
+const AgentsProfile = React.lazy(() => import('./views/agents/agents_profile'))
 
 // billing accounts
 const BillingAccountsList = React.lazy(() => import('./views/billing_accounts/billing_accounts_list'))
@@ -192,6 +193,7 @@ const routes = [
   { path: '/resources/agents/agents_list', name: 'AgentsList', element: AgentsList },
   { path: '/resources/agents/agents_create', name: 'AgentsCreate', element: AgentsCreate },
   { path: '/resources/agents/agents_detail/:id', name: 'AgentsDetail', element: AgentsDetail },
+  { path: '/resources/agents/agents_profile', name: 'AgentsProfile', element: AgentsProfile },
 
   { path: '/resources/billing_accounts/billing_accounts_list', name: 'BillingAccountsList', element: BillingAccountsList },
   { path: '/resources/billing_accounts/billing_accounts_create', name: 'BillingAccountsCreate', element: BillingAccountsCreate },
