@@ -114,9 +114,8 @@ const BuyCreate = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/numbers/buy_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const CreateResource = () => {
@@ -136,7 +135,7 @@ const BuyCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 

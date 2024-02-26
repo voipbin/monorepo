@@ -140,9 +140,8 @@ const GroupcallsCreate = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/calls/groupcalls_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const CreateResource = () => {
@@ -163,7 +162,7 @@ const GroupcallsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 

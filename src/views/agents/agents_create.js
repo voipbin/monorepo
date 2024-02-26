@@ -166,9 +166,8 @@ const AgentsCreate = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/agents/agents_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const CreateResource = () => {
@@ -191,7 +190,7 @@ const AgentsCreate = () => {
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 

@@ -125,9 +125,8 @@ const TagsDetail = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/tags/tags_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const Update = () => {
@@ -144,7 +143,7 @@ const TagsDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -161,7 +160,7 @@ const TagsDetail = () => {
     console.log("Deleting tag info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   }
 

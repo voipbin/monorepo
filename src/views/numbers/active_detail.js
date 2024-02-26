@@ -200,9 +200,8 @@ const ActivesDetail = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/numbers/active_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const Update = () => {
@@ -221,7 +220,7 @@ const ActivesDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(response => {
       console.log("Updated info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
@@ -238,7 +237,7 @@ const ActivesDetail = () => {
     console.log("Deleting call info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   }
 

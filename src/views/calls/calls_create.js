@@ -110,9 +110,8 @@ const CallsCreate = () => {
     )
   };
 
-  const navigateList = () => {
-    const navi = "/resources/calls/calls_list";
-    navigate(navi);
+  const navigateBack = () => {
+    navigate(-1);
   }
 
   const CreateResource = () => {
@@ -131,7 +130,7 @@ const CallsCreate = () => {
     console.log("Creating call info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created call info.", JSON.stringify(response));
-      navigateList();
+      navigateBack();
     });
   };
 
