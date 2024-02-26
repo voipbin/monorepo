@@ -46,9 +46,20 @@ func (h *serviceHandler) FlowCreate(ctx context.Context, a *amagent.Agent, name,
 	})
 	log.WithField("actions", actions).Debug("Creating a new flow.")
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+	if persist {
+		// we are making a persist flow here.
+		// need to check if the customer has permission to create a persist flow.
+		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			log.Info("The user has no permission.")
+			return nil, fmt.Errorf("user has no permission")
+		}
+	} else {
+		// we are making a non-persist flow here.
+		// no need to check the agent's permission. checking the customer id is good enough
+		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+			log.Info("The user has no permission.")
+			return nil, fmt.Errorf("user has no permission")
+		}
 	}
 
 	tmp, err := h.reqHandler.FlowV1FlowCreate(ctx, a.CustomerID, fmflow.TypeFlow, name, detail, actions, persist)
