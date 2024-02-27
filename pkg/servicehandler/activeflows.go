@@ -73,7 +73,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *amagent.Agent,
 	}
 
 	// verify the flow
-	f, err := h.flowGet(ctx, a, flowID)
+	f, err := h.flowGet(ctx, flowID)
 	if err != nil {
 		log.Errorf("Could not get flow info. err: %v", err)
 		return nil, err
