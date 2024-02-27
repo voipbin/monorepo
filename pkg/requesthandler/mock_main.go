@@ -3994,6 +3994,20 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGets(ctx, customerID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGets), ctx, customerID, pageToken, pageSize, filters)
 }
 
+// QueueV1QueuecallHealthCheck mocks base method.
+func (m *MockRequestHandler) QueueV1QueuecallHealthCheck(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueuecallHealthCheck", ctx, id, delay, retryCount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueV1QueuecallHealthCheck indicates an expected call of QueueV1QueuecallHealthCheck.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallHealthCheck(ctx, id, delay, retryCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallHealthCheck), ctx, id, delay, retryCount)
+}
+
 // QueueV1QueuecallKick mocks base method.
 func (m *MockRequestHandler) QueueV1QueuecallKick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()

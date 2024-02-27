@@ -253,3 +253,28 @@ func (r *requestHandler) QueueV1QueuecallExecute(ctx context.Context, queuecallI
 
 	return &res, nil
 }
+
+// QueueV1QueuecallHealthCheck sends the request for queuecall health-check
+//
+// delay: milliseconds
+func (r *requestHandler) QueueV1QueuecallHealthCheck(ctx context.Context, id uuid.UUID, delay int, retryCount int) error {
+	uri := fmt.Sprintf("/v1/queuecalls/%s/health-check", id)
+
+	m, err := json.Marshal(qmrequest.V1DataQueuecallsIDHealthCheckPost{
+		RetryCount: retryCount,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls/<queuecall-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		return nil
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
