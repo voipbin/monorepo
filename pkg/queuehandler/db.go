@@ -243,7 +243,7 @@ func (h *queueHandler) AddWaitQueueCallID(ctx context.Context, id uuid.UUID, que
 	return res, nil
 }
 
-// RemoveQueueCallID removes the queuecall from the queue.
+// RemoveServiceQueuecallID removes the service queuecall from the queue.
 func (h *queueHandler) RemoveServiceQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "RemoveServiceQueuecallID",
@@ -252,7 +252,30 @@ func (h *queueHandler) RemoveServiceQueuecallID(ctx context.Context, id uuid.UUI
 	})
 
 	if errAdd := h.db.QueueRemoveServiceQueueCall(ctx, id, queuecallID); errAdd != nil {
-		log.Errorf("Could not add the queuecall id to the queue. err: %v", errAdd)
+		log.Errorf("Could not remove the service queuecall id to the queue. err: %v", errAdd)
+		return nil, errors.Wrap(errAdd, "Could not remove the service queuecall id to the queue.")
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queue info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+
+	return res, nil
+}
+
+// RemoveWaitQueuecallID removes the wait queuecall from the queue.
+func (h *queueHandler) RemoveWaitQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "RemoveWaitQueuecallID",
+		"queue_id":     id,
+		"queuecall_id": queuecallID,
+	})
+
+	if errAdd := h.db.QueueRemoveWaitQueueCall(ctx, id, queuecallID); errAdd != nil {
+		log.Errorf("Could not remove the queuecall id to the queue. err: %v", errAdd)
 		return nil, errors.Wrap(errAdd, "Could not add the queuecall id to the queue.")
 	}
 
@@ -300,6 +323,36 @@ func (h *queueHandler) AddAbandonedQueuecallID(ctx context.Context, id uuid.UUID
 	if errIncrease := h.db.QueueIncreaseTotalAbandonedCount(ctx, id, queuecallID); errIncrease != nil {
 		log.Errorf("Could not increase the total serviced count. err: %v", errIncrease)
 		return nil, errors.Wrap(errIncrease, "Could not add the queuecall info to the service queue.")
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queue info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+
+	return res, nil
+}
+
+// RemoveQueuecallID removes the queuecall from the queue's wait queuecall ids and service queuecall ids.
+func (h *queueHandler) RemoveQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "RemoveQueuecallID",
+		"queue_id":     id,
+		"queuecall_id": queuecallID,
+	})
+
+	// remove from the wait queuecall ids
+	if err := h.db.QueueRemoveWaitQueueCall(ctx, id, queuecallID); err != nil {
+		log.Errorf("Could not remove the queuecall id from to the wait queuecall ids. err: %v", err)
+		return nil, errors.Wrap(err, "Could not remove the queuecall id from the wait queuecall ids.")
+	}
+
+	// remove from the service queuecall ids
+	if err := h.db.QueueRemoveServiceQueueCall(ctx, id, queuecallID); err != nil {
+		log.Errorf("Could not remove the queuecall id from to the service queuecall ids. err: %v", err)
+		return nil, errors.Wrap(err, "Could not remove the queuecall id from the service queuecall ids.")
 	}
 
 	res, err := h.db.QueueGet(ctx, id)

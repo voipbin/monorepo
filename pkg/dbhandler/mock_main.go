@@ -152,6 +152,20 @@ func (mr *MockDBHandlerMockRecorder) QueueRemoveServiceQueueCall(ctx, id, queueC
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueRemoveServiceQueueCall", reflect.TypeOf((*MockDBHandler)(nil).QueueRemoveServiceQueueCall), ctx, id, queueCallID)
 }
 
+// QueueRemoveWaitQueueCall mocks base method.
+func (m *MockDBHandler) QueueRemoveWaitQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueRemoveWaitQueueCall", ctx, id, queueCallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueRemoveWaitQueueCall indicates an expected call of QueueRemoveWaitQueueCall.
+func (mr *MockDBHandlerMockRecorder) QueueRemoveWaitQueueCall(ctx, id, queueCallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueRemoveWaitQueueCall", reflect.TypeOf((*MockDBHandler)(nil).QueueRemoveWaitQueueCall), ctx, id, queueCallID)
+}
+
 // QueueSetBasicInfo mocks base method.
 func (m *MockDBHandler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) error {
 	m.ctrl.T.Helper()
@@ -335,20 +349,6 @@ func (m *MockDBHandler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID
 func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusDone(ctx, id, durationService, ts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusDone", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusDone), ctx, id, durationService, ts)
-}
-
-// QueuecallSetStatusKicking mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetStatusKicking", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueuecallSetStatusKicking indicates an expected call of QueuecallSetStatusKicking.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusKicking(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusKicking", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusKicking), ctx, id)
 }
 
 // QueuecallSetStatusService mocks base method.

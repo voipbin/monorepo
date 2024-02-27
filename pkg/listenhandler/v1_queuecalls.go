@@ -332,3 +332,27 @@ func (h *listenHandler) processV1QueuecallsReferenceIDIDKickPost(ctx context.Con
 
 	return res, nil
 }
+
+// processV1QueuecallsIDHealthCheckPost handles Post /v1/queuecalls/<queuecall-id>/health-check request
+func (h *listenHandler) processV1QueuecallsIDHealthCheckPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsIDHealthCheckPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataQueuecallsIDHealthCheckPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	go h.queuecallHandler.HealthCheck(ctx, id, req.RetryCount)
+	return nil, nil
+}

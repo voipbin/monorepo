@@ -3,6 +3,7 @@ package listenhandler
 import (
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -289,6 +290,67 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
+		})
+	}
+}
+
+func Test_processV1QueuecallsIDHealthCheckPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		queuecallID uuid.UUID
+		retryCount  int
+
+		responseQueuecall *queuecall.Queuecall
+		expectRes         *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls/4a85453c-d534-11ee-8746-a3727fdf5678/health-check",
+				Method: rabbitmqhandler.RequestMethodPost,
+				Data:   []byte(`{"retry_count": 1}`),
+			},
+
+			uuid.FromStringOrNil("4a85453c-d534-11ee-8746-a3727fdf5678"),
+			1,
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("4a85453c-d534-11ee-8746-a3727fdf5678"),
+			},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				queuecallHandler: mockQueuecall,
+			}
+
+			mockQueuecall.EXPECT().HealthCheck(gomock.Any(), tt.queuecallID, tt.retryCount)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+			time.Sleep(time.Millisecond * 100)
+
 		})
 	}
 }
