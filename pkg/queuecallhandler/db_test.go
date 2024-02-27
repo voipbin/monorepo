@@ -315,6 +315,7 @@ func Test_Create(t *testing.T) {
 			if tt.responseQueuecall.TimeoutWait > 0 {
 				mockReq.EXPECT().QueueV1QueuecallTimeoutWait(gomock.Any(), gomock.Any(), tt.queue.WaitTimeout).Return(nil)
 			}
+			mockReq.EXPECT().QueueV1QueuecallHealthCheck(ctx, tt.responseQueuecall.ID, defaultHealthCheckDelay, 0).Return(nil)
 
 			res, err := h.Create(
 				ctx,

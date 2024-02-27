@@ -154,6 +154,7 @@ func Test_ServiceStart(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseUUIDQueuecall).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.responseQueuecall)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().QueueV1QueuecallHealthCheck(ctx, tt.responseQueuecall.ID, defaultHealthCheckDelay, 0).Return(nil)
 
 			res, err := h.ServiceStart(ctx, tt.queueID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.exitActionID)
 			if err != nil {

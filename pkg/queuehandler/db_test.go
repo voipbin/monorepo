@@ -546,3 +546,58 @@ func Test_UpdateExecute(t *testing.T) {
 		})
 	}
 }
+
+func Test_RemoveQueuecallID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queueID     uuid.UUID
+		queuecallID uuid.UUID
+
+		responseQueue *queue.Queue
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("c0dc4682-d542-11ee-961d-5f6dc6c01c7e"),
+			uuid.FromStringOrNil("c169ab4e-d542-11ee-89a9-13ae647f6142"),
+
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("c0dc4682-d542-11ee-961d-5f6dc6c01c7e"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queueHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueueRemoveWaitQueueCall(ctx, tt.queueID, tt.queuecallID).Return(nil)
+			mockDB.EXPECT().QueueRemoveServiceQueueCall(ctx, tt.queueID, tt.queuecallID).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
+
+			res, err := h.RemoveQueuecallID(ctx, tt.queueID, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueue, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueue, res)
+			}
+		})
+	}
+}
