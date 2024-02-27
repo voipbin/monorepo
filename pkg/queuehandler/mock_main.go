@@ -38,21 +38,6 @@ func (m *MockQueueHandler) EXPECT() *MockQueueHandlerMockRecorder {
 	return m.recorder
 }
 
-// AddAbandonedQueuecallID mocks base method.
-func (m *MockQueueHandler) AddAbandonedQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddAbandonedQueuecallID", ctx, id, queuecallID)
-	ret0, _ := ret[0].(*queue.Queue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AddAbandonedQueuecallID indicates an expected call of AddAbandonedQueuecallID.
-func (mr *MockQueueHandlerMockRecorder) AddAbandonedQueuecallID(ctx, id, queuecallID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAbandonedQueuecallID", reflect.TypeOf((*MockQueueHandler)(nil).AddAbandonedQueuecallID), ctx, id, queuecallID)
-}
-
 // AddServiceQueuecallID mocks base method.
 func (m *MockQueueHandler) AddServiceQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()

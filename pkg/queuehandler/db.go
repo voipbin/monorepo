@@ -312,29 +312,6 @@ func (h *queueHandler) AddServiceQueuecallID(ctx context.Context, id uuid.UUID, 
 	return res, nil
 }
 
-// AddAbandonedQueuecallID adds the given queuecall id to the abandoned queue call of the queue.
-func (h *queueHandler) AddAbandonedQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "AddAbandonedQueuecallID",
-		"queue_id":     id,
-		"queuecall_id": queuecallID,
-	})
-
-	if errIncrease := h.db.QueueIncreaseTotalAbandonedCount(ctx, id, queuecallID); errIncrease != nil {
-		log.Errorf("Could not increase the total serviced count. err: %v", errIncrease)
-		return nil, errors.Wrap(errIncrease, "Could not add the queuecall info to the service queue.")
-	}
-
-	res, err := h.db.QueueGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated queue info. err: %v", err)
-		return nil, err
-	}
-	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
-
-	return res, nil
-}
-
 // RemoveQueuecallID removes the queuecall from the queue's wait queuecall ids and service queuecall ids.
 func (h *queueHandler) RemoveQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
