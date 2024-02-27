@@ -15,7 +15,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240216131513-cde03cb72fe1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240215192728-b61c81105fa6
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240224155336-fe880a099a62
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240227065141-edf81ece69ee
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240212145953-364923003e09
 )
 

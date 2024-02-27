@@ -23,7 +23,7 @@ import (
 
 const (
 	defaultHealthCheckMaxRetryCount = 2
-	defaultHealthCheckDelay         = 10000 // 10 seconds
+	defaultHealthCheckDelay         = 5000 // 5 seconds
 )
 
 // QueuecallHandler interface
