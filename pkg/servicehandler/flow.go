@@ -12,12 +12,10 @@ import (
 )
 
 // flowGet validates the flow's ownership and returns the flow info.
-func (h *serviceHandler) flowGet(ctx context.Context, a *amagent.Agent, flowID uuid.UUID) (*fmflow.Flow, error) {
+func (h *serviceHandler) flowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "flowGet",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"flow_id":     flowID,
+		"func":    "flowGet",
+		"flow_id": flowID,
 	})
 
 	// send request
@@ -83,7 +81,7 @@ func (h *serviceHandler) FlowDelete(ctx context.Context, a *amagent.Agent, id uu
 	log.Debug("Deleting a flow.")
 
 	// get flow
-	f, err := h.flowGet(ctx, a, id)
+	f, err := h.flowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flow info. err: %v", err)
@@ -115,7 +113,7 @@ func (h *serviceHandler) FlowGet(ctx context.Context, a *amagent.Agent, id uuid.
 	log.Debug("Getting a flow.")
 
 	// get flow
-	tmp, err := h.flowGet(ctx, a, id)
+	tmp, err := h.flowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flow info. err: %v", err)

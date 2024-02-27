@@ -11,11 +11,10 @@ import (
 )
 
 // numberGet validates the number's ownership and returns the number info.
-func (h *serviceHandler) numberGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*nmnumber.Number, error) {
+func (h *serviceHandler) numberGet(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "numberGet",
-		"customer_id": a.CustomerID,
-		"number_id":   id,
+		"func":      "numberGet",
+		"number_id": id,
 	})
 
 	// get number info
@@ -42,7 +41,7 @@ func (h *serviceHandler) NumberGets(ctx context.Context, a *amagent.Agent, size 
 		"customer_id": a.CustomerID,
 		"username":    a.Username,
 		"size":        size,
-		"token":       "token",
+		"token":       token,
 	})
 
 	if token == "" {
@@ -120,7 +119,7 @@ func (h *serviceHandler) NumberGet(ctx context.Context, a *amagent.Agent, id uui
 	})
 
 	// get number info
-	tmp, err := h.numberGet(ctx, a, id)
+	tmp, err := h.numberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -147,7 +146,7 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, a *amagent.Agent, id 
 	})
 
 	// get number info
-	n, err := h.numberGet(ctx, a, id)
+	n, err := h.numberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -174,13 +173,15 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, a *amagent.Agent, id 
 // it returns created number information if it succeed.
 func (h *serviceHandler) NumberUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "NumberUpdate",
-		"customer_id": a.CustomerID,
-		"number_id":   id,
+		"func":            "NumberUpdate",
+		"agent":           a,
+		"number_id":       id,
+		"call_flow_id":    callFlowID,
+		"message_flow_id": messageFlowID,
 	})
 
 	// get number
-	n, err := h.numberGet(ctx, a, id)
+	n, err := h.numberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -189,6 +190,18 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, a *amagent.Agent, id 
 	if !h.hasPermission(ctx, a, n.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	// check call flow
+	if callFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, callFlowID) {
+		log.Errorf("Could not verify call flow")
+		return nil, fmt.Errorf("could not verify call flow")
+	}
+
+	// check message flow
+	if messageFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, messageFlowID) {
+		log.Errorf("Could not verify message flow")
+		return nil, fmt.Errorf("could not verify message flow")
 	}
 
 	// update number
@@ -213,7 +226,7 @@ func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *amagent.Age
 	})
 
 	// get number
-	n, err := h.numberGet(ctx, a, id)
+	n, err := h.numberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -265,4 +278,30 @@ func (h *serviceHandler) NumberRenew(ctx context.Context, a *amagent.Agent, tmRe
 	}
 
 	return res, nil
+}
+
+// numberVerifyFlow returns true if the agent has a correct permission for the given flow
+func (h *serviceHandler) numberVerifyFlow(ctx context.Context, a *amagent.Agent, flowID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "numberVerifyFlow",
+		"agent":   a,
+		"flow_id": flowID,
+	})
+
+	if flowID == uuid.Nil {
+		return true
+	}
+
+	f, err := h.flowGet(ctx, flowID)
+	if err != nil {
+		log.Errorf("Could not get flow info. err: %v", err)
+		return false
+	}
+
+	if f.CustomerID != a.CustomerID {
+		log.Errorf("The flow has different customer id.")
+		return false
+	}
+
+	return true
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -349,8 +350,10 @@ func Test_NumberUpdate(t *testing.T) {
 		numberName    string
 		detail        string
 
-		responseGet    *nmnumber.Number
-		responseUpdate *nmnumber.Number
+		responseGet         *nmnumber.Number
+		responseFlowCall    *fmflow.Flow
+		responseFlowMessage *fmflow.Flow
+		responseUpdate      *nmnumber.Number
 	}
 
 	tests := []test{
@@ -378,6 +381,16 @@ func Test_NumberUpdate(t *testing.T) {
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 				TMDelete:            defaultTimestamp,
+			},
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
+			},
+			&fmflow.Flow{
+				ID:         uuid.FromStringOrNil("7240534a-2ca2-11ee-bb9a-8f1c5dafa508"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
 			},
 			&nmnumber.Number{
 				ID:                  uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
@@ -409,6 +422,8 @@ func Test_NumberUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.callFlowID).Return(tt.responseFlowCall, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.messageFlowID).Return(tt.responseFlowMessage, nil)
 			mockReq.EXPECT().NumberV1NumberUpdate(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
 
 			res, err := h.NumberUpdate(ctx, tt.agent, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
@@ -556,6 +571,78 @@ func Test_NumberRenew(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}
+
+func Test_numberVerifyFlow(t *testing.T) {
+
+	type test struct {
+		name string
+
+		agent  *amagent.Agent
+		flowID uuid.UUID
+
+		responseFlow *fmflow.Flow
+
+		expectRes bool
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
+				CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			flowID: uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
+
+			responseFlow: &fmflow.Flow{
+				ID:         uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
+				CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				TMDelete:   defaultTimestamp,
+			},
+			expectRes: true,
+		},
+		{
+			name: "flow id nil",
+
+			agent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
+				CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			flowID: uuid.Nil,
+
+			expectRes: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			if tt.flowID != uuid.Nil {
+				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			}
+
+			res := h.numberVerifyFlow(ctx, tt.agent, tt.flowID)
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

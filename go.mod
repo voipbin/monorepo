@@ -21,13 +21,13 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240215192728-b61c81105fa6
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240224155336-fe880a099a62
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240227065141-edf81ece69ee
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240212145953-364923003e09
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240214182731-ed12d5a9070a
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240219100316-af55ebba9ea0
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240223190113-d0886960565c
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
-	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/crypto v0.20.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
@@ -49,7 +49,7 @@ require (
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20240215075724-ff0374d05dc9
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230705154830-1dd19ba6e804
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20240114160851-ee0475eb1ef6
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20240227083257-1d68ea39943c
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20231015150838-40ee333c9936
 	gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20230727164950-43d37418e642
 	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34
