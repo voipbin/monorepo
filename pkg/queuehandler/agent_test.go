@@ -51,8 +51,9 @@ func Test_GetAgents(t *testing.T) {
 			},
 
 			map[string]string{
-				"deleted": "false",
-				"tag_ids": "5d443cfe-b499-11ec-ac74-83f95d8a0381,4fc21d6c-b244-11ee-9bd1-1b47f77edd77",
+				"deleted":     "false",
+				"customer_id": "dd185d70-b499-11ec-a4b6-735983739876",
+				"tag_ids":     "5d443cfe-b499-11ec-ac74-83f95d8a0381,4fc21d6c-b244-11ee-9bd1-1b47f77edd77",
 			},
 			[]amagent.Agent{
 				{
@@ -80,9 +81,10 @@ func Test_GetAgents(t *testing.T) {
 			},
 
 			map[string]string{
-				"deleted": "false",
-				"status":  string(amagent.StatusAvailable),
-				"tag_ids": "5d443cfe-b499-11ec-ac74-83f95d8a0381",
+				"deleted":     "false",
+				"customer_id": "dd185d70-b499-11ec-a4b6-735983739876",
+				"status":      string(amagent.StatusAvailable),
+				"tag_ids":     "5d443cfe-b499-11ec-ac74-83f95d8a0381",
 			},
 			[]amagent.Agent{
 				{
@@ -114,7 +116,7 @@ func Test_GetAgents(t *testing.T) {
 			mockDB.EXPECT().QueueGet(ctx, tt.id).Return(tt.responseQueue, nil)
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.responseQueue.CustomerID, gomock.Any(), uint64(100), tt.expectFilters).Return(tt.responseAgents, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFilters).Return(tt.responseAgents, nil)
 
 			res, err := h.GetAgents(ctx, tt.id, tt.status)
 			if err != nil {

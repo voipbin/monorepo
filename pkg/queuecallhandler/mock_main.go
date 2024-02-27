@@ -165,6 +165,18 @@ func (mr *MockQueuecallHandlerMockRecorder) GetsByCustomerID(ctx, customerID, si
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByCustomerID), ctx, customerID, size, token, filters)
 }
 
+// HealthCheck mocks base method.
+func (m *MockQueuecallHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "HealthCheck", ctx, id, retryCount)
+}
+
+// HealthCheck indicates an expected call of HealthCheck.
+func (mr *MockQueuecallHandlerMockRecorder) HealthCheck(ctx, id, retryCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockQueuecallHandler)(nil).HealthCheck), ctx, id, retryCount)
+}
+
 // Kick mocks base method.
 func (m *MockQueuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()

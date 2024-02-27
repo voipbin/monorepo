@@ -12,12 +12,10 @@ import (
 
 // EventCallCallHangup handles call-manager call_hungup
 func (h *queuecallHandler) EventCallCallHangup(ctx context.Context, referenceID uuid.UUID) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "EventCallCallHangup",
-			"reference_id": referenceID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "EventCallCallHangup",
+		"reference_id": referenceID,
+	})
 
 	qc, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
@@ -39,13 +37,11 @@ func (h *queuecallHandler) EventCallCallHangup(ctx context.Context, referenceID 
 
 // EventCallConfbridgeJoined handles call-manager confbridge_join
 func (h *queuecallHandler) EventCallConfbridgeJoined(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "EventCallConfbridgeJoined",
-			"reference_id":  referenceID,
-			"confbridge_id": confbridgeID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "EventCallConfbridgeJoined",
+		"reference_id":  referenceID,
+		"confbridge_id": confbridgeID,
+	})
 
 	qc, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
@@ -70,13 +66,11 @@ func (h *queuecallHandler) EventCallConfbridgeJoined(ctx context.Context, refere
 
 // EventCallConfbridgeLeaved handles call-manager confbridge_leaved
 func (h *queuecallHandler) EventCallConfbridgeLeaved(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "EventCallConfbridgeLeaved",
-			"reference_id":  referenceID,
-			"confbridge_id": confbridgeID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "EventCallConfbridgeLeaved",
+		"reference_id":  referenceID,
+		"confbridge_id": confbridgeID,
+	})
 
 	// get queuecall
 	qc, err := h.GetByReferenceID(ctx, referenceID)

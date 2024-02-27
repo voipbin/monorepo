@@ -21,6 +21,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
+const (
+	defaultHealthCheckMaxRetryCount = 2
+	defaultHealthCheckDelay         = 10000 // 10 seconds
+)
+
 // QueuecallHandler interface
 type QueuecallHandler interface {
 	Create(
@@ -43,6 +48,8 @@ type QueuecallHandler interface {
 	Execute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error)
 	Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error)
 	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
+
+	HealthCheck(ctx context.Context, id uuid.UUID, retryCount int)
 
 	EventCallCallHangup(ctx context.Context, referenceID uuid.UUID)
 	EventCallConfbridgeJoined(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
