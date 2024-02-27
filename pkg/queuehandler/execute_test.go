@@ -62,9 +62,10 @@ func Test_Execute(t *testing.T) {
 				"status":   string(queuecall.StatusWaiting),
 			},
 			map[string]string{
-				"deleted": "false",
-				"tag_ids": "a3a6841c-d1af-11ec-8844-c7602a790709",
-				"status":  string(amagent.StatusAvailable),
+				"deleted":     "false",
+				"customer_id": "a3361ad8-d1af-11ec-865d-cf7070170a25",
+				"tag_ids":     "a3a6841c-d1af-11ec-8844-c7602a790709",
+				"status":      string(amagent.StatusAvailable),
 			},
 		},
 	}
@@ -95,7 +96,7 @@ func Test_Execute(t *testing.T) {
 			// GetAgents
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.responseQueue.CustomerID, gomock.Any(), uint64(100), tt.expectFiltersAgent).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFiltersAgent).Return(tt.responseAgent, nil)
 
 			mockReq.EXPECT().QueueV1QueuecallExecute(ctx, tt.responseQueuecall[0].ID, gomock.Any()).Return(&queuecall.Queuecall{}, nil)
 			mockReq.EXPECT().QueueV1QueueExecuteRun(ctx, tt.queueID, 100)

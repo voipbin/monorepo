@@ -32,15 +32,16 @@ func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amage
 
 	// get filters
 	filters := map[string]string{
-		"deleted": "false",
-		"tag_ids": tagIds,
+		"deleted":     "false",
+		"customer_id": q.CustomerID.String(),
+		"tag_ids":     tagIds,
 	}
 	if status != amagent.StatusNone {
 		filters["status"] = string(status)
 	}
 
 	// get agents
-	res, err := h.reqHandler.AgentV1AgentGets(ctx, q.CustomerID, h.utilhandler.TimeGetCurTime(), 100, filters)
+	res, err := h.reqHandler.AgentV1AgentGets(ctx, h.utilhandler.TimeGetCurTime(), 100, filters)
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
 		return nil, err

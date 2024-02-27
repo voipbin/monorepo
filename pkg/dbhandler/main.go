@@ -31,6 +31,7 @@ type DBHandler interface {
 	QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error
+	QueueRemoveWaitQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueSetBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
@@ -56,7 +57,7 @@ type DBHandler interface {
 	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
 	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
 	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error
-	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
+	// QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
 }
 
