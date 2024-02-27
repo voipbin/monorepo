@@ -621,3 +621,58 @@ func Test_QueueV1QueuecallExecute(t *testing.T) {
 		})
 	}
 }
+
+func Test_QueueV1QueuecallHealthCheck(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+		retryCount  int
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1a788e4e-d539-11ee-8f84-335e0b9857ba"),
+			1,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queuecalls/1a788e4e-d539-11ee-8f84-335e0b9857ba/health-check",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"retry_count":1}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.QueueV1QueuecallHealthCheck(ctx, tt.queuecallID, 0, tt.retryCount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
