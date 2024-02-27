@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from "react-router-dom";
 
 const hostname = 'https://api.voipbin.net/v1.0/'
 
@@ -27,8 +28,9 @@ export const Get = (target) => {
                 }
                 return resolve(response.json());
             })
-            .catch(() => {
-                throw new Error('Network error')
+            .catch(e => {
+                console.log("Could not fetch the data. err: ", e);
+                alert("Could not fetch the data correctly.")
             });
     })
 }
@@ -51,8 +53,9 @@ export const Post = (target, data) => {
                 }
                 return resolve(response.json());
             })
-            .catch(() => {
-                throw new Error('Network error')
+            .catch(e => {
+                console.log("Could not fetch the data. err: ", e);
+                alert("Could not fetch the data correctly.")
             });
     });
 }
@@ -76,8 +79,9 @@ export const Put = (target, data) => {
                 }
                 return resolve(response.json());
             })
-            .catch(() => {
-                throw new Error('Network error')
+            .catch(e => {
+                console.log("Could not fetch the data. err: ", e);
+                alert("Could not fetch the data correctly.")
             });
     });
 }
@@ -98,9 +102,9 @@ export const Delete = (target) => {
                 }
                 return resolve(response.json());
             })
-            .catch(response => {
-                console.log("Could not handle the request")
-                throw new Error('Network error')
+            .catch(e => {
+                console.log("Could not fetch the data. err: ", e);
+                alert("Could not fetch the data correctly.")
             });
     });
 }
