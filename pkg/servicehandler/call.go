@@ -70,7 +70,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *amagent.Agent, flowI
 	}
 
 	// verify the flow
-	f, err := h.flowGet(ctx, a, targetFlowID)
+	f, err := h.flowGet(ctx, targetFlowID)
 	if err != nil {
 		log.Errorf("Could not get flow info. err: %v", err)
 		return nil, nil, err
