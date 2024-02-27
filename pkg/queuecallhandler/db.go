@@ -125,6 +125,12 @@ func (h *queuecallHandler) Create(
 		}
 	}
 
+	// start health check
+	if errHealth := h.reqHandler.QueueV1QueuecallHealthCheck(ctx, res.ID, defaultHealthCheckDelay, 0); errHealth != nil {
+		// could not start the health check, but just write the error message only.
+		log.Errorf("Could not start health check. err: %v", errHealth)
+	}
+
 	return res, nil
 }
 
