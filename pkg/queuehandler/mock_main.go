@@ -170,6 +170,21 @@ func (mr *MockQueueHandlerMockRecorder) Gets(ctx, customerID, size, token, filte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueueHandler)(nil).Gets), ctx, customerID, size, token, filters)
 }
 
+// RemoveQueuecallID mocks base method.
+func (m *MockQueueHandler) RemoveQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveQueuecallID", ctx, id, queuecallID)
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveQueuecallID indicates an expected call of RemoveQueuecallID.
+func (mr *MockQueueHandlerMockRecorder) RemoveQueuecallID(ctx, id, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveQueuecallID", reflect.TypeOf((*MockQueueHandler)(nil).RemoveQueuecallID), ctx, id, queuecallID)
+}
+
 // RemoveServiceQueuecallID mocks base method.
 func (m *MockQueueHandler) RemoveServiceQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()

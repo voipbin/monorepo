@@ -640,12 +640,46 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 		),
 		tm_update = ?
 	where
-		id = ?
+		json_search(service_queue_call_ids, 'one', ?) is not null
+		and id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeGetCurTime(), queueCallID.String(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueRemoveServiceQueueCall. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queueUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// QueueRemoveWaitQueueCall removes queuecall from the wait_queue_call_ids.
+func (h *handler) QueueRemoveWaitQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error {
+	// prepare
+	q := `
+	update queues set
+		wait_queue_call_ids = json_remove(
+			wait_queue_call_ids, replace(
+				json_search(
+					wait_queue_call_ids,
+					'one',
+					?
+				),
+				'"',
+				''
+			)
+		),
+		tm_update = ?
+	where
+		json_search(wait_queue_call_ids, 'one', ?) is not null
+		and id = ?
+	`
+
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeGetCurTime(), queueCallID.String(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueueRemoveWaitQueueCall. err: %v", err)
 	}
 
 	// update the cache

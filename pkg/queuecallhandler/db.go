@@ -235,11 +235,13 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallAbandoned, res)
 
-	// add abandoned call to the queue
-	_, err = h.queueHandler.AddAbandonedQueuecallID(ctx, res.QueueID, res.ID)
+	// remove the queuecall from the queue.
+	q, err := h.queueHandler.RemoveQueuecallID(ctx, qc.QueueID, qc.ID)
 	if err != nil {
-		log.Errorf("Could not add the abandoned queuecall. queuecall_id: %s", qc.ID)
+		log.Errorf("Could not remove the queuecall from the queue. err: %v", err)
+		return nil, err
 	}
+	log.WithField("queue", q).Debugf("Removed queuecall from the queue. queue_id: %s, queuecall_id: %s", q.ID, qc.ID)
 
 	// delete confbridge
 	log.Debugf("Deleting confbridge. confbridge_id: %s", res.ConfbridgeID)
@@ -280,11 +282,13 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallDone, res)
 
-	// remove the service queuecall info from the queue
-	_, err = h.queueHandler.RemoveServiceQueuecallID(ctx, res.QueueID, res.ID)
+	// remove the queuecall from the queue.
+	q, err := h.queueHandler.RemoveQueuecallID(ctx, qc.QueueID, qc.ID)
 	if err != nil {
-		log.Errorf("Could not remove the service queuecall. queuecall_id: %s", res.ID)
+		log.Errorf("Could not remove the queuecall from the queue. err: %v", err)
+		return nil, err
 	}
+	log.WithField("queue", q).Debugf("Removed queuecall from the queue. queue_id: %s, queuecall_id: %s", q.ID, qc.ID)
 
 	// delete confbridge
 	log.Debugf("Deleting confbridge. confbridge_id: %s", res.ConfbridgeID)

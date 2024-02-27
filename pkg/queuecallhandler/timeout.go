@@ -11,12 +11,10 @@ import (
 
 // TimeoutWait kicks the queuecall if the queuecall's status is wait.
 func (h *queuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid.UUID) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "TimeoutWait",
-			"queuecall_id": queuecallID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "TimeoutWait",
+		"queuecall_id": queuecallID,
+	})
 
 	// get queuecall
 	qc, err := h.Get(ctx, queuecallID)
@@ -41,12 +39,10 @@ func (h *queuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid.UUI
 
 // TimeoutService kicks the cqueuecall if the queuecall's status is service.
 func (h *queuecallHandler) TimeoutService(ctx context.Context, queuecallID uuid.UUID) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "TimeoutService",
-			"queuecall_id": queuecallID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "TimeoutService",
+		"queuecall_id": queuecallID,
+	})
 
 	// get queuecall
 	qc, err := h.Get(ctx, queuecallID)
