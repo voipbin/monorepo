@@ -211,8 +211,8 @@ const AgentsDetail = () => {
                   <CCol className="mb-3 align-items-auto">
                     <select class="form-select" multiple aria-label="multiple select example" size="3" onChange={onChangeSelect}>
                       <option value="16" selected={selectedAgent}>Agent</option>
-                      <option value="32" selected={selectedManager}>Manager</option>
-                      <option value="64" selected={selectedAdmin}>Admin</option>
+                      <option value="64" selected={selectedManager}>Manager</option>
+                      <option value="32" selected={selectedAdmin}>Admin</option>
                     </select>
                   </CCol>
                 </CRow>
