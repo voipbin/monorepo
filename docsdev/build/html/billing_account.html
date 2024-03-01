@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Billing Account &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -24,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -91,8 +97,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Billing Account</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Billing Account</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/billing_account.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -103,22 +109,18 @@
            <div itemprop="articleBody">
              
   <section id="billing-account">
-<h1>Billing Account<a class="headerlink" href="#billing-account" title="Permalink to this headline"></a></h1>
+<h1>Billing Account<a class="headerlink" href="#billing-account" title="Permalink to this heading"></a></h1>
 <section id="overview">
-<span id="billing-account-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<span id="billing-account-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
 <p>The billing account feature in Voipbin empowers customers with better control over their account balance, enhancing the user experience and ensuring smooth communication. By programmatically verifying their account balance before initiating calls, customers can effectively manage their funds and ensure successful call completions.</p>
 <section id="balance-add">
-<h3>Balance add<a class="headerlink" href="#balance-add" title="Permalink to this headline"></a></h3>
+<h3>Balance add<a class="headerlink" href="#balance-add" title="Permalink to this heading"></a></h3>
 <p>It’s important to note that the balance add feature is exclusive to users with admin permissions. Regular users do not have the capability to add balance to their accounts programmatically. This safeguard ensures that the account balance remains secure and under the control of authorized personnel, reducing the risk of unauthorized access and potential misuse.</p>
 </section>
 <section id="rate">
-<h3>Rate<a class="headerlink" href="#rate" title="Permalink to this headline"></a></h3>
+<h3>Rate<a class="headerlink" href="#rate" title="Permalink to this heading"></a></h3>
 <p>Currently, Voipbin operates on a fixed-rate system, offering transparent and predictable pricing for various services. The table below outlines the costs associated with different services:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 46%" />
-<col style="width: 54%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>type</p></th>
 <th class="head"><p>cost(USD)</p></th>
@@ -141,9 +143,9 @@
 </section>
 </section>
 <section id="struct">
-<span id="billing-account-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline"></a></h2>
+<span id="billing-account-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this heading"></a></h2>
 <section id="billing-account-struct-billing-account">
-<span id="id1"></span><h3>Billing account<a class="headerlink" href="#billing-account-struct-billing-account" title="Permalink to this headline"></a></h3>
+<span id="id1"></span><h3>Billing account<a class="headerlink" href="#billing-account-struct-billing-account" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>

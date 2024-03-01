@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Overview &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/extension_overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,24 +96,24 @@
            <div itemprop="articleBody">
              
   <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
 <p>To enable your SIP endpoint to receive calls from Voipbin, you must set up a domain, extension, and registration.</p>
 <p>Calling a registered SIP endpoint follows the same process as calling any other SIP URI. However, you will now use the Address of Record (AOR) of your registered SIP extension (endpoint).</p>
 <section id="registration-address">
-<h2>Registration address<a class="headerlink" href="#registration-address" title="Permalink to this headline"></a></h2>
+<h2>Registration address<a class="headerlink" href="#registration-address" title="Permalink to this heading"></a></h2>
 <p>When calling your registered SIP extension (endpoint), you should use the general SIP domain URI, omitting the Voipbin’s SIP URI. Specifically, the format to call your registered SIP extension is as follows:</p>
 <p><cite>{extension}&#64;{your voipbin customer id}.registrar.voipbin.net</cite></p>
 <p>By using this format, Voipbin can route the call to your registered SIP endpoint based on the extension and domain information provided. This allows you to receive incoming calls on your SIP endpoint and handle them using your SIP-enabled system.</p>
 <p>The setup of domain, extension, and registration is crucial for integrating your SIP-based communication infrastructure with Voipbin. Once properly configured, you can seamlessly communicate with your SIP endpoint through Voipbin’s SIP services, ensuring efficient and reliable voice communication for your business or application needs. This integration empowers businesses and developers to create robust and scalable communication solutions, streamlining call handling and enhancing overall communication experiences.</p>
 </section>
 <section id="registration">
-<h2>Registration<a class="headerlink" href="#registration" title="Permalink to this headline"></a></h2>
+<h2>Registration<a class="headerlink" href="#registration" title="Permalink to this heading"></a></h2>
 <p>The extension registration is the process of identifying and authenticating a user or device on a SIP network. When a device wants to make or receive calls or messages on the network, it must first register with the VoIPBin by sending a REGISTER message.</p>
 <p>This message includes information about the user or device, such as its address, phone number, and authentication credentials (e.g., username and password). The VoIPBin verifies the user’s credentials and then responds with a confirmation message, such as a 200 OK response.</p>
 <p>Once the device is registered, it can make and receive calls and messages on the SIP network. SIP registration is important for ensuring secure and reliable communication between devices on the network, as well as for enabling advanced features like call forwarding, voicemail, and presence.</p>
 </section>
 <section id="proxy-authentication-required">
-<h2>407 Proxy Authentication Required<a class="headerlink" href="#proxy-authentication-required" title="Permalink to this headline"></a></h2>
+<h2>407 Proxy Authentication Required<a class="headerlink" href="#proxy-authentication-required" title="Permalink to this heading"></a></h2>
 <p>When a user or device sends a SIP REGISTER message to a VoIPBin with basic authentication, the VoIPBin will typically respond with a 407 Proxy Authentication Required message if the user’s credentials are not valid or not provided.</p>
 <p>Here is an example of this process:</p>
 <ol class="arabic simple">

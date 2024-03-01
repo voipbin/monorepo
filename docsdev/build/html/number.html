@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Number &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -24,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -102,8 +108,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Number</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Number</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/number.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -114,14 +120,14 @@
            <div itemprop="articleBody">
              
   <section id="number">
-<span id="number-main"></span><h1>Number<a class="headerlink" href="#number" title="Permalink to this headline"></a></h1>
+<span id="number-main"></span><h1>Number<a class="headerlink" href="#number" title="Permalink to this heading"></a></h1>
 <section id="overview">
-<span id="number-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<span id="number-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
 <p>The VoIPBIN Number resource represents a VoIPBIN number that is either provisioned directly from VoIPBIN, ported from another service provider, or hosted on VoIPBIN. These numbers are essential for establishing communication channels and enable users to make and receive calls or messages through the VoIPBIN platform.</p>
 <p>The Numbers list resource serves as a repository for all VoIPBIN numbers associated with an account. Users can use the POST method on the list resource to provision a new VoIPBIN number. To find an available number for provisioning, users can utilize the subresources of the AvailableNumbers resource, which provides a list of numbers that can be selected for use.</p>
 <p>Provisioning a VoIPBIN number is a two-step process. First, users need to find an available number from the list of options provided by the AvailableNumbers resource. Once a suitable number is identified, users must then proceed to the Numbers list resource and use the POST method to provision the selected number.</p>
 <section id="flow-execution">
-<span id="number-overview-flow-execution"></span><h3>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this headline"></a></h3>
+<span id="number-overview-flow-execution"></span><h3>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this heading"></a></h3>
 <p>VoIPBIN’s Number resource offers the capability to associate multiple flows with a single number. This functionality enables users to execute different registered flows based on specific situations or criteria. Currently, the platform supports call_flow_id and message_flow_id, which allows users to define custom flows for handling incoming calls and messages, respectively.</p>
 <p>When a call or message is received on a VoIPBIN number, the platform examines the associated flows to determine the appropriate actions to be taken. Depending on the flow’s configuration and the specific situation, different actions may be triggered, such as playing a greeting message, redirecting the call, responding with an automated message, or routing the message to a specific destination.</p>
 <p>By allowing multiple flows per number, VoIPBIN empowers users to create dynamic and customized call handling processes. This feature is particularly valuable for businesses or applications that require different call handling behaviors based on the caller’s identity, time of day, or other contextual factors.</p>
@@ -130,9 +136,9 @@
 </section>
 </section>
 <section id="number-struct-number">
-<span id="id1"></span><h2>Number<a class="headerlink" href="#number-struct-number" title="Permalink to this headline"></a></h2>
+<span id="id1"></span><h2>Number<a class="headerlink" href="#number-struct-number" title="Permalink to this heading"></a></h2>
 <section id="number-struct-number-number">
-<span id="id2"></span><h3>Number<a class="headerlink" href="#number-struct-number-number" title="Permalink to this headline"></a></h3>
+<span id="id2"></span><h3>Number<a class="headerlink" href="#number-struct-number-number" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -161,7 +167,7 @@
 <li><p>emergency_enabled: Emergency call support.</p></li>
 </ul>
 <section id="example">
-<h4>example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h4>
+<h4>example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0b266038-844b-11ec-97d8-63ba531361ce&quot;</span><span class="p">,</span>
     <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span><span class="p">,</span>
@@ -181,12 +187,8 @@
 </section>
 </section>
 <section id="status">
-<span id="number-struct-number-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline"></a></h3>
+<span id="number-struct-number-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this heading"></a></h3>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 75%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
 <th class="head"><p>Description</p></th>
@@ -204,9 +206,9 @@
 </section>
 </section>
 <section id="tutorial">
-<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline"></a></h2>
+<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h2>
 <section id="get-list-of-available-numbers">
-<h3>Get list of available-numbers<a class="headerlink" href="#get-list-of-available-numbers" title="Permalink to this headline"></a></h3>
+<h3>Get list of available-numbers<a class="headerlink" href="#get-list-of-available-numbers" title="Permalink to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/available_numbers?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&amp;country_code=US&amp;page_size=5&#39;
 
@@ -231,7 +233,7 @@
 </div>
 </section>
 <section id="get-list-of-numbers">
-<h3>Get list of numbers<a class="headerlink" href="#get-list-of-numbers" title="Permalink to this headline"></a></h3>
+<h3>Get list of numbers<a class="headerlink" href="#get-list-of-numbers" title="Permalink to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/numbers?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&amp;page_size=10&#39;
 
@@ -268,7 +270,7 @@
 </div>
 </section>
 <section id="get-detail-of-number">
-<h3>Get detail of number<a class="headerlink" href="#get-detail-of-number" title="Permalink to this headline"></a></h3>
+<h3>Get detail of number<a class="headerlink" href="#get-detail-of-number" title="Permalink to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&#39;
 
@@ -288,7 +290,7 @@
 </div>
 </section>
 <section id="delete-number">
-<h3>Delete number<a class="headerlink" href="#delete-number" title="Permalink to this headline"></a></h3>
+<h3>Delete number<a class="headerlink" href="#delete-number" title="Permalink to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/numbers/b7ee1086-fcbc-4f6f-96e5-7f9271e25279?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&#39;
 
@@ -308,7 +310,7 @@
 </div>
 </section>
 <section id="create-number">
-<h3>Create number<a class="headerlink" href="#create-number" title="Permalink to this headline"></a></h3>
+<h3>Create number<a class="headerlink" href="#create-number" title="Permalink to this heading"></a></h3>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/numbers?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&#39; \
 --header &#39;Content-Type: application/json&#39; \

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Groupcall &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Groupcall</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Groupcall</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/call_groupcall.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,10 +96,10 @@
            <div itemprop="articleBody">
              
   <section id="groupcall">
-<span id="call-groupcall"></span><h1>Groupcall<a class="headerlink" href="#groupcall" title="Permalink to this headline"></a></h1>
+<span id="call-groupcall"></span><h1>Groupcall<a class="headerlink" href="#groupcall" title="Permalink to this heading"></a></h1>
 <p>The Groupcall feature in Voipbin is a blast calling functionality that enables team members to communicate in real-time. When a Group Call is initiated, an alert is sent to all team members, allowing them to join the call with a single click. The feature uses VoIP technology to enable high-quality audio communication and offers benefits such as increased productivity, improved collaboration, and enhanced connectivity.</p>
 <section id="ringall">
-<h2>Ringall<a class="headerlink" href="#ringall" title="Permalink to this headline"></a></h2>
+<h2>Ringall<a class="headerlink" href="#ringall" title="Permalink to this heading"></a></h2>
 <p>Ringall send the dial request to the all of destinations.</p>
 <p>The ringall ring method is a way to make calls to multiple destinations simultaneously. When you initiate a groupcall using the ringall method, VoIPBin will place calls to all of the destinations on your list at once.
 This means that each destination’s phone will start ringing simultaneously, and the person who answers first will begin executing the call flow specified for that groupcall, while all other destinations that have not yet been answered will be hung up immediately.
@@ -124,7 +130,7 @@ This ensures that only one call is active at a time and the call flow is execute
 * The VoIPBin cancels the call to Destination-1 by sending a Cancel message to Destination-1.</p>
 </section>
 <section id="linear">
-<h2>Linear<a class="headerlink" href="#linear" title="Permalink to this headline"></a></h2>
+<h2>Linear<a class="headerlink" href="#linear" title="Permalink to this heading"></a></h2>
 <p>The linear ring method is a way to call a list of destinations one by one, in a specific order.</p>
 <p>When you initiate a groupcall using the linear method, VoIPBin will call the first destination on your list. If that destination does not answer, VoIPBin will move on to the next destination on the list and call it instead.
 This process will continue until one of the destinations answers the call, at which point the call flow specified for the groupcall will be executed. If all of the destinations on the list have been called and none of them have answered, the call will end without any further action.</p>
@@ -143,7 +149,7 @@ This process will continue until one of the destinations answers the call, at wh
 </div>
 </section>
 <section id="nested-groupcall">
-<h2>Nested groupcall<a class="headerlink" href="#nested-groupcall" title="Permalink to this headline"></a></h2>
+<h2>Nested groupcall<a class="headerlink" href="#nested-groupcall" title="Permalink to this heading"></a></h2>
 <p>A nested groupcall is a groupcall that is included as one of the destinations in another groupcall. When a groupcall with a nested groupcall is initiated, the nested groupcall is also initiated, creating a “nested” groupcall within the main groupcall.</p>
 <p>For example, let’s say you have a groupcall with the following list of destinations: Destination A, Destination B, and Destination C. Destination C is a nested groupcall that includes its own list of destinations: Destination X and Destination Y.</p>
 <p>When you initiate the main groupcall, VoIPBin will begin calling Destination A and Destination B simultaneously according to the ring method you’ve specified (either ringall or linear). When it reaches Destination C, the nested groupcall is initiated and VoIPBin will begin calling Destination X and Destination Y according to the ring method specified in the nested groupcall.</p>
