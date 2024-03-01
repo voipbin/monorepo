@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Queue &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -24,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -107,8 +113,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Queue</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Queue</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/queue.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -119,31 +125,31 @@
            <div itemprop="articleBody">
              
   <section id="queue">
-<h1>Queue<a class="headerlink" href="#queue" title="Permalink to this headline"></a></h1>
+<h1>Queue<a class="headerlink" href="#queue" title="Permalink to this heading"></a></h1>
 <section id="overview">
-<span id="queue-overfiw"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<span id="queue-overfiw"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
 <p>Call queueing allows calls to be placed on hold without handling the actual inquiries or transferring callers to the desired party. While in the call queue, the caller is played pre-recorded music or messages. Call queues are often used in call centers when there are not enough staff to handle a large number of calls. Call center operators generally receive information about the number of callers in the call queue and the duration of the waiting time. This allows them to respond flexibly to peak demand by deploying extra call center staff.</p>
 <p>With the VoIPBIN’s queueing feature, businesses and call centers can effectively manage inbound calls, provide a smooth waiting experience for callers, and ensure that calls are efficiently distributed to available agents, improving overall customer service and call center performance.</p>
 <section id="the-purpose-of-call-queueing">
-<h3>The purpose of call queueing<a class="headerlink" href="#the-purpose-of-call-queueing" title="Permalink to this headline"></a></h3>
+<h3>The purpose of call queueing<a class="headerlink" href="#the-purpose-of-call-queueing" title="Permalink to this heading"></a></h3>
 <p>Call queueing is intended to prevent callers from being turned away in the case of insufficient staff capacity. The purpose of the pre-recorded music or messages is to shorten the subjective waiting time. At the same time, call queues can be used for advertising products or services. As soon as the call can be dealt with, the caller is automatically transferred from the call queue to the member of staff responsible. If customer or contract data has to be requested in several stages, multiple downstream call queues can be used.</p>
 </section>
 <section id="flow-execution">
-<h3>Flow Execution<a class="headerlink" href="#flow-execution" title="Permalink to this headline"></a></h3>
+<h3>Flow Execution<a class="headerlink" href="#flow-execution" title="Permalink to this heading"></a></h3>
 <p>A call placed in the queue will progress through the queue’s waiting actions, continuing through pre-defined steps until an available agent is located. These waiting actions may involve playing pre-recorded music, messages, or custom actions, enhancing the caller’s experience while awaiting assistance in the queue.</p>
 <img alt="_images/queue_overview_flow.png" src="_images/queue_overview_flow.png" />
 </section>
 <section id="agent-searching">
-<h3>Agent searching<a class="headerlink" href="#agent-searching" title="Permalink to this headline"></a></h3>
+<h3>Agent searching<a class="headerlink" href="#agent-searching" title="Permalink to this heading"></a></h3>
 <p>While the call is in the queue, the queue will be searching for available agents to handle the call. Each valid queue has tags associated with it. The queue will search for agents with the same tags as the valid status.</p>
 <img alt="_images/queue_overview_agent.png" src="_images/queue_overview_agent.png" />
 <p>The agent status, such as available, unavailable, or busy, will be taken into account when searching for available agents. Once an available agent is found, the call will be routed to that agent for further handling, and the waiting actions will cease. This process ensures that calls are efficiently handled by available agents in the call center. The agent searching mechanism enhances call center productivity and customer satisfaction by reducing wait times and optimizing resource allocation.</p>
 </section>
 </section>
 <section id="queue-struct-queue">
-<span id="id1"></span><h2>Queue<a class="headerlink" href="#queue-struct-queue" title="Permalink to this headline"></a></h2>
+<span id="id1"></span><h2>Queue<a class="headerlink" href="#queue-struct-queue" title="Permalink to this heading"></a></h2>
 <section id="queue-struct-queue-queue">
-<span id="id2"></span><h3>Queue<a class="headerlink" href="#queue-struct-queue-queue" title="Permalink to this headline"></a></h3>
+<span id="id2"></span><h3>Queue<a class="headerlink" href="#queue-struct-queue-queue" title="Permalink to this heading"></a></h3>
 <p>Queue struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -199,13 +205,9 @@
 </ul>
 </section>
 <section id="routing-method">
-<span id="queue-struct-queue-routing-method"></span><h3>Routing Method<a class="headerlink" href="#routing-method" title="Permalink to this headline"></a></h3>
+<span id="queue-struct-queue-routing-method"></span><h3>Routing Method<a class="headerlink" href="#routing-method" title="Permalink to this heading"></a></h3>
 <p>Define the queue’s queued call routing method to the agent if the number of available agent is more than 2.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 75%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
 <th class="head"><p>Description</p></th>
@@ -220,9 +222,9 @@
 </section>
 </section>
 <section id="queuecall">
-<span id="queue-struct-queuecall"></span><h2>Queuecall<a class="headerlink" href="#queuecall" title="Permalink to this headline"></a></h2>
+<span id="queue-struct-queuecall"></span><h2>Queuecall<a class="headerlink" href="#queuecall" title="Permalink to this heading"></a></h2>
 <section id="queue-struct-queuecall-queuecall">
-<span id="id3"></span><h3>Queuecall<a class="headerlink" href="#queue-struct-queuecall-queuecall" title="Permalink to this headline"></a></h3>
+<span id="id3"></span><h3>Queuecall<a class="headerlink" href="#queue-struct-queuecall-queuecall" title="Permalink to this heading"></a></h3>
 <p>Queuecall struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -244,7 +246,7 @@
 <li><p>service_agent_id: Connected agent_id.</p></li>
 </ul>
 <section id="example">
-<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h4>
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7c1e226-8c86-4b43-9606-2d5bb2059a09&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
@@ -261,13 +263,9 @@
 </section>
 </section>
 <section id="reference-type">
-<span id="queue-struct-queuecall-reference-type"></span><h3>Reference type<a class="headerlink" href="#reference-type" title="Permalink to this headline"></a></h3>
+<span id="queue-struct-queuecall-reference-type"></span><h3>Reference type<a class="headerlink" href="#reference-type" title="Permalink to this heading"></a></h3>
 <p>Referenced resource’s type.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 26%" />
-<col style="width: 74%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
 <th class="head"><p>Description</p></th>
@@ -281,13 +279,9 @@
 </table>
 </section>
 <section id="status">
-<span id="queue-struct-queuecall-type"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline"></a></h3>
+<span id="queue-struct-queuecall-type"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this heading"></a></h3>
 <p>Queuecall’s status.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 91%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
 <th class="head"><p>Description</p></th>
@@ -314,9 +308,9 @@
 </section>
 </section>
 <section id="tutorial">
-<span id="queue-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline"></a></h2>
+<span id="queue-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h2>
 <section id="create-a-new-queue">
-<h3>Create a new queue<a class="headerlink" href="#create-a-new-queue" title="Permalink to this headline"></a></h3>
+<h3>Create a new queue<a class="headerlink" href="#create-a-new-queue" title="Permalink to this heading"></a></h3>
 <p>Create a new queue</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queues?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDY4NzQwMzl9.LoPJ9Vv6GFAItYQ1AVV4lrEoOVtJaFOQx-tkauUR1-g&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -352,7 +346,7 @@
 </div>
 </section>
 <section id="get-list-of-queues">
-<h3>Get list of queues<a class="headerlink" href="#get-list-of-queues" title="Permalink to this headline"></a></h3>
+<h3>Get list of queues<a class="headerlink" href="#get-list-of-queues" title="Permalink to this heading"></a></h3>
 <p>Gets the list of created queues.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queues?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 

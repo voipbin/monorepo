@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Overview &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/number_overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,12 +96,12 @@
            <div itemprop="articleBody">
              
   <section id="overview">
-<span id="number-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<span id="number-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
 <p>The VoIPBIN Number resource represents a VoIPBIN number that is either provisioned directly from VoIPBIN, ported from another service provider, or hosted on VoIPBIN. These numbers are essential for establishing communication channels and enable users to make and receive calls or messages through the VoIPBIN platform.</p>
 <p>The Numbers list resource serves as a repository for all VoIPBIN numbers associated with an account. Users can use the POST method on the list resource to provision a new VoIPBIN number. To find an available number for provisioning, users can utilize the subresources of the AvailableNumbers resource, which provides a list of numbers that can be selected for use.</p>
 <p>Provisioning a VoIPBIN number is a two-step process. First, users need to find an available number from the list of options provided by the AvailableNumbers resource. Once a suitable number is identified, users must then proceed to the Numbers list resource and use the POST method to provision the selected number.</p>
 <section id="flow-execution">
-<span id="number-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this headline"></a></h2>
+<span id="number-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this heading"></a></h2>
 <p>VoIPBIN’s Number resource offers the capability to associate multiple flows with a single number. This functionality enables users to execute different registered flows based on specific situations or criteria. Currently, the platform supports call_flow_id and message_flow_id, which allows users to define custom flows for handling incoming calls and messages, respectively.</p>
 <p>When a call or message is received on a VoIPBIN number, the platform examines the associated flows to determine the appropriate actions to be taken. Depending on the flow’s configuration and the specific situation, different actions may be triggered, such as playing a greeting message, redirecting the call, responding with an automated message, or routing the message to a specific destination.</p>
 <p>By allowing multiple flows per number, VoIPBIN empowers users to create dynamic and customized call handling processes. This feature is particularly valuable for businesses or applications that require different call handling behaviors based on the caller’s identity, time of day, or other contextual factors.</p>

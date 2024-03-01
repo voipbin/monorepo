@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Transfer &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Transfer</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Transfer</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/call_transfer.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,14 +96,14 @@
            <div itemprop="articleBody">
              
   <section id="transfer">
-<span id="call-transfer"></span><h1>Transfer<a class="headerlink" href="#transfer" title="Permalink to this headline"></a></h1>
+<span id="call-transfer"></span><h1>Transfer<a class="headerlink" href="#transfer" title="Permalink to this heading"></a></h1>
 <p>CPaaS, or Communications Platform as a Service, is a cloud-based technology that allows developers to add real-time communication features to their applications, such as voice and messaging capabilities.
 Call transfer is a common feature in CPaaS that allows an ongoing phone call to be transferred from one person to another, or from one device to another, without disrupting the conversation.</p>
 <p>There are two main types of call transfer in CPaaS: blind transfer and attended transfer.</p>
 <p>In both types of call transfer, the transfer can be done manually by the person initiating the transfer, or it can be automated using CPaaS software. Automated transfer is typically done using rules-based routing, which determines the appropriate person or device to transfer the call to based on predefined rules or criteria.</p>
 <p>Call transfer is just one of many features available in CPaaS technology, which can help improve call handling, reduce call times, and improve overall customer service.</p>
 <section id="blind-transfer">
-<span id="call-transfer-blind-transfer"></span><h2>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Permalink to this headline"></a></h2>
+<span id="call-transfer-blind-transfer"></span><h2>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Permalink to this heading"></a></h2>
 <p>Blind transfer is the simplest type of call transfer. In this type of transfer, the person initiating the transfer simply transfers the call to another person or phone number without first speaking to them. This is useful when the person receiving the call is known to be available and ready to take the call. Blind transfer is commonly used in call center environments where a caller needs to be routed to the appropriate agent or department.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
@@ -136,7 +142,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <p>This is the basic process of an blind transfer using a CPaaS like VoIPBin.</p>
 </section>
 <section id="attended-transfer">
-<span id="call-transfer-attended-transfer"></span><h2>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Permalink to this headline"></a></h2>
+<span id="call-transfer-attended-transfer"></span><h2>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Permalink to this heading"></a></h2>
 <p>Attended transfer, also known as consultative transfer, involves the person initiating the transfer first speaking to the person who will be taking the call. This allows the person initiating the transfer to provide context or information about the caller or the reason for the transfer. Once the person who will be taking the call is ready, the transfer is initiated and the original caller is connected to the new person or device. Attended transfer is commonly used in situations where the person receiving the call may need more information before taking the call, such as when transferring a call to a supervisor or manager.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
