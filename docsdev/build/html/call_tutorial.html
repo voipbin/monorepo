@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutorial &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Tutorial</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/call_tutorial.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,9 +96,9 @@
            <div itemprop="articleBody">
              
   <section id="tutorial">
-<span id="call-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline"></a></h1>
+<span id="call-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
 <section id="simple-outbound-call-with-tts">
-<h2>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Permalink to this headline"></a></h2>
+<h2>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Permalink to this heading"></a></h2>
 <p>Making an outbound call with TTS(Text-to-Speech) action.
 When the destination answer the call, it will speak the given text message.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDcyNjM5MjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.py7AwXIO0ZNBWSS1PN-05L9oYEREjGgbkkE6CcVyuzw&#39; \
@@ -123,7 +129,7 @@ When the destination answer the call, it will speak the given text message.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-media-file-play">
-<h2>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Permalink to this headline"></a></h2>
+<h2>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Permalink to this heading"></a></h2>
 <p>Making an outbound call with media file play action.
 When the destination answer the call, it will play the given media file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
@@ -187,7 +193,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-tts-and-connect">
-<h2>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Permalink to this headline"></a></h2>
+<h2>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Permalink to this heading"></a></h2>
 <p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -266,7 +272,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-talk-and-digits-send">
-<h2>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Permalink to this headline"></a></h2>
+<h2>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Permalink to this heading"></a></h2>
 <p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -343,7 +349,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-branch">
-<h2>Simple outbound call with Branch<a class="headerlink" href="#simple-outbound-call-with-branch" title="Permalink to this headline"></a></h2>
+<h2>Simple outbound call with Branch<a class="headerlink" href="#simple-outbound-call-with-branch" title="Permalink to this heading"></a></h2>
 <p>Making an outbound call with brach. It will get the digits from the call and will execute the branch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
                 <span class="o">|</span>
@@ -527,7 +533,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="get-call-list">
-<h2>Get call list<a class="headerlink" href="#get-call-list" title="Permalink to this headline"></a></h2>
+<h2>Get call list<a class="headerlink" href="#get-call-list" title="Permalink to this heading"></a></h2>
 <p>Getting a list of calls.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
@@ -571,7 +577,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="get-specific-call">
-<h2>Get specific call<a class="headerlink" href="#get-specific-call" title="Permalink to this headline"></a></h2>
+<h2>Get specific call<a class="headerlink" href="#get-specific-call" title="Permalink to this heading"></a></h2>
 <p>Getting a given call uuid’s call info.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
@@ -611,7 +617,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="make-a-groupcall">
-<h2>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Permalink to this headline"></a></h2>
+<h2>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Permalink to this heading"></a></h2>
 <p>Make a groupcall to the multiple destinations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=eyJhbGcslkj&#39; \
     --header &#39;Content-Type: application/json&#39; \

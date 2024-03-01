@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Overview &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/flow_overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,38 +96,38 @@
            <div itemprop="articleBody">
              
   <section id="overview">
-<span id="flow-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<span id="flow-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
 <p>The Flow in VoIPBIN is a powerful set of instructions that guides the platform on how to handle incoming calls. When someone calls one of your VoIPBIN numbers or destinations, the platform looks up the associated URL and sends a request. The Flow instructions are then read to determine the appropriate actions to be taken, such as recording the call, playing a message, or prompting the caller to press digits on their keypad.</p>
 <p>At its core, the Flow is an array of JSON objects with special tags defined by VoIPBIN, enabling users to build their own Programmable Voice applications.</p>
 <section id="how-the-flow-works">
-<span id="flow-overview-how-the-flow-works"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this headline"></a></h2>
+<span id="flow-overview-how-the-flow-works"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this heading"></a></h2>
 <p>When an incoming call is received on one of your VoIPBIN numbers or destinations, the platform identifies the associated URL and sends a request.</p>
 <p>The Flow instructions are then processed, providing a step-by-step guide on how to handle the call. This might involve greeting the caller, presenting options, gathering input, or executing various actions based on the caller’s response.</p>
 </section>
 <section id="unified-flow">
-<span id="flow-overview-unified-flow"></span><h2>Unified flow<a class="headerlink" href="#unified-flow" title="Permalink to this headline"></a></h2>
+<span id="flow-overview-unified-flow"></span><h2>Unified flow<a class="headerlink" href="#unified-flow" title="Permalink to this heading"></a></h2>
 <p>VoIPBIN’s Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice and video calls, SMS, and RESTful API triggers.</p>
 <p>With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBIN then automatically executes this flow, ensuring a consistent experience for customers across various channels.</p>
 </section>
 <section id="non-linear-action-execution">
-<span id="flow-overview-non-linear-action-execution"></span><h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Permalink to this headline"></a></h2>
+<span id="flow-overview-non-linear-action-execution"></span><h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Permalink to this heading"></a></h2>
 <p>VoIPBIN’s Flow provides the flexibility of Non-Linear action execution.</p>
 <p>Users can customize their actions in both linear and non-linear ways, allowing them to define complex logic and decision trees to handle various call scenarios.</p>
 <img alt="_images/flow_overview_non_linear.png" src="_images/flow_overview_non_linear.png" />
 </section>
 <section id="flow-fork">
-<span id="flow-overview-flow-fork"></span><h2>Flow fork<a class="headerlink" href="#flow-fork" title="Permalink to this headline"></a></h2>
+<span id="flow-overview-flow-fork"></span><h2>Flow fork<a class="headerlink" href="#flow-fork" title="Permalink to this heading"></a></h2>
 <p>Certain flow actions, such as fetch, fetch_flow, queue_join, and more, enable flow forking.</p>
 <p>When the flow is forked, the execution cursor moves to the forked flow and starts executing the actions within it. Once the forked flow reaches its end, the execution cursor moves back to the following action of the forking action, continuing the flow execution.</p>
 <img alt="_images/flow_overview_fork.png" src="_images/flow_overview_fork.png" />
 </section>
 <section id="actions">
-<span id="flow-overview-actions"></span><h2>Actions<a class="headerlink" href="#actions" title="Permalink to this headline"></a></h2>
+<span id="flow-overview-actions"></span><h2>Actions<a class="headerlink" href="#actions" title="Permalink to this heading"></a></h2>
 <p>Within VoIPBIN, actions dictate the course of the platform’s response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.</p>
 <p>VoIPBIN’s Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBIN’s Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.</p>
 </section>
 <section id="flow-execution">
-<span id="flow-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this headline"></a></h2>
+<span id="flow-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Permalink to this heading"></a></h2>
 <p>In VoIPBin, the execution of flows is versatile and can be initiated through various methods:</p>
 <p><strong>Incoming/Outgoing Calls:</strong></p>
 <p>VoIPBin facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBin will seamlessly execute the associated flow.

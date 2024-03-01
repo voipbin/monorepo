@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trunking &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Trunking</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Trunking</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/trunk_overview_trunking.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,22 +96,22 @@
            <div itemprop="articleBody">
              
   <section id="trunking">
-<h1>Trunking<a class="headerlink" href="#trunking" title="Permalink to this headline"></a></h1>
+<h1>Trunking<a class="headerlink" href="#trunking" title="Permalink to this heading"></a></h1>
 <p>SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.</p>
 <section id="server-address">
-<h2>Server address<a class="headerlink" href="#server-address" title="Permalink to this headline"></a></h2>
+<h2>Server address<a class="headerlink" href="#server-address" title="Permalink to this heading"></a></h2>
 <p>Once you created trunk, the voipbin generates the trunk server address for you.</p>
 <p><cite>sip:{your voipbin trunk domain name}.trunk.voipbin.net</cite></p>
 </section>
 <section id="authentication">
-<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline"></a></h2>
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this heading"></a></h2>
 <p>Currently, The VoIPBin’s trunking authentication supports only the Basic authentication.</p>
 <ul class="simple">
 <li><p>Basic authentication</p></li>
 <li><p>IP base authentication(WIP)</p></li>
 </ul>
 <section id="basic-authentication">
-<h3>Basic authentication<a class="headerlink" href="#basic-authentication" title="Permalink to this headline"></a></h3>
+<h3>Basic authentication<a class="headerlink" href="#basic-authentication" title="Permalink to this heading"></a></h3>
 <p>To make a SIP outgoing call through a VoIPBin using basic authentication, you need to follow a few steps:</p>
 <ol class="arabic simple">
 <li><p>Choose a SIP client: You can use a software-based SIP client, such as Zoiper or X-Lite, or a hardware-based SIP phone, such as a Cisco or Grandstream phone.</p></li>
@@ -147,7 +153,7 @@
 </section>
 </section>
 <section id="call-handle">
-<h2>Call handle<a class="headerlink" href="#call-handle" title="Permalink to this headline"></a></h2>
+<h2>Call handle<a class="headerlink" href="#call-handle" title="Permalink to this heading"></a></h2>
 <p>Unlike the normal VoIPBin’s normal call handle, the VoIPBin handles trunking outbound call in a different way. The VoIPBin executes special flow for the trunking call.
 It executes the follow features:</p>
 <ul class="simple">
@@ -155,7 +161,7 @@ It executes the follow features:</p>
 <li><p>Relay the hangup cause.</p></li>
 </ul>
 <section id="early-media-handle">
-<h3>Early media handle<a class="headerlink" href="#early-media-handle" title="Permalink to this headline"></a></h3>
+<h3>Early media handle<a class="headerlink" href="#early-media-handle" title="Permalink to this heading"></a></h3>
 <p>The VoIPBin enables the the early-media feature for the trunking outbound call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
 
@@ -172,7 +178,7 @@ It executes the follow features:</p>
 </div>
 </section>
 <section id="realy-hangup-cause">
-<h3>Realy hangup cause<a class="headerlink" href="#realy-hangup-cause" title="Permalink to this headline"></a></h3>
+<h3>Realy hangup cause<a class="headerlink" href="#realy-hangup-cause" title="Permalink to this heading"></a></h3>
 <p>The VoIPBin delivers the hangup cause code from the outgoing call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
 

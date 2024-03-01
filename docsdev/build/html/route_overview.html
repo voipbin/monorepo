@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Overview &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/route_overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,15 +96,15 @@
            <div itemprop="articleBody">
              
   <section id="overview">
-<span id="route-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<span id="route-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
 <p>The Route API in VoIPBIN provides a powerful mechanism for defining SIP routing strategies, ensuring reliable call delivery, and enabling failover to different service providers in case of call failures. By configuring routes, users can make dynamic decisions on which service provider to use for outbound calls, optimizing call success rates and ensuring robust call delivery.</p>
 <section id="route-failover">
-<span id="route-overview-route-failover"></span><h2>Route Failover<a class="headerlink" href="#route-failover" title="Permalink to this headline"></a></h2>
+<span id="route-overview-route-failover"></span><h2>Route Failover<a class="headerlink" href="#route-failover" title="Permalink to this heading"></a></h2>
 <p>Route failover is a crucial feature of the Route API that allows the system to handle call failures gracefully. When a call request encounters a failure, such as encountering a 404, 5XX, or 6XX SIP fail code, the system can automatically trigger a retry with a different service provider.</p>
 <p>By specifying the conditions under which the system should attempt a retry with an alternative provider, users can implement an effective failover strategy to ensure call continuity and minimize disruptions in communication. This failover mechanism enhances call reliability and mitigates potential issues that may arise from service provider outages or temporary connectivity problems.</p>
 </section>
 <section id="dynamic-routing-decisions">
-<span id="route-overview-dynamic-routing-decisions"></span><h2>Dynamic Routing Decisions<a class="headerlink" href="#dynamic-routing-decisions" title="Permalink to this headline"></a></h2>
+<span id="route-overview-dynamic-routing-decisions"></span><h2>Dynamic Routing Decisions<a class="headerlink" href="#dynamic-routing-decisions" title="Permalink to this heading"></a></h2>
 <p>One of the primary advantages of the Route API is its ability to make dynamic routing decisions based on various factors. Users can define routing rules and conditions to determine which service provider should be used for specific outbound calls. These routing decisions can be based on factors such as call destination, customer preferences, time of day, cost considerations, or the quality of service offered by different providers.</p>
 <p>Additionally, users can configure default routes for all customers or set specific routes per customer, tailoring the routing strategy to suit their unique requirements. This flexibility allows businesses to optimize call routing and choose the most appropriate service provider for each call, resulting in improved call success rates and enhanced call quality.</p>
 <p>Seamless Integration with Service Providers
