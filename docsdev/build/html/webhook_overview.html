@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Overview &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/webhook_overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,23 +96,23 @@
            <div itemprop="articleBody">
              
   <section id="overview">
-<span id="webhook-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<span id="webhook-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
 <p>Webhooks, a robust feature offered by VoIPBIN, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBIN resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.</p>
 <section id="notification-mechanism">
-<h2>Notification Mechanism<a class="headerlink" href="#notification-mechanism" title="Permalink to this headline"></a></h2>
+<h2>Notification Mechanism<a class="headerlink" href="#notification-mechanism" title="Permalink to this heading"></a></h2>
 <p>Webhook events act as notifications sent by VoIPBIN, triggering when specific events or actions unfold within the system, such as call events, message events, or changes to resources like queues or agents. Configured webhook endpoints receive these events, ensuring users promptly receive pertinent data related to their VoIPBIN resources.</p>
 <img alt="_images/webhook_overview_notification.png" src="_images/webhook_overview_notification.png" />
 </section>
 <section id="types-of-webhooks">
-<h2>Types of Webhooks<a class="headerlink" href="#types-of-webhooks" title="Permalink to this headline"></a></h2>
+<h2>Types of Webhooks<a class="headerlink" href="#types-of-webhooks" title="Permalink to this heading"></a></h2>
 <p>VoIPBIN tailors webhooks for each resource type, ensuring users receive granular progress and updates for various events. This resource-specific approach allows users to monitor their VoIPBIN resources with precision, obtaining notifications and data tailored to each resource type. For instance, call-specific webhook events furnish details on call status, duration, and caller ID, while message-specific events offer insights into SMS or MMS messages, including content, sender ID, and delivery status.</p>
 </section>
 <section id="custom-endpoints">
-<h2>Custom Endpoints<a class="headerlink" href="#custom-endpoints" title="Permalink to this headline"></a></h2>
+<h2>Custom Endpoints<a class="headerlink" href="#custom-endpoints" title="Permalink to this heading"></a></h2>
 <p>To harness webhooks, users must configure custom webhook endpoints on their servers. These endpoints, serving as URLs, dictate where VoIPBIN transmits webhook events. Upon an event occurrence, VoIPBIN initiates an HTTP request to the configured endpoint, incorporating relevant data in the payload. This empowers users to process and respond to events according to their unique requirements.</p>
 </section>
 <section id="benefits-of-webhooks">
-<h2>Benefits of Webhooks<a class="headerlink" href="#benefits-of-webhooks" title="Permalink to this headline"></a></h2>
+<h2>Benefits of Webhooks<a class="headerlink" href="#benefits-of-webhooks" title="Permalink to this heading"></a></h2>
 <p>Webhooks deliver a range of advantages for VoIPBIN users:</p>
 <ul class="simple">
 <li><p>Real-Time Updates: Offering immediate event notifications, webhooks keep users abreast of real-time changes to their VoIPBIN resources.</p></li>

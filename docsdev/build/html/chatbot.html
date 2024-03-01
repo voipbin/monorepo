@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chatbot &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -24,11 +26,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -93,8 +99,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Chatbot</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Chatbot</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/chatbot.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -105,15 +111,15 @@
            <div itemprop="articleBody">
              
   <section id="chatbot">
-<h1>Chatbot<a class="headerlink" href="#chatbot" title="Permalink to this headline"></a></h1>
+<h1>Chatbot<a class="headerlink" href="#chatbot" title="Permalink to this heading"></a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
 <p>A chatbot is a computer program designed to simulate conversation with human users, typically over messaging platforms. Chatbots use natural language processing (NLP) and artificial intelligence (AI) technologies to understand and interpret user requests, and then respond with appropriate information or actions.</p>
 <p>Chatbots can be used for a variety of tasks, such as answering customer inquiries, providing support and guidance, making reservations, or even just for entertainment. They can be implemented on websites, messaging apps, social media platforms, and other digital channels, and can help to streamline customer service and support processes by providing quick and accurate responses to common questions and issues.</p>
 <p>In the VoIPBin, you can set your chatbot and connect the call to the chatbot. So you can implement the voice chatbot talk easily.</p>
 </section>
 <section id="init-prompt">
-<h2>Init prompt<a class="headerlink" href="#init-prompt" title="Permalink to this headline"></a></h2>
+<h2>Init prompt<a class="headerlink" href="#init-prompt" title="Permalink to this heading"></a></h2>
 <p>An initial prompt to a chatbot is the starting point or the first message given to a chatbot system to initiate a conversation or request information. It serves as the input or query that sets the context for the chatbot to generate a response. The prompt can be in the form of a question, statement, or any text-based instruction provided by a user.</p>
 <p>When interacting with a chatbot, the initial prompt plays a crucial role in determining the quality and relevance of the chatbot’s response. It should ideally be clear, concise, and specific enough to convey the desired information or task to the chatbot. The prompt can be tailored to a specific domain or topic, and it can be open-ended or structured, depending on the desired outcome.</p>
 <p>The chatbot system processes the initial prompt using its underlying algorithms and models, which have been trained on large datasets to understand and generate human-like text. It analyzes the prompt’s content, context, and intent, and then generates a response based on its learned knowledge and patterns.</p>
@@ -149,7 +155,7 @@
 </div>
 </section>
 <section id="response-message">
-<h2>Response message<a class="headerlink" href="#response-message" title="Permalink to this headline"></a></h2>
+<h2>Response message<a class="headerlink" href="#response-message" title="Permalink to this heading"></a></h2>
 <p>When a chatbot generates a response, it can be presented in various forms depending on the implementation.</p>
 <p>In the case of a normal text string response, the chatbot will provide the response message as text, which can be read or played as an audio using Text-to-Speech technology. This type of response is suitable for regular conversational interactions.</p>
 <p>However, there are scenarios where the chatbot’s response takes the form of a JSON format containing a list of <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">action</span></a> objects. This indicates that the chatbot aims to provide instructions for executing specific <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">actions</span></a>.</p>
@@ -161,9 +167,9 @@
 <p>In summary, when a chatbot generates a response, it can be a normal text string or a JSON format containing a list of action objects. The former is suitable for regular conversation, while the latter indicates the chatbot’s intention to provide instructions for specific actions. The JSON response enables seamless integration with external systems, allowing the chatbot to influence and trigger actions within those systems.</p>
 </section>
 <section id="chatbot-struct-chatbot">
-<span id="id1"></span><h2>Chatbot<a class="headerlink" href="#chatbot-struct-chatbot" title="Permalink to this headline"></a></h2>
+<span id="id1"></span><h2>Chatbot<a class="headerlink" href="#chatbot-struct-chatbot" title="Permalink to this heading"></a></h2>
 <section id="chatbot-struct-chatroom-chatroom">
-<span id="id2"></span><h3>Chatbot<a class="headerlink" href="#chatbot-struct-chatroom-chatroom" title="Permalink to this headline"></a></h3>
+<span id="id2"></span><h3>Chatbot<a class="headerlink" href="#chatbot-struct-chatroom-chatroom" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -186,7 +192,7 @@
 <li><p>init_prompt: Defines chatbot’s initial prompt. It will define the chatbot engine’s behavior.</p></li>
 </ul>
 <section id="example">
-<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h4>
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a092c5d9-632c-48d7-b70b-499f2ca084b1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
@@ -202,13 +208,9 @@
 </section>
 </section>
 <section id="type">
-<span id="chatbot-struct-chatbot-engine-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline"></a></h3>
+<span id="chatbot-struct-chatbot-engine-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this heading"></a></h3>
 <p>Chat’s type.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 81%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
 <th class="head"><p>Description</p></th>

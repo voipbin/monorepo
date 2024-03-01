@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Overview &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/call_overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,7 +96,7 @@
            <div itemprop="articleBody">
              
   <section id="overview">
-<span id="call-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<span id="call-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
 <p>The VoIPBIN call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBIN API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBIN actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different gender and accents.</p>
 <p>With the VoIPBIN API you can:</p>
 <ul class="simple">
@@ -101,12 +107,12 @@
 <li><p>Send text-to-speech messages in 50 languages with different gender and accents.</p></li>
 </ul>
 <section id="protocol">
-<h2>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline"></a></h2>
+<h2>Protocol<a class="headerlink" href="#protocol" title="Permalink to this heading"></a></h2>
 <p>VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
 <img alt="_images/call_overview_protocol.png" src="_images/call_overview_protocol.png" />
 </section>
 <section id="pstn-phone-number-format">
-<h2>PSTN/Phone Number Format<a class="headerlink" href="#pstn-phone-number-format" title="Permalink to this headline"></a></h2>
+<h2>PSTN/Phone Number Format<a class="headerlink" href="#pstn-phone-number-format" title="Permalink to this heading"></a></h2>
 <p>In the VoIPBIN APIs, all PSTN/Phone numbers must adhere to the <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This format standardizes the representation of phone numbers to facilitate smooth communication and interoperability across different systems.</p>
 <p>Key requirements for phone numbers within the VoIPBIN APIs:</p>
 <ul class="simple">
@@ -116,7 +122,7 @@
 <p>For example, a US phone number should be represented as +16062067563, and a Korea phone number should be represented as +821021656521.</p>
 </section>
 <section id="extension-number-format">
-<h2>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Permalink to this headline"></a></h2>
+<h2>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Permalink to this heading"></a></h2>
 <p>The extension numbers used in the VoIPBIN system can be customized according to specific requirements. However, they must adhere to the following limitation:</p>
 <ul class="simple">
 <li><p>Extension numbers should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
@@ -125,12 +131,12 @@
 <p>With the VoIPBIN call API’s robust features and support for various protocols, developers can create versatile and efficient call applications, enabling seamless communication and collaboration for end-users.</p>
 </section>
 <section id="incoming-call">
-<h2>Incoming call<a class="headerlink" href="#incoming-call" title="Permalink to this headline"></a></h2>
+<h2>Incoming call<a class="headerlink" href="#incoming-call" title="Permalink to this heading"></a></h2>
 <p>The VoIPBin system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
 When an incoming call is received, the VoIPBin system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
 </section>
 <section id="execution-of-call-flow-for-incoming-call">
-<h2>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Permalink to this headline"></a></h2>
+<h2>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Permalink to this heading"></a></h2>
 <p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
 <ul class="simple">
 <li><p>Call Verification: When an incoming call is received, the VoIPBin system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
@@ -142,12 +148,12 @@ When an incoming call is received, the VoIPBin system processes the call request
 <img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
 </section>
 <section id="outgoing-call">
-<h2>Outgoing call<a class="headerlink" href="#outgoing-call" title="Permalink to this headline"></a></h2>
+<h2>Outgoing call<a class="headerlink" href="#outgoing-call" title="Permalink to this heading"></a></h2>
 <p>The VoIPBin system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
 To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBin system, which then processes the request and attempts to establish a connection with the specified destination.</p>
 </section>
 <section id="execution-of-call-flow-for-outgoing-call">
-<h2>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Permalink to this headline"></a></h2>
+<h2>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Permalink to this heading"></a></h2>
 <p>Once the outgoing call request is initiated, the VoIPBin system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
 <p>The call flow execution occurs as follows:</p>
 <ul class="simple">
@@ -161,12 +167,12 @@ To utilize the outgoing call feature, users need to provide the necessary call p
 <img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
 </section>
 <section id="error-handling-and-termination">
-<h2>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Permalink to this headline"></a></h2>
+<h2>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Permalink to this heading"></a></h2>
 <p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
 The VoIPBin system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
 </section>
 <section id="call-concept">
-<h2>Call concept<a class="headerlink" href="#call-concept" title="Permalink to this headline"></a></h2>
+<h2>Call concept<a class="headerlink" href="#call-concept" title="Permalink to this heading"></a></h2>
 <p>The concept of a call in Voipbin departs from the traditional 1:1 call model. Here’s an overview:</p>
 <p>In Voipbin, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
 <p>In Voipbin, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
@@ -177,7 +183,7 @@ The VoIPBin system have robust error handling mechanisms to gracefully manage su
 </pre></div>
 </div>
 <section id="comparison-traditional-call-concept-vs-voipbin-call-concept">
-<h3>Comparison: Traditional Call Concept vs Voipbin Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Permalink to this headline"></a></h3>
+<h3>Comparison: Traditional Call Concept vs Voipbin Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Permalink to this heading"></a></h3>
 <p>Traditional Call Concept</p>
 <ul class="simple">
 <li><p>Follows a 1:1 model where a call is a direct connection between a source and a destination.</p></li>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutorial &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Tutorial</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/extension_tutorial.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,9 +96,9 @@
            <div itemprop="articleBody">
              
   <section id="tutorial">
-<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline"></a></h1>
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
 <section id="get-list-of-extensions">
-<h2>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Permalink to this headline"></a></h2>
+<h2>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Permalink to this heading"></a></h2>
 <p>Gets the list of registered extensions of the given domain.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&amp;domain_id=cc6a05eb-33a4-444b-bf8a-359de7d95499&#39;
 
@@ -117,7 +123,7 @@
 </div>
 </section>
 <section id="get-detail-of-specified-extension">
-<h2>Get detail of specified extension<a class="headerlink" href="#get-detail-of-specified-extension" title="Permalink to this headline"></a></h2>
+<h2>Get detail of specified extension<a class="headerlink" href="#get-detail-of-specified-extension" title="Permalink to this heading"></a></h2>
 <p>Gets the detail of registered extension.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
 
@@ -137,7 +143,7 @@
 </div>
 </section>
 <section id="create-a-extension">
-<h2>Create a extension<a class="headerlink" href="#create-a-extension" title="Permalink to this headline"></a></h2>
+<h2>Create a extension<a class="headerlink" href="#create-a-extension" title="Permalink to this heading"></a></h2>
 <p>Create a new extension.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -166,7 +172,7 @@
 </div>
 </section>
 <section id="update-the-extension">
-<h2>Update the extension<a class="headerlink" href="#update-the-extension" title="Permalink to this headline"></a></h2>
+<h2>Update the extension<a class="headerlink" href="#update-the-extension" title="Permalink to this heading"></a></h2>
 <p>Update the existed extension with given info.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -192,7 +198,7 @@
 </div>
 </section>
 <section id="delete-the-extension">
-<h2>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Permalink to this headline"></a></h2>
+<h2>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Permalink to this heading"></a></h2>
 <p>Delete the existed extension of given id.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
 </pre></div>

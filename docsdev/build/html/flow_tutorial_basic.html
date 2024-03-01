@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutorial basic &mdash; voipbin  documentation</title>
@@ -11,7 +11,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -22,11 +24,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> voipbin
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,8 +84,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Tutorial basic</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial basic</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/flow_tutorial_basic.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,9 +96,9 @@
            <div itemprop="articleBody">
              
   <section id="tutorial-basic">
-<span id="flow-tutorial-basic"></span><h1>Tutorial basic<a class="headerlink" href="#tutorial-basic" title="Permalink to this headline"></a></h1>
+<span id="flow-tutorial-basic"></span><h1>Tutorial basic<a class="headerlink" href="#tutorial-basic" title="Permalink to this heading"></a></h1>
 <section id="get-list-of-flows">
-<h2>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Permalink to this headline"></a></h2>
+<h2>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Permalink to this heading"></a></h2>
 <p>Gets the list of registered flows.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
@@ -147,7 +153,7 @@
 </div>
 </section>
 <section id="get-detail-of-specified-flow">
-<h2>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Permalink to this headline"></a></h2>
+<h2>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Permalink to this heading"></a></h2>
 <p>Gets the detail of registered flows.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
@@ -183,7 +189,7 @@
 </div>
 </section>
 <section id="create-a-flow">
-<h2>Create a flow<a class="headerlink" href="#create-a-flow" title="Permalink to this headline"></a></h2>
+<h2>Create a flow<a class="headerlink" href="#create-a-flow" title="Permalink to this heading"></a></h2>
 <p>Create a new flow for incoming call requests.
 When the call is comming, this flow will answer the call first, then will speech the welcome text.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
@@ -233,7 +239,7 @@ When the call is comming, this flow will answer the call first, then will speech
 </div>
 </section>
 <section id="update-the-flow">
-<h2>Update the flow<a class="headerlink" href="#update-the-flow" title="Permalink to this headline"></a></h2>
+<h2>Update the flow<a class="headerlink" href="#update-the-flow" title="Permalink to this heading"></a></h2>
 <p>Update the existed flow with given info.
 The doesn’t affect to the existed call. The flow changes will be affected only a new calls.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
@@ -317,7 +323,7 @@ The doesn’t affect to the existed call. The flow changes will be affected only
 </div>
 </section>
 <section id="delete-the-flow">
-<h2>Delete the flow<a class="headerlink" href="#delete-the-flow" title="Permalink to this headline"></a></h2>
+<h2>Delete the flow<a class="headerlink" href="#delete-the-flow" title="Permalink to this heading"></a></h2>
 <p>Delete the existed flow of given flow id.
 The doesn’t affect to the existed call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
