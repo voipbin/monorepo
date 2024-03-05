@@ -15,7 +15,7 @@ func (h *zmqPubHandler) initSock() error {
 		log.Errorf("Could not bind the zmq socket. err: %v", errBind)
 		return errBind
 	}
-	log.Debugf("Created a zmq socket. address: %s", sockAddress)
+	log.Debugf("Created a zmq socket for publish. address: %s", sockAddress)
 
 	return nil
 }

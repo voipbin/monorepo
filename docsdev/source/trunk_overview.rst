@@ -1,4 +1,4 @@
-.. _trunk-overview: trunk-overview
+.. _trunk-overview:
 
 Overview
 ========

@@ -13,7 +13,9 @@ import (
 )
 
 type commonWebhookData struct {
-	ID uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	AgentID    uuid.UUID `json:"agent_id"`
 }
 
 // processEventWebhookManagerWebhookPublished handles the webhook-manager's webhook_published event.
@@ -50,13 +52,13 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 		return err
 	}
 
-	// create the topic
-	topic, err := h.createTopic(whData.Type, wh.CustomerID, d.ID)
-	if err != nil {
-		log.Errorf("Could not create the topic")
-		return fmt.Errorf("could not create the topic")
-	}
-	log.Debugf("Created topic. topic: %s", topic)
+	// create the topics
+	// topics, err := h.createTopic(whData.Type, d)
+	// if err != nil {
+	// 	log.Errorf("Could not create the topic")
+	// 	return fmt.Errorf("could not create the topic")
+	// }
+	// log.Debugf("Created topic. topic: %s", topics)
 
 	// create the data
 	data, err := json.Marshal(wh.Data)
@@ -66,24 +68,63 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 	}
 	log.Debugf("Created data. data: %s", string(data))
 
-	if errPub := h.zmqpubHandler.Publish(topic, string(data)); errPub != nil {
-		log.Errorf("Could not publish the webhook. err: %v", errPub)
-		return errPub
+	topics, err := h.createTopics(whData.Type, d)
+	if err != nil {
+		log.Errorf("Could not create the topics")
+		return fmt.Errorf("could not create the topics")
 	}
+	log.Debugf("Created topics. topics: %s", topics)
+
+	for _, topic := range topics {
+		if errPub := h.zmqpubHandler.Publish(topic, string(data)); errPub != nil {
+			log.Errorf("Could not publish the webhook. err: %v", errPub)
+			return errPub
+		}
+	}
+
+	// if errPub := h.zmqpubHandler.Publish(topics, string(data)); errPub != nil {
+	// 	log.Errorf("Could not publish the webhook. err: %v", errPub)
+	// 	return errPub
+	// }
 
 	return nil
 }
 
 // createTopic generates the topic
-func (h *subscribeHandler) createTopic(messageType string, customerID uuid.UUID, id uuid.UUID) (string, error) {
+// func (h *subscribeHandler) createTopic(messageType string, d *commonWebhookData) (string, error) {
+
+// 	tmps := strings.Split(messageType, "_")
+// 	if len(tmps) < 1 {
+// 		return "", fmt.Errorf("wrong type of webhook message. message_type: %s", messageType)
+// 	}
+
+// 	resource := tmps[0]
+
+// 	res := ""
+// 	if resource == "chatroom" || resource == "messagechatroom" {
+// 		res = fmt.Sprintf("%s:%s:%s", customerID, resource, id)
+// 	}
+// 	res = fmt.Sprintf("%s:%s:%s", customerID, resource, id)
+
+// 	return res, nil
+// }
+
+// createTopic generates the topics
+func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData) ([]string, error) {
+
+	res := []string{}
 
 	tmps := strings.Split(messageType, "_")
 	if len(tmps) < 1 {
-		return "", fmt.Errorf("wrong type of webhook message. message_type: %s", messageType)
+		return res, fmt.Errorf("wrong type of webhook message. message_type: %s", messageType)
 	}
 
 	resource := tmps[0]
-	res := fmt.Sprintf("%s:%s:%s", customerID, resource, id)
+	res = append(res, fmt.Sprintf("customer_id:%s:%s:%s", d.CustomerID, resource, d.ID))
+
+	if d.AgentID != uuid.Nil {
+		res = append(res, fmt.Sprintf("agent_id:%s:%s:%s", d.AgentID, resource, d.ID))
+	}
 
 	return res, nil
 }

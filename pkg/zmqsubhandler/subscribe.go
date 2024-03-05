@@ -16,13 +16,18 @@ func (h *zmqSubHandler) initSock() error {
 		log.Errorf("Could not connect the zmq socket. err: %v", errConnect)
 		return errConnect
 	}
-	log.Debugf("Created a zmq socket. address: %s", sockAddress)
+	log.Debugf("Created a zmq socket for subscription. address: %s", sockAddress)
 
 	return nil
 }
 
 func (h *zmqSubHandler) Terminate() {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Terminate",
+	})
+
 	h.sock.Terminate()
+	log.Debug("Terminated the zmq socket.")
 }
 
 // Subscribe subscribes the topic.

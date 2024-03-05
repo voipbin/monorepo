@@ -91,6 +91,21 @@ func (mr *MockZMQMockRecorder) Receive() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Receive", reflect.TypeOf((*MockZMQ)(nil).Receive))
 }
 
+// ReceiveNoBlock mocks base method.
+func (m *MockZMQ) ReceiveNoBlock() ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReceiveNoBlock")
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReceiveNoBlock indicates an expected call of ReceiveNoBlock.
+func (mr *MockZMQMockRecorder) ReceiveNoBlock() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReceiveNoBlock", reflect.TypeOf((*MockZMQ)(nil).ReceiveNoBlock))
+}
+
 // Subscribe mocks base method.
 func (m *MockZMQ) Subscribe(topic string) error {
 	m.ctrl.T.Helper()
