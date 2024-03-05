@@ -67,3 +67,8 @@ func (h *zmq) Publish(topic string, m string) error {
 func (h *zmq) Receive() ([]string, error) {
 	return h.socket.RecvMessage(0)
 }
+
+// ReceiveNoBlock returns received message or return nil .
+func (h *zmq) ReceiveNoBlock() ([]string, error) {
+	return h.socket.RecvMessage(zmq4.DONTWAIT)
+}

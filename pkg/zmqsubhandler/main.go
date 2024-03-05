@@ -5,6 +5,7 @@ package zmqsubhandler
 import (
 	"context"
 
+	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmq"
@@ -14,7 +15,7 @@ import (
 type ZMQSubHandler interface {
 	Terminate()
 
-	Run(ctx context.Context, cancel context.CancelFunc, fn MessageHandle) error
+	Run(ctx context.Context, ws *websocket.Conn) error
 
 	Subscribe(topic string) error
 	Unsubscribe(topic string) error

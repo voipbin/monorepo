@@ -17,6 +17,7 @@ type ZMQ interface {
 
 	Publish(topic string, m string) error
 	Receive() ([]string, error)
+	ReceiveNoBlock() ([]string, error)
 }
 
 // zmq struct
