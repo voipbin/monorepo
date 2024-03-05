@@ -50,6 +50,7 @@ func (h *messagechatroomHandler) Gets(ctx context.Context, token string, size ui
 func (h *messagechatroomHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
+	agentID uuid.UUID,
 	chatroomID uuid.UUID,
 	messagechatID uuid.UUID,
 	source *commonaddress.Address,
@@ -63,11 +64,12 @@ func (h *messagechatroomHandler) Create(
 		"message_type": messageType,
 	})
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilHandler.UUIDCreate()
 	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &messagechatroom.Messagechatroom{
 		ID:         id,
 		CustomerID: customerID,
+		AgentID:    agentID,
 
 		ChatroomID:    chatroomID,
 		MessagechatID: messagechatID,
@@ -78,7 +80,7 @@ func (h *messagechatroomHandler) Create(
 		Medias: medias,
 
 		TMCreate: curTime,
-		TMUpdate: curTime,
+		TMUpdate: dbhandler.DefaultTimeStamp,
 		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 

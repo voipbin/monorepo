@@ -230,6 +230,7 @@ func Test_Create(t *testing.T) {
 				mockMessagechatroom.EXPECT().Create(
 					ctx,
 					tt.responseMessagechat.CustomerID,
+					cr.AgentID,
 					cr.ID,
 					tt.responseMessagechat.ID,
 					tt.responseMessagechat.Source,
