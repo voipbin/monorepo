@@ -135,6 +135,7 @@ func Test_Create(t *testing.T) {
 		name string
 
 		customerID    uuid.UUID
+		agentID       uuid.UUID
 		chatroomID    uuid.UUID
 		messagechatID uuid.UUID
 		source        *commonaddress.Address
@@ -142,27 +143,55 @@ func Test_Create(t *testing.T) {
 		text          string
 		medias        []media.Media
 
+		responseUUID            uuid.UUID
+		responseCurTime         string
 		responseMessagechatroom *messagechatroom.Messagechatroom
+
+		expectMessagechatroom *messagechatroom.Messagechatroom
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("65ac45e2-32b3-11ed-b720-973a629c7807"),
-			uuid.FromStringOrNil("65d8b7e4-32b3-11ed-8846-97d903739f2c"),
-			uuid.FromStringOrNil("662ecbfc-32b3-11ed-ae98-a71aa0c6ca99"),
-			&commonaddress.Address{
+			customerID:    uuid.FromStringOrNil("65ac45e2-32b3-11ed-b720-973a629c7807"),
+			agentID:       uuid.FromStringOrNil("0698e5d4-daae-11ee-be05-cb7440513a2f"),
+			chatroomID:    uuid.FromStringOrNil("65d8b7e4-32b3-11ed-8846-97d903739f2c"),
+			messagechatID: uuid.FromStringOrNil("662ecbfc-32b3-11ed-ae98-a71aa0c6ca99"),
+			source: &commonaddress.Address{
 				Type:       commonaddress.TypeTel,
 				Target:     "+821100000001",
 				TargetName: "test target",
 				Name:       "test name",
 				Detail:     "test detail",
 			},
-			messagechatroom.TypeNormal,
-			"test text",
-			[]media.Media{},
+			messageType: messagechatroom.TypeNormal,
+			text:        "test text",
+			medias:      []media.Media{},
 
-			&messagechatroom.Messagechatroom{
+			responseUUID:    uuid.FromStringOrNil("68922a7a-daae-11ee-8e4d-6fbcd4b11b39"),
+			responseCurTime: "2024-03-05 05:10:04.781006734",
+			responseMessagechatroom: &messagechatroom.Messagechatroom{
 				ID: uuid.FromStringOrNil("6692d52a-32b3-11ed-9cf8-ef08221492ce"),
+			},
+
+			expectMessagechatroom: &messagechatroom.Messagechatroom{
+				ID:            uuid.FromStringOrNil("68922a7a-daae-11ee-8e4d-6fbcd4b11b39"),
+				CustomerID:    uuid.FromStringOrNil("65ac45e2-32b3-11ed-b720-973a629c7807"),
+				AgentID:       uuid.FromStringOrNil("0698e5d4-daae-11ee-be05-cb7440513a2f"),
+				ChatroomID:    uuid.FromStringOrNil("65d8b7e4-32b3-11ed-8846-97d903739f2c"),
+				MessagechatID: uuid.FromStringOrNil("662ecbfc-32b3-11ed-ae98-a71aa0c6ca99"),
+				Source: &commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "test target",
+					Name:       "test name",
+					Detail:     "test detail",
+				},
+				Type:     messagechatroom.TypeNormal,
+				Text:     "test text",
+				Medias:   []media.Media{},
+				TMCreate: "2024-03-05 05:10:04.781006734",
+				TMUpdate: dbhandler.DefaultTimeStamp,
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -185,12 +214,13 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().MessagechatroomCreate(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockDB.EXPECT().MessagechatroomCreate(ctx, tt.expectMessagechatroom).Return(nil)
 			mockDB.EXPECT().MessagechatroomGet(ctx, gomock.Any()).Return(tt.responseMessagechatroom, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechatroom.CustomerID, messagechatroom.EventTypeMessagechatroomCreated, tt.responseMessagechatroom)
 
-			res, err := h.Create(ctx, tt.customerID, tt.chatroomID, tt.messagechatID, tt.source, tt.messageType, tt.text, tt.medias)
+			res, err := h.Create(ctx, tt.customerID, tt.agentID, tt.chatroomID, tt.messagechatID, tt.source, tt.messageType, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
