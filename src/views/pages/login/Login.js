@@ -97,14 +97,14 @@ const Login = () => {
         dispatch(AgentInfoSet(agentInfo));
 
         // websocket
-        Connect();
+        Connect(agentInfo);
 
         navigate('/');
     })
   };
 
   const WS_URL = 'wss://api.voipbin.net/v1.0/ws';
-  const Connect = () => {
+  const Connect = (agentInfo) => {
     let authToken = localStorage.getItem("token");
     let url = WS_URL + '?token=' + authToken
 
@@ -112,10 +112,29 @@ const Login = () => {
     var ws = new WebSocket(url);
 
     ws.onopen = () => {
-        // subscribe topics
-        let m = '{"type": "subscribe","topics": ["call", "activeflow", "messagechatroom"]}';
-        console.log("Subscribing topics. message: ", m);
-        ws.send(m);
+
+      var topics = [];
+
+      // generate topics. customer level
+      const resourcesCustomerLevel = ["call", "activeflow"]; 
+      for (var i = 0; i < resourcesCustomerLevel.length; i++) {
+        const tmpResource = resourcesCustomerLevel[i];
+        const tmpTopic = "\"customer_id:" + agentInfo["customer_id"] + ":" + tmpResource + "\"";
+        topics.push(tmpTopic);
+      }
+
+      // generate topics. agent level
+      const resourcesAgentLevel = ["messagechatroom"];
+      for (var i = 0; i < resourcesAgentLevel.length; i++) {
+        const tmpResource = resourcesAgentLevel[i];
+        const tmpTopic = "\"agent_id:" + agentInfo["id"] + ":" + tmpResource + "\"";
+        topics.push(tmpTopic);
+      }
+      
+      // subscribe topics
+      let m = '{"type": "subscribe","topics": [' + topics + ']}';
+      console.log("Subscribing topics. message: ", m);
+      ws.send(m);
     }
 
     ws.onmessage = (e) => {
