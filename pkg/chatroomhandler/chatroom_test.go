@@ -72,6 +72,7 @@ func Test_Create(t *testing.T) {
 		name string
 
 		customerID     uuid.UUID
+		agentID        uuid.UUID
 		chatroomType   chatroom.Type
 		chatID         uuid.UUID
 		ownerID        uuid.UUID
@@ -85,6 +86,7 @@ func Test_Create(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("8eb9ef06-8c04-441f-b985-96196ed2b437"),
+			uuid.FromStringOrNil("3446f894-da32-11ee-9bf8-d775a4655080"),
 			chatroom.TypeNormal,
 			uuid.FromStringOrNil("4f699231-9e6c-4006-a6d4-ebc13d576bef"),
 			uuid.FromStringOrNil("cfbd68c6-0a7a-40e0-83a3-0c82ca60479c"),
@@ -124,7 +126,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ChatroomGet(ctx, gomock.Any()).Return(tt.responseChatroom, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatroom.CustomerID, chatroom.EventTypeChatroomCreated, tt.responseChatroom)
 
-			res, err := h.Create(ctx, tt.customerID, tt.chatroomType, tt.chatID, tt.ownerID, tt.participantIDs, tt.chatName, tt.detail)
+			res, err := h.Create(ctx, tt.customerID, tt.agentID, tt.chatroomType, tt.chatID, tt.ownerID, tt.participantIDs, tt.chatName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

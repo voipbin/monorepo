@@ -48,6 +48,7 @@ func (h *chatroomHandler) Gets(ctx context.Context, token string, limit uint64, 
 func (h *chatroomHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
+	agentID uuid.UUID,
 	chatroomType chatroom.Type,
 	chatID uuid.UUID,
 	ownerID uuid.UUID,
@@ -58,6 +59,7 @@ func (h *chatroomHandler) Create(
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "Create",
 		"customer_id":     customerID,
+		"agent_id":        agentID,
 		"type":            chatroomType,
 		"chat_id":         chatID,
 		"owner_id":        ownerID,
@@ -69,6 +71,7 @@ func (h *chatroomHandler) Create(
 	tmp := &chatroom.Chatroom{
 		ID:             id,
 		CustomerID:     customerID,
+		AgentID:        agentID,
 		Type:           chatroomType,
 		ChatID:         chatID,
 		OwnerID:        ownerID,

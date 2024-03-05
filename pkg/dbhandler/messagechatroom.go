@@ -20,6 +20,7 @@ const (
 	select
 		id,
 		customer_id,
+		agent_id,
 
 		chatroom_id,
 		messagechat_id,
@@ -46,6 +47,7 @@ func (h *handler) messagechatroomGetFromRow(row *sql.Rows) (*messagechatroom.Mes
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.AgentID,
 
 		&res.ChatroomID,
 		&res.MessagechatID,
@@ -86,6 +88,7 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 	q := `insert into messagechatrooms(
 		id,
 		customer_id,
+		agent_id,
 
 		chatroom_id,
 		messagechat_id,
@@ -99,7 +102,7 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 		tm_update,
 		tm_delete
 	) values(
-		?, ?,
+		?, ?, ?,
 		?, ?,
 		?, ?, ?, ?,
 		?, ?, ?
@@ -123,6 +126,7 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 	_, err = stmt.ExecContext(ctx,
 		m.ID.Bytes(),
 		m.CustomerID.Bytes(),
+		m.AgentID.Bytes(),
 
 		m.ChatroomID.Bytes(),
 		m.MessagechatID.Bytes(),

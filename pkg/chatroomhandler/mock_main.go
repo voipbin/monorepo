@@ -52,18 +52,18 @@ func (mr *MockChatroomHandlerMockRecorder) AddParticipantID(ctx, id, participant
 }
 
 // Create mocks base method.
-func (m *MockChatroomHandler) Create(ctx context.Context, customerID uuid.UUID, chatroomType chatroom.Type, chatID, ownerID uuid.UUID, participantIDs []uuid.UUID, name, detail string) (*chatroom.Chatroom, error) {
+func (m *MockChatroomHandler) Create(ctx context.Context, customerID, agentID uuid.UUID, chatroomType chatroom.Type, chatID, ownerID uuid.UUID, participantIDs []uuid.UUID, name, detail string) (*chatroom.Chatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, chatroomType, chatID, ownerID, participantIDs, name, detail)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, agentID, chatroomType, chatID, ownerID, participantIDs, name, detail)
 	ret0, _ := ret[0].(*chatroom.Chatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockChatroomHandlerMockRecorder) Create(ctx, customerID, chatroomType, chatID, ownerID, participantIDs, name, detail interface{}) *gomock.Call {
+func (mr *MockChatroomHandlerMockRecorder) Create(ctx, customerID, agentID, chatroomType, chatID, ownerID, participantIDs, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChatroomHandler)(nil).Create), ctx, customerID, chatroomType, chatID, ownerID, participantIDs, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChatroomHandler)(nil).Create), ctx, customerID, agentID, chatroomType, chatID, ownerID, participantIDs, name, detail)
 }
 
 // Delete mocks base method.

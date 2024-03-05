@@ -10,6 +10,7 @@ import (
 type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	AgentID    uuid.UUID `json:"agent_id"`
 
 	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`
@@ -30,6 +31,7 @@ func (h *Chatroom) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:         h.ID,
 		CustomerID: h.CustomerID,
+		AgentID:    h.AgentID,
 
 		Type:   h.Type,
 		ChatID: h.ChatID,

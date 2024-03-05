@@ -29,6 +29,7 @@ type ChatroomHandler interface {
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
+		agentID uuid.UUID,
 		chatroomType chatroom.Type,
 		chatID uuid.UUID,
 		ownerID uuid.UUID,

@@ -18,6 +18,7 @@ const (
 	select
 		id,
 		customer_id,
+		agent_id,
 
 		type,
 		chat_id,
@@ -44,6 +45,7 @@ func (h *handler) chatroomGetFromRow(row *sql.Rows) (*chatroom.Chatroom, error) 
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.AgentID,
 
 		&res.Type,
 		&res.ChatID,
@@ -74,6 +76,7 @@ func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) erro
 	q := `insert into chatrooms(
 		id,
 		customer_id,
+		agent_id,
 
 		type,
 		chat_id,
@@ -88,7 +91,7 @@ func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) erro
 		tm_update,
 		tm_delete
 	) values(
-		?, ?,
+		?, ?, ?,
 		?, ?,
 		?, ?,
 		?, ?,
@@ -108,6 +111,7 @@ func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) erro
 	_, err = stmt.ExecContext(ctx,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
+		c.AgentID.Bytes(),
 
 		c.Type,
 		c.ChatID.Bytes(),
@@ -245,6 +249,11 @@ func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, f
 		case "type":
 			q = fmt.Sprintf("%s and type = ?", q)
 			values = append(values, v)
+
+		case "agent_id":
+			tmp := uuid.FromStringOrNil(v)
+			q = fmt.Sprintf("%s and agent_id = ?", q)
+			values = append(values, tmp.Bytes())
 
 		case "owner_id":
 			tmp := uuid.FromStringOrNil(v)

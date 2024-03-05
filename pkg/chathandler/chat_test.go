@@ -139,6 +139,7 @@ func Test_create(t *testing.T) {
 		chatName       string
 		detail         string
 
+		responseUUID uuid.UUID
 		responseChat *chat.Chat
 	}{
 		{
@@ -154,6 +155,7 @@ func Test_create(t *testing.T) {
 			"test name",
 			"test detail",
 
+			uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 			&chat.Chat{
 				ID: uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"),
 			},
@@ -178,12 +180,113 @@ func Test_create(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, gomock.Any()).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatCreated, tt.responseChat)
 
 			res, err := h.create(ctx, tt.customerID, tt.chatType, tt.ownerID, tt.participantIDs, tt.chatName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseChat) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseChat, res)
+			}
+		})
+	}
+}
+
+func Test_Create(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		chatType       chat.Type
+		ownerID        uuid.UUID
+		participantIDs []uuid.UUID
+		chatName       string
+		detail         string
+
+		responseUUID uuid.UUID
+		responseChat *chat.Chat
+
+		expectFilters map[string]string
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+			chat.TypeNormal,
+			uuid.FromStringOrNil("fbfd1fe6-bde3-4fa2-9f7b-e460807100a6"),
+			[]uuid.UUID{
+				uuid.FromStringOrNil("d8e0c187-44c8-4376-abab-2831f1754f5d"),
+				uuid.FromStringOrNil("fbfd1fe6-bde3-4fa2-9f7b-e460807100a6"),
+			},
+			"test name",
+			"test detail",
+
+			uuid.FromStringOrNil("05edc666-da33-11ee-b970-ffcf954442da"),
+			&chat.Chat{
+				ID: uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"),
+			},
+
+			map[string]string{
+				"customer_id":     "ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4",
+				"deleted":         "false",
+				"participant_ids": "d8e0c187-44c8-4376-abab-2831f1754f5d,fbfd1fe6-bde3-4fa2-9f7b-e460807100a6",
+				"type":            "normal",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
+
+			h := &chatHandler{
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				notifyHandler:   mockNotify,
+				chatroomHandler: mockChatroom,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().ChatGets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return([]*chat.Chat{}, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ChatGet(ctx, gomock.Any()).Return(tt.responseChat, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatCreated, tt.responseChat)
+
+			chatroomType := chatroom.ConvertType(tt.chatType)
+			for _, participantID := range tt.participantIDs {
+				mockChatroom.EXPECT().Create(
+					ctx,
+					tt.customerID,
+					participantID,
+					chatroomType,
+					tt.responseChat.ID,
+					participantID,
+					tt.participantIDs,
+					tt.chatName,
+					tt.detail,
+				).Return(&chatroom.Chatroom{}, nil)
+			}
+
+			res, err := h.Create(ctx, tt.customerID, tt.chatType, tt.ownerID, tt.participantIDs, tt.chatName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -576,6 +679,7 @@ func Test_AddParticipantID(t *testing.T) {
 			mockChatroom.EXPECT().Create(
 				ctx,
 				tt.responseChat.CustomerID,
+				tt.participantID,
 				gomock.Any(),
 				tt.responseChat.ID,
 				tt.participantID,
