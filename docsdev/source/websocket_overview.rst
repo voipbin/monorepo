@@ -16,9 +16,9 @@ To leverage WebSocket in VoIPBin, connect to the following endpoint:
 
 Topic Subscription/Unsubscription
 ------------------------------------
-WebSocket empowers users to subscribe to distinct event topics, each corresponding to a specific resource in the VoIPBin system. Users can tailor their topic subscriptions to match their application's needs, ensuring they receive updates for resources of interest.
+WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBin system, tailoring updates to match their application's specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.
 
-To subscribe or unsubscribe from an event, send the following JSON message through the established WebSocket:
+To initiate a subscription or unsubscription, send the following JSON message through the established WebSocket:
 
 .. code::
 
@@ -27,24 +27,47 @@ To subscribe or unsubscribe from an event, send the following JSON message throu
         "topics": ["<topic>", ...]
     }
 
-The topic format follows:
+The topic format is as follows:
 
 .. code::
 
-    <resource>:<resource-id>
+    agent_id:<agent_id>:<resource>:<resource-id>
+    customer_id:<customer_id>:<resource>:<resource-id>
 
-Here's an example subscribe message:
+Here's an example of a subscribe message:
 
 .. code::
 
     {
         "type": "subscribe",
         "topics": [
-            "activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f"
+            "customer_id:5013bc52-da9a-11ee-844f-2fa34248de28:activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f"
         ]
     }
 
-Subscribing to the topic activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f results in receiving events related to the activeflow resource with the specified ID.
+Subscribing to the topic activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f ensures reception of events related to the specified activeflow resource with the provided ID.
+
+It is crucial to adhere to the correct topic structure, including the following prefixes:
+
+* agent_id:<agent-id>
+* customer_id:<customer-id>
+
+Additionally, specific permissions are required for different levels of topics:
+
+Customer Level Topics
++++++++++++++++++++++
+
+To subscribe to topics at the customer level, the following permissions are required:
+
+* Admin permission
+* Manager permission
+
+Agent Level Topics
+++++++++++++++++++
+
+For agent-level topics, only the owner of the agent can subscribe to the topic.
+
+Ensure the accuracy of your topic definition to successfully subscribe to the desired events.
 
 Pattern Matching Subscription
 -----------------------------
