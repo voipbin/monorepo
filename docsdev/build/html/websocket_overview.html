@@ -108,28 +108,48 @@
 </section>
 <section id="topic-subscription-unsubscription">
 <h2>Topic Subscription/Unsubscription<a class="headerlink" href="#topic-subscription-unsubscription" title="Permalink to this heading"></a></h2>
-<p>WebSocket empowers users to subscribe to distinct event topics, each corresponding to a specific resource in the VoIPBin system. Users can tailor their topic subscriptions to match their application’s needs, ensuring they receive updates for resources of interest.</p>
-<p>To subscribe or unsubscribe from an event, send the following JSON message through the established WebSocket:</p>
+<p>WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBin system, tailoring updates to match their application’s specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.</p>
+<p>To initiate a subscription or unsubscription, send the following JSON message through the established WebSocket:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;subscribe|unsubscribe&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;topic&gt;&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The topic format follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+<p>The topic format is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">agent_id</span><span class="p">:</span><span class="o">&lt;</span><span class="n">agent_id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+<span class="n">customer_id</span><span class="p">:</span><span class="o">&lt;</span><span class="n">customer_id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>Here’s an example subscribe message:</p>
+<p>Here’s an example of a subscribe message:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
     <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f&quot;</span>
+        <span class="s2">&quot;customer_id:5013bc52-da9a-11ee-844f-2fa34248de28:activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Subscribing to the topic activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f results in receiving events related to the activeflow resource with the specified ID.</p>
+<p>Subscribing to the topic activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f ensures reception of events related to the specified activeflow resource with the provided ID.</p>
+<p>It is crucial to adhere to the correct topic structure, including the following prefixes:</p>
+<ul class="simple">
+<li><p>agent_id:&lt;agent-id&gt;</p></li>
+<li><p>customer_id:&lt;customer-id&gt;</p></li>
+</ul>
+<p>Additionally, specific permissions are required for different levels of topics:</p>
+<section id="customer-level-topics">
+<h3>Customer Level Topics<a class="headerlink" href="#customer-level-topics" title="Permalink to this heading"></a></h3>
+<p>To subscribe to topics at the customer level, the following permissions are required:</p>
+<ul class="simple">
+<li><p>Admin permission</p></li>
+<li><p>Manager permission</p></li>
+</ul>
+</section>
+<section id="agent-level-topics">
+<h3>Agent Level Topics<a class="headerlink" href="#agent-level-topics" title="Permalink to this heading"></a></h3>
+<p>For agent-level topics, only the owner of the agent can subscribe to the topic.</p>
+<p>Ensure the accuracy of your topic definition to successfully subscribe to the desired events.</p>
+</section>
 </section>
 <section id="pattern-matching-subscription">
 <h2>Pattern Matching Subscription<a class="headerlink" href="#pattern-matching-subscription" title="Permalink to this heading"></a></h2>

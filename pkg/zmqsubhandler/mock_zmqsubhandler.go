@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	websocket "github.com/gorilla/websocket"
 )
 
 // MockZMQSubHandler is a mock of ZMQSubHandler interface.
@@ -35,17 +36,17 @@ func (m *MockZMQSubHandler) EXPECT() *MockZMQSubHandlerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockZMQSubHandler) Run(ctx context.Context, cancel context.CancelFunc, fn MessageHandle) error {
+func (m *MockZMQSubHandler) Run(ctx context.Context, ws *websocket.Conn) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", ctx, cancel, fn)
+	ret := m.ctrl.Call(m, "Run", ctx, ws)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockZMQSubHandlerMockRecorder) Run(ctx, cancel, fn interface{}) *gomock.Call {
+func (mr *MockZMQSubHandlerMockRecorder) Run(ctx, ws interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockZMQSubHandler)(nil).Run), ctx, cancel, fn)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockZMQSubHandler)(nil).Run), ctx, ws)
 }
 
 // Subscribe mocks base method.
