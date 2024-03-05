@@ -12,6 +12,7 @@ import (
 type Messagechatroom struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	AgentID    uuid.UUID `json:"agent_id"`
 
 	ChatroomID    uuid.UUID `json:"chatroom_id"`
 	MessagechatID uuid.UUID `json:"messagechat_id"`

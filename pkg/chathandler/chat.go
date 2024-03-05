@@ -113,6 +113,7 @@ func (h *chatHandler) Create(
 		tmp, err := h.chatroomHandler.Create(
 			ctx,
 			customerID,
+			participantID,
 			chatroomType,
 			res.ID,
 			participantID,
@@ -148,7 +149,7 @@ func (h *chatHandler) create(
 		"participant_ids": participantIDs,
 	})
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilHandler.UUIDCreate()
 	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &chat.Chat{
 		ID:             id,
@@ -269,6 +270,7 @@ func (h *chatHandler) AddParticipantID(ctx context.Context, id uuid.UUID, partic
 	newChatroom, err := h.chatroomHandler.Create(
 		ctx,
 		res.CustomerID,
+		participantID,
 		chatroomType,
 		res.ID,
 		participantID,

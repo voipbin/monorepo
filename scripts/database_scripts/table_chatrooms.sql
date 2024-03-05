@@ -2,6 +2,7 @@ create table chatrooms(
   -- identity
   id          binary(16),
   customer_id binary(16),
+  agent_id    binary(16),
 
   type        varchar(255),
   chat_id     binary(16),
