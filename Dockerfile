@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/voipbin/voip/asterisk-docker:21.0.1
+FROM registry.gitlab.com/voipbin/voip/asterisk-docker:21.1.0
 
 # Copy service accounts
 COPY etc/service_accounts /service_accounts
