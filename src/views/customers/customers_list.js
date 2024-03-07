@@ -70,11 +70,6 @@ const CustomersList = () => {
         enableEditing: false,
       },
       {
-        accessorKey: 'username',
-        header: 'username',
-        enableEditing: false,
-      },
-      {
         accessorKey: 'name',
         header: 'name',
         size: 100,
@@ -82,6 +77,11 @@ const CustomersList = () => {
       {
         accessorKey: 'detail',
         header: 'detail',
+        size: 100,
+      },
+      {
+        accessorKey: 'email',
+        header: 'email',
         size: 100,
       },
       {
