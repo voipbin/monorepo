@@ -173,5 +173,4 @@ const storeAll = combineReducers({
 });
 
 const store = createStore(storeAll);
-// const store = createStore(resourceReducer);
 export default store

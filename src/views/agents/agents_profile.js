@@ -45,11 +45,8 @@ const AgentsProfile = () => {
   const routeParams = useParams();
   const GetDetail = () => {
 
-    const detailData = useSelector((state) => {
-      const tmp = state.resourceAgentReducer.data;
-      console.log("Detailed agent info: ", tmp);
-      return tmp;
-    });
+    const detailData = JSON.parse(localStorage.getItem("agent_info"));
+    console.log("Detailed agent info. agent_info: ", detailData);
   
     return (
       <>

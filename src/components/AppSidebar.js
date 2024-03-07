@@ -20,8 +20,8 @@ const AppSidebar = () => {
   const unfoldable = useSelector((state) => state.sidebarUnfoldable);
   const sidebarShow = useSelector((state) => state.sidebarShow);
   const menus = useSelector((state) => {
-    const agentInfo = state.resourceAgentReducer.data;
-    console.log("Detailed agent info: ", agentInfo);
+    const agentInfo = JSON.parse(localStorage.getItem("agent_info"));
+    console.log("Get detailed agent info. agent_info: ", agentInfo);
 
     if (agentInfo === null) {
       console.log("The customer has no agent info.");
