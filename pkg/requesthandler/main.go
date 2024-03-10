@@ -100,30 +100,31 @@ const (
 const (
 	exchangeDelay = "bin-manager.delay"
 
-	queueAgent        = "bin-manager.agent-manager.request"
-	queueAPI          = "bin-manager.api-manager.request"
-	queueBilling      = "bin-manager.billing-manager.request"
-	queueCall         = "bin-manager.call-manager.request"
-	queueCampaign     = "bin-manager.campaign-manager.request"
-	queueChat         = "bin-manager.chat-manager.request"
-	queueChatbot      = "bin-manager.chatbot-manager.request"
-	queueConference   = "bin-manager.conference-manager.request"
-	queueConversation = "bin-manager.conversation-manager.request"
-	queueCustomer     = "bin-manager.customer-manager.request"
-	queueFlow         = "bin-manager.flow-manager.request"
-	queueMessage      = "bin-manager.message-manager.request"
-	queueNumber       = "bin-manager.number-manager.request"
-	queueOutdial      = "bin-manager.outdial-manager.request"
-	queueQueue        = "bin-manager.queue-manager.request"
-	queueRegistrar    = "bin-manager.registrar-manager.request"
-	queueRoute        = "bin-manager.route-manager.request"
-	queueStorage      = "bin-manager.storage-manager.request"
-	queueTag          = "bin-manager.tag-manager.request"
-	queueTranscribe   = "bin-manager.transcribe-manager.request"
-	queueTransfer     = "bin-manager.transfer-manager.request"
-	queueTTS          = "bin-manager.tts-manager.request"
-	queueUser         = "bin-manager.user-manager.request"
-	queueWebhook      = "bin-manager.webhook-manager.request"
+	queueAgentRequest        = "bin-manager.agent-manager.request"
+	queueAPIRequest          = "bin-manager.api-manager.request"
+	queueBillingRequest      = "bin-manager.billing-manager.request"
+	queueCallRequest         = "bin-manager.call-manager.request"
+	queueCallSubscribe       = "bin-manager.call-manager.subscribe"
+	queueCampaignRequest     = "bin-manager.campaign-manager.request"
+	queueChatRequest         = "bin-manager.chat-manager.request"
+	queueChatbotRequest      = "bin-manager.chatbot-manager.request"
+	queueConferenceRequest   = "bin-manager.conference-manager.request"
+	queueConversationRequest = "bin-manager.conversation-manager.request"
+	queueCustomerRequest     = "bin-manager.customer-manager.request"
+	queueFlowRequest         = "bin-manager.flow-manager.request"
+	queueMessageRequest      = "bin-manager.message-manager.request"
+	queueNumberRequest       = "bin-manager.number-manager.request"
+	queueOutdialRequest      = "bin-manager.outdial-manager.request"
+	queueQueueRequest        = "bin-manager.queue-manager.request"
+	queueRegistrarRequest    = "bin-manager.registrar-manager.request"
+	queueRouteRequest        = "bin-manager.route-manager.request"
+	queueStorageRequest      = "bin-manager.storage-manager.request"
+	queueTagRequest          = "bin-manager.tag-manager.request"
+	queueTranscribeRequest   = "bin-manager.transcribe-manager.request"
+	queueTransferRequest     = "bin-manager.transfer-manager.request"
+	queueTTSRequest          = "bin-manager.tts-manager.request"
+	queueUserRequest         = "bin-manager.user-manager.request"
+	queueWebhookRequest      = "bin-manager.webhook-manager.request"
 )
 
 // default stasis application name.
@@ -134,6 +135,7 @@ const defaultAstStasisApp = "voipbin"
 // list of prometheus metrics
 var (
 	promRequestProcessTime *prometheus.HistogramVec
+	promEventCount         *prometheus.CounterVec
 )
 
 type resource string
@@ -288,8 +290,18 @@ func initPrometheus(namespace string) {
 		[]string{"target", "resource", "method"},
 	)
 
+	promEventCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: namespace,
+			Name:      "event_publish_total",
+			Help:      "Total number of published event with event_type.",
+		},
+		[]string{"event_type"},
+	)
+
 	prometheus.MustRegister(
 		promRequestProcessTime,
+		promEventCount,
 	)
 }
 
@@ -381,6 +393,9 @@ type RequestHandler interface {
 	BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
 	BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
+
+	// call-manager event
+	CallPublishEvent(ctx context.Context, eventType string, publisher string, dataType string, data []byte) error
 
 	// call-manager call
 	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error

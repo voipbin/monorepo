@@ -891,6 +891,20 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountUpdatePaymentInfo(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountUpdatePaymentInfo", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountUpdatePaymentInfo), ctx, accountID, paymentType, paymentMethod)
 }
 
+// CallPublishEvent mocks base method.
+func (m *MockRequestHandler) CallPublishEvent(ctx context.Context, eventType, publisher, dataType string, data []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallPublishEvent", ctx, eventType, publisher, dataType, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallPublishEvent indicates an expected call of CallPublishEvent.
+func (mr *MockRequestHandlerMockRecorder) CallPublishEvent(ctx, eventType, publisher, dataType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallPublishEvent", reflect.TypeOf((*MockRequestHandler)(nil).CallPublishEvent), ctx, eventType, publisher, dataType, data)
+}
+
 // CallV1CallActionNext mocks base method.
 func (m *MockRequestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error {
 	m.ctrl.T.Helper()
