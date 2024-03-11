@@ -349,11 +349,12 @@ func (mr *MockCallHandlerMockRecorder) HangingUp(ctx, id, reason interface{}) *g
 }
 
 // Hangup mocks base method.
-func (m *MockCallHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
+func (m *MockCallHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Hangup", ctx, cn)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Hangup indicates an expected call of Hangup.

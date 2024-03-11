@@ -102,6 +102,13 @@ func (h *callHandler) Create(
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallCreated, res)
 
+	// start call health watcher
+	if errHealth := h.reqHandler.CallV1CallHealth(ctx, res.ID, defaultHealthDelay, 0); errHealth != nil {
+		// we could not start call health watcher correctly, but we don't stop the process.
+		// just write the error message here.
+		log.Errorf("Could not start the call health watcher. err: %v", errHealth)
+	}
+
 	return res, nil
 }
 

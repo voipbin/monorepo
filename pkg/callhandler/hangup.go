@@ -12,10 +12,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Hangup Hangup the call
-func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
+func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Hangup",
 		"channel": cn,
@@ -26,7 +27,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	if err != nil {
 		// nothing we can do
 		log.Errorf("Could not get the call info from the db. err: %v", err)
-		return nil
+		return nil, errors.Wrap(err, "could not get call info from the db")
 	}
 	log = log.WithField("call", c)
 
@@ -42,7 +43,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 		tmp, err := h.createFailoverChannel(ctx, c)
 		if err == nil {
 			log.Debugf("Created route failover channel succesfully. channel_id: %s", tmp.ChannelID)
-			return nil
+			return tmp, nil
 		}
 		log.Errorf("Could not create a failover channel. Continue to hangup process. err: %v", err)
 	}
@@ -52,23 +53,23 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	hangupBy := call.CalculateHangupBy(c.Status)
 
 	// set hangup
-	cc, err := h.UpdateHangupInfo(ctx, c.ID, reason, hangupBy)
+	res, err := h.UpdateHangupInfo(ctx, c.ID, reason, hangupBy)
 	if err != nil {
 		// we don't channel hangup here, because the channel has already gone.
 		log.Errorf("Could not set the hangup reason. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// check the call is part of groupcall
-	if cc.GroupcallID != uuid.Nil {
-		log.Debugf("The call has groupcall id. Updating groupcall hangup call info. groupcall_id: %s", cc.GroupcallID)
+	if res.GroupcallID != uuid.Nil {
+		log.Debugf("The call has groupcall id. Updating groupcall hangup call info. groupcall_id: %s", res.GroupcallID)
 		go func(id uuid.UUID) {
 			if errReq := h.reqHandler.CallV1GroupcallHangupCall(ctx, id); errReq != nil {
 				// we don't do any error handle here.
 				// just write the log.
 				log.Errorf("Could not hangup the groupcall. err: %v", err)
 			}
-		}(cc.GroupcallID)
+		}(res.GroupcallID)
 	}
 
 	// send activeflow stop
@@ -80,18 +81,20 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	}
 
 	// hangup the chained call
-	for _, callID := range cc.ChainedCallIDs {
+	for _, callID := range res.ChainedCallIDs {
 		// hang up the call
 		log.Debugf("Haningup the chained call. chained_call_id: %s", callID)
-		_, err = h.HangingUp(ctx, callID, call.HangupReasonNormal)
+		tmp, err := h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		if err != nil {
 			// we don't do any error handle here.
 			// just write the log
 			log.Errorf("Could not hangup the chained call. err: %v", err)
+			continue
 		}
+		log.WithField("chained_call", tmp).Debugf("Hanging up the chained call. chained_call_id: %s", tmp.ID)
 	}
 
-	return nil
+	return res, nil
 }
 
 // HangingUp starts hangup process.
@@ -151,6 +154,22 @@ func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, caus
 		return nil, err
 	}
 	log.WithField("channel", cn).Debugf("Hanging up the call channel. call_id: %s, channel_id: %s", c.ID, cn.ID)
+
+	if cn.TMEnd != dbhandler.DefaultTimeStamp {
+		// the channel is already ended. just hang up the call.
+		log.Debugf("The channel is already hungup. Hangup the call immediately. channel_id: %s, channel_state: %s", cn.ID, cn.State)
+		tmp, err := h.Hangup(ctx, cn)
+		if err != nil {
+			// we could not hangup the call.
+			// but just return the nil error here, because we succeeded hanging the call already.
+			log.Errorf("Could not hangup the call correctly. err: %v", err)
+			return res, nil
+		}
+		log.WithField("call", tmp).Debugf("Hungup the call. call_id: %s", res.ID)
+
+		// update the res to the new call struct
+		res = tmp
+	}
 
 	return res, nil
 }

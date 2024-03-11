@@ -12,10 +12,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -167,16 +169,23 @@ func Test_ARIChannelStateChangeStatusRinging(t *testing.T) {
 func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 
 	tests := []struct {
-		name    string
+		name string
+
 		channel *channel.Channel
+
+		responseCall *call.Call
 	}{
 		{
-			"call normal destroy",
-			&channel.Channel{
+			name: "normal",
+			channel: &channel.Channel{
 				ID:          "31384bbc-dd97-11ea-9e42-433e5113c783",
 				Data:        map[string]interface{}{},
 				HangupCause: ari.ChannelCauseNormalClearing,
 				Type:        channel.TypeCall,
+			},
+
+			responseCall: &call.Call{
+				ID: uuid.FromStringOrNil("67500948-df45-11ee-b0c6-1383284b63b0"),
 			},
 		},
 	}
@@ -186,17 +195,29 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+				bridgeHandler: mockBridge,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("no call"))
+			// call hangup
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
+			mockBridge.EXPECT().Destroy(ctx, tt.responseCall.BridgeID).Return(nil)
+			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			if err := h.ARIChannelDestroyed(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -1120,8 +1120,9 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 		name string
 		call *call.Call
 
-		responseCall *call.Call
-		expectCause  ari.ChannelCause
+		responseCall    *call.Call
+		responseChannel *channel.Channel
+		expectCause     ari.ChannelCause
 	}{
 		{
 			name: "normal",
@@ -1145,6 +1146,9 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 					Type:   fmaction.TypeHangup,
 					Option: []byte(`{"reason":"busy"}`),
 				},
+			},
+			responseChannel: &channel.Channel{
+				TMEnd: dbhandler.DefaultTimeStamp,
 			},
 			expectCause: ari.ChannelCauseUserBusy,
 		},
@@ -1176,7 +1180,7 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
-			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(tt.responseChannel, nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1194,6 +1198,7 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 		responseReferenceCall    *call.Call
 		responseReferenceChannel *channel.Channel
 		responseCall             *call.Call
+		responseChannel          *channel.Channel
 
 		expectCause ari.ChannelCause
 	}{
@@ -1229,6 +1234,9 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 			responseReferenceChannel: &channel.Channel{
 				ID:          "f4cf0996-a3d1-11ed-8aca-97c846819d72",
 				HangupCause: ari.ChannelCauseUserBusy,
+			},
+			responseChannel: &channel.Channel{
+				TMEnd: dbhandler.DefaultTimeStamp,
 			},
 
 			expectCause: ari.ChannelCauseUserBusy,
@@ -1266,6 +1274,9 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				ID:          "7888691c-a3d2-11ed-9e53-5ba62e8286cb",
 				HangupCause: ari.ChannelCauseNoRouteDestination,
 			},
+			responseChannel: &channel.Channel{
+				TMEnd: dbhandler.DefaultTimeStamp,
+			},
 
 			expectCause: ari.ChannelCauseNoRouteDestination,
 		},
@@ -1300,7 +1311,7 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
-			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(tt.responseChannel, nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1328,7 +1339,8 @@ func Test_ActionNextForce(t *testing.T) {
 			},
 
 			responseChannel: &channel.Channel{
-				ID: "d3234c52-264f-11ee-951a-83d7ae2f2751",
+				ID:    "d3234c52-264f-11ee-951a-83d7ae2f2751",
+				TMEnd: dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -1361,7 +1373,7 @@ func Test_ActionNextForce(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, gomock.Any(), gomock.Any())
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(tt.responseChannel, nil)
 
 			if err := h.ActionNextForce(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

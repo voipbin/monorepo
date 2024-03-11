@@ -28,18 +28,22 @@ import (
 func Test_Hangup(t *testing.T) {
 
 	tests := []struct {
-		name         string
-		channel      *channel.Channel
-		responseCall *call.Call
+		name    string
+		channel *channel.Channel
+
+		responseCall    *call.Call
+		responseChannel *channel.Channel
 	}{
 		{
-			"normal",
-			&channel.Channel{
+			name: "normal",
+
+			channel: &channel.Channel{
 				ID:          "70271162-1772-11ec-a941-fb10a2f9c2e7",
 				AsteriskID:  "80:fa:5b:5e:da:81",
 				HangupCause: ari.ChannelCauseNormalClearing,
 			},
-			&call.Call{
+
+			responseCall: &call.Call{
 				ID:        uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
 				ChannelID: "70271162-1772-11ec-a941-fb10a2f9c2e7",
 				Status:    call.StatusProgressing,
@@ -47,15 +51,20 @@ func Test_Hangup(t *testing.T) {
 					Type: fmaction.TypeEcho,
 				},
 			},
+			responseChannel: &channel.Channel{
+				TMEnd: dbhandler.DefaultTimeStamp,
+			},
 		},
 		{
-			"chained calls",
-			&channel.Channel{
+			name: "chained calls",
+
+			channel: &channel.Channel{
 				ID:          "e3c68930-1778-11ec-8c04-0bcef8a75b4f",
 				AsteriskID:  "80:fa:5b:5e:da:81",
 				HangupCause: ari.ChannelCauseNormalClearing,
 			},
-			&call.Call{
+
+			responseCall: &call.Call{
 				ID:        uuid.FromStringOrNil("e37dcd4e-1778-11ec-95c1-5b6f4657bd15"),
 				ChannelID: "e3c68930-1778-11ec-8c04-0bcef8a75b4f",
 				Status:    call.StatusProgressing,
@@ -67,15 +76,20 @@ func Test_Hangup(t *testing.T) {
 					uuid.FromStringOrNil("f8e1cf1e-1778-11ec-ba6f-e73cb284ba93"),
 				},
 			},
+			responseChannel: &channel.Channel{
+				TMEnd: dbhandler.DefaultTimeStamp,
+			},
 		},
 		{
-			"has groupcall info",
-			&channel.Channel{
+			name: "has groupcall info",
+
+			channel: &channel.Channel{
 				ID:          "09e6139c-d901-11ed-9ec4-c7733d43bc03",
 				AsteriskID:  "80:fa:5b:5e:da:81",
 				HangupCause: ari.ChannelCauseNormalClearing,
 			},
-			&call.Call{
+
+			responseCall: &call.Call{
 				ID:        uuid.FromStringOrNil("0a3988a6-d901-11ed-9e5a-af6485ff8915"),
 				ChannelID: "09e6139c-d901-11ed-9ec4-c7733d43bc03",
 				Status:    call.StatusProgressing,
@@ -83,6 +97,9 @@ func Test_Hangup(t *testing.T) {
 					Type: fmaction.TypeEcho,
 				},
 				GroupcallID: uuid.FromStringOrNil("0a660c00-d901-11ed-9d27-eb63c32e1192"),
+			},
+			responseChannel: &channel.Channel{
+				TMEnd: dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -139,14 +156,18 @@ func Test_Hangup(t *testing.T) {
 				}
 				mockDB.EXPECT().CallGet(ctx, tmpCall.ID).Return(tmpCall2, nil)
 				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tmpCall2.CustomerID, call.EventTypeCallTerminating, gomock.Any())
-				mockChannel.EXPECT().HangingUp(ctx, tmpCall2.ChannelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
+				mockChannel.EXPECT().HangingUp(ctx, tmpCall2.ChannelID, ari.ChannelCauseNormalClearing).Return(tt.responseChannel, nil)
 			}
 
-			if err := h.Hangup(ctx, tt.channel); err != nil {
+			res, err := h.Hangup(ctx, tt.channel)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			time.Sleep(time.Millisecond * 100)
+			if !reflect.DeepEqual(res, tt.responseCall) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCall, res)
+			}
 		})
 	}
 }
@@ -182,6 +203,7 @@ func Test_hangingUpWithCause(t *testing.T) {
 			&channel.Channel{
 				ID:         "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
 				AsteriskID: "80:fa:5b:5e:da:81",
+				TMEnd:      dbhandler.DefaultTimeStamp,
 			},
 
 			call.StatusTerminating,
@@ -205,6 +227,7 @@ func Test_hangingUpWithCause(t *testing.T) {
 			&channel.Channel{
 				ID:         "ac7411a4-ab1c-11ec-bce4-e7e983448875",
 				AsteriskID: "80:fa:5b:5e:da:81",
+				TMEnd:      dbhandler.DefaultTimeStamp,
 			},
 
 			call.StatusCanceling,
@@ -245,7 +268,7 @@ func Test_hangingUpWithCause(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(&tmpCall, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tmpCall.CustomerID, tt.expectEventType, &tmpCall)
 
-			mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, tt.cause).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, tt.cause).Return(tt.responseChannel, nil)
 
 			res, err := h.hangingUpWithCause(ctx, tt.id, tt.cause)
 			if err != nil {
@@ -288,6 +311,7 @@ func Test_hangingupWithReference(t *testing.T) {
 			&channel.Channel{
 				ID:          "19b1bc03-cf90-47b9-9fbd-5fef6d9393a4",
 				HangupCause: ari.ChannelCauseNoAnswer,
+				TMEnd:       dbhandler.DefaultTimeStamp,
 			},
 			&call.Call{
 				ID:     uuid.FromStringOrNil("045e6cd0-41f7-4b24-833d-f17b0236b9a6"),
