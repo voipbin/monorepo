@@ -5,23 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 
+	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CallV1ChannelHealth sends the request for channel health-check
-func (r *requestHandler) CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error {
+// CallV1ChannelHealth sends the request to the call-manager for channel health-check
+func (r *requestHandler) CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount int) error {
 	uri := fmt.Sprintf("/v1/channels/%s/health-check", channelID)
 
-	type Data struct {
-		RetryCount    int `json:"retry_count"`
-		RetryCountMax int `json:"retry_count_max"`
-		Delay         int `json:"delay"`
-	}
-
-	m, err := json.Marshal(Data{
-		retryCount,
-		retryCountMax,
-		delay,
+	m, err := json.Marshal(cmrequest.V1DataChannelsIDHealth{
+		RetryCount: retryCount,
 	})
 	if err != nil {
 		return err
