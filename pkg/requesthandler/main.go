@@ -450,7 +450,7 @@ type RequestHandler interface {
 	CallV1CallSilenceOff(ctx context.Context, callID uuid.UUID) error
 
 	// call-manager channel
-	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error
+	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount int) error
 
 	// call-manager confbridge
 	CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
