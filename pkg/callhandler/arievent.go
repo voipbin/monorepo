@@ -25,7 +25,11 @@ func (h *callHandler) ARIChannelDestroyed(ctx context.Context, cn *channel.Chann
 
 	switch cn.Type {
 	case channel.TypeCall:
-		return h.Hangup(ctx, cn)
+		_, err := h.Hangup(ctx, cn)
+		if err != nil {
+			return err
+		}
+		return nil
 
 	case channel.TypeConfbridge, channel.TypeJoin, channel.TypeExternal, channel.TypeRecording, channel.TypeApplication:
 		// we don't do anything at here.

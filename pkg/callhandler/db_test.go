@@ -198,6 +198,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			res, err := h.Create(
 				ctx,

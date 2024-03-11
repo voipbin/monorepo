@@ -74,7 +74,7 @@ type CallHandler interface {
 		connect bool,
 	) (*call.Call, error)
 	Start(ctx context.Context, cn *channel.Channel) error
-	Hangup(ctx context.Context, cn *channel.Channel) error
+	Hangup(ctx context.Context, cn *channel.Channel) (*call.Call, error)
 	HangingUp(ctx context.Context, id uuid.UUID, reason call.HangupReason) (*call.Call, error)
 
 	Play(ctx context.Context, callID uuid.UUID, runNext bool, urls []string) error

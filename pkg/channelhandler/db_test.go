@@ -111,7 +111,7 @@ func Test_Create(t *testing.T) {
 
 			mockDB.EXPECT().ChannelCreate(ctx, tt.expectChannel).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.responseChannel.ID, defaultHealthDelay, 0, defaultHealthMaxRetryCount)
+			mockReq.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.responseChannel.ID, defaultHealthDelay, 0)
 
 			res, err := h.Create(
 				ctx,

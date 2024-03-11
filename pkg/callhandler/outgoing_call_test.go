@@ -157,6 +157,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			// setVariables
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -339,6 +340,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			// setVariables
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
