@@ -8,6 +8,8 @@ type ServiceName string
 // list of service names
 // this will be used to event publisher name as well.
 const (
+	ServiceNameAsteriskProxy ServiceName = "asterisk-proxy"
+
 	ServiceNameAgentManager      ServiceName = "agent-manager"
 	ServiceNameAPIManager        ServiceName = "api-manager"
 	ServiceNameBillingManager    ServiceName = "billing-manager"
