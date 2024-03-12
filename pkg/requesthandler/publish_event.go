@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // publishEvent sends a event to the given destination.
-func (r *requestHandler) publishEvent(ctx context.Context, queue common.Queue, eventType string, publisher string, dataType string, data json.RawMessage) error {
+func (r *requestHandler) publishEvent(ctx context.Context, queue commonoutline.Queue, eventType string, publisher string, dataType string, data json.RawMessage) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "sendEvent",
 		"queue":      queue,
@@ -39,5 +39,5 @@ func (r *requestHandler) publishEvent(ctx context.Context, queue common.Queue, e
 // CallPublishEvent publish the event to the call-manager.
 func (r *requestHandler) CallPublishEvent(ctx context.Context, eventType string, publisher string, dataType string, data []byte) error {
 
-	return r.publishEvent(ctx, common.QueueCallSubscribe, eventType, publisher, dataType, data)
+	return r.publishEvent(ctx, commonoutline.QueueCallSubscribe, eventType, publisher, dataType, data)
 }

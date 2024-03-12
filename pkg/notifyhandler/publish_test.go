@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
@@ -69,7 +69,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 			h := &notifyHandler{
 				sock:        mockSock,
 				reqHandler:  mockReq,
-				queueNotify: common.QueueCallEvent,
+				queueNotify: commonoutline.QueueCallEvent,
 				publisher:   testPublisher,
 			}
 
@@ -143,7 +143,7 @@ func Test_PublishWebhook(t *testing.T) {
 			h := &notifyHandler{
 				sock:        mockSock,
 				reqHandler:  mockReq,
-				queueNotify: common.QueueCallEvent,
+				queueNotify: commonoutline.QueueCallEvent,
 				publisher:   testPublisher,
 			}
 
@@ -196,7 +196,7 @@ func Test_PublishEvent(t *testing.T) {
 			h := &notifyHandler{
 				sock:        mockSock,
 				reqHandler:  mockReq,
-				queueNotify: common.QueueCallEvent,
+				queueNotify: commonoutline.QueueCallEvent,
 				publisher:   testPublisher,
 			}
 
@@ -248,7 +248,7 @@ func Test_PublishEventRaw(t *testing.T) {
 			h := &notifyHandler{
 				sock:        mockSock,
 				reqHandler:  mockReq,
-				queueNotify: common.QueueCallEvent,
+				queueNotify: commonoutline.QueueCallEvent,
 				publisher:   testPublisher,
 			}
 
