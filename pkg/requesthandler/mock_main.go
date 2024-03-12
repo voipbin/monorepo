@@ -69,7 +69,6 @@ import (
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 	tts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
-	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
 
@@ -4486,7 +4485,7 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, name,
 }
 
 // SendRequest mocks base method.
-func (m *MockRequestHandler) SendRequest(ctx context.Context, queue outline.Queue, uri string, method rabbitmqhandler.RequestMethod, timeout, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (m *MockRequestHandler) SendRequest(ctx context.Context, queue outline.QueueName, uri string, method rabbitmqhandler.RequestMethod, timeout, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendRequest", ctx, queue, uri, method, timeout, delay, dataType, data)
 	ret0, _ := ret[0].(*rabbitmqhandler.Response)
@@ -4736,122 +4735,6 @@ func (m *MockRequestHandler) TransferV1TransferStart(ctx context.Context, transf
 func (mr *MockRequestHandlerMockRecorder) TransferV1TransferStart(ctx, transferType, transfererCallID, transfereeAddresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferV1TransferStart", reflect.TypeOf((*MockRequestHandler)(nil).TransferV1TransferStart), ctx, transferType, transfererCallID, transfereeAddresses)
-}
-
-// UserV1UserCreate mocks base method.
-func (m *MockRequestHandler) UserV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission user.Permission) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserCreate", ctx, timeout, username, password, name, detail, permission)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserV1UserCreate indicates an expected call of UserV1UserCreate.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserCreate(ctx, timeout, username, password, name, detail, permission interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserCreate", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserCreate), ctx, timeout, username, password, name, detail, permission)
-}
-
-// UserV1UserDelete mocks base method.
-func (m *MockRequestHandler) UserV1UserDelete(ctx context.Context, id uint64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserV1UserDelete indicates an expected call of UserV1UserDelete.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserDelete(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserDelete", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserDelete), ctx, id)
-}
-
-// UserV1UserGet mocks base method.
-func (m *MockRequestHandler) UserV1UserGet(ctx context.Context, id uint64) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserGet", ctx, id)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserV1UserGet indicates an expected call of UserV1UserGet.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserGet", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserGet), ctx, id)
-}
-
-// UserV1UserGets mocks base method.
-func (m *MockRequestHandler) UserV1UserGets(ctx context.Context, pageToken string, pageSize uint64) ([]user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserGets", ctx, pageToken, pageSize)
-	ret0, _ := ret[0].([]user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserV1UserGets indicates an expected call of UserV1UserGets.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserGets(ctx, pageToken, pageSize interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserGets", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserGets), ctx, pageToken, pageSize)
-}
-
-// UserV1UserLogin mocks base method.
-func (m *MockRequestHandler) UserV1UserLogin(ctx context.Context, timeout int, username, password string) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserLogin", ctx, timeout, username, password)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserV1UserLogin indicates an expected call of UserV1UserLogin.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserLogin(ctx, timeout, username, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserLogin", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserLogin), ctx, timeout, username, password)
-}
-
-// UserV1UserUpdateBasicInfo mocks base method.
-func (m *MockRequestHandler) UserV1UserUpdateBasicInfo(ctx context.Context, userID uint64, name, detail string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserUpdateBasicInfo", ctx, userID, name, detail)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserV1UserUpdateBasicInfo indicates an expected call of UserV1UserUpdateBasicInfo.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserUpdateBasicInfo(ctx, userID, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserUpdateBasicInfo), ctx, userID, name, detail)
-}
-
-// UserV1UserUpdatePassword mocks base method.
-func (m *MockRequestHandler) UserV1UserUpdatePassword(ctx context.Context, timeout int, userID uint64, password string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserUpdatePassword", ctx, timeout, userID, password)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserV1UserUpdatePassword indicates an expected call of UserV1UserUpdatePassword.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserUpdatePassword(ctx, timeout, userID, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserUpdatePassword", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserUpdatePassword), ctx, timeout, userID, password)
-}
-
-// UserV1UserUpdatePermission mocks base method.
-func (m *MockRequestHandler) UserV1UserUpdatePermission(ctx context.Context, userID uint64, permission user.Permission) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserV1UserUpdatePermission", ctx, userID, permission)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserV1UserUpdatePermission indicates an expected call of UserV1UserUpdatePermission.
-func (mr *MockRequestHandlerMockRecorder) UserV1UserUpdatePermission(ctx, userID, permission interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserV1UserUpdatePermission", reflect.TypeOf((*MockRequestHandler)(nil).UserV1UserUpdatePermission), ctx, userID, permission)
 }
 
 // WebhookV1WebhookSend mocks base method.
