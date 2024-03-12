@@ -34,7 +34,7 @@ import (
 	chatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	service "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	common "gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
+	outline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	rabbitmqhandler "gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
@@ -4486,7 +4486,7 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, name,
 }
 
 // SendRequest mocks base method.
-func (m *MockRequestHandler) SendRequest(ctx context.Context, queue common.Queue, uri string, method rabbitmqhandler.RequestMethod, timeout, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (m *MockRequestHandler) SendRequest(ctx context.Context, queue outline.Queue, uri string, method rabbitmqhandler.RequestMethod, timeout, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendRequest", ctx, queue, uri, method, timeout, delay, dataType, data)
 	ret0, _ := ret[0].(*rabbitmqhandler.Response)

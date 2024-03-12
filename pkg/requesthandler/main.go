@@ -67,7 +67,7 @@ import (
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -276,7 +276,7 @@ func initPrometheus(namespace string) {
 type RequestHandler interface {
 
 	// send
-	SendRequest(ctx context.Context, queue common.Queue, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
+	SendRequest(ctx context.Context, queue commonoutline.Queue, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error
@@ -952,18 +952,18 @@ type RequestHandler interface {
 type requestHandler struct {
 	sock rabbitmqhandler.Rabbit
 
-	publisher common.ServiceName
+	publisher commonoutline.ServiceName
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher common.ServiceName) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.ServiceName) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
 		publisher: publisher,
 	}
 
-	namespace := common.GetMetricNameSpace(publisher)
+	namespace := commonoutline.GetMetricNameSpace(publisher)
 	initPrometheus(namespace)
 
 	return h
