@@ -1,4 +1,4 @@
-package common
+package outline
 
 // Queue type define
 type Queue string

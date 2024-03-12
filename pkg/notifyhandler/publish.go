@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -154,7 +154,7 @@ func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *rabbitmqhan
 func (h *notifyHandler) publishDelayedEvent(ctx context.Context, delay int, evt *rabbitmqhandler.Event) error {
 
 	start := time.Now()
-	err := h.sock.PublishExchangeDelayedEvent(string(common.QueueDelay), string(h.queueNotify), evt, delay)
+	err := h.sock.PublishExchangeDelayedEvent(string(commonoutline.QueueDelay), string(h.queueNotify), evt, delay)
 	elapsed := time.Since(start)
 	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
