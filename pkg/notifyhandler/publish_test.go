@@ -64,21 +64,19 @@ func Test_PublishWebhookEvent(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			exchangeDelay := ""
 			exchangeNotify := "bin-manager.notify-manager.event"
 
 			h := &notifyHandler{
-				sock:           mockSock,
-				reqHandler:     mockReq,
-				exchangeDelay:  exchangeDelay,
-				exchangeNotify: exchangeNotify,
-				publisher:      testPublisher,
+				sock:        mockSock,
+				reqHandler:  mockReq,
+				queueNotify: exchangeNotify,
+				publisher:   testPublisher,
 			}
 
 			ctx := context.Background()
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
-			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
+			mockSock.EXPECT().PublishExchangeEvent(h.queueNotify, "", tt.expectEvent)
 			if tt.customerID != uuid.Nil {
 				mockReq.EXPECT().WebhookV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
@@ -141,15 +139,13 @@ func Test_PublishWebhook(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			exchangeDelay := ""
 			exchangeNotify := "bin-manager.call-manager.event"
 
 			h := &notifyHandler{
-				sock:           mockSock,
-				reqHandler:     mockReq,
-				exchangeDelay:  exchangeDelay,
-				exchangeNotify: exchangeNotify,
-				publisher:      testPublisher,
+				sock:        mockSock,
+				reqHandler:  mockReq,
+				queueNotify: exchangeNotify,
+				publisher:   testPublisher,
 			}
 
 			ctx := context.Background()
@@ -197,19 +193,17 @@ func Test_PublishEvent(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			exchangeDelay := ""
 			exchangeNotify := "bin-manager.call-manager.event"
 
 			h := &notifyHandler{
-				sock:           mockSock,
-				reqHandler:     mockReq,
-				exchangeDelay:  exchangeDelay,
-				exchangeNotify: exchangeNotify,
-				publisher:      testPublisher,
+				sock:        mockSock,
+				reqHandler:  mockReq,
+				queueNotify: exchangeNotify,
+				publisher:   testPublisher,
 			}
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
-			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
+			mockSock.EXPECT().PublishExchangeEvent(h.queueNotify, "", tt.expectEvent)
 
 			h.PublishEvent(context.Background(), tt.eventType, tt.event)
 
@@ -252,20 +246,18 @@ func Test_PublishEventRaw(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			exchangeDelay := ""
 			exchangeNotify := "bin-manager.call-manager.event"
 
 			h := &notifyHandler{
-				sock:           mockSock,
-				reqHandler:     mockReq,
-				exchangeDelay:  exchangeDelay,
-				exchangeNotify: exchangeNotify,
-				publisher:      testPublisher,
+				sock:        mockSock,
+				reqHandler:  mockReq,
+				queueNotify: exchangeNotify,
+				publisher:   testPublisher,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
+			mockSock.EXPECT().PublishExchangeEvent(h.queueNotify, "", tt.expectEvent)
 
 			h.PublishEventRaw(ctx, tt.eventType, tt.dataType, tt.data)
 

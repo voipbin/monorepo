@@ -1,5 +1,8 @@
 package common
 
+// Queue type define
+type Queue string
+
 // list of queue names
 // most of service has 3 queue names.
 // bin-manager.<service name>.event: Event publish queue.
@@ -7,128 +10,128 @@ package common
 // bin-manager.<service name>.subscribe: Subscribe event queue.
 const (
 	// common use
-	QueueDelay = "bin-manager.delay" // queue name for delayed requests
+	QueueDelay Queue = "bin-manager.delay" // queue name for delayed requests
 
 	// asterisk
-	QueueAsteriskEventAll = "asterisk.all.event"
+	QueueAsteriskEventAll Queue = "asterisk.all.event"
 
 	// agent-manager
-	QueueAgentEvent     = "bin-manager.agent-manager.event"
-	QueueAgentRequest   = "bin-manager.agent-manager.request"
-	QueueAgentSubscribe = "bin-manager.agent-manager.subscribe"
+	QueueAgentEvent     Queue = "bin-manager.agent-manager.event"
+	QueueAgentRequest   Queue = "bin-manager.agent-manager.request"
+	QueueAgentSubscribe Queue = "bin-manager.agent-manager.subscribe"
 
 	// api-manager
-	QueueAPIEvent     = "bin-manager.api-manager.event"
-	QueueAPIRequest   = "bin-manager.api-manager.request"
-	QueueAPISubscribe = "bin-manager.api-manager.subscribe"
+	QueueAPIEvent     Queue = "bin-manager.api-manager.event"
+	QueueAPIRequest   Queue = "bin-manager.api-manager.request"
+	QueueAPISubscribe Queue = "bin-manager.api-manager.subscribe"
 
 	// billing-manager
-	QueueBillingEvent     = "bin-manager.billing-manager.event"
-	QueueBillingRequest   = "bin-manager.billing-manager.request"
-	QueueBillingSubscribe = "bin-manager.billing-manager.subscribe"
+	QueueBillingEvent     Queue = "bin-manager.billing-manager.event"
+	QueueBillingRequest   Queue = "bin-manager.billing-manager.request"
+	QueueBillingSubscribe Queue = "bin-manager.billing-manager.subscribe"
 
 	// call-manager
-	QueueCallEvent     = "bin-manager.call-manager.event"
-	QueueCallRequest   = "bin-manager.call-manager.request"
-	QueueCallSubscribe = "bin-manager.call-manager.subscribe"
+	QueueCallEvent     Queue = "bin-manager.call-manager.event"
+	QueueCallRequest   Queue = "bin-manager.call-manager.request"
+	QueueCallSubscribe Queue = "bin-manager.call-manager.subscribe"
 
 	// campaign-manager
-	QueueCampaignEvent     = "bin-manager.campaign-manager.event"
-	QueueCampaignRequest   = "bin-manager.campaign-manager.request"
-	QueueCampaignSubscribe = "bin-manager.campaign-manager.subscribe"
+	QueueCampaignEvent     Queue = "bin-manager.campaign-manager.event"
+	QueueCampaignRequest   Queue = "bin-manager.campaign-manager.request"
+	QueueCampaignSubscribe Queue = "bin-manager.campaign-manager.subscribe"
 
 	// chat-manager
-	QueueChatEvent     = "bin-manager.chat-manager.event"
-	QueueChatRequest   = "bin-manager.chat-manager.request"
-	QueueChatSubscribe = "bin-manager.chat-manager.subscribe"
+	QueueChatEvent     Queue = "bin-manager.chat-manager.event"
+	QueueChatRequest   Queue = "bin-manager.chat-manager.request"
+	QueueChatSubscribe Queue = "bin-manager.chat-manager.subscribe"
 
 	// chatbot-manager
-	QueueChatbotEvent     = "bin-manager.chatbot-manager.event"
-	QueueChatbotRequest   = "bin-manager.chatbot-manager.request"
-	QueueChatbotSubscribe = "bin-manager.chatbot-manager.subscribe"
+	QueueChatbotEvent     Queue = "bin-manager.chatbot-manager.event"
+	QueueChatbotRequest   Queue = "bin-manager.chatbot-manager.request"
+	QueueChatbotSubscribe Queue = "bin-manager.chatbot-manager.subscribe"
 
 	// conference-manager
-	QueueConferenceEvent     = "bin-manager.conference-manager.event"
-	QueueConferenceRequest   = "bin-manager.conference-manager.request"
-	QueueConferenceSubscribe = "bin-manager.conference-manager.subscribe"
+	QueueConferenceEvent     Queue = "bin-manager.conference-manager.event"
+	QueueConferenceRequest   Queue = "bin-manager.conference-manager.request"
+	QueueConferenceSubscribe Queue = "bin-manager.conference-manager.subscribe"
 
 	// conversation-manager
-	QueueConversationEvent     = "bin-manager.conversation-manager.event"
-	QueueConversationRequest   = "bin-manager.conversation-manager.request"
-	QueueConversationSubscribe = "bin-manager.conversation-manager.subscribe"
+	QueueConversationEvent     Queue = "bin-manager.conversation-manager.event"
+	QueueConversationRequest   Queue = "bin-manager.conversation-manager.request"
+	QueueConversationSubscribe Queue = "bin-manager.conversation-manager.subscribe"
 
 	// customer-manager
-	QueueCustomerEvent     = "bin-manager.customer-manager.event"
-	QueueCustomerRequest   = "bin-manager.customer-manager.request"
-	QueueCustomerSubscribe = "bin-manager.customer-manager.subscribe"
+	QueueCustomerEvent     Queue = "bin-manager.customer-manager.event"
+	QueueCustomerRequest   Queue = "bin-manager.customer-manager.request"
+	QueueCustomerSubscribe Queue = "bin-manager.customer-manager.subscribe"
 
 	// flow-manager
-	QueueFlowEvent     = "bin-manager.flow-manager.event"
-	QueueFlowRequest   = "bin-manager.flow-manager.request"
-	QueueFlowSubscribe = "bin-manager.flow-manager.subscribe"
+	QueueFlowEvent     Queue = "bin-manager.flow-manager.event"
+	QueueFlowRequest   Queue = "bin-manager.flow-manager.request"
+	QueueFlowSubscribe Queue = "bin-manager.flow-manager.subscribe"
 
 	// message-manager
-	QueueMessageEvent     = "bin-manager.message-manager.event"
-	QueueMessageRequest   = "bin-manager.message-manager.request"
-	QueueMessageSubscribe = "bin-manager.message-manager.subscribe"
+	QueueMessageEvent     Queue = "bin-manager.message-manager.event"
+	QueueMessageRequest   Queue = "bin-manager.message-manager.request"
+	QueueMessageSubscribe Queue = "bin-manager.message-manager.subscribe"
 
 	// number-manager
-	QueueNumberEvent     = "bin-manager.number-manager.event"
-	QueueNumberRequest   = "bin-manager.number-manager.request"
-	QueueNumberSubscribe = "bin-manager.number-manager.subscribe"
+	QueueNumberEvent     Queue = "bin-manager.number-manager.event"
+	QueueNumberRequest   Queue = "bin-manager.number-manager.request"
+	QueueNumberSubscribe Queue = "bin-manager.number-manager.subscribe"
 
 	// outdial-manager
-	QueueOutdialEvent     = "bin-manager.outdial-manager.event"
-	QueueOutdialRequest   = "bin-manager.outdial-manager.request"
-	QueueOutdialSubscribe = "bin-manager.outdial-manager.subscribe"
+	QueueOutdialEvent     Queue = "bin-manager.outdial-manager.event"
+	QueueOutdialRequest   Queue = "bin-manager.outdial-manager.request"
+	QueueOutdialSubscribe Queue = "bin-manager.outdial-manager.subscribe"
 
 	// queue-manager
-	QueueQueueEvent     = "bin-manager.queue-manager.event"
-	QueueQueueRequest   = "bin-manager.queue-manager.request"
-	QueueQueueSubscribe = "bin-manager.queue-manager.subscribe"
+	QueueQueueEvent     Queue = "bin-manager.queue-manager.event"
+	QueueQueueRequest   Queue = "bin-manager.queue-manager.request"
+	QueueQueueSubscribe Queue = "bin-manager.queue-manager.subscribe"
 
 	// registrar-manager
-	QueueRegistrarEvent     = "bin-manager.registrar-manager.event"
-	QueueRegistrarRequest   = "bin-manager.registrar-manager.request"
-	QueueRegistrarSubscribe = "bin-manager.registrar-manager.subscribe"
+	QueueRegistrarEvent     Queue = "bin-manager.registrar-manager.event"
+	QueueRegistrarRequest   Queue = "bin-manager.registrar-manager.request"
+	QueueRegistrarSubscribe Queue = "bin-manager.registrar-manager.subscribe"
 
 	// route-manager
-	QueueRouteEvent     = "bin-manager.route-manager.event"
-	QueueRouteRequest   = "bin-manager.route-manager.request"
-	QueueRouteSubscribe = "bin-manager.route-manager.subscribe"
+	QueueRouteEvent     Queue = "bin-manager.route-manager.event"
+	QueueRouteRequest   Queue = "bin-manager.route-manager.request"
+	QueueRouteSubscribe Queue = "bin-manager.route-manager.subscribe"
 
 	// storage-manager
-	QueueStorageEvent     = "bin-manager.storage-manager.event"
-	QueueStorageRequest   = "bin-manager.storage-manager.request"
-	QueueStorageSubscribe = "bin-manager.storage-manager.subscribe"
+	QueueStorageEvent     Queue = "bin-manager.storage-manager.event"
+	QueueStorageRequest   Queue = "bin-manager.storage-manager.request"
+	QueueStorageSubscribe Queue = "bin-manager.storage-manager.subscribe"
 
 	// tag-manager
-	QueueTagEvent     = "bin-manager.tag-manager.event"
-	QueueTagRequest   = "bin-manager.tag-manager.request"
-	QueueTagSubscribe = "bin-manager.tag-manager.subscribe"
+	QueueTagEvent     Queue = "bin-manager.tag-manager.event"
+	QueueTagRequest   Queue = "bin-manager.tag-manager.request"
+	QueueTagSubscribe Queue = "bin-manager.tag-manager.subscribe"
 
 	// transcribe-manager
-	QueueTranscribeEvent     = "bin-manager.transcribe-manager.event"
-	QueueTranscribeRequest   = "bin-manager.transcribe-manager.request"
-	QueueTranscribeSubscribe = "bin-manager.transcribe-manager.subscribe"
+	QueueTranscribeEvent     Queue = "bin-manager.transcribe-manager.event"
+	QueueTranscribeRequest   Queue = "bin-manager.transcribe-manager.request"
+	QueueTranscribeSubscribe Queue = "bin-manager.transcribe-manager.subscribe"
 
 	// transfer-manager
-	QueueTransferEvent     = "bin-manager.transfer-manager.event"
-	QueueTransferRequest   = "bin-manager.transfer-manager.request"
-	QueueTransferSubscribe = "bin-manager.transfer-manager.subscribe"
+	QueueTransferEvent     Queue = "bin-manager.transfer-manager.event"
+	QueueTransferRequest   Queue = "bin-manager.transfer-manager.request"
+	QueueTransferSubscribe Queue = "bin-manager.transfer-manager.subscribe"
 
 	// tts-manager
-	QueueTTSEvent     = "bin-manager.tts-manager.event"
-	QueueTTSRequest   = "bin-manager.tts-manager.request"
-	QueueTTSSubscribe = "bin-manager.tts-manager.subscribe"
+	QueueTTSEvent     Queue = "bin-manager.tts-manager.event"
+	QueueTTSRequest   Queue = "bin-manager.tts-manager.request"
+	QueueTTSSubscribe Queue = "bin-manager.tts-manager.subscribe"
 
 	// user-manager
-	QueueUserEvent     = "bin-manager.user-manager.event"
-	QueueUserRequest   = "bin-manager.user-manager.request"
-	QueueUserSubscribe = "bin-manager.user-manager.subscribe"
+	QueueUserEvent     Queue = "bin-manager.user-manager.event"
+	QueueUserRequest   Queue = "bin-manager.user-manager.request"
+	QueueUserSubscribe Queue = "bin-manager.user-manager.subscribe"
 
 	// webhook-manager
-	QueueWebhookEvent     = "bin-manager.webhook-manager.event"
-	QueueWebhookRequest   = "bin-manager.webhook-manager.request"
-	QueueWebhookSubscribe = "bin-manager.webhook-manager.subscribe"
+	QueueWebhookEvent     Queue = "bin-manager.webhook-manager.event"
+	QueueWebhookRequest   Queue = "bin-manager.webhook-manager.request"
+	QueueWebhookSubscribe Queue = "bin-manager.webhook-manager.subscribe"
 )
