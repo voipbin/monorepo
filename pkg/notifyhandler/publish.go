@@ -104,7 +104,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	// create a event
 	evt := &rabbitmqhandler.Event{
 		Type:      eventType,
-		Publisher: h.publisher,
+		Publisher: string(h.publisher),
 		DataType:  dataType,
 		Data:      data,
 	}
