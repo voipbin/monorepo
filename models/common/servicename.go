@@ -1,4 +1,4 @@
-package servicename
+package common
 
 import "strings"
 
