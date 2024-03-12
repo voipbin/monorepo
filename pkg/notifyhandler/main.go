@@ -4,12 +4,12 @@ package notifyhandler
 
 import (
 	"context"
-	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
@@ -82,30 +82,28 @@ type notifyHandler struct {
 	sock       rabbitmqhandler.Rabbit
 	reqHandler requesthandler.RequestHandler
 
-	exchangeDelay  string
-	exchangeNotify string
+	queueNotify string
 
-	publisher string
+	publisher common.ServiceName
 }
 
 // NewNotifyHandler create NotifyHandler
-func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, exchangeDelay, exchangeEvent, publisher string) NotifyHandler {
+func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent string, publisher common.ServiceName) NotifyHandler {
 	h := &notifyHandler{
 		sock:       sock,
 		reqHandler: reqHandler,
 
-		exchangeDelay:  exchangeDelay,
-		exchangeNotify: exchangeEvent,
+		queueNotify: queueEvent,
 
 		publisher: publisher,
 	}
 
-	if err := sock.ExchangeDeclare(exchangeEvent, "fanout", true, false, false, false, nil); err != nil {
+	if err := sock.ExchangeDeclare(queueEvent, "fanout", true, false, false, false, nil); err != nil {
 		logrus.Errorf("Could not declare the event exchange. err: %v", err)
 		return nil
 	}
 
-	namespace := strings.ReplaceAll(publisher, "-", "_")
+	namespace := common.GetMetricNameSpace(publisher)
 	initPrometheus(namespace)
 
 	return h

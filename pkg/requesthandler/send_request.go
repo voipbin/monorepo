@@ -16,7 +16,7 @@ import (
 //
 // timeout: timeout(ms)
 // delayed: delay request(ms)
-func (r *requestHandler) SendRequest(ctx context.Context, queue string, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) SendRequest(ctx context.Context, queue common.Queue, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	return r.sendRequest(ctx, queue, uri, method, "", timeout, delay, dataType, data)
 }
 
@@ -24,7 +24,7 @@ func (r *requestHandler) SendRequest(ctx context.Context, queue string, uri stri
 //
 // timeout: timeout(ms)
 // delayed: delay request(ms)
-func (r *requestHandler) sendRequest(ctx context.Context, queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequest(ctx context.Context, queue common.Queue, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"queue":     queue,
 		"uri":       uri,
@@ -53,13 +53,13 @@ func (r *requestHandler) sendRequest(ctx context.Context, queue string, uri stri
 	case delay > 0:
 		// send scheduled message.
 		// we don't expect the response message here.
-		if err := r.sendDelayedRequest(cctx, queue, resource, delay, req); err != nil {
+		if err := r.sendDelayedRequest(cctx, string(queue), resource, delay, req); err != nil {
 			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
 		}
 		return nil, nil
 
 	default:
-		res, err := r.sendDirectRequest(cctx, queue, resource, req)
+		res, err := r.sendDirectRequest(cctx, string(queue), resource, req)
 		if err != nil {
 			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 		}
@@ -87,9 +87,9 @@ func (r *requestHandler) sendDirectRequest(ctx context.Context, target string, r
 func (r *requestHandler) sendDelayedRequest(ctx context.Context, queue string, resource resource, delay int, req *rabbitmqhandler.Request) error {
 
 	start := time.Now()
-	err := r.sock.PublishExchangeDelayedRequest(common.QueueDelay, queue, req, delay)
+	err := r.sock.PublishExchangeDelayedRequest(string(common.QueueDelay), queue, req, delay)
 	elapsed := time.Since(start)
-	promRequestProcessTime.WithLabelValues(common.QueueDelay, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
+	promRequestProcessTime.WithLabelValues(string(common.QueueDelay), string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	return err
 }
@@ -102,7 +102,7 @@ func (r *requestHandler) sendRequestAst(ctx context.Context, asteriskID, uri str
 	// create target
 	target := fmt.Sprintf("asterisk.%s.request", asteriskID)
 
-	return r.sendRequest(ctx, target, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, common.Queue(target), uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
