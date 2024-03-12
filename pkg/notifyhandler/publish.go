@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -131,7 +132,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
 	log.WithFields(logrus.Fields{
 		"event": evt,
-	}).Debugf("Published event. queue_name: %s, event_publisher: %s, event_type: %s, data_type: %s", h.exchangeNotify, evt.Publisher, evt.Type, evt.DataType)
+	}).Debugf("Published event. queue_name: %s, event_publisher: %s, event_type: %s, data_type: %s", h.queueNotify, evt.Publisher, evt.Type, evt.DataType)
 
 	return nil
 
@@ -141,7 +142,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *rabbitmqhandler.Event) error {
 
 	start := time.Now()
-	err := h.sock.PublishExchangeEvent(h.exchangeNotify, "", evt)
+	err := h.sock.PublishExchangeEvent(h.queueNotify, "", evt)
 	elapsed := time.Since(start)
 	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
@@ -153,7 +154,7 @@ func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *rabbitmqhan
 func (h *notifyHandler) publishDelayedEvent(ctx context.Context, delay int, evt *rabbitmqhandler.Event) error {
 
 	start := time.Now()
-	err := h.sock.PublishExchangeDelayedEvent(h.exchangeDelay, h.exchangeNotify, evt, delay)
+	err := h.sock.PublishExchangeDelayedEvent(string(common.QueueDelay), h.queueNotify, evt, delay)
 	elapsed := time.Since(start)
 	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
