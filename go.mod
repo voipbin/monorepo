@@ -17,7 +17,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.9.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240216131513-cde03cb72fe1
 	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240215192728-b61c81105fa6
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240311045749-400f92951b6e
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20240224144531-92dae0c9e1da
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20240305053808-9c86ee04f005
 	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20240116170346-73b2d21c2bd4
