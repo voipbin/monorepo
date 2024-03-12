@@ -82,13 +82,15 @@ type notifyHandler struct {
 	sock       rabbitmqhandler.Rabbit
 	reqHandler requesthandler.RequestHandler
 
-	queueNotify string
+	queueNotify common.Queue
 
 	publisher common.ServiceName
 }
 
 // NewNotifyHandler create NotifyHandler
-func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent string, publisher common.ServiceName) NotifyHandler {
+// queueEvent: queue name for notification. the notify handler will publish the event to this queue name.
+// publisher: publisher service name. the notify handler will publish the event with this publisher service name.
+func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent common.Queue, publisher common.ServiceName) NotifyHandler {
 	h := &notifyHandler{
 		sock:       sock,
 		reqHandler: reqHandler,
@@ -98,7 +100,7 @@ func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.Req
 		publisher: publisher,
 	}
 
-	if err := sock.ExchangeDeclare(queueEvent, "fanout", true, false, false, false, nil); err != nil {
+	if err := sock.ExchangeDeclare(string(queueEvent), "fanout", true, false, false, false, nil); err != nil {
 		logrus.Errorf("Could not declare the event exchange. err: %v", err)
 		return nil
 	}
