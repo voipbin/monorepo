@@ -1,8 +1,8 @@
-package common
+package outline
 
 import "testing"
 
-func Test_PublishWebhookEvent(t *testing.T) {
+func Test_GetMetricNameSpace(t *testing.T) {
 
 	tests := []struct {
 		name       string

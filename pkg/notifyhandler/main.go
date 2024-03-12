@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
@@ -82,15 +82,15 @@ type notifyHandler struct {
 	sock       rabbitmqhandler.Rabbit
 	reqHandler requesthandler.RequestHandler
 
-	queueNotify common.Queue
+	queueNotify commonoutline.Queue
 
-	publisher common.ServiceName
+	publisher commonoutline.ServiceName
 }
 
 // NewNotifyHandler create NotifyHandler
 // queueEvent: queue name for notification. the notify handler will publish the event to this queue name.
 // publisher: publisher service name. the notify handler will publish the event with this publisher service name.
-func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent common.Queue, publisher common.ServiceName) NotifyHandler {
+func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.Queue, publisher commonoutline.ServiceName) NotifyHandler {
 	h := &notifyHandler{
 		sock:       sock,
 		reqHandler: reqHandler,
@@ -105,7 +105,7 @@ func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.Req
 		return nil
 	}
 
-	namespace := common.GetMetricNameSpace(publisher)
+	namespace := commonoutline.GetMetricNameSpace(publisher)
 	initPrometheus(namespace)
 
 	return h
