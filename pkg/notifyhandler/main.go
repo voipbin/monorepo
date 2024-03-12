@@ -82,7 +82,7 @@ type notifyHandler struct {
 	sock       rabbitmqhandler.Rabbit
 	reqHandler requesthandler.RequestHandler
 
-	queueNotify commonoutline.Queue
+	queueNotify commonoutline.QueueName
 
 	publisher commonoutline.ServiceName
 }
@@ -90,7 +90,7 @@ type notifyHandler struct {
 // NewNotifyHandler create NotifyHandler
 // queueEvent: queue name for notification. the notify handler will publish the event to this queue name.
 // publisher: publisher service name. the notify handler will publish the event with this publisher service name.
-func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.Queue, publisher commonoutline.ServiceName) NotifyHandler {
+func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
 	h := &notifyHandler{
 		sock:       sock,
 		reqHandler: reqHandler,

@@ -154,7 +154,7 @@ func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *rabbitmqhan
 func (h *notifyHandler) publishDelayedEvent(ctx context.Context, delay int, evt *rabbitmqhandler.Event) error {
 
 	start := time.Now()
-	err := h.sock.PublishExchangeDelayedEvent(string(commonoutline.QueueDelay), string(h.queueNotify), evt, delay)
+	err := h.sock.PublishExchangeDelayedEvent(string(commonoutline.QueueNameDelay), string(h.queueNotify), evt, delay)
 	elapsed := time.Since(start)
 	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
