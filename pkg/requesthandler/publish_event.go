@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -38,5 +39,5 @@ func (r *requestHandler) publishEvent(ctx context.Context, queue string, eventTy
 // CallPublishEvent publish the event to the call-manager.
 func (r *requestHandler) CallPublishEvent(ctx context.Context, eventType string, publisher string, dataType string, data []byte) error {
 
-	return r.publishEvent(ctx, queueCallSubscribe, eventType, publisher, dataType, data)
+	return r.publishEvent(ctx, common.QueueCallSubscribe, eventType, publisher, dataType, data)
 }

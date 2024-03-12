@@ -5,7 +5,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"strings"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -68,6 +67,7 @@ import (
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/common"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -92,39 +92,6 @@ const (
 	DelaySecond int = 1000
 	DelayMinute int = DelaySecond * 60
 	DelayHour   int = DelayMinute * 60
-)
-
-// list of queue names
-//
-//nolint:deadcode,varcheck // this is ok
-const (
-	exchangeDelay = "bin-manager.delay"
-
-	queueAgentRequest        = "bin-manager.agent-manager.request"
-	queueAPIRequest          = "bin-manager.api-manager.request"
-	queueBillingRequest      = "bin-manager.billing-manager.request"
-	queueCallRequest         = "bin-manager.call-manager.request"
-	queueCallSubscribe       = "bin-manager.call-manager.subscribe"
-	queueCampaignRequest     = "bin-manager.campaign-manager.request"
-	queueChatRequest         = "bin-manager.chat-manager.request"
-	queueChatbotRequest      = "bin-manager.chatbot-manager.request"
-	queueConferenceRequest   = "bin-manager.conference-manager.request"
-	queueConversationRequest = "bin-manager.conversation-manager.request"
-	queueCustomerRequest     = "bin-manager.customer-manager.request"
-	queueFlowRequest         = "bin-manager.flow-manager.request"
-	queueMessageRequest      = "bin-manager.message-manager.request"
-	queueNumberRequest       = "bin-manager.number-manager.request"
-	queueOutdialRequest      = "bin-manager.outdial-manager.request"
-	queueQueueRequest        = "bin-manager.queue-manager.request"
-	queueRegistrarRequest    = "bin-manager.registrar-manager.request"
-	queueRouteRequest        = "bin-manager.route-manager.request"
-	queueStorageRequest      = "bin-manager.storage-manager.request"
-	queueTagRequest          = "bin-manager.tag-manager.request"
-	queueTranscribeRequest   = "bin-manager.transcribe-manager.request"
-	queueTransferRequest     = "bin-manager.transfer-manager.request"
-	queueTTSRequest          = "bin-manager.tts-manager.request"
-	queueUserRequest         = "bin-manager.user-manager.request"
-	queueWebhookRequest      = "bin-manager.webhook-manager.request"
 )
 
 // default stasis application name.
@@ -985,18 +952,18 @@ type RequestHandler interface {
 type requestHandler struct {
 	sock rabbitmqhandler.Rabbit
 
-	publisher string
+	publisher common.ServiceName
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher string) RequestHandler {
+func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher common.ServiceName) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 
 		publisher: publisher,
 	}
 
-	namespace := strings.ReplaceAll(publisher, "-", "_")
+	namespace := common.GetMetricNameSpace(publisher)
 	initPrometheus(namespace)
 
 	return h
