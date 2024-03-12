@@ -10,7 +10,7 @@ import (
 )
 
 // publishEvent sends a event to the given destination.
-func (r *requestHandler) publishEvent(ctx context.Context, queue string, eventType string, publisher string, dataType string, data json.RawMessage) error {
+func (r *requestHandler) publishEvent(ctx context.Context, queue common.Queue, eventType string, publisher string, dataType string, data json.RawMessage) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "sendEvent",
 		"queue":      queue,
@@ -27,7 +27,7 @@ func (r *requestHandler) publishEvent(ctx context.Context, queue string, eventTy
 		Data:      data,
 	}
 
-	if errPublish := r.sock.PublishEvent(queue, evt); errPublish != nil {
+	if errPublish := r.sock.PublishEvent(string(queue), evt); errPublish != nil {
 		log.Errorf("Could not publish event: %v", errPublish)
 		return errPublish
 	}
