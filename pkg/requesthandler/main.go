@@ -63,7 +63,6 @@ import (
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
-	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -238,8 +237,6 @@ const (
 
 	resourceTTSSpeeches resource = "tts/speeches"
 
-	resourceUserUsers resource = "user/users"
-
 	resourceWebhookWebhooks resource = "webhook/webhooks"
 )
 
@@ -276,7 +273,7 @@ func initPrometheus(namespace string) {
 type RequestHandler interface {
 
 	// send
-	SendRequest(ctx context.Context, queue commonoutline.Queue, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
+	SendRequest(ctx context.Context, queue commonoutline.QueueName, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error
@@ -933,16 +930,6 @@ type RequestHandler interface {
 
 	// transfer-manager
 	TransferV1TransferStart(ctx context.Context, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.Transfer, error)
-
-	// user-manager
-	UserV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission umuser.Permission) (*umuser.User, error)
-	UserV1UserDelete(ctx context.Context, id uint64) error
-	UserV1UserGet(ctx context.Context, id uint64) (*umuser.User, error)
-	UserV1UserGets(ctx context.Context, pageToken string, pageSize uint64) ([]umuser.User, error)
-	UserV1UserLogin(ctx context.Context, timeout int, username, password string) (*umuser.User, error)
-	UserV1UserUpdateBasicInfo(ctx context.Context, userID uint64, name, detail string) error
-	UserV1UserUpdatePassword(ctx context.Context, timeout int, userID uint64, password string) error
-	UserV1UserUpdatePermission(ctx context.Context, userID uint64, permission umuser.Permission) error
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error
