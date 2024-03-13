@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -30,9 +32,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.route-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueEvent = flag.String("rabbit_queue_event", "bin-manager.route-manager.event", "rabbitmq exchange name for event notify")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -47,7 +46,7 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 const (
-	serviceName = "route-manager"
+	serviceName = commonoutline.ServiceNameRouteManager
 )
 
 func main() {
@@ -141,7 +140,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitQueueEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameRouteEvent, serviceName)
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler)
@@ -159,7 +158,7 @@ func runRequestListen(rabbitSock rabbitmqhandler.Rabbit, providerHandler provide
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, providerHandler, routeHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(string(commonoutline.QueueNameRouteRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
