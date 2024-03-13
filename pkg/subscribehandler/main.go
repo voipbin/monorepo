@@ -5,23 +5,18 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-)
-
-// list of publishers
-const (
-	publisherAsteriskProxy = "asterisk-proxy"
-	publisherFlowManager   = "flow-manager"
 )
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -30,18 +25,17 @@ type SubscribeHandler interface {
 }
 
 type subscribeHandler struct {
-	serviceName string
-	rabbitSock  rabbitmqhandler.Rabbit
+	rabbitSock rabbitmqhandler.Rabbit
 
-	subscribeQueue    string
-	subscribesTargets string
+	subscribeQueue   commonoutline.QueueName
+	subscribeTargets []string
 
 	ariEventHandler arieventhandler.ARIEventHandler
 	callHandler     callhandler.CallHandler
 }
 
 var (
-	metricsNamespace = "call_manager"
+	metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)
 
 	promSubscribeProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -87,20 +81,18 @@ func init() {
 
 // NewSubscribeHandler create EventHandler
 func NewSubscribeHandler(
-	serviceName string,
 	sock rabbitmqhandler.Rabbit,
-	subscribeQueue string,
-	subscribeTargets string,
+	subscribeQueue commonoutline.QueueName,
+	subscribeTargets []string,
 	ariEventHandler arieventhandler.ARIEventHandler,
 	callHandler callhandler.CallHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		serviceName:       serviceName,
-		rabbitSock:        sock,
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
-		ariEventHandler:   ariEventHandler,
-		callHandler:       callHandler,
+		rabbitSock:       sock,
+		subscribeQueue:   subscribeQueue,
+		subscribeTargets: subscribeTargets,
+		ariEventHandler:  ariEventHandler,
+		callHandler:      callHandler,
 	}
 
 	return h
@@ -115,17 +107,16 @@ func (h *subscribeHandler) Run() error {
 	log.Infof("Creating rabbitmq queue for ARI event receiving.")
 
 	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
+	if err := h.rabbitSock.QueueDeclare(string(h.subscribeQueue), true, true, false, false); err != nil {
 		log.Errorf("Could not declare the queue for subscribe. err: %v", err)
 		return errors.Wrap(err, "could not declare the queue for listenHandler.")
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
-		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
+		if err := h.rabbitSock.QueueBind(string(h.subscribeQueue), "", target, false, nil); err != nil {
 			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
 			return err
 		}
@@ -134,7 +125,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "call-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessageOpt(string(h.subscribeQueue), string(common.Servicename), false, false, false, 10, h.processEventRun); errConsume != nil {
 				logrus.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}
@@ -170,10 +161,10 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 
 	switch {
 	// asterisk-proxy
-	case m.Publisher == publisherAsteriskProxy:
+	case m.Publisher == string(commonoutline.ServiceNameAsteriskProxy):
 		err = h.processEventAsteriskProxy(ctx, m)
 
-	case m.Publisher == publisherFlowManager && m.Type == fmactiveflow.EventTypeActiveflowUpdated:
+	case m.Publisher == string(commonoutline.ServiceNameFlowManager) && m.Type == fmactiveflow.EventTypeActiveflowUpdated:
 		err = h.processEventActiveflowUpdated(ctx, m)
 
 	default:

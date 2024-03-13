@@ -12,6 +12,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
@@ -109,7 +111,7 @@ var (
 )
 
 var (
-	metricsNamespace = "call_manager"
+	metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -189,7 +191,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// process requests
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeRPCOpt(queue, "call-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeRPCOpt(queue, string(common.Servicename), false, false, false, 10, h.processRequest); errConsume != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}

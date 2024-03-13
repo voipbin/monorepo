@@ -13,10 +13,13 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
@@ -37,12 +40,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
-
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "asterisk.all.event", "comma separated rabbitmq exchange name for subscribe")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.call-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
-var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.call-manager.event", "rabbitmq exchange name for event notify")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -55,10 +52,6 @@ var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test",
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
-
-const (
-	serviceName = "call-manager"
-)
 
 func main() {
 	log := logrus.WithField("func", "main")
@@ -150,8 +143,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, common.Servicename)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameCallEvent, common.Servicename)
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
@@ -161,8 +154,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 
-	// run ari event listener
-	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler, callHandler); err != nil {
+	// run subscribe listener
+	if err := runSubscribe(rabbitSock, ariEventHandler, callHandler); err != nil {
 		return err
 	}
 
@@ -176,14 +169,15 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 // runSubscribe runs the ARI event listen service
 func runSubscribe(
-	serviceName string,
 	rabbitSock rabbitmqhandler.Rabbit,
-	subscribeQueue string,
-	subscribeTargets string,
 	ariEventHandler arieventhandler.ARIEventHandler,
 	callHandler callhandler.CallHandler,
 ) error {
-	ariEventListenHandler := subscribehandler.NewSubscribeHandler(serviceName, rabbitSock, subscribeQueue, subscribeTargets, ariEventHandler, callHandler)
+
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameAsteriskEventAll),
+	}
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(rabbitSock, commonoutline.QueueNameCallSubscribe, subscribeTargets, ariEventHandler, callHandler)
 
 	// run
 	if err := ariEventListenHandler.Run(); err != nil {
@@ -207,7 +201,7 @@ func runRequestListen(
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(string(commonoutline.QueueNameCallRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
