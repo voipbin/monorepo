@@ -4,13 +4,13 @@ package subscribehandler
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 
@@ -19,8 +19,8 @@ import (
 
 // list of publishers
 const (
-	publisherCallManager       = "call-manager"
-	publisherTranscribeManager = "transcribe-manager"
+	publisherCallManager       = string(commonoutline.ServiceNameCallManager)
+	publisherTranscribeManager = string(commonoutline.ServiceNameTranscribeManager)
 )
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -33,8 +33,8 @@ type subscribeHandler struct {
 	serviceName string
 	rabbitSock  rabbitmqhandler.Rabbit
 
-	subscribeQueue    string
-	subscribesTargets string
+	subscribeQueue   string
+	subscribeTargets []string
 
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler
 }
@@ -66,14 +66,14 @@ func NewSubscribeHandler(
 	serviceName string,
 	sock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		serviceName:        serviceName,
 		rabbitSock:         sock,
 		subscribeQueue:     subscribeQueue,
-		subscribesTargets:  subscribeTargets,
+		subscribeTargets:   subscribeTargets,
 		chatbotcallHandler: chatbotcallHandler,
 	}
 
@@ -94,8 +94,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
@@ -107,7 +106,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "chatbot-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameChatbotManager), false, false, false, 10, h.processEventRun); errConsume != nil {
 				log.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}

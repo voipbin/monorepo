@@ -45,7 +45,7 @@ func Test_Create(t *testing.T) {
 				},
 				{
 					Role:    openai.ChatMessageRoleAssistant,
-					Content: `Yes.`,
+					Content: `Yes`,
 				},
 			},
 		},
