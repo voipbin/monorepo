@@ -5,17 +5,18 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
 )
 
 // list of publishers
@@ -32,11 +33,12 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	subscribeQueue    string
-	subscribesTargets string
+	subscribeQueue   string
+	subscribeTargets []string
 
 	campaignHandler     campaignhandler.CampaignHandler
 	campaigncallHandler campaigncallhandler.CampaigncallHandler
+	outplanHandler      outplanhandler.OutplanHandler
 }
 
 var (
@@ -65,18 +67,20 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	campaignHandler campaignhandler.CampaignHandler,
 	campaigncallHandler campaigncallhandler.CampaigncallHandler,
+	outplanHandler outplanhandler.OutplanHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
 
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
+		subscribeQueue:   subscribeQueue,
+		subscribeTargets: subscribeTargets,
 
 		campaignHandler:     campaignHandler,
 		campaigncallHandler: campaigncallHandler,
+		outplanHandler:      outplanHandler,
 	}
 
 	return h
@@ -93,8 +97,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
@@ -106,7 +109,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "queue-manager", false, false, false, 10, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameQueueManager), false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
