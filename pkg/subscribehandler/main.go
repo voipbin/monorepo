@@ -5,22 +5,16 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
-)
-
-// list of publishers
-const (
-	publisherCallManager     = "call-manager"
-	publisherCustomerManager = "customer-manager"
 )
 
 // SubscribeHandler interface
@@ -32,13 +26,13 @@ type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	subscribeQueue    string
-	subscribesTargets string
+	subscribesTargets []string
 
 	agentHandler agenthandler.AgentHandler
 }
 
 var (
-	metricsNamespace = "agent_manager"
+	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameAgentManager)
 
 	promEventProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -63,7 +57,7 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	agentHandler agenthandler.AgentHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
@@ -88,8 +82,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribesTargets {
 
 		// bind each targets
 		if errBind := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); errBind != nil {
@@ -101,7 +94,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "agent-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameAgentManager), false, false, false, 10, h.processEventRun); errConsume != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}
@@ -131,15 +124,15 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	//// call-manager
 	// groupcall
-	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallCreated)):
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmgroupcall.EventTypeGroupcallCreated)):
 		err = h.processEventCMGroupcallCreated(ctx, m)
 
-	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallProgressing)):
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmgroupcall.EventTypeGroupcallProgressing)):
 		err = h.processEventCMGroupcallProgressing(ctx, m)
 
 	//// customer-manager
 	// customer
-	case m.Publisher == publisherCustomerManager && (m.Type == string(cmcustomer.EventTypeCustomerDeleted)):
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cmcustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCMCustomerDeleted(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////

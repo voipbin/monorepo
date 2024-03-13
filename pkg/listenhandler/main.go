@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"time"
 
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -56,7 +58,7 @@ var (
 )
 
 var (
-	metricsNamespace = "agent_manager"
+	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameAgentManager)
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -90,7 +92,7 @@ func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandl
 		rabbitSock: rabbitSock,
 
 		agentHandler: agentHandler,
-		utilHandler: utilhandler.NewUtilHandler(),
+		utilHandler:  utilhandler.NewUtilHandler(),
 	}
 
 	return h
@@ -129,7 +131,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "agent-manager", false, false, false, 10, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, string(commonoutline.ServiceNameAgentManager), false, false, false, 10, h.processRequest)
 			if err != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
