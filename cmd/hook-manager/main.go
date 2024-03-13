@@ -5,6 +5,8 @@ import (
 	"flag"
 	"time"
 
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -18,7 +20,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/hook-manager.git/pkg/servicehandler"
 )
 
-const serviceName = "hook-manager"
+const serviceName = commonoutline.ServiceNameHookManager
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
 
