@@ -5,8 +5,9 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
+
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -18,8 +19,8 @@ import (
 
 // list of publishers
 const (
-	publisherCallManager     = "call-manager"
-	publisherCustomerManager = "customer-manager"
+	publisherCallManager     = string(commonoutline.ServiceNameCallManager)
+	publisherCustomerManager = string(commonoutline.ServiceNameCustomerManager)
 )
 
 // SubscribeHandler interface
@@ -30,8 +31,8 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	subscribeQueue    string
-	subscribesTargets string
+	subscribeQueue   string
+	subscribeTargets []string
 
 	tagHandler taghandler.TagHandler
 }
@@ -62,14 +63,14 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	tagHandler taghandler.TagHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock:        rabbitSock,
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
-		tagHandler:        tagHandler,
+		rabbitSock:       rabbitSock,
+		subscribeQueue:   subscribeQueue,
+		subscribeTargets: subscribeTargets,
+		tagHandler:       tagHandler,
 	}
 
 	return h
@@ -87,8 +88,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
 		if errBind := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); errBind != nil {
@@ -100,7 +100,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "agent-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameTagManager), false, false, false, 10, h.processEventRun); errConsume != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}
