@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -26,10 +28,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.storage-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.storage-manager.event", "rabbitmq queue name for event notify")
-var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call request")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -42,7 +40,7 @@ var gcpBucketMedia = flag.String("gcp_bucket_media", "bucket", "the gcp bucket n
 var gcpBucketTmp = flag.String("gcp_bucket_tmp", "bucket", "the gcp bucket name for tmp storage")
 
 const (
-	serviceName = "storage-manager"
+	serviceName = commonoutline.ServiceNameStorageManager
 )
 
 func main() {
@@ -83,7 +81,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
@@ -136,7 +134,7 @@ func runListen() error {
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, storageHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(string(commonoutline.QueueNameStorageRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
