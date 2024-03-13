@@ -8,6 +8,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -65,7 +67,7 @@ const (
 )
 
 var (
-	metricsNamespace = "call_manager"
+	metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)
 
 	promBridgeCreateTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
