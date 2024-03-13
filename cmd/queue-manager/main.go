@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -25,7 +27,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/subscribehandler"
 )
 
-const serviceName = "queue-manager"
+const serviceName = commonoutline.ServiceNameQueueManager
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -33,13 +35,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "comma separated rabbitmq exchange name for subscribe")
-
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.queue-manager.request", "rabbitmq queue name for request listen")
-var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.queue-manager.event", "rabbitmq exchange name for event notify")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.queue-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -148,7 +143,7 @@ func run(db dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameQueueEvent, serviceName)
 	queueHandler := queuehandler.NewQueueHandler(reqHandler, db, notifyHandler)
 	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, notifyHandler, queueHandler)
 
@@ -173,10 +168,17 @@ func runSubscribe(
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) error {
+
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCallEvent),
+		string(commonoutline.QueueNameAgentEvent),
+		string(commonoutline.QueueNameConferenceEvent),
+	}
+
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
-		*rabbitQueueSubscribe,
-		*rabbitListenSubscribes,
+		string(commonoutline.QueueNameQueueSubscribe),
+		subscribeTargets,
 		queueHandler,
 		queuecallHandler,
 	)
@@ -198,7 +200,7 @@ func runListen(
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, queueHandler, queuecallHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(string(commonoutline.QueueNameQueueRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 

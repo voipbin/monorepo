@@ -5,8 +5,9 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
+
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -20,7 +21,7 @@ import (
 
 // list of publishers
 const (
-	publisherCallManager = "call-manager"
+	publisherCallManager = string(commonoutline.ServiceNameCallManager)
 )
 
 // SubscribeHandler interface
@@ -32,7 +33,7 @@ type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	subscribeQueue    string
-	subscribesTargets string
+	subscribesTargets []string
 
 	queueHandler     queuehandler.QueueHandler
 	queuecallHandler queuecallhandler.QueuecallHandler
@@ -64,7 +65,7 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) SubscribeHandler {
@@ -92,8 +93,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribesTargets {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
