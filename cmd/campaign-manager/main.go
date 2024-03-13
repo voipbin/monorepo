@@ -14,6 +14,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -27,7 +28,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/subscribehandler"
 )
 
-const serviceName = "campaign-manager"
+const serviceName = commonoutline.ServiceNameCampaignManager
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -35,11 +36,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event,bin-manager.flow-manager.event", "comma separated rabbitmq exchange name for subscribe")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.campaign-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.campaign-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
-var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.campaign-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -149,7 +145,7 @@ func run(dbHandler dbhandler.DBHandler) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameCampaignEvent, serviceName)
 
 	outplanHandler := outplanhandler.NewOutplanHandler(dbHandler, reqHandler, notifyHandler)
 	campaigncallHandler := campaigncallhandler.NewCampaigncallHandler(dbHandler, reqHandler, notifyHandler)
@@ -180,7 +176,7 @@ func runListen(
 	listenHandler := listenhandler.NewListenHandler(sockListen, outplanHandler, campaignHandler, campaigncallHandler)
 
 	// run the service
-	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameCampaignRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)
 	}
 
@@ -196,12 +192,17 @@ func runSubscribe(
 ) error {
 	log := logrus.WithField("func", "runSubscribe")
 
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCallEvent),
+		string(commonoutline.QueueNameFlowEvent),
+	}
 	subscribeHandler := subscribehandler.NewSubscribeHandler(
 		sockListen,
-		*rabbitQueueSubscribe,
-		*rabbitListenSubscribes,
+		string(commonoutline.QueueNameCampaignSubscribe),
+		subscribeTargets,
 		campaignHandler,
 		campaigncallHandler,
+		outplanHandler,
 	)
 
 	// run
