@@ -107,7 +107,7 @@ func Test_GetErrorDB(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
-			mockReq.EXPECT().CSV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
 
 			tmp := account.CreateAccountFromCustomer(tt.responseGet)
 			mockDB.EXPECT().AccountSet(gomock.Any(), tmp).Return(nil)

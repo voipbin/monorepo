@@ -23,7 +23,7 @@ func (h *accountHandler) Get(ctx context.Context, customerID uuid.UUID) (*accoun
 		return res, nil
 	}
 
-	tmp, err := h.reqHandler.CSV1CustomerGet(ctx, customerID)
+	tmp, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not get customer info. err: %v", err)
 		return nil, err
