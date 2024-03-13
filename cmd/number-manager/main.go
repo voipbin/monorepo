@@ -13,6 +13,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -24,7 +25,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/subscribehandler"
 )
 
-const serviceName = "number-manager"
+const serviceName = commonoutline.ServiceNameNumberManager
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -32,11 +33,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var argRabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var argRabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.number-manager.request", "rabbitmq queue name for request listen")
-var argRabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.number-manager.event", "rabbitmq queue name for event notify")
-var argRabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
-var argRabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.flow-manager.event", "comma separated rabbitmq exchange name for subscribe")
-var argRabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.number-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 
 // args for prometheus
 var argPromEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -136,14 +132,14 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *argRabbitExchangeDelay, *argRabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
 	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler)
 
 	if err := runListen(rabbitSock, numberHandler); err != nil {
 		return err
 	}
 
-	if err := runSubscribe(rabbitSock, *argRabbitQueueSubscribe, *argRabbitListenSubscribes, numberHandler); err != nil {
+	if err := runSubscribe(rabbitSock, numberHandler); err != nil {
 		return err
 	}
 
@@ -155,7 +151,7 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.Nu
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, numberHandler)
 
 	// run
-	if err := listenHandler.Run(*argRabbitQueueListen, *argRabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(string(commonoutline.QueueNameNumberRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
@@ -163,8 +159,12 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.Nu
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, subscribeQueue string, subscribeTargets string, numberHandler numberhandler.NumberHandler) error {
-	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, subscribeQueue, subscribeTargets, numberHandler)
+func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.NumberHandler) error {
+
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameFlowEvent),
+	}
+	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameNumberSubscribe), subscribeTargets, numberHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {
