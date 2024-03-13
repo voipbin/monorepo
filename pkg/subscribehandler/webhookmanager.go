@@ -52,14 +52,6 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 		return err
 	}
 
-	// create the topics
-	// topics, err := h.createTopic(whData.Type, d)
-	// if err != nil {
-	// 	log.Errorf("Could not create the topic")
-	// 	return fmt.Errorf("could not create the topic")
-	// }
-	// log.Debugf("Created topic. topic: %s", topics)
-
 	// create the data
 	data, err := json.Marshal(wh.Data)
 	if err != nil {
@@ -82,32 +74,8 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 		}
 	}
 
-	// if errPub := h.zmqpubHandler.Publish(topics, string(data)); errPub != nil {
-	// 	log.Errorf("Could not publish the webhook. err: %v", errPub)
-	// 	return errPub
-	// }
-
 	return nil
 }
-
-// createTopic generates the topic
-// func (h *subscribeHandler) createTopic(messageType string, d *commonWebhookData) (string, error) {
-
-// 	tmps := strings.Split(messageType, "_")
-// 	if len(tmps) < 1 {
-// 		return "", fmt.Errorf("wrong type of webhook message. message_type: %s", messageType)
-// 	}
-
-// 	resource := tmps[0]
-
-// 	res := ""
-// 	if resource == "chatroom" || resource == "messagechatroom" {
-// 		res = fmt.Sprintf("%s:%s:%s", customerID, resource, id)
-// 	}
-// 	res = fmt.Sprintf("%s:%s:%s", customerID, resource, id)
-
-// 	return res, nil
-// }
 
 // createTopic generates the topics
 func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData) ([]string, error) {

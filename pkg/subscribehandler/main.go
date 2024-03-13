@@ -5,20 +5,15 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmqpubhandler"
-)
-
-// list of publishers
-const (
-	publisherWebhookManager = "webhook-manager"
 )
 
 // SubscribeHandler interface
@@ -30,7 +25,7 @@ type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	subscribeQueueNamePod string // subscribe queue name for this pod
-	subscribesTargets     string
+	subscribeTargets      []string
 
 	zmqpubHandler zmqpubhandler.ZMQPubHandler
 }
@@ -61,14 +56,14 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueueName string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	zmqpubHandler zmqpubhandler.ZMQPubHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
 
 		subscribeQueueNamePod: subscribeQueueName,
-		subscribesTargets:     subscribeTargets,
+		subscribeTargets:      subscribeTargets,
 
 		zmqpubHandler: zmqpubHandler,
 	}
@@ -89,8 +84,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueueNamePod, "", target, false, nil); err != nil {
@@ -102,7 +96,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueueNamePod, "api-manager", false, false, false, 10, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueueNamePod, string(commonoutline.ServiceNameAPIManager), false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -136,7 +130,7 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	switch {
 
 	//// webhook-managet
-	case m.Publisher == publisherWebhookManager && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
+	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
 		err = h.processEventWebhookManagerWebhookPublished(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
