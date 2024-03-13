@@ -5,7 +5,6 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -31,7 +30,7 @@ type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	subscribeQueue   string
-	subscribeTargets string
+	subscribeTargets []string
 
 	conferenceHandler     conferencehandler.ConferenceHandler
 	conferencecallHandler conferencecallhandler.ConferencecallHandler
@@ -63,7 +62,7 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	conferenceHandler conferencehandler.ConferenceHandler,
 	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) SubscribeHandler {
@@ -92,8 +91,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribeTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
