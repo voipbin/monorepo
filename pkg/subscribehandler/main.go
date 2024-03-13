@@ -5,13 +5,13 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -21,29 +21,16 @@ import (
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
 )
 
-// list of publishers
-const (
-	publisherAPIManager       = "api-manager"
-	publisherCallManager      = "call-manager"
-	publisherCustomerManager  = "customer-manager"
-	publisherFlowManager      = "flow-manager"
-	publisherNumberManager    = "number-manager"
-	publisherMessageManager   = "message-manager"
-	publisherRegistrarManager = "registrar-manager"
-	publisherStorageManager   = "storage-manager"
-	publisherTTSManager       = "tts-manager"
-)
-
 // SubscribeHandler interface
 type SubscribeHandler interface {
-	Run(queue, exchangeDelay string) error
+	Run() error
 }
 
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	subscribeQueue    string
-	subscribesTargets string
+	subscribeQueue   string
+	subscribeTargets []string
 
 	accountHandler accounthandler.AccountHandler
 	billingHandler billinghandler.BillingHandler
@@ -75,14 +62,14 @@ func init() {
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	accountHandler accounthandler.AccountHandler,
 	billingHandler billinghandler.BillingHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock:        rabbitSock,
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
+		rabbitSock:       rabbitSock,
+		subscribeQueue:   subscribeQueue,
+		subscribeTargets: subscribeTargets,
 
 		accountHandler: accountHandler,
 		billingHandler: billingHandler,
@@ -91,24 +78,21 @@ func NewSubscribeHandler(
 	return h
 }
 
-func (h *subscribeHandler) Run(subscribeQueue, subscribeTargets string) error {
+func (h *subscribeHandler) Run() error {
 	logrus.WithFields(logrus.Fields{
-		"func":              "Run",
-		"subscribe_queue":   subscribeQueue,
-		"subscribe_targets": subscribeTargets,
+		"func": "Run",
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(subscribeQueue, true, true, false, false); err != nil {
+	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// subscribe each targets
-	targets := strings.Split(subscribeTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
-		if err := h.rabbitSock.QueueBind(subscribeQueue, "", target, false, nil); err != nil {
+		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
 			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
 			return err
 		}
@@ -117,7 +101,7 @@ func (h *subscribeHandler) Run(subscribeQueue, subscribeTargets string) error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(subscribeQueue, "billing-manager", false, false, false, 10, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameBillingManager), false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -157,28 +141,28 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 
 	//// call-manager
 	// call
-	case m.Publisher == publisherCallManager && m.Type == cmcall.EventTypeCallProgressing:
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && m.Type == cmcall.EventTypeCallProgressing:
 		err = h.processEventCMCallProgressing(ctx, m)
 
-	case m.Publisher == publisherCallManager && m.Type == cmcall.EventTypeCallHangup:
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && m.Type == cmcall.EventTypeCallHangup:
 		err = h.processEventCMCallHangup(ctx, m)
 
 	//// message-manager
 	// message
-	case m.Publisher == publisherMessageManager && m.Type == mmmessage.EventTypeMessageCreated:
+	case m.Publisher == string(commonoutline.ServiceNameMessageManager) && m.Type == mmmessage.EventTypeMessageCreated:
 		err = h.processEventMMMessageCreated(ctx, m)
 
 	//// customer-manager
 	// customer
-	case m.Publisher == publisherCustomerManager && m.Type == cscustomer.EventTypeCustomerDeleted:
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type == cscustomer.EventTypeCustomerDeleted:
 		err = h.processEventCMCustomerDeleted(ctx, m)
 
 	//// number-manager
 	// number
-	case m.Publisher == publisherNumberManager && m.Type == nmnumber.EventTypeNumberCreated:
+	case m.Publisher == string(commonoutline.ServiceNameNumberManager) && m.Type == nmnumber.EventTypeNumberCreated:
 		err = h.processEventNMNumberCreated(ctx, m)
 
-	case m.Publisher == publisherNumberManager && m.Type == nmnumber.EventTypeNumberRenewed:
+	case m.Publisher == string(commonoutline.ServiceNameNumberManager) && m.Type == nmnumber.EventTypeNumberRenewed:
 		err = h.processEventNMNumberRenewed(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
