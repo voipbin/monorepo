@@ -14,6 +14,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -27,7 +28,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/messagechatroomhandler"
 )
 
-const serviceName = "chat-manager"
+const serviceName = commonoutline.ServiceNameChatManager
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -35,9 +36,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.chat-manager.request", "rabbitmq queue name for request listen")
-var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.chat-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -147,7 +145,7 @@ func run(dbHandler dbhandler.DBHandler) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameChatEvent, serviceName)
 
 	chatroomHandler := chatroomhandler.NewChatroomHandler(dbHandler, reqHandler, notifyHandler)
 	chatHandler := chathandler.NewChatHandler(dbHandler, reqHandler, notifyHandler, chatroomHandler)
@@ -176,7 +174,7 @@ func runListen(
 	listenHandler := listenhandler.NewListenHandler(sockListen, chatHandler, chatroomHandler, messagechatHandler, messagechatroomHandler)
 
 	// run the service
-	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameChatRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)
 	}
 
