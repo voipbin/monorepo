@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -25,7 +27,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/outdialtargethandler"
 )
 
-const serviceName = "outdial-manager"
+const serviceName = commonoutline.ServiceNameOutdialManager
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -33,9 +35,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.outdial-manager.request", "rabbitmq queue name for request listen")
-var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.outdial-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -145,7 +144,7 @@ func run(dbHandler dbhandler.DBHandler) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameOutdialEvent, serviceName)
 
 	outdialHandler := outdialhandler.NewOutdialHandler(dbHandler, reqHandler, notifyHandler)
 	outdialTargethandler := outdialtargethandler.NewOutdialTargetHandler(dbHandler, reqHandler, notifyHandler)
@@ -168,7 +167,7 @@ func runListen(
 	listenHandler := listenhandler.NewListenHandler(sockListen, outdialHandler, outdialtargetHandler)
 
 	// run the service
-	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameOutdialRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)
 	}
 
