@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -42,9 +43,6 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
-
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.webhook-manager.event", "comma separated rabbitmq exchange name for subscribe")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.api-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 
 // @title          VoIPBIN project API
 // @version        3.1.0
@@ -122,12 +120,15 @@ func runSubscribe(
 	zmqHandler zmqpubhandler.ZMQPubHandler,
 ) error {
 
-	queuNamePod := fmt.Sprintf("%s-%s", *rabbitQueueSubscribe, uuid.Must(uuid.NewV4()))
+	queuNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
 
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameWebhookEvent),
+	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
 		queuNamePod,
-		*rabbitListenSubscribes,
+		subscribeTargets,
 
 		zmqHandler,
 	)
