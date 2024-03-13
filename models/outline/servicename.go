@@ -29,6 +29,7 @@ const (
 	ServiceNameRouteManager      ServiceName = "route-manager"
 	ServiceNameStorageManager    ServiceName = "storage-manager"
 	ServiceNameTagManager        ServiceName = "tag-manager"
+	ServiceNameTranscribeManager ServiceName = "transcribe-manager"
 	ServiceNameTTSManager        ServiceName = "tts-manager"
 	ServiceNameWebhookManager    ServiceName = "webhook-manager"
 )
