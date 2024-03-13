@@ -13,6 +13,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -32,14 +33,6 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "comma separated rabbitmq exchange name for subscribe")
-
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.conference-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.conference-manager.event", "rabbitmq queue name for event notify")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.conference-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
-
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
-
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
@@ -53,7 +46,7 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 const (
-	serviceName = "conference-manager"
+	serviceName = commonoutline.ServiceNameConferenceManager
 )
 
 func main() {
@@ -144,7 +137,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	requestHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, commonoutline.QueueNameConferenceEvent, serviceName)
 
 	conferenceHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db)
 	conferencecallHandler := conferencecallhandler.NewConferencecallHandler(requestHandler, notifyHandler, db, conferenceHandler)
@@ -171,10 +164,13 @@ func runSubscribe(
 	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) error {
 
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCallEvent),
+	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
-		*rabbitQueueSubscribe,
-		*rabbitListenSubscribes,
+		string(commonoutline.QueueNameConferenceSubscribe),
+		subscribeTargets,
 		conferenceHandler,
 		conferencecallHandler,
 	)
@@ -197,8 +193,8 @@ func runListen(
 
 	listenHandler := listenhandler.NewListenHandler(
 		rabbitSock,
-		*rabbitQueueListen,
-		*rabbitExchangeDelay,
+		string(commonoutline.QueueNameConferenceRequest),
+		string(commonoutline.QueueNameDelay),
 		conferenceHandler,
 		conferencecallHandler,
 	)
