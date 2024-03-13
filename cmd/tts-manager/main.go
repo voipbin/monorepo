@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -20,7 +22,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/ttshandler"
 )
 
-const serviceName = "tts-manager"
+const serviceName = commonoutline.ServiceNameTTSManager
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -28,9 +30,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.tts-manager.request", "rabbitmq queue name for request listen")
-var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.tts-manager.event", "rabbitmq exchange name for event notify")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -113,7 +112,7 @@ func run() error {
 
 	// create listen handler
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTTSEvent, serviceName)
 
 	// run listener
 	if err := runListen(rabbitSock, notifyHandler); err != nil {
@@ -139,7 +138,7 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, notifyHandler notifyhandler.No
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, ttsHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(string(commonoutline.QueueNameTTSRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
