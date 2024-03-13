@@ -13,6 +13,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -32,14 +33,6 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "rabbitmq exchange name for subscribe")
-
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.billing-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.billing-manager.event", "rabbitmq queue name for event notify")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.billing-manager.subscribe", "rabbitmq queue name for message subscribe")
-
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
-
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
@@ -53,7 +46,7 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 const (
-	serviceName = "billing-manager"
+	serviceName = commonoutline.ServiceNameBillingManager
 )
 
 func main() {
@@ -145,7 +138,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
 
 	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
 	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)
@@ -169,16 +162,22 @@ func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandle
 		"func": "runSubscribe",
 	})
 
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCallEvent),
+		string(commonoutline.QueueNameMessageEvent),
+		string(commonoutline.QueueNameCustomerEvent),
+		string(commonoutline.QueueNameNumberEvent),
+	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
-		*rabbitQueueSubscribe,
-		*rabbitListenSubscribes,
+		string(commonoutline.QueueNameBillingSubscribe),
+		subscribeTargets,
 		accoutHandler,
 		billingHandler,
 	)
 
 	// run
-	if err := subHandler.Run(*rabbitQueueSubscribe, *rabbitListenSubscribes); err != nil {
+	if err := subHandler.Run(); err != nil {
 		log.Errorf("Could not run the subscribe handler. err: %v", err)
 		return err
 	}
@@ -195,7 +194,7 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandler.A
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, accoutHandler, billingHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
