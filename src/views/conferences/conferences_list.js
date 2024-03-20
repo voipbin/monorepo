@@ -89,6 +89,11 @@ const ConferencesList = () => {
 
   const navigate = useNavigate();
   const Detail = (row) => {
+
+    // reset the saved tmp state of the given conference
+    const tmp_item_name = "conferences_" + row.original.id + "_tmp";
+    localStorage.setItem(tmp_item_name, null);
+
     const target = "/resources/conferences/conferences_detail/" + row.original.id;
     console.log("navigate target: ", target);
     navigate(target);

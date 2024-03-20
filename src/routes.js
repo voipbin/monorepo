@@ -37,8 +37,8 @@ const NumbersActiveDetail = React.lazy(() => import('./views/numbers/active_deta
 const NumbersBuyList = React.lazy(() => import('./views/numbers/buy_list'))
 const NumbersBuyCreate = React.lazy(() => import('./views/numbers/buy_create'))
 
-// flowgraph
-const Flowgraph = React.lazy(() => import('./views/flowgraph/flowgraph'))
+// actiongraph
+const Actiongraph = React.lazy(() => import('./views/actiongraph/actiongraph'))
 
 // flows
 const FlowsList = React.lazy(() => import('./views/flows/flows_list'))
@@ -181,7 +181,7 @@ const routes = [
   { path: '/resources/numbers/buy_list', name: 'BuyList', element: NumbersBuyList },
   { path: '/resources/numbers/buy_create/:id', name: 'BuyCreate', element: NumbersBuyCreate },
 
-  { path: '/resources/flowgraph/flowgraph', name: 'Flowgraph', element: Flowgraph },
+  { path: '/resources/actiongraphs/actiongraph', name: 'Actiongraph', element: Actiongraph },
 
   { path: '/resources/flows/flows_list', name: 'FlowsList', element: FlowsList },
   { path: '/resources/flows/flows_create', name: 'FlowsCreate', element: FlowsCreate },

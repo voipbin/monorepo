@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   CCard,
   CCardBody,
@@ -11,7 +11,11 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
-  } from '@coreui/react'
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
+} from '@coreui/react'
 import store from '../../store'
 import {
   Get as ProviderGet,
@@ -34,12 +38,23 @@ const FlowsDetail = () => {
   const ref_detail = useRef(null);
   const ref_actions = useRef(null);
 
-  const GetDetail = () => {
-    const id = routeParams.id;
+  const id = routeParams.id;
 
-    const tmp = localStorage.getItem("flows");
-    const datas = JSON.parse(tmp);
-    const detailData = datas[id];
+  const tmp = localStorage.getItem("flows");
+  const datas = JSON.parse(tmp);
+  const detailData = datas[id];
+
+
+  // parse the params
+  const location = useLocation();
+  console.log("Debug. uselocation: %o", location);
+
+  if (location.state != null && location.state.actions != null) {
+    detailData.actions = location.state.actions;
+  }
+
+
+  const GetDetail = () => {
 
     return (
       <>
@@ -100,13 +115,26 @@ const FlowsDetail = () => {
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_actions}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.actions, null, 2)}
-                      rows={20}
-                    />
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditActions()}>Edit Actions</CButton>
+                  </CCol>
+
+                  <CCol className="mb-3 align-items-auto">
+                    <CAccordion activeItemKey={2}>
+                      <CAccordionItem itemKey={1}>
+                        <CAccordionHeader>
+                          <b>Actions(Raw)</b>
+                        </CAccordionHeader>
+                        <CAccordionBody>
+                          <CFormTextarea
+                            ref={ref_actions}
+                            type="text"
+                            id="colFormLabelSm"
+                            defaultValue={JSON.stringify(detailData.actions, null, 2)}
+                            rows={20}
+                          />
+                        </CAccordionBody>
+                      </CAccordionItem>
+                    </CAccordion>
                   </CCol>
                 </CRow>
 
@@ -182,6 +210,22 @@ const FlowsDetail = () => {
       navigate(navi);
     });
   }
+
+  const EditActions = () => {
+    console.log("Edit actions info");
+
+    const navi = "/resources/actiongraphs/actiongraph";
+    const state = {
+      state: {
+        "referer": location.pathname,
+        "target": "actions",
+        "actions": detailData.actions,
+      }
+    }
+
+    console.log("move to action graph. data: %o", state);
+    navigate(navi, state);
+  };
 
 
   return (

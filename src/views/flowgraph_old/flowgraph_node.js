@@ -12,13 +12,13 @@ export function NodeActionTalk({ data, isConnectable }) {
   // <div className="node-action-talk">
     return (
         <>
-            <ReactFlowProvider>
+            {/* <ReactFlowProvider> */}
 
-            <Handle type="target"
+            {/* <Handle type="target"
                 // position={Position.Left}
                 onConnect={(params) => console.log('handle onConnect', params)}
                 isConnectable={true}
-            />
+            /> */}
             <div>
                 <label htmlFor="text">Text:</label>
                 <input id="text" name="text" onChange={onChange} className="nodrag" />
@@ -32,14 +32,14 @@ export function NodeActionTalk({ data, isConnectable }) {
                 <label htmlFor="text">Digits Handle:</label>
                 <input id="text" name="text" onChange={onChange} className="nodrag" />
             </div>
-            <Handle
+            {/* <Handle
                 type="source"
                 // position={Position.Right}
                 id="a"
                 style={handleStyle}
                 isConnectable={true}
-                />
-                </ReactFlowProvider>
+                /> */}
+                {/* </ReactFlowProvider> */}
         </>
     );
 }

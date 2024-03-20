@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   CCard,
   CCardBody,
@@ -11,7 +11,11 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
-  } from '@coreui/react'
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
+} from '@coreui/react'
 import store from '../../store'
 import {
   Get as ProviderGet,
@@ -28,7 +32,8 @@ const ConferencesDetail = () => {
   const [buttonDisable, setButtonDisable] = useState(false);
   const routeParams = useParams();
   const navigate = useNavigate();
-
+  const location = useLocation();
+  
   const ref_id = useRef(null);
   const ref_balance = useRef(null);
   const ref_name = useRef(null);
@@ -41,13 +46,40 @@ const ConferencesDetail = () => {
   const ref_conferencecall_ids = useRef(null);
   const ref_recording_ids = useRef(null);
 
+  const id = routeParams.id;
+  const tmp_item_name = "conferences_" + id + "_tmp";
+
   const GetDetail = () => {
-    const id = routeParams.id;
 
     const tmp = localStorage.getItem("conferences");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
     console.log("detailData", detailData);
+
+    const tmpItem = localStorage.getItem(tmp_item_name);
+    if (tmp != null) {
+      try {
+        console.log("Check variable. tmpItem: %o", tmpItem);
+        const tmpData = JSON.parse(tmpItem);
+        console.log("detailData", tmpData);
+    
+        detailData.pre_actions = (tmpData.pre_actions);
+        detailData.post_actions = (tmpData.post_actions);
+      }
+      catch(e) {
+        console.log("could not parse the data.");
+      }
+    }
+
+    console.log("Debug. uselocation: %o", location);
+    if (location.state != null && location.state.actions != null) {
+      if (location.state.target == "pre_actions") {
+        detailData.pre_actions = location.state.actions;
+      } else if (location.state.target == "post_actions") {
+        detailData.post_actions = location.state.actions;
+      }
+    }
+
 
     return (
       <>
@@ -131,27 +163,57 @@ const ConferencesDetail = () => {
                 </CRow>
 
 
+
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Pre Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_pre_actions}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.pre_actions, null, 2)}
-                      rows={15}
-                    />
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditPreActions()}>Edit Pre Actions</CButton>
                   </CCol>
 
+                  <CCol className="mb-3 align-items-auto">
+                    <CAccordion activeItemKey={2}>
+                      <CAccordionItem itemKey={1}>
+                        <CAccordionHeader>
+                          <b>Pre Actions(Raw)</b>
+                        </CAccordionHeader>
+                        <CAccordionBody>
+                          <CFormTextarea
+                            ref={ref_pre_actions}
+                            type="text"
+                            id="colFormLabelSm"
+                            defaultValue={JSON.stringify(detailData.pre_actions, null, 2)}
+                            rows={20}
+                          />
+                        </CAccordionBody>
+                      </CAccordionItem>
+                    </CAccordion>
+                  </CCol>
+                </CRow>
+
+
+                <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Post Actions</b></CFormLabel>
-                  <CCol>
-                  <CFormTextarea
-                      ref={ref_post_actions}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.post_actions, null, 2)}
-                      rows={15}
-                    />
+                  <CCol className="mb-3 align-items-auto">
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditPostActions()}>Edit Post Actions</CButton>
+                  </CCol>
+
+                  <CCol className="mb-3 align-items-auto">
+                    <CAccordion activeItemKey={2}>
+                      <CAccordionItem itemKey={1}>
+                        <CAccordionHeader>
+                          <b>Post Actions(Raw)</b>
+                        </CAccordionHeader>
+                        <CAccordionBody>
+                          <CFormTextarea
+                            ref={ref_post_actions}
+                            type="text"
+                            id="colFormLabelSm"
+                            defaultValue={JSON.stringify(detailData.post_actions, null, 2)}
+                            rows={20}
+                          />
+                        </CAccordionBody>
+                      </CAccordionItem>
+                    </CAccordion>
                   </CCol>
                 </CRow>
 
@@ -251,6 +313,9 @@ const ConferencesDetail = () => {
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", response);
+
+      localStorage.setItem(tmp_item_name, null);
+
       const navi = "/resources/conferences/conferences_list";
       navigate(navi);
     });
@@ -269,10 +334,59 @@ const ConferencesDetail = () => {
     console.log("Deleting conference info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
+
+      localStorage.setItem(tmp_item_name, null);
+
       const navi = "/resources/conferences/conferences_list";
       navigate(navi);
     });
   }
+
+  const EditPreActions = () => {
+    console.log("Edit pre actions info. pre_actions: %o, post_actions: %o", ref_pre_actions.current.value, ref_post_actions.current.value);
+
+    const tmp = {
+      "pre_actions": JSON.parse(ref_pre_actions.current.value),
+      "post_actions": JSON.parse(ref_post_actions.current.value),
+    };
+    const tmpItem = JSON.stringify(tmp);
+    localStorage.setItem(tmp_item_name, tmpItem);
+
+    const navi = "/resources/actiongraphs/actiongraph";
+    const state = {
+      state: {
+        "referer": location.pathname,
+        "target": "pre_actions",
+        "actions": JSON.parse(ref_pre_actions.current.value),
+      }
+    }
+
+    console.log("move to action graph. data: %o", state);
+    navigate(navi, state);
+  };
+
+  const EditPostActions = () => {
+    console.log("Edit post actions info. ", ref_post_actions.current.value);
+
+    const tmp = {
+      pre_actions: JSON.parse(ref_pre_actions.current.value),
+      post_actions: JSON.parse(ref_post_actions.current.value),
+    }
+    const tmpItem = JSON.stringify(tmp);
+    localStorage.setItem(tmp_item_name, tmpItem);
+
+    const navi = "/resources/actiongraphs/actiongraph";
+    const state = {
+      state: {
+        "referer": location.pathname,
+        "target": "post_actions",
+        "actions": JSON.parse(ref_post_actions.current.value),
+      }
+    }
+
+    console.log("move to action graph. data: %o", state);
+    navigate(navi, state);
+  };
 
   return (
     <>

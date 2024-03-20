@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   CCard,
   CCardBody,
@@ -11,7 +11,11 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
-  } from '@coreui/react'
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
+} from '@coreui/react'
 import store from '../../store'
 import {
   Get as ProviderGet,
@@ -26,6 +30,8 @@ const QueuesCreate = () => {
   console.log("QueuesCreate");
 
   const [buttonDisable, setButtonDisable] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -34,6 +40,11 @@ const QueuesCreate = () => {
   const ref_wait_timeout = useRef(null);
   const ref_wait_actions = useRef(null);
   const ref_tag_ids = useRef(null);
+
+  var wait_actions = JSON.parse('[]');
+  if (location.state != null && location.state.actions != null) {
+    wait_actions = location.state.actions;
+  }
 
   const Create = () => {
 
@@ -113,15 +124,31 @@ const QueuesCreate = () => {
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_wait_actions}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue="[]"
-                      rows={5}
-                    />
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditWaitActions()}>Edit Wait Actions</CButton>
                   </CCol>
 
+                  <CCol className="mb-3 align-items-auto">
+                    <CAccordion activeItemKey={2}>
+                      <CAccordionItem itemKey={1}>
+                        <CAccordionHeader>
+                          <b>Wait Actions(Raw)</b>
+                        </CAccordionHeader>
+                        <CAccordionBody>
+                          <CFormTextarea
+                            ref={ref_wait_actions}
+                            type="text"
+                            id="colFormLabelSm"
+                            defaultValue={JSON.stringify(wait_actions, null, 2)}
+                            rows={20}
+                          />
+                        </CAccordionBody>
+                      </CAccordionItem>
+                    </CAccordion>
+                  </CCol>
+                </CRow>
+
+
+                <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Tag IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
@@ -144,7 +171,6 @@ const QueuesCreate = () => {
     )
   };
 
-  const navigate = useNavigate();
   const CreateResource = () => {
     console.log("Create info");
     setButtonDisable(true);
@@ -168,6 +194,23 @@ const QueuesCreate = () => {
       navigate(navi);
     });
   };
+
+  const EditWaitActions = () => {
+    console.log("Edit actions info. ", ref_wait_actions.current.value);
+
+    const navi = "/resources/actiongraphs/actiongraph";
+    const state = {
+      state: {
+        "referer": location.pathname,
+        "target": "wait_actions",
+        "actions": JSON.parse(ref_wait_actions.current.value),
+      }
+    }
+
+    console.log("move to action graph. data: %o", state);
+    navigate(navi, state);
+  };
+
 
   return (
     <>

@@ -47,10 +47,12 @@
     "react-redux": "^8.1.1",
     "react-router-dom": "^6.14.0",
     "react-sip": "^0.8.1",
-    "reactflow": "^11.8.3",
+    "reactflow": "^11.10.4",
     "redux": "4.2.1",
     "simplebar-react": "^2.4.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "nanoid": "latest",
+    "twind": "latest"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
