@@ -148,36 +148,9 @@ const QueuesDetail = () => {
 
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Queuecall IDs</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_wait_queuecall_ids}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.wait_queuecall_ids, null, 2)}
-                      rows={5}
-                      readOnly plainText
-                    />
-                  </CCol>
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Service Queuecall IDs</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_service_queuecall_ids}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.service_queuecall_ids, null, 2)}
-                      rows={5}
-                      readOnly plainText
-                    />
-                  </CCol>
-                </CRow>
-
-
-                <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditWaitActions()}>Edit</CButton>
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditWaitActions()}>Edit Wait Actions</CButton>
                   </CCol>
 
                   <CCol className="mb-3 align-items-auto">
@@ -211,6 +184,33 @@ const QueuesDetail = () => {
                       id="colFormLabelSm"
                       defaultValue={JSON.stringify(detailData.tag_ids, null, 2)}
                       rows={5}
+                    />
+                  </CCol>
+                </CRow>
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Queuecall IDs</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormTextarea
+                      ref={ref_wait_queuecall_ids}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={JSON.stringify(detailData.wait_queuecall_ids, null, 2)}
+                      rows={5}
+                      readOnly plainText
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Service Queuecall IDs</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormTextarea
+                      ref={ref_service_queuecall_ids}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={JSON.stringify(detailData.service_queuecall_ids, null, 2)}
+                      rows={5}
+                      readOnly plainText
                     />
                   </CCol>
                 </CRow>

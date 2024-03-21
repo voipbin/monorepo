@@ -132,11 +132,15 @@ const defaultEdgeOptions = {
   type: 'smoothstep',
 };
 
+const defaultProOptions = { 
+  hideAttribution: true,
+};
+
+
 export default function ActionGraph() {
   const store = useStore(selector, shallow);
   const navigate = useNavigate();
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
-
 
   // parse the params
   const data = useLocation();
@@ -200,19 +204,19 @@ export default function ActionGraph() {
             onInit={store.onInit}
 
             defaultEdgeOptions={defaultEdgeOptions}
+            proOptions={defaultProOptions}
             fitView
           >
 
             <Panel className={tw('space-x-4')} position="top">
-              <>
-                <CButton type="submit" onClick={() => Save()}>Save</CButton>
-                <CButton type="submit" color="dark" onClick={() => Cancel()}>Cancel</CButton>
-              </>
+              <CButton type="submit" onClick={() => Save()}>Save</CButton>
+              <CButton type="submit" color="dark" onClick={() => Cancel()}>Cancel</CButton>
             </Panel>
 
             <Panel position="top-right">
               <SideBar></SideBar>
             </Panel>
+            
             <Controls />
             <MiniMap style={minimapStyle} zoomable pannable position="bottom-left" />
             <Background />
