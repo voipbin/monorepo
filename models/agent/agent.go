@@ -87,3 +87,8 @@ const (
 	StatusOffline   Status = "offline"   // offline
 	StatusRinging   Status = "ringing"   // voipbin is making a call to the agent
 )
+
+// List of guest account
+var (
+	GuestAgentID uuid.UUID = uuid.FromStringOrNil("d819c626-0284-4df8-99d6-d03e1c6fba88")
+)

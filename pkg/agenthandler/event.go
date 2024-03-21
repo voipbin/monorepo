@@ -117,7 +117,7 @@ func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.
 	// delete all agents
 	for _, a := range ags {
 		log.Debugf("Deleting agent info. agent_id: %s", a.ID)
-		tmp, err := h.Delete(ctx, a.ID)
+		tmp, err := h.deleteForce(ctx, a.ID)
 		if err != nil {
 			log.Errorf("Could not delete agent info. err: %v", err)
 			continue
