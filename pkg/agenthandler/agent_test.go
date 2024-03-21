@@ -192,11 +192,68 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
+			// is only admin
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+
 			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentDeleted, tt.responseAgent)
 
 			_, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}
+
+func Test_deleteForce(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id            uuid.UUID
+		responseAgent *agent.Agent
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("073fb108-e746-11ee-8a34-033accc28b49"),
+
+			&agent.Agent{
+				ID:         uuid.FromStringOrNil("073fb108-e746-11ee-8a34-033accc28b49"),
+				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				Username:   "test2",
+				Name:       "test2 name",
+				Detail:     "test2 detail",
+				Permission: agent.PermissionNone,
+				TagIDs:     []uuid.UUID{},
+				Addresses:  []commonaddress.Address{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentDeleted, tt.responseAgent)
+
+			_, err := h.deleteForce(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
@@ -258,6 +315,135 @@ func Test_UpdateStatus(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
+		})
+	}
+}
+
+func Test_isOnlyAdmin(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseAgent  *agent.Agent
+		responseAgents []*agent.Agent
+
+		expectFilters map[string]string
+		expectRes     bool
+	}{
+		{
+			name: "agent is the only admin with other agents",
+
+			id: uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
+
+			responseAgent: &agent.Agent{
+				ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
+				CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				Permission: agent.PermissionCustomerAdmin,
+			},
+			responseAgents: []*agent.Agent{
+				{
+					ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Permission: agent.PermissionCustomerAdmin,
+				},
+				{
+					ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Permission: agent.PermissionCustomerAgent,
+				},
+			},
+
+			expectFilters: map[string]string{
+				"customer_id": "ae51a166-e73e-11ee-92dd-07437d91f85c",
+				"deleted":     "false",
+			},
+			expectRes: true,
+		},
+		{
+			name: "agent is the only admin",
+
+			id: uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
+
+			responseAgent: &agent.Agent{
+				ID:         uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
+				CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				Permission: agent.PermissionCustomerAdmin,
+			},
+			responseAgents: []*agent.Agent{
+				{
+					ID:         uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Permission: agent.PermissionCustomerAdmin,
+				},
+			},
+
+			expectFilters: map[string]string{
+				"customer_id": "ae51a166-e73e-11ee-92dd-07437d91f85c",
+				"deleted":     "false",
+			},
+			expectRes: true,
+		},
+		{
+			name: "agent is not the only admin",
+
+			id: uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
+
+			responseAgent: &agent.Agent{
+				ID:         uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
+				CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				Permission: agent.PermissionCustomerAdmin,
+			},
+			responseAgents: []*agent.Agent{
+				{
+					ID:         uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Permission: agent.PermissionCustomerAdmin,
+				},
+				{
+					ID:         uuid.FromStringOrNil("37b3b29c-e743-11ee-a40d-1b23ea7c53e1"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Permission: agent.PermissionCustomerAdmin,
+				},
+			},
+
+			expectFilters: map[string]string{
+				"customer_id": "ae51a166-e73e-11ee-92dd-07437d91f85c",
+				"deleted":     "false",
+			},
+			expectRes: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAgents, nil)
+
+			res, err := h.isOnlyAdmin(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }
