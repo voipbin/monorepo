@@ -220,7 +220,7 @@ export default function SideBar() {
   };
 
   return(
-    <div class="list-group" style={{overflowY:'auto',height:'70vh',width:'10vw',cursor:'pointer'}}>
+    <div class="list-group" style={{overflowY:'auto',height:'83vh',width:'10vw',cursor:'pointer'}}>
       {actions.map(function(action, i){
         return (
           <div className="dndnode" draggable onDragStart={(event) => onDragStart(event, action.type)}>
