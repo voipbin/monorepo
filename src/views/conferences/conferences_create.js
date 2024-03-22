@@ -225,14 +225,20 @@ const ConferencesCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "conferences";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
 
-      localStorage.setItem(tmp_item_name, null);
+        localStorage.setItem(tmp_item_name, null);
 
-      const navi = "/resources/conferences/conferences_list";
-      navigate(navi);
-    });
+        const navi = "/resources/conferences/conferences_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create the info. err: %o", e);
+        alert("Could not create the info.");
+        setButtonDisable(false);
+      });
   };
 
   const EditPreActions = () => {

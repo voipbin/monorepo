@@ -333,11 +333,18 @@ const OutdialsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "outdials/" + ref_outdial_id.current.value + "/targets/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then((response) => {
-      console.log("Updated info.", JSON.stringify(response));
-      const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then((response) => {
+        console.log("Updated info.", JSON.stringify(response));
+        const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the outdial target info. err: %o", e);
+        alert("Could not not update the outdial target info.");
+        setButtonDisable(false);
+      });
+
   };
 
   const Delete = () => {
@@ -351,11 +358,17 @@ const OutdialsDetail = () => {
     const body = JSON.stringify("");
     const target = "outdials/" + outdial_id + "/targets/" + ref_id.current.value;
     console.log("Deleting outdial target info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the outdial target info. err: %o", e);
+        alert("Could not not update the outdial target info.");
+        setButtonDisable(false);
+      });
   }
 
   return (

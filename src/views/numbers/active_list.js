@@ -38,15 +38,20 @@ const ActiveList = () => {
   const getList = (() => {
     const target = "numbers?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("numbers", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("numbers", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get a list of numbers. err: %o", e);
+        alert("Could not not get a list of numbers.");
+      });
   });
 
   // show list
@@ -144,21 +149,6 @@ const ActiveList = () => {
     tm_purchase: false,
     tm_renew: false,
   };
-
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
-    ) {
-      return;
-    }
-
-    const target = "numbers/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted queue.");
-    });
-  }
 
   const navigate = useNavigate();
   const Detail = (row) => {

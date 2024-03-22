@@ -288,13 +288,14 @@ const CampaigncallsDetail = () => {
     const body = JSON.stringify("");
     const target = "campaigncalls/" + ref_id.current.value;
     console.log("Deleting campaigncall info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateBack();
-    }).catch(response => {
-      console.log("Could not delete the info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        navigateBack();
+      }).catch(response => {
+        console.log("Could not delete the info. response: " + JSON.stringify(response));
+        navigateBack();
+      });
   }
 
   return (

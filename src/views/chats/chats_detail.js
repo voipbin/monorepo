@@ -176,11 +176,17 @@ const ChatsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "chats/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/chats/chats_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/chats/chats_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -194,11 +200,17 @@ const ChatsDetail = () => {
     const body = JSON.stringify("");
     const target = "chats/" + ref_id.current.value;
     console.log("Deleting chat info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/chats/chats_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/chats/chats_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the info. err: %o", e);
+        alert("Could not delete the info.");
+        setButtonDisable(false);
+      });
   }
 
 

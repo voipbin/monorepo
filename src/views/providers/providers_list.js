@@ -39,15 +39,20 @@ const ProvidersList = () => {
   const getList = (() => {
     const target = "providers?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("providers", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("providers", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get a resource list. err: %o", e);
+        alert("Could not not get a resource list.");
+      });
   });
 
   // show list

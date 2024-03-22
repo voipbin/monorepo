@@ -45,15 +45,21 @@ const Groupcalls = () => {
   const getList = (() => {
     const target = "groupcalls?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("groupcalls", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("groupcalls", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get the list of groupcalls. err: %o", e);
+        alert("Could not get the list of groupcalls.");
+      });
+
   });
 
   const listColumns = useMemo(

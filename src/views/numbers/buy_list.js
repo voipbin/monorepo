@@ -44,11 +44,16 @@ const BuyList = () => {
   const searchAvailableNumbers = ((tmpCountry) => {
     const target = "available_numbers?page_size=10&country_code=" + tmpCountry;
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
-    });
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
+      })
+      .catch(e => {
+        console.log("Could not get a list of available numbers. err: %o", e);
+        alert("Could not not get a list of available numbers.");
+      });
   });
 
 

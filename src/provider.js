@@ -30,7 +30,7 @@ export const Get = (target) => {
             })
             .catch(e => {
                 console.log("Could not fetch the data. err: ", e);
-                alert("Could not fetch the data correctly.")
+                reject(new Error("Could not fetch the data. err: %o", e));
             });
     })
 }
@@ -55,7 +55,7 @@ export const Post = (target, data) => {
             })
             .catch(e => {
                 console.log("Could not fetch the data. err: ", e);
-                alert("Could not fetch the data correctly.")
+                reject(new Error("Could not fetch the data. err: %o", e));
             });
     });
 }
@@ -81,7 +81,7 @@ export const Put = (target, data) => {
             })
             .catch(e => {
                 console.log("Could not fetch the data. err: ", e);
-                alert("Could not fetch the data correctly.")
+                reject(new Error("Could not fetch the data. err: %o", e));
             });
     });
 }
@@ -104,7 +104,7 @@ export const Delete = (target) => {
             })
             .catch(e => {
                 console.log("Could not fetch the data. err: ", e);
-                alert("Could not fetch the data correctly.")
+                reject(new Error("Could not fetch the data. err: %o", e));
             });
     });
 }

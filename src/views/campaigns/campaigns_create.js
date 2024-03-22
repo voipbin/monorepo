@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   CCard,
   CCardBody,
@@ -11,7 +11,11 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
-  } from '@coreui/react'
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
+} from '@coreui/react'
 import store from '../../store'
 import {
   Get as ProviderGet,
@@ -26,8 +30,8 @@ const FlowsCreate = () => {
   console.log("FlowsCreate");
 
   const [buttonDisable, setButtonDisable] = useState(false);
-  const routeParams = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -40,9 +44,13 @@ const FlowsCreate = () => {
   const ref_queue_id = useRef(null);
   const ref_actions = useRef(null);
 
-  const Create = () => {
-    const id = routeParams.id;
+  console.log("Debug. uselocation: %o", location);
+  var actions = JSON.parse('[]');
+  if (location.state != null && location.state.actions != null) {
+    actions = location.state.actions;
+  }
 
+  const Create = () => {
     return (
       <>
         <CRow>
@@ -166,13 +174,26 @@ const FlowsCreate = () => {
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_actions}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue="[]"
-                      rows={15}
-                    />
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditActions()}>Edit Actions</CButton>
+                  </CCol>
+
+                  <CCol className="mb-3 align-items-auto">
+                    <CAccordion activeItemKey={2}>
+                      <CAccordionItem itemKey={1}>
+                        <CAccordionHeader>
+                          <b>Actions(Raw)</b>
+                        </CAccordionHeader>
+                        <CAccordionBody>
+                          <CFormTextarea
+                            ref={ref_actions}
+                            type="text"
+                            id="colFormLabelSm"
+                            defaultValue={JSON.stringify(actions, null, 2)}
+                            rows={20}
+                          />
+                        </CAccordionBody>
+                      </CAccordionItem>
+                    </CAccordion>
                   </CCol>
                 </CRow>
 
@@ -187,7 +208,8 @@ const FlowsCreate = () => {
   };
 
   const navigateBack = () => {
-    navigate(-1);
+    const navi = "/resources/campaigns/campaigns_list";
+    navigate(navi);
   }
 
   const CreateResource = () => {
@@ -210,10 +232,32 @@ const FlowsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "campaigns";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not create a new campaign. err: %o", e);
+        alert("Could not create a new campaign.");
+        setButtonDisable(false);
+      });
+  };
+
+  const EditActions = () => {
+    console.log("Edit actions info. ", ref_actions.current.value);
+
+    const navi = "/resources/actiongraphs/actiongraph";
+    const state = {
+      state: {
+        "referer": location.pathname,
+        "target": "actions",
+        "actions": JSON.parse(ref_actions.current.value),
+      }
+    }
+
+    console.log("move to action graph. data: %o", state);
+    navigate(navi, state);
   };
 
   return (

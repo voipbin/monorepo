@@ -38,15 +38,21 @@ const ChatbotsList = () => {
   const getList = (() => {
     const target = "chatbots?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("chatbots", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("chatbots", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get the list of chatbots info. err: %o", e);
+        alert("Could not get the list of AI chatbots info.");
+        setButtonDisable(false);
+      });
   });
 
   // show list
@@ -101,21 +107,6 @@ const ChatbotsList = () => {
     tm_create: false,
     tm_delete: false,
   };
-
-  const handleDeleteRow = (row) => {
-    console.log("Deleting row. ", row)
-
-    if (
-      !confirm(`Are you sure you want to delete ${row.getValue('name')}`)
-    ) {
-      return;
-    }
-
-    const target = "chatbots/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted queue.");
-    });
-  }
 
   const navigate = useNavigate();
   const Detail = (row) => {

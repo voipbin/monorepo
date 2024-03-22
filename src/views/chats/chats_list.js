@@ -38,15 +38,20 @@ const ChatsList = () => {
   const getList = (() => {
     const target = "chats?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("chats", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("chats", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get the list of chats. err: %o", e);
+        alert("Could not get the list of chats.");
+      });
   });
 
   // show list

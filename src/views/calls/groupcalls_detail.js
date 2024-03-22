@@ -234,10 +234,17 @@ const GroupcallsDetail = () => {
     const body = JSON.stringify("");
     const target = "groupcalls/" + ref_id.current.value + "/hangup";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPost(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not hangup the group call. err: %o", e);
+        alert("Could not hangup the group call.");
+        setButtonDisable(false);
+      });
+
   };
 
   const Delete = () => {
@@ -251,10 +258,16 @@ const GroupcallsDetail = () => {
     const body = JSON.stringify("");
     const target = "groupcalls/" + ref_id.current.value;
     console.log("Deleting call info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not delete the group call. err: %o", e);
+        alert("Could not delete the group call.");
+        setButtonDisable(false);
+      });
   }
 
   return (

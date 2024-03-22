@@ -163,11 +163,17 @@ const QueuecallsDetail = () => {
     const body = JSON.stringify("");
     const target = "queuecalls/" + ref_id.current.value + "/kick";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/queues/queuecalls_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/queues/queuecalls_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not kick the queuecall. err: %o", e);
+        alert("Could not not kick the queuecall.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -181,11 +187,17 @@ const QueuecallsDetail = () => {
     const body = JSON.stringify("");
     const target = "queuecalls/" + ref_id.current.value;
     console.log("Deleting queuecall info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/queues/queuecalls_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/queues/queuecalls_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the queuecall. err: %o", e);
+        alert("Could not not delete the queuecall.");
+        setButtonDisable(false);
+      });
   }
 
 

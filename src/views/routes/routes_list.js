@@ -46,26 +46,36 @@ const RoutesList = () => {
     const target = "routes?customer_id=" + tmpCustomerID;
     console.log("searchRoutes. target: ", target);
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
-    });
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
+      })
+      .catch(e => {
+        console.log("Could not get a resource list. err: %o", e);
+        alert("Could not not get a resource list.");
+      });
   });
 
   const getList = (() => {
     const target = "routes?page_size=100";
     console.log("getList. target: ", target);
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("routes", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("routes", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get a resource list. err: %o", e);
+        alert("Could not not get a resource list.");
+      });
   });
 
   // show list

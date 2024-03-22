@@ -37,15 +37,20 @@ const TagsList = () => {
   const getList = (() => {
     const target = "tags?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("tags", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("tags", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get a resource list. err: %o", e);
+        alert("Could not not get a resource list.");
+      });
   });
 
   const listColumns = useMemo(

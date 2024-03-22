@@ -269,11 +269,17 @@ const QueuesDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "queues/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/queues/queues_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/queues/queues_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the queue info. err: %o", e);
+        alert("Could not not update the queue info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -287,11 +293,17 @@ const QueuesDetail = () => {
     const body = JSON.stringify("");
     const target = "queues/" + ref_id.current.value;
     console.log("Deleting queue info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/queues/queues_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/queues/queues_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the queue. err: %o", e);
+        alert("Could not not delete the queue.");
+        setButtonDisable(false);
+      });
   }
 
   const EditWaitActions = () => {

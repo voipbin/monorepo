@@ -200,11 +200,17 @@ const CustomersCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "customers";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/customers/customers_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/customers/customers_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create the info. err: %o", e);
+        alert("Could not create the info.");
+        setButtonDisable(false);
+      });
   };
 
   return (

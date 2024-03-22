@@ -178,11 +178,17 @@ const TrunkCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "trunks";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/trunks/trunks_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/trunks/trunks_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new trunk. err: %o", e);
+        alert("Could not not create a new trunk.");
+        setButtonDisable(false);
+      });
   };
 
   return (

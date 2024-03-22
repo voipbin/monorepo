@@ -38,15 +38,20 @@ const RoomsList = () => {
   const getList = (() => {
     const target = "chatrooms?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("chatrooms", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("chatrooms", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get list of info. err: %o", e);
+        alert("Could not get the list of info.");
+      });
   });
 
   // show list

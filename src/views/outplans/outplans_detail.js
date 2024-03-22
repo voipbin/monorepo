@@ -249,11 +249,17 @@ const OutplansDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "outplans/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then((response) => {
-      console.log("Updated info.", JSON.stringify(response));
-      const navi = "/resources/outplans/outplans_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then((response) => {
+        console.log("Updated info.", JSON.stringify(response));
+        const navi = "/resources/outplans/outplans_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the outplan info. err: %o", e);
+        alert("Could not not update the outplan info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -267,13 +273,18 @@ const OutplansDetail = () => {
     const body = JSON.stringify("");
     const target = "outplans/" + ref_id.current.value;
     console.log("Deleting outplan info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/outplans/outplans_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/outplans/outplans_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the outplan info. err: %o", e);
+        alert("Could not not delete the ouplan info.");
+        setButtonDisable(false);
+      });
   }
-
 
   return (
     <>

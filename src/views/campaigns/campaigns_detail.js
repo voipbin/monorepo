@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   CCard,
   CCardBody,
@@ -11,7 +11,11 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
-  } from '@coreui/react'
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
+} from '@coreui/react'
 import store from '../../store'
 import {
   Get as ProviderGet,
@@ -28,6 +32,7 @@ const CampaignsDetail = () => {
   const [buttonDisable, setButtonDisable] = useState(false);
   const routeParams = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const ref_id = useRef(null);
   const ref_status = useRef(null);
@@ -42,13 +47,20 @@ const CampaignsDetail = () => {
   const ref_queue_id = useRef(null);
   const ref_actions = useRef(null);
 
-  const GetDetail = () => {
-    const id = routeParams.id;
+  const id = routeParams.id;
 
-    const tmp = localStorage.getItem("campaigns");
-    const datas = JSON.parse(tmp);
-    const detailData = datas[id];
-    console.log("detailData", detailData);
+  const tmp = localStorage.getItem("campaigns");
+  const datas = JSON.parse(tmp);
+  const detailData = datas[id];
+  console.log("detailData", detailData);
+
+  // parse the location
+  console.log("Debug. uselocation: %o", location);
+  if (location.state != null && location.state.actions != null) {
+    detailData.actions = location.state.actions;
+  }
+  
+  const GetDetail = () => {
 
     return (
       <>
@@ -210,6 +222,34 @@ const CampaignsDetail = () => {
                 </CRow>
 
 
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditActions()}>Edit Actions</CButton>
+                  </CCol>
+
+                  <CCol className="mb-3 align-items-auto">
+                    <CAccordion activeItemKey={2}>
+                      <CAccordionItem itemKey={1}>
+                        <CAccordionHeader>
+                          <b>Actions(Raw)</b>
+                        </CAccordionHeader>
+                        <CAccordionBody>
+                          <CFormTextarea
+                            ref={ref_actions}
+                            type="text"
+                            id="colFormLabelSm"
+                            defaultValue={JSON.stringify(detailData.actions, null, 2)}
+                            rows={20}
+                          />
+                        </CAccordionBody>
+                      </CAccordionItem>
+                    </CAccordion>
+                  </CCol>
+                </CRow>
+
+
+
                 <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateActions()}>Update Actions</CButton>
                 <br />
                 <br />
@@ -283,8 +323,9 @@ const CampaignsDetail = () => {
     )
   };
 
-  const navigateBack = () => {
-    navigate(-1);
+  const navigateList = () => {
+    const navi = "/resources/campaigns/campaigns_list";
+    navigate(navi);
   }
 
   const Update = () => {
@@ -307,10 +348,16 @@ const CampaignsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "campaigns/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateList();
+      })
+      .catch(e => {
+        console.log("Could not update the basic info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdateResource = () => {
@@ -327,10 +374,16 @@ const CampaignsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "campaigns/" + ref_id.current.value + "/resource_info";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateList();
+      })
+      .catch(e => {
+        console.log("Could not update the id info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdateActions = () => {
@@ -344,10 +397,16 @@ const CampaignsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "campaigns/" + ref_id.current.value + "/actions";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateList();
+      })
+      .catch(e => {
+        console.log("Could not update the action info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdateStatus = () => {
@@ -361,10 +420,16 @@ const CampaignsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "campaigns/" + ref_id.current.value + "/status";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateList();
+      })
+      .catch(e => {
+        console.log("Could not update the status info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -378,11 +443,33 @@ const CampaignsDetail = () => {
     const body = JSON.stringify("");
     const target = "campaigns/" + ref_id.current.value;
     console.log("Deleting campaign info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        navigateList();
+      })
+      .catch(e => {
+        console.log("Could not delete the campaign info. err: %o", e);
+        alert("Could not delete the campaign info.");
+        setButtonDisable(false);
+      });
   }
+
+  const EditActions = () => {
+    console.log("Edit actions info");
+
+    const navi = "/resources/actiongraphs/actiongraph";
+    const state = {
+      state: {
+        "referer": location.pathname,
+        "target": "actions",
+        "actions": detailData.actions,
+      }
+    }
+
+    console.log("move to action graph. data: %o", state);
+    navigate(navi, state);
+  };
 
   return (
     <>

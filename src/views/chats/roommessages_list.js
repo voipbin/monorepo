@@ -92,10 +92,15 @@ const Roommessages = () => {
   const getList = (() => {
     const target = "chatroommessages?page_size=100&chatroom_id=" + room_id;
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      dispatch(ChatroommessagesSetWithChatroomID(room_id, data));
-    });
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        dispatch(ChatroommessagesSetWithChatroomID(room_id, data));
+      })
+      .catch(e => {
+        console.log("Could not get list of chatroom messages. err: %o", e);
+        alert("Could not get the list of chatroom messages.");
+      });
   });
 
   const SendMessage = () => {
@@ -109,9 +114,14 @@ const Roommessages = () => {
     const body = JSON.stringify(tmpData);
     const target = "chatroommessages"
     console.log("Sending message info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(response => {
-      console.log("Sent message info. response: " + JSON.stringify(response));
-    });
+    ProviderPost(target, body)
+      .then(response => {
+        console.log("Sent message info. response: " + JSON.stringify(response));
+      })
+      .catch(e => {
+        console.log("Could not send the chat message. err: %o", e);
+        alert("Could not send the chat message.");
+      });
   };
 
   return (

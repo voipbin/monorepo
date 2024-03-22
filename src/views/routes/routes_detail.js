@@ -187,9 +187,14 @@ const RoutesDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "routes/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then((response) => {
-      console.log("Updated info.", JSON.stringify(response));
-    });
+    ProviderPut(target, body)
+      .then((response) => {
+        console.log("Updated info.", JSON.stringify(response));
+      })
+      .catch(e => {
+        console.log("Could not update the route info. err: %o", e);
+        alert("Could not not update the route info.");
+      });
   };
 
   const Delete = () => {
@@ -202,9 +207,14 @@ const RoutesDetail = () => {
     const body = JSON.stringify("");
     const target = "routes/" + ref_id.current.value;
     console.log("Deleting route info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+      })
+      .catch(e => {
+        console.log("Could not delete the route info. err: %o", e);
+        alert("Could not not delete the route info.");
+      });
   }
 
   return (

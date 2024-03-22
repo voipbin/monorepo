@@ -72,7 +72,7 @@ export default function SideBar() {
       type: 'call',
     },
     {
-      name: 'AI Chatbot Talk',
+      name: 'Chatbot Talk(AI)',
       description: 'Starts a talk with AI chatbot',
       type: 'chatbot_talk',
     },

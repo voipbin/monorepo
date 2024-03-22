@@ -181,11 +181,17 @@ const MessagesDetail = () => {
     const body = JSON.stringify("");
     const target = "messages/" + ref_id.current.value;
     console.log("Deleting message info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/messages/messages_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/messages/messages_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the message. err: %o", e);
+        alert("Could not not delete the message.");
+        setButtonDisable(false);
+      });
   }
 
 

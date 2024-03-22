@@ -108,11 +108,17 @@ const MessagesCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "messages";
     console.log("Creating message info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created message info.", JSON.stringify(response));
-      const navi = "/resources/messages/messages_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created message info.", JSON.stringify(response));
+        const navi = "/resources/messages/messages_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new message. err: %o", e);
+        alert("Could not not create a new message.");
+        setButtonDisable(false);
+      });
   };
 
   return (

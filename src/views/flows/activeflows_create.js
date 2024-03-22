@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   CCard,
   CCardBody,
@@ -11,7 +11,11 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
-  } from '@coreui/react'
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
+} from '@coreui/react'
 import store from '../../store'
 import {
   Get as ProviderGet,
@@ -26,15 +30,20 @@ const ActiveflowsCreate = () => {
   console.log("ActiveflowsCreate");
 
   const [buttonDisable, setButtonDisable] = useState(false);
-  const routeParams = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const ref_id = useRef(null);
   const ref_flow_id = useRef(null);
   const ref_actions = useRef(null);
 
+  console.log("Debug. uselocation: %o", location);
+  var actions = JSON.parse('[]');
+  if (location.state != null && location.state.actions != null) {
+    actions = location.state.actions;
+  }
+
   const Create = () => {
-    const id = routeParams.id;
 
     return (
       <>
@@ -76,15 +85,29 @@ const ActiveflowsCreate = () => {
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_actions}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue="[]"
-                      rows={20}
-                    />
+                    <CButton type="submit" disabled={buttonDisable} onClick={() => EditActions()}>Edit Actions</CButton>
+                  </CCol>
+
+                  <CCol className="mb-3 align-items-auto">
+                    <CAccordion activeItemKey={2}>
+                      <CAccordionItem itemKey={1}>
+                        <CAccordionHeader>
+                          <b>Actions(Raw)</b>
+                        </CAccordionHeader>
+                        <CAccordionBody>
+                          <CFormTextarea
+                            ref={ref_actions}
+                            type="text"
+                            id="colFormLabelSm"
+                            defaultValue={JSON.stringify(actions, null, 2)}
+                            rows={20}
+                          />
+                        </CAccordionBody>
+                      </CAccordionItem>
+                    </CAccordion>
                   </CCol>
                 </CRow>
+
 
                 <CButton type="submit" disabled={buttonDisable} onClick={() => CreateResource()}>Create</CButton>
 
@@ -110,11 +133,33 @@ const ActiveflowsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "activeflows";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/flows/activeflows_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/flows/activeflows_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new activeflow. err: %o", e);
+        alert("Could not not create a new activeflow.");
+        setButtonDisable(false);
+      });
+  };
+
+  const EditActions = () => {
+    console.log("Edit actions info. ", ref_actions.current.value);
+
+    const navi = "/resources/actiongraphs/actiongraph";
+    const state = {
+      state: {
+        "referer": location.pathname,
+        "target": "actions",
+        "actions": JSON.parse(ref_actions.current.value),
+      }
+    }
+
+    console.log("move to action graph. data: %o", state);
+    navigate(navi, state);
   };
 
   return (

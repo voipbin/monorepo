@@ -45,15 +45,20 @@ const AccountsList = () => {
   const getList = (() => {
     const target = "conversation_accounts?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("conversation_accounts", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("conversation_accounts", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get list. err: %o", e);
+        alert("Could not get list.");
+      });
   });
 
   const listColumns = useMemo(

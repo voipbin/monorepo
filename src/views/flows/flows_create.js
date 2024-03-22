@@ -128,11 +128,17 @@ const FlowsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "flows";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/flows/flows_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/flows/flows_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new flow. err: %o", e);
+        alert("Could not not create a new flow.");
+        setButtonDisable(false);
+      });
   };
 
   const EditActions = () => {

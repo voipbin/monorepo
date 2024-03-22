@@ -201,12 +201,12 @@ const conferences = {
 
 const chatbots = {
   component: CNavGroup,
-  name: 'AI Chatbots',
+  name: 'Chatbots(AI)',
   icon: <CIcon icon={cilVideogame} customClassName="nav-icon" />,
   items: [
     {
       component: CNavItem,
-      name: 'AI Chatbots',
+      name: 'Chatbots(AI)',
       to: '/resources/chatbots/chatbots_list',
     },
   ]
