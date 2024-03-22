@@ -145,9 +145,14 @@ const RoutesCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "routes";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+      })
+      .catch(e => {
+        console.log("Could not create a new route. err: %o", e);
+        alert("Could not not create a new route.");
+      });
   };
 
   return (

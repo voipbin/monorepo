@@ -91,11 +91,17 @@ const TagsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "tags";
     console.log("Creating tag info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created tag info.", JSON.stringify(response));
-      const navi = "/resources/tags/tags_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created tag info.", JSON.stringify(response));
+        const navi = "/resources/tags/tags_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new tag. err: %o", e);
+        alert("Could not not create a new tag.");
+        setButtonDisable(false);
+      });
   };
 
   return (

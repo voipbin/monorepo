@@ -39,10 +39,29 @@ const AppHeaderDropdown = () => {
     localStorage.setItem('agent_info', null);
   }
 
+  const getInitials = (string) => {
+    var names = string.split(' '),
+        initials = names[0].substring(0, 1).toUpperCase();
+    
+    if (names.length > 1) {
+        initials += names[names.length - 1].substring(0, 1).toUpperCase();
+    }
+    return initials;
+  };
+
+  const detailData = JSON.parse(localStorage.getItem("agent_info"));
+  console.log("Detailed agent info. agent_info: ", detailData);
+
+  var name = "";
+  if (detailData != null) {
+    name = getInitials(detailData.name)
+  }
+
   return (
     <CDropdown variant="nav-item">
-      <CDropdownToggle placement="bottom-end" className="py-0" caret={false}>
-        <CAvatar src={avatar8} size="md" />
+      <CDropdownToggle placement="bottom-end" className="py-0" caret={false}>    
+        <div class="avatar bg-primary text-white">{name}</div>
+        {/* <CAvatar src={avatar8} size="md" /> */}
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         {/* <CDropdownHeader className="bg-light fw-semibold py-2">Account</CDropdownHeader>

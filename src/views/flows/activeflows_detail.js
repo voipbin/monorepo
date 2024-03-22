@@ -165,11 +165,17 @@ const ActiveflowsDetail = () => {
     const body = JSON.stringify("");
     const target = "activeflows/" + ref_id.current.value + "/stop";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/flows/activeflows_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/flows/activeflows_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not stop the activeflow. err: %o", e);
+        alert("Could not not stop the activeflow.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -183,11 +189,17 @@ const ActiveflowsDetail = () => {
     const body = JSON.stringify("");
     const target = "activeflows/" + ref_id.current.value;
     console.log("Deleting activeflow info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/flows/activeflows_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/flows/activeflows_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the activeflow. err: %o", e);
+        alert("Could not not delete the activeflow.");
+        setButtonDisable(false);
+      });
   }
 
   return (

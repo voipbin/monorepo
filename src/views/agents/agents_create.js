@@ -188,10 +188,17 @@ const AgentsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not create the agent. err: %o", e);
+        alert("Could not create the agent.");
+        setButtonDisable(false);
+      });
+
   };
 
   return (

@@ -203,11 +203,17 @@ const RoomsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "chatrooms/" + ref_id.current.value;
     console.log("Updating conversation info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/chats/rooms_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/chats/rooms_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -221,10 +227,16 @@ const RoomsDetail = () => {
     const body = JSON.stringify("");
     const target = "chatrooms/" + ref_id.current.value;
     console.log("Deleting chat info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
+    ProviderDelete(target, body)
+    .then(response => {
       console.log("Deleted info. response: " + JSON.stringify(response));
       const navi = "/resources/chats/rooms_list";
       navigate(navi);
+    })
+    .catch(e => {
+      console.log("Could not delete the info. err: %o", e);
+      alert("Could not delete the info.");
+      setButtonDisable(false);
     });
   }
 

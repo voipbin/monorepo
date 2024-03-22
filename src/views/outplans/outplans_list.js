@@ -39,15 +39,20 @@ const OutplansList = () => {
   const getList = (() => {
     const target = "outplans?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("outplans", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("outplans", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not a reousrce list. err: %o", e);
+        alert("Could not not a resource list.");
+      });
   });
 
   // show list

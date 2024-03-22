@@ -161,15 +161,22 @@ const ConferencecallsDetail = () => {
 
   const Kick = () => {
     console.log("Kick info");
+    setButtonDisable(true);
 
     const body = JSON.stringify('');
     const target = "conferencecalls/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then((response) => {
-      console.log("Kick info.", JSON.stringify(response));
-      const navi = "/resources/conferences/conferences_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then((response) => {
+        console.log("Kick info.", JSON.stringify(response));
+        const navi = "/resources/conferences/conferences_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not kick the call from the conference. err: %o", e);
+        alert("Could not kick the call from the conference.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -183,11 +190,17 @@ const ConferencecallsDetail = () => {
     const body = JSON.stringify("");
     const target = "conferencecalls/" + ref_id.current.value;
     console.log("Deleting conferencecall info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/conferences/conferences_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/conferences/conferences_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the info. err: %o", e);
+        alert("Could not delete the info.");
+        setButtonDisable(false);
+      });
   }
 
   return (

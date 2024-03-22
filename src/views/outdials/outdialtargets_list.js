@@ -42,15 +42,20 @@ const OutdialtargetsList = () => {
 
     const target = "outdials/" + outdialID + "/targets?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("outdials/" + outdialID + "/targets", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("outdials/" + outdialID + "/targets", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get list of outdial targets. err: %o", e);
+        alert("Could not not get a list of outdial targets.");
+      });
   });
 
   // show list

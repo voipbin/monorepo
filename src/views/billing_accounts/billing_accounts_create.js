@@ -118,10 +118,16 @@ const BillingAccountCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "billing_accounts";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not create the billing account. err: %o", e);
+        alert("Could not create the info.");
+        setButtonDisable(false);
+      });
   };
 
   return (

@@ -218,10 +218,17 @@ const ActivesDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "numbers/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the number info. err: %o", e);
+        alert("Could not not update the number info.");
+        setButtonDisable(false);
+      });
+
   };
 
   const Delete = () => {
@@ -235,10 +242,16 @@ const ActivesDetail = () => {
     const body = JSON.stringify("");
     const target = "numbers/" + ref_id.current.value;
     console.log("Deleting call info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not delete the number info. err: %o", e);
+        alert("Could not not delete the number info.");
+        setButtonDisable(false);
+      });
   }
 
   return (

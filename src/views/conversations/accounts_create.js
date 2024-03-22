@@ -136,11 +136,17 @@ const AccountsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "conversation_accounts";
     console.log("Creating conversation accounts info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created conversation accounts info.", JSON.stringify(response));
-      const navi = "/resources/conversations/accounts_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created conversation accounts info.", JSON.stringify(response));
+        const navi = "/resources/conversations/accounts_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not get the list of info. err: %o", e);
+        alert("Could not get the list of info.");
+        setButtonDisable(false);
+      });
   };
 
   return (

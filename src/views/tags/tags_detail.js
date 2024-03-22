@@ -141,10 +141,16 @@ const TagsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "tags/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the tag info. err: %o", e);
+        alert("Could not not update the tag info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -158,10 +164,16 @@ const TagsDetail = () => {
     const body = JSON.stringify("");
     const target = "tags/" + ref_id.current.value;
     console.log("Deleting tag info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not delete the tag info. err: %o", e);
+        alert("Could not not delete the tag info.");
+        setButtonDisable(false);
+      });
   }
 
 

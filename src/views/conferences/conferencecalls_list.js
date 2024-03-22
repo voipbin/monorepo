@@ -38,15 +38,20 @@ const ConferencecallsList = () => {
   const getList = (() => {
     const target = "conferencecalls?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("conferencecalls", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("conferencecalls", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get the list of info. err: %o", e);
+        alert("Could not get the list of info.");
+      });
   });
 
   // show list

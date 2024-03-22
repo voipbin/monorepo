@@ -104,11 +104,17 @@ const ChatroomsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "chatrooms";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/chats/rooms_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/chats/rooms_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new chatroom. err: %o", e);
+        alert("Could not create a new chatroom.");
+        setButtonDisable(false);
+      });
   };
 
   return (

@@ -196,11 +196,17 @@ const OutdialtargetsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "outdials/" + ref_outdial_id.current.value + "/targets";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/outdials/" + ref_outdial_id.current.value + "/outdialtargets_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new outdial. err: %o", e);
+        alert("Could not not create a new outdial.");
+        setButtonDisable(false);
+      });
   };
 
   return (

@@ -206,11 +206,17 @@ const ProvidersDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "providers/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then((response) => {
-      console.log("Updated info.", JSON.stringify(response));
-      const navi = "/resources/providers/providers_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then((response) => {
+        console.log("Updated info.", JSON.stringify(response));
+        const navi = "/resources/providers/providers_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the provider infno. err: %o", e);
+        alert("Could not not update the provider info.");
+        setButtonDisable(false);
+      });
   }
 
   const Delete = () => {
@@ -224,13 +230,18 @@ const ProvidersDetail = () => {
     const body = JSON.stringify("");
     const target = "providers/" + ref_id.current.value;
     console.log("Deleting provider info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/providers/providers_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/providers/providers_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the provider info. err: %o", e);
+        alert("Could not not delete the provider info.");
+        setButtonDisable(false);
+      });
   }
-
 
   return (
     <>

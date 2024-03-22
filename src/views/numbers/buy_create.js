@@ -133,10 +133,16 @@ const BuyCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "numbers";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not buy a new number. err: %o", e);
+        alert("Could not not buy a new number.");
+        setButtonDisable(false);
+      });
   };
 
   return (

@@ -32,6 +32,7 @@ const FlowsDetail = () => {
   const [buttonDisable, setButtonDisable] = useState(false);
   const routeParams = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const ref_id = useRef(null);
   const ref_name = useRef(null);
@@ -45,14 +46,11 @@ const FlowsDetail = () => {
   const detailData = datas[id];
 
 
-  // parse the params
-  const location = useLocation();
+  // parse the location
   console.log("Debug. uselocation: %o", location);
-
   if (location.state != null && location.state.actions != null) {
     detailData.actions = location.state.actions;
   }
-
 
   const GetDetail = () => {
 
@@ -186,11 +184,17 @@ const FlowsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "flows/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/flows/flows_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/flows/flows_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the flow. err: %o", e);
+        alert("Could not not update the flow.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -204,11 +208,17 @@ const FlowsDetail = () => {
     const body = JSON.stringify("");
     const target = "flows/" + ref_id.current.value;
     console.log("Deleting flow info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/flows/flows_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/flows/flows_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the flow. err: %o", e);
+        alert("Could not not delete the flow.");
+        setButtonDisable(false);
+      });
   }
 
   const EditActions = () => {
@@ -226,7 +236,6 @@ const FlowsDetail = () => {
     console.log("move to action graph. data: %o", state);
     navigate(navi, state);
   };
-
 
   return (
     <>

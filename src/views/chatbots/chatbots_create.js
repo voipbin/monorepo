@@ -123,11 +123,17 @@ const ChatbotsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "chatbots";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/chatbots/chatbots_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/chatbots/chatbots_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new chatbot info. err: %o", e);
+        alert("Could not create a new chatbot info.");
+        setButtonDisable(false);
+      });
   };
 
   return (

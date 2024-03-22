@@ -124,11 +124,17 @@ const ConversationsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "calls";
     console.log("Creating call info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created call info.", JSON.stringify(response));
-      const navi = "/resources/conversations/conversations_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created call info.", JSON.stringify(response));
+        const navi = "/resources/conversations/conversations_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new conversation. err: %o", e);
+        alert("Could not create a new conversation.");
+        setButtonDisable(false);
+      });
   };
 
   return (

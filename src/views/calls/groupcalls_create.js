@@ -160,10 +160,17 @@ const GroupcallsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "groupcalls";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not create the group call. err: %o", e);
+        alert("Could not create the group call.");
+        setButtonDisable(false);
+      });
+
   };
 
   return (

@@ -305,10 +305,16 @@ const AgentsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the basic info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdateStatus = () => {
@@ -322,10 +328,16 @@ const AgentsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/status";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the status. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdateAddresse = () => {
@@ -339,10 +351,16 @@ const AgentsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/addresses";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the address. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdateTagIDs = () => {
@@ -356,10 +374,16 @@ const AgentsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/tag_ids";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the tag ids. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdatePermission = () => {
@@ -373,10 +397,18 @@ const AgentsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/permission";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("response: %o", response);
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the permission. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdatePassword = () => {
@@ -395,10 +427,16 @@ const AgentsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/password";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the password. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });;
   };
 
   const Delete = () => {
@@ -412,10 +450,16 @@ const AgentsDetail = () => {
     const body = JSON.stringify("");
     const target = "agents/" + ref_id.current.value;
     console.log("Deleting agent info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not delete the agent. err: %o", e);
+        alert("Could not delete the agent.");
+        setButtonDisable(false);
+      });
   }
 
   return (

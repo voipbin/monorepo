@@ -199,11 +199,17 @@ const OutplansCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "outplans";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/outplans/outplans_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/outplans/outplans_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new outplan. err: %o", e);
+        alert("Could not not create a new outplan.");
+        setButtonDisable(false);
+      });
   };
 
   return (

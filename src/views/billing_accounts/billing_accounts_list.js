@@ -38,15 +38,20 @@ const BillingAccountsList = () => {
   const getList = (() => {
     const target = "billing_accounts?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("billing_accounts", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("billing_accounts", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get the list of billing accounts. err: %o", e);
+        alert("Could not get the info.");
+      });
   });
 
   // show list

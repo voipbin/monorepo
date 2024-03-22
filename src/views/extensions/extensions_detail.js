@@ -175,11 +175,17 @@ const ExtensionsDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "extensions/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      const navi = "/resources/extensions/extensions_list";
-      navigate(navi);
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        const navi = "/resources/extensions/extensions_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -193,11 +199,17 @@ const ExtensionsDetail = () => {
     const body = JSON.stringify("");
     const target = "extensions/" + ref_id.current.value;
     console.log("Deleting extension info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
-      const navi = "/resources/extensions/extensions_list";
-      navigate(navi);
-    });
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
+        const navi = "/resources/extensions/extensions_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the info. err: %o", e);
+        alert("Could not delete the info.");
+        setButtonDisable(false);
+      });
   }
 
   return (

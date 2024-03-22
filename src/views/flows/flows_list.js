@@ -38,15 +38,20 @@ const FlowsList = () => {
   const getList = (() => {
     const target = "flows?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("flows", tmpData);
-    });
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("flows", tmpData);
+      })
+      .catch(e => {
+        console.log("Could not get a list of flows. err: %o", e);
+        alert("Could not not get a list of flows.");
+      });
   });
 
   // show list

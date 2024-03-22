@@ -57,50 +57,55 @@ const Conversationmessages = () => {
   const getList = (() => {
     const target = "conversations/" + conversation_id + "/messages?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("conversations/" + conversation_id + "/messages", tmpData);
+        const tmp = ParseData(data);
+        const tmpData = JSON.stringify(tmp);
+        localStorage.setItem("conversations/" + conversation_id + "/messages", tmpData);
 
-      var tmpMessages = [];
-      data.forEach(tmp => {
+        var tmpMessages = [];
+        data.forEach(tmp => {
 
-        if (tmp["status"] == "sent") {
-          console.log("Outbound message. status: %s, message: %s", tmp["status"], tmp["text"]);
-          tmpMessages.push(
-            <CFormInput
-              type="text"
-              floatingClassName="mb-3"
-              floatingLabel="me"
-              color="success"
-              defaultValue={tmp["text"]}
-              aria-label="Disabled input example"
-              readOnly
-              valid
-            />
-          );
-        } else if (tmp["status"] == "received") {
-          console.log("Inbound message. status: %s, message: %s", tmp["status"], tmp["text"]);
-          tmpMessages.push(
-            <CFormInput
-              type="text"
-              floatingClassName="mb-3"
-              floatingLabel={tmp["source"].target}
-              color="primary"
-              defaultValue={tmp["text"]}
-              aria-label="Disabled input example"
-              readOnly
-            />
-          );
-        }
+          if (tmp["status"] == "sent") {
+            console.log("Outbound message. status: %s, message: %s", tmp["status"], tmp["text"]);
+            tmpMessages.push(
+              <CFormInput
+                type="text"
+                floatingClassName="mb-3"
+                floatingLabel="me"
+                color="success"
+                defaultValue={tmp["text"]}
+                aria-label="Disabled input example"
+                readOnly
+                valid
+              />
+            );
+          } else if (tmp["status"] == "received") {
+            console.log("Inbound message. status: %s, message: %s", tmp["status"], tmp["text"]);
+            tmpMessages.push(
+              <CFormInput
+                type="text"
+                floatingClassName="mb-3"
+                floatingLabel={tmp["source"].target}
+                color="primary"
+                defaultValue={tmp["text"]}
+                aria-label="Disabled input example"
+                readOnly
+              />
+            );
+          }
+        });
+
+        setMessages(tmpMessages.reverse());
+      })
+      .catch(e => {
+        console.log("Could not get list. err: %o", e);
+        alert("Could not get list.");
       });
-
-      setMessages(tmpMessages.reverse());
-    });
   });
 
   const SendMessage = () => {
@@ -113,9 +118,14 @@ const Conversationmessages = () => {
     const body = JSON.stringify(tmpData);
     const target = "conversations/" + conversation_id + "/messages";
     console.log("Sending message info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then(response => {
-      console.log("Sent message info. response: " + JSON.stringify(response));
-    });
+    ProviderPost(target, body)
+      .then(response => {
+        console.log("Sent message info. response: " + JSON.stringify(response));
+      })
+      .catch(e => {
+        console.log("Could not send the message. err: %o", e);
+        alert("Could not send the message.");
+      });
   };
 
   return (

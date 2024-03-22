@@ -30,17 +30,23 @@ const Chabotcalls = () => {
   const getCalls = (() => {
     const target = "chatbotcalls?page_size=100";
 
-    ProviderGet(target).then(result => {
-      const data = result.result;
-      setListData(data);
-      setIsLoading(false);
+    ProviderGet(target)
+      .then(result => {
+        const data = result.result;
+        setListData(data);
+        setIsLoading(false);
 
-      const tmp = ParseData(data);
-      store.dispatch({
-        type: 'chatbotcalls',
-        data: tmp,
+        const tmp = ParseData(data);
+        store.dispatch({
+          type: 'chatbotcalls',
+          data: tmp,
+        });
+      })
+      .catch(e => {
+        console.log("Could not get the list of chatbotcalls. err: %o", e);
+        alert("Could not get the list of chatbotcalls.");
+        setButtonDisable(false);
       });
-    });
   });
 
   const listColumns = useMemo(

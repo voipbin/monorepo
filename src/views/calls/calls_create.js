@@ -128,10 +128,16 @@ const CallsCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "calls";
     console.log("Creating call info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created call info.", JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created call info.", JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not create a call. err: %o", e);
+        alert("Could not create a call.");
+        setButtonDisable(false);
+      });
   };
 
   return (

@@ -311,14 +311,20 @@ const ConferencesDetail = () => {
     const body = JSON.stringify(tmpData);
     const target = "conferences/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then((response) => {
-      console.log("Updated info.", response);
+    ProviderPut(target, body)
+      .then((response) => {
+        console.log("Updated info.", response);
 
-      localStorage.setItem(tmp_item_name, null);
+        localStorage.setItem(tmp_item_name, null);
 
-      const navi = "/resources/conferences/conferences_list";
-      navigate(navi);
-    });
+        const navi = "/resources/conferences/conferences_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not update the info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const Delete = () => {
@@ -332,14 +338,20 @@ const ConferencesDetail = () => {
     const body = JSON.stringify("");
     const target = "conferences/" + ref_id.current.value;
     console.log("Deleting conference info. target: " + target + ", body: " + body);
-    ProviderDelete(target, body).then(response => {
-      console.log("Deleted info. response: " + JSON.stringify(response));
+    ProviderDelete(target, body)
+      .then(response => {
+        console.log("Deleted info. response: " + JSON.stringify(response));
 
-      localStorage.setItem(tmp_item_name, null);
+        localStorage.setItem(tmp_item_name, null);
 
-      const navi = "/resources/conferences/conferences_list";
-      navigate(navi);
-    });
+        const navi = "/resources/conferences/conferences_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not delete the info. err: %o", e);
+        alert("Could not delete the info.");
+        setButtonDisable(false);
+      });
   }
 
   const EditPreActions = () => {

@@ -270,10 +270,16 @@ const AgentsProfile = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the basic info. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdateStatus = () => {
@@ -287,10 +293,16 @@ const AgentsProfile = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/status";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the statue. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   const UpdatePassword = () => {
@@ -309,10 +321,16 @@ const AgentsProfile = () => {
     const body = JSON.stringify(tmpData);
     const target = "agents/" + ref_id.current.value + "/password";
     console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then(response => {
-      console.log("Updated info. response: " + JSON.stringify(response));
-      navigateBack();
-    });
+    ProviderPut(target, body)
+      .then(response => {
+        console.log("Updated info. response: " + JSON.stringify(response));
+        navigateBack();
+      })
+      .catch(e => {
+        console.log("Could not update the password. err: %o", e);
+        alert("Could not update the info.");
+        setButtonDisable(false);
+      });
   };
 
   return (

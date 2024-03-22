@@ -188,11 +188,17 @@ const QueuesCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "queues";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-      const navi = "/resources/queues/queues_list";
-      navigate(navi);
-    });
+    ProviderPost(target, body)
+      .then((response) => {
+        console.log("Created info.", JSON.stringify(response));
+        const navi = "/resources/queues/queues_list";
+        navigate(navi);
+      })
+      .catch(e => {
+        console.log("Could not create a new queue. err: %o", e);
+        alert("Could not not create a new queue.");
+        setButtonDisable(false);
+      });
   };
 
   const EditWaitActions = () => {
