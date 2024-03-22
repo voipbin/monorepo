@@ -40,6 +40,7 @@ type CacheHandler interface {
 	CallAppAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error
 
 	ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
+	ExternalMediaGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error
 	ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error
 

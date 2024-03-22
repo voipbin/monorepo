@@ -231,11 +231,28 @@ func (h *handler) ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUI
 	return &res, nil
 }
 
+// ExternalMediaGetByReferenceID returns the given external media info of the given reference id from the cache
+func (h *handler) ExternalMediaGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*externalmedia.ExternalMedia, error) {
+	key := fmt.Sprintf("external_media:reference_id:%s", referenceID)
+
+	var res externalmedia.ExternalMedia
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // ExternalMediaSet sets the given external media info into the cache.
 func (h *handler) ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error {
-	key := fmt.Sprintf("external_media:%s", data.ID)
 
+	key := fmt.Sprintf("external_media:%s", data.ID)
 	if err := h.setSerialize(ctx, key, data); err != nil {
+		return err
+	}
+
+	keyReferenceID := fmt.Sprintf("external_media:reference_id:%s", data.ReferenceID)
+	if err := h.setSerialize(ctx, keyReferenceID, data); err != nil {
 		return err
 	}
 
@@ -244,9 +261,19 @@ func (h *handler) ExternalMediaSet(ctx context.Context, data *externalmedia.Exte
 
 // ExternalMediaDelete deletes the given external media info from the cache.
 func (h *handler) ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error {
-	key := fmt.Sprintf("external_media:%s", externalMediaID)
 
+	tmp, err := h.ExternalMediaGet(ctx, externalMediaID)
+	if err != nil {
+		return err
+	}
+
+	key := fmt.Sprintf("external_media:%s", tmp.ID)
 	if _, err := h.Cache.Del(ctx, key).Result(); err != nil {
+		return err
+	}
+
+	keyReferenceID := fmt.Sprintf("external_media:reference_id:%s", tmp.ReferenceID)
+	if _, err := h.Cache.Del(ctx, keyReferenceID).Result(); err != nil {
 		return err
 	}
 

@@ -3,6 +3,8 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -11,6 +13,47 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 )
+
+// processV1ExternalMediasGet handles GET /v1/external-medias request
+func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ExternalMediasGet",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	// get filters
+	filters := h.utilHandler.URLParseFilters(u)
+
+	tmps, err := h.externalMediaHandler.Gets(ctx, pageSize, pageToken, filters)
+	if err != nil {
+		log.Errorf("Could not get external medias. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmps)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmps, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
 
 // processV1ExternalMediasPost handles POST /v1/external-medias request
 func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

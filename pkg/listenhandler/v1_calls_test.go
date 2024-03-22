@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -80,10 +81,10 @@ func Test_processV1CallsGet(t *testing.T) {
 		customerID uuid.UUID
 		pageSize   uint64
 		pageToken  string
-		filters    map[string]string
 
-		calls     []*call.Call
-		expectRes *rabbitmqhandler.Response
+		responseCalls   []*call.Call
+		responseFilters map[string]string
+		expectRes       *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -95,15 +96,15 @@ func Test_processV1CallsGet(t *testing.T) {
 			uuid.FromStringOrNil("ac03d4ea-7f50-11ec-908d-d39407ab524d"),
 			10,
 			"2020-05-03 21:35:02.809",
-			map[string]string{
-				"deleted": "false",
-			},
 
 			[]*call.Call{
 				{
 					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
 					CustomerID: uuid.FromStringOrNil("ac03d4ea-7f50-11ec-908d-d39407ab524d"),
 				},
+			},
+			map[string]string{
+				"deleted": "false",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -121,9 +122,6 @@ func Test_processV1CallsGet(t *testing.T) {
 			uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
 			10,
 			"2020-05-03 21:35:02.809",
-			map[string]string{
-				"deleted": "false",
-			},
 
 			[]*call.Call{
 				{
@@ -134,6 +132,9 @@ func Test_processV1CallsGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("095e2ec4-5f6c-11ec-b64c-efe2fb8efcbc"),
 					CustomerID: uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
 				},
+			},
+			map[string]string{
+				"deleted": "false",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -148,15 +149,18 @@ func Test_processV1CallsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
+				utilHandler: mockUtil,
 				rabbitSock:  mockSock,
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.calls, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockCall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseCalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

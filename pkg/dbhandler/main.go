@@ -98,6 +98,7 @@ type DBHandler interface {
 	// external media
 	ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error
 	ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
+	ExternalMediaGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error
 
 	// groupcall

@@ -173,3 +173,69 @@ func Test_Get(t *testing.T) {
 		})
 	}
 }
+
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		filters map[string]string
+
+		responseExternalMedia *externalmedia.ExternalMedia
+
+		expectReferenceID uuid.UUID
+		expectRes         []*externalmedia.ExternalMedia
+	}{
+		{
+			"normal",
+
+			map[string]string{
+				"reference_id": "d441ee34-e825-11ee-b63c-47956736e3ae",
+			},
+
+			&externalmedia.ExternalMedia{
+				ID:          uuid.FromStringOrNil("e14699ae-e825-11ee-90b5-970e6c9b40c8"),
+				ReferenceID: uuid.FromStringOrNil("d441ee34-e825-11ee-b63c-47956736e3ae"),
+			},
+
+			uuid.FromStringOrNil("d441ee34-e825-11ee-b63c-47956736e3ae"),
+			[]*externalmedia.ExternalMedia{
+				{
+					ID:          uuid.FromStringOrNil("e14699ae-e825-11ee-90b5-970e6c9b40c8"),
+					ReferenceID: uuid.FromStringOrNil("d441ee34-e825-11ee-b63c-47956736e3ae"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &externalMediaHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ExternalMediaGetByReferenceID(ctx, tt.expectReferenceID).Return(tt.responseExternalMedia, nil)
+			res, err := h.Gets(ctx, 1, "", tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseExternalMedia, res)
+			}
+
+		})
+	}
+}

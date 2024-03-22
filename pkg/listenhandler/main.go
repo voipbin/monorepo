@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
@@ -36,6 +36,7 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
+	utilHandler          utilhandler.UtilHandler
 	rabbitSock           rabbitmqhandler.Rabbit
 	callHandler          callhandler.CallHandler
 	confbridgeHandler    confbridgehandler.ConfbridgeHandler
@@ -91,8 +92,9 @@ var (
 	regV1ConfbridgesIDTerminate      = regexp.MustCompile("/v1/confbridges/" + regUUID + "/terminate$")
 
 	// external-medias
-	regV1ExternalMedias   = regexp.MustCompile("/v1/external-medias$")
-	regV1ExternalMediasID = regexp.MustCompile("/v1/external-medias/" + regUUID + "$")
+	regV1ExternalMedias    = regexp.MustCompile("/v1/external-medias$")
+	regV1ExternalMediasGet = regexp.MustCompile(`/v1/external-medias\?`)
+	regV1ExternalMediasID  = regexp.MustCompile("/v1/external-medias/" + regUUID + "$")
 
 	// groupcalls
 	regV1Groupcalls                    = regexp.MustCompile("/v1/groupcalls$")
@@ -150,6 +152,7 @@ func NewListenHandler(
 	groupcallHandler groupcallhandler.GroupcallHandler,
 ) ListenHandler {
 	h := &listenHandler{
+		utilHandler:          utilhandler.NewUtilHandler(),
 		rabbitSock:           rabbitSock,
 		callHandler:          callHandler,
 		confbridgeHandler:    confbridgeHandler,
@@ -198,25 +201,6 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	}()
 
 	return nil
-}
-
-// getFilters parses the query and returns filters
-func (h *listenHandler) getFilters(u *url.URL) map[string]string {
-	res := map[string]string{}
-
-	keys := make([]string, 0, len(u.Query()))
-	for k := range u.Query() {
-		keys = append(keys, k)
-	}
-
-	for _, k := range keys {
-		if strings.HasPrefix(k, "filter_") {
-			tmp, _ := strings.CutPrefix(k, "filter_")
-			res[tmp] = u.Query().Get(k)
-		}
-	}
-
-	return res
 }
 
 // processRequest processes the request.
@@ -484,6 +468,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// POST /external-medias
 	case regV1ExternalMedias.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ExternalMediasPost(ctx, m)
+		requestType = "/v1/external-medias"
+
+	// GET /external-medias
+	case regV1ExternalMediasGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ExternalMediasGet(ctx, m)
 		requestType = "/v1/external-medias"
 
 	// GET /external-medias/<external-media-id>
