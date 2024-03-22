@@ -8,6 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
@@ -127,12 +128,12 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
+		responseFilters    map[string]string
 		responseGroupcalls []*groupcall.Groupcall
 
 		expectCusomterID uuid.UUID
 		expectPageSize   uint64
 		expectPageToken  string
-		expectFilters    map[string]string
 		expectRes        *rabbitmqhandler.Response
 	}{
 		{
@@ -150,12 +151,12 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 				},
 			},
 
+			responseFilters: map[string]string{
+				"deleted": "false",
+			},
 			expectCusomterID: uuid.FromStringOrNil("256d8080-bd7e-11ed-b083-93a9d3f167e7"),
 			expectPageSize:   10,
 			expectPageToken:  "2023-05-03 21:35:02.809",
-			expectFilters: map[string]string{
-				"deleted": "false",
-			},
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -169,17 +170,20 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
+				utilHandler:      mockUtil,
 				rabbitSock:       mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectCusomterID, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseGroupcalls, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectCusomterID, tt.expectPageSize, tt.expectPageToken, tt.responseFilters).Return(tt.responseGroupcalls, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

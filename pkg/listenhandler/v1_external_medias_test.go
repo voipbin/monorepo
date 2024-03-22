@@ -7,8 +7,10 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
 )
 
@@ -86,6 +88,103 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 				tt.expectDirection,
 			).Return(tt.responseExternalMedia, nil)
 
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_processV1ExternalMediasGet(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request   *rabbitmqhandler.Request
+		pageSize  uint64
+		pageToken string
+
+		responseExternalMedias []*externalmedia.ExternalMedia
+		responseFilters        map[string]string
+		expectRes              *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&reference_id=0971d7c4-e829-11ee-a17d-b320c527e478",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			10,
+			"2020-05-03 21:35:02.809",
+
+			[]*externalmedia.ExternalMedia{
+				{
+					ID: uuid.FromStringOrNil("28db3628-e829-11ee-a39e-83e2f12ec29f"),
+				},
+			},
+			map[string]string{
+				"reference_id": "0971d7c4-e829-11ee-a17d-b320c527e478",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"28db3628-e829-11ee-a39e-83e2f12ec29f","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}]`),
+			},
+		},
+		{
+			"2 items",
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_reference_id=98d20344-e829-11ee-992d-fbe3942f7a49",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			10,
+			"2020-05-03 21:35:02.809",
+
+			[]*externalmedia.ExternalMedia{
+				{
+					ID: uuid.FromStringOrNil("98fda9f4-e829-11ee-83bd-233ee47d5cb3"),
+				},
+				{
+					ID: uuid.FromStringOrNil("992a4cca-e829-11ee-83e5-4bc5ace56a63"),
+				},
+			},
+			map[string]string{
+				"reference_id": "98d20344-e829-11ee-992d-fbe3942f7a49",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"98fda9f4-e829-11ee-83bd-233ee47d5cb3","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""},{"id":"992a4cca-e829-11ee-83e5-4bc5ace56a63","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockExternalMedia := externalmediahandler.NewMockExternalMediaHandler(mc)
+
+			h := &listenHandler{
+				utilHandler:          mockUtil,
+				rabbitSock:           mockSock,
+				callHandler:          mockCall,
+				externalMediaHandler: mockExternalMedia,
+			}
+
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockExternalMedia.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseExternalMedias, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

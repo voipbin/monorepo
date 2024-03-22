@@ -74,3 +74,21 @@ func (h *externalMediaHandler) Get(ctx context.Context, id uuid.UUID) (*external
 
 	return res, nil
 }
+
+// Gets returns list of external medias of the given filters.
+func (h *externalMediaHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*externalmedia.ExternalMedia, error) {
+
+	res := []*externalmedia.ExternalMedia{}
+	if filters["reference_id"] != "" {
+		referenceID := uuid.FromStringOrNil(filters["reference_id"])
+		tmp, err := h.db.ExternalMediaGetByReferenceID(ctx, referenceID)
+		if err != nil {
+			// not found
+			return res, nil
+		}
+
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
