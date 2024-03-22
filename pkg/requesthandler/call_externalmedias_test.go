@@ -12,6 +12,100 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+func Test_CallV1ExternalMediaGets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     []cmexternalmedia.ExternalMedia
+	}{
+		{
+			"normal",
+
+			"2020-09-20T03:23:20.995000",
+			10,
+			map[string]string{
+				"reference_id": "6ddd7aa8-e82c-11ee-9ae3-23cca4c32454",
+			},
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=6ddd7aa8-e82c-11ee-9ae3-23cca4c32454",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"7e4a0f64-e82c-11ee-8e4f-cf15aa8ffd9e"}]`),
+			},
+			[]cmexternalmedia.ExternalMedia{
+				{
+					ID: uuid.FromStringOrNil("7e4a0f64-e82c-11ee-8e4f-cf15aa8ffd9e"),
+				},
+			},
+		},
+		{
+			"2 results",
+
+			"2020-09-20T03:23:20.995000",
+			10,
+			map[string]string{
+				"reference_id": "a188209c-e82c-11ee-9a12-2f13b7edeb5f",
+			},
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=a188209c-e82c-11ee-9a12-2f13b7edeb5f",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"a1ef1b08-e82c-11ee-bf49-e7fd70d542c4"},{"id":"a21fb5a6-e82c-11ee-8d35-d7e4c2dfa582"}]`),
+			},
+			[]cmexternalmedia.ExternalMedia{
+				{
+					ID: uuid.FromStringOrNil("a1ef1b08-e82c-11ee-bf49-e7fd70d542c4"),
+				},
+				{
+					ID: uuid.FromStringOrNil("a21fb5a6-e82c-11ee-8d35-d7e4c2dfa582"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1ExternalMediaGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_CallV1ExternalMediaStart(t *testing.T) {
 
 	tests := []struct {
