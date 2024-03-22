@@ -1531,6 +1531,21 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaGet(ctx, externalMe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaGet), ctx, externalMediaID)
 }
 
+// CallV1ExternalMediaGets mocks base method.
+func (m *MockRequestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]externalmedia.ExternalMedia, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ExternalMediaGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]externalmedia.ExternalMedia)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ExternalMediaGets indicates an expected call of CallV1ExternalMediaGets.
+func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaGets), ctx, pageToken, pageSize, filters)
+}
+
 // CallV1ExternalMediaStart mocks base method.
 func (m *MockRequestHandler) CallV1ExternalMediaStart(ctx context.Context, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
