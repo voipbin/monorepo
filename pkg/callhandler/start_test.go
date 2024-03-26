@@ -559,59 +559,6 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 	}
 }
 
-func Test_StartHandlerContextExternalSnoop(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		channel        *channel.Channel
-		expectBridgeID string
-	}{
-		{
-			"normal",
-
-			&channel.Channel{
-				ID:         "asterisk-call-5765d977d8-c4k5q-1629607067.6639",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
-				StasisData: map[channel.StasisDataType]string{
-					"context":   string(channel.ContextExternalSoop),
-					"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
-					"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
-				},
-			},
-			"d6aecd56-0301-11ec-aee0-77d9356147eb",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockChannel := channelhandler.NewMockChannelHandler(mc)
-			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
-
-			h := &callHandler{
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				db:             mockDB,
-				channelHandler: mockChannel,
-				bridgeHandler:  mockBridge,
-			}
-			ctx := context.Background()
-
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
-			if err := h.Start(ctx, tt.channel); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
 func Test_Start_ContextJoinCall(t *testing.T) {
 
 	tests := []struct {

@@ -126,6 +126,39 @@ func TestParseChannelCreated(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "has single string args",
+			message: `{"type":"ChannelCreated","timestamp":"2024-03-25T07:18:48.378+0000","channel":{"id":"asterisk-call-f4df6d4d7-clwdl-1711351128.83","name":"AudioSocket/10.96.1.162:10000-5e0c90ce-c282-4c6f-ab62-e3dc1f9f2547","state":"Down","protocol_id":"","caller":{"name":"","number":""},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"default","exten":"s","priority":1,"app_name":"","app_data":""},"creationtime":"2024-03-25T07:18:48.378+0000","language":"en"},"asterisk_id":"be:c6:98:a4:21:17","application":"voipbin"}`,
+			expectEvent: &Event{
+				Type:        EventTypeChannelCreated,
+				Application: "voipbin",
+				Timestamp:   "2024-03-25T07:18:48.378",
+				AsteriskID:  "be:c6:98:a4:21:17",
+			},
+			expectParse: &ChannelCreated{
+				Event: Event{
+					Type:        EventTypeChannelCreated,
+					Application: "voipbin",
+					Timestamp:   "2024-03-25T07:18:48.378",
+					AsteriskID:  "be:c6:98:a4:21:17",
+				},
+				Channel: Channel{
+					ID:           "asterisk-call-f4df6d4d7-clwdl-1711351128.83",
+					Name:         "AudioSocket/10.96.1.162:10000-5e0c90ce-c282-4c6f-ab62-e3dc1f9f2547",
+					State:        "Down",
+					Language:     "en",
+					CreationTime: "2024-03-25T07:18:48.378",
+					AccountCode:  "",
+					Dialplan: DialplanCEP{
+						Context:  "default",
+						Exten:    "s",
+						Priority: 1,
+						AppName:  "",
+						AppData:  "",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

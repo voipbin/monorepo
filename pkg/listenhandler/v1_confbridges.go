@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -220,7 +221,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Cont
 		return nil, err
 	}
 
-	tmp, err := h.confbridgeHandler.ExternalMediaStart(ctx, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
+	tmp, err := h.confbridgeHandler.ExternalMediaStart(ctx, id, req.ExternalHost, externalmedia.Encapsulation(req.Encapsulation), externalmedia.Transport(req.Transport), req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. confbridge_id: %s, err: %v", id, err)
 		return nil, err

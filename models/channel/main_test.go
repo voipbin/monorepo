@@ -16,6 +16,11 @@ func TestGetTech(t *testing.T) {
 
 	tests := []test{
 		{
+			"audiosocket",
+			"AudioSocket/10.96.1.162:10000-5e0c90ce-c282-4c6f-ab62-e3dc1f9f2547",
+			TechAudioSocket,
+		},
+		{
 			"pjsip",
 			"PJSIP/in-voipbin-000002f6",
 			TechPJSIP,

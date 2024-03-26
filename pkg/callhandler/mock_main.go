@@ -13,6 +13,7 @@ import (
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -274,7 +275,7 @@ func (mr *MockCallHandlerMockRecorder) DigitsSet(ctx, id, digits interface{}) *g
 }
 
 // ExternalMediaStart mocks base method.
-func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*call.Call, error) {
+func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format, direction string) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalHost, encapsulation, transport, connectionType, format, direction)
 	ret0, _ := ret[0].(*call.Call)

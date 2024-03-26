@@ -20,7 +20,7 @@ import (
 type ExternalMediaHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*externalmedia.ExternalMedia, error)
 	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*externalmedia.ExternalMedia, error)
-	Start(ctx context.Context, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*externalmedia.ExternalMedia, error)
+	Start(ctx context.Context, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*externalmedia.ExternalMedia, error)
 	Stop(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
 }
 
@@ -31,11 +31,11 @@ const (
 )
 
 const (
-	constEncapsulation  = "rtp"
-	constTransport      = "udp"
-	constConnectionType = "client"
-	constFormat         = "ulaw"
-	constDirection      = "both" //
+	defaultEncapsulation  = externalmedia.EncapsulationRTP
+	defaultTransport      = externalmedia.TransportUDP
+	defaultConnectionType = "client"
+	defaultFormat         = "ulaw"
+	defaultDirection      = "both" //
 )
 
 type externalMediaHandler struct {

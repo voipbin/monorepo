@@ -14,6 +14,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 )
@@ -455,7 +456,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		return nil, err
 	}
 
-	tmp, err := h.callHandler.ExternalMediaStart(ctx, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
+	tmp, err := h.callHandler.ExternalMediaStart(ctx, id, req.ExternalHost, externalmedia.Encapsulation(req.Encapsulation), externalmedia.Transport(req.Transport), req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err

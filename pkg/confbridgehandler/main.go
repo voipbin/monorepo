@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -49,7 +50,7 @@ type ConfbridgeHandler interface {
 	RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*confbridge.Confbridge, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 
-	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*confbridge.Confbridge, error)
+	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*confbridge.Confbridge, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 
 	FlagAdd(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error)

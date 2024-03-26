@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -73,8 +74,8 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *rabb
 		req.ReferenceType,
 		req.ReferenceID,
 		req.ExternalHost,
-		req.Encapsulation,
-		req.Transport,
+		externalmedia.Encapsulation(req.Encapsulation),
+		externalmedia.Transport(req.Transport),
 		req.ConnectionType,
 		req.Format,
 		req.Direction,

@@ -93,16 +93,20 @@ func Parse(message []byte) (*Event, interface{}, error) {
 
 // UnmarshalJSON StasisStart
 func (e *ArgsMap) UnmarshalJSON(m []byte) error {
-	res := ArgsMap{}
 	var arr []string
 	if err := json.Unmarshal(m, &arr); err != nil {
 		return err
 	}
 
 	// parse into map
+	res := ArgsMap{}
 	for _, pair := range arr {
 		tmp := strings.Split(pair, "=")
-		res[tmp[0]] = tmp[1]
+		if len(tmp) == 1 {
+			res[tmp[0]] = ""
+		} else {
+			res[tmp[0]] = tmp[1]
+		}
 	}
 
 	*e = res

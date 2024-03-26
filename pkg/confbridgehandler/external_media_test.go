@@ -23,8 +23,8 @@ func Test_ExternalMediaStart(t *testing.T) {
 
 		id             uuid.UUID
 		externalHost   string
-		encapsulation  string
-		transport      string
+		encapsulation  externalmedia.Encapsulation
+		transport      externalmedia.Transport
 		connectionType string
 		format         string
 		direction      string
@@ -37,8 +37,8 @@ func Test_ExternalMediaStart(t *testing.T) {
 
 			uuid.FromStringOrNil("45c1a114-996f-11ed-b089-575b5e0a4a0d"),
 			"example.com",
-			"rtp",
-			"udp",
+			externalmedia.EncapsulationRTP,
+			externalmedia.TransportUDP,
 			"client",
 			"ulaw",
 			"both",
