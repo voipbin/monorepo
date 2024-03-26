@@ -67,7 +67,7 @@ func (mr *MockExternalMediaHandlerMockRecorder) Gets(ctx, size, token, filters i
 }
 
 // Start mocks base method.
-func (m *MockExternalMediaHandler) Start(ctx context.Context, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*externalmedia.ExternalMedia, error) {
+func (m *MockExternalMediaHandler) Start(ctx context.Context, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format, direction string) (*externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", ctx, referenceType, referenceID, externalHost, encapsulation, transport, connectionType, format, direction)
 	ret0, _ := ret[0].(*externalmedia.ExternalMedia)

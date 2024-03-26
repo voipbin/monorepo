@@ -200,12 +200,6 @@ func Test_getChannelType(t *testing.T) {
 			expectRes: channel.TypeExternal,
 		},
 		{
-			name: "external snoop",
-
-			context:   channel.ContextExternalSoop,
-			expectRes: channel.TypeExternal,
-		},
-		{
 			name: "call incoming",
 
 			context:   channel.ContextCallIncoming,
@@ -253,9 +247,8 @@ func Test_getChannelType(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 			}
-			ctx := context.Background()
 
-			res := h.getChannelType(ctx, tt.context)
+			res := h.getChannelType(tt.context)
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)

@@ -17,12 +17,12 @@ type ExternalMedia struct {
 	LocalIP   string `json:"local_ip"`
 	LocalPort int    `json:"local_port"`
 
-	ExternalHost   string `json:"external_host"`
-	Encapsulation  string `json:"encapsulation"`
-	Transport      string `json:"transport"`
-	ConnectionType string `json:"connection_type"`
-	Format         string `json:"format"`
-	Direction      string `json:"direction"`
+	ExternalHost   string        `json:"external_host"`
+	Encapsulation  Encapsulation `json:"encapsulation"` // Payload encapsulation protocol
+	Transport      Transport     `json:"transport"`
+	ConnectionType string        `json:"connection_type"`
+	Format         string        `json:"format"`
+	Direction      string        `json:"direction"`
 }
 
 // ReferenceType define
@@ -32,4 +32,22 @@ type ReferenceType string
 const (
 	ReferenceTypeCall       ReferenceType = "call"
 	ReferenceTypeConfbridge ReferenceType = "confbridge"
+)
+
+// Encapsulation define
+type Encapsulation string
+
+// list of Encapsulation types
+const (
+	EncapsulationRTP         Encapsulation = "rtp"
+	EncapsulationAudioSocket Encapsulation = "audiosocket"
+)
+
+// Transport define
+type Transport string
+
+// list of Transport types
+const (
+	TransportUDP Transport = "udp"
+	TransportTCP Transport = "tcp"
 )

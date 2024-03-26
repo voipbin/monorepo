@@ -36,7 +36,8 @@ func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interfac
 	log.WithField("channel", cn).Debugf("Updated channel info. channel_id: %s", cn.ID)
 
 	// execute the context type handler
-	switch channel.ContextType(cn.StasisData[channel.StasisDataTypeContextType]) {
+	contextType := h.getChannelContextType(cn)
+	switch contextType {
 	case channel.ContextTypeCall:
 		err = h.callHandler.ARIStasisStart(ctx, cn)
 

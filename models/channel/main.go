@@ -52,12 +52,13 @@ type Tech string
 
 // List of Tech types
 const (
-	TechNone      Tech = ""
-	TechLocal     Tech = "local"
-	TechPJSIP     Tech = "pjsip"
-	TechSIP       Tech = "sip"
-	TechSnoop     Tech = "snoop"
-	TechUnicatRTP Tech = "unicastrtp" // external media
+	TechNone        Tech = ""
+	TechAudioSocket Tech = "audiosocket"
+	TechLocal       Tech = "local"
+	TechPJSIP       Tech = "pjsip"
+	TechSIP         Tech = "sip"
+	TechSnoop       Tech = "snoop"
+	TechUnicatRTP   Tech = "unicastrtp" // external media
 )
 
 // Type represent channel's type.
@@ -86,7 +87,6 @@ const (
 	ContextCallService   Context = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
 	ContextJoinCall      Context = "call-join"          // context for the channel for conference joining
 	ContextExternalMedia Context = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
-	ContextExternalSoop  Context = "call-externalsnoop" // context for the external snoop channel
 	ContextApplication   Context = "call-application"   // context for dialplan application execution
 
 	// conf
@@ -242,24 +242,25 @@ func NewChannelByARIChannel(e *ari.Channel) *Channel {
 
 // GetTech returns tech from channel name
 func GetTech(name string) Tech {
-	res := strings.Split(name, "/")
-	if len(res) < 1 {
+	tmps := strings.Split(name, "/")
+	if len(tmps) < 1 {
 		return TechNone
 	}
 
-	tmp := strings.ToLower(res[0])
-	switch tmp {
-	case "pjsip":
-		return TechPJSIP
-	case "snoop":
-		return TechSnoop
-	case "local":
-		return TechLocal
-	case "sip":
-		return TechSIP
-	case "unicastrtp":
-		return TechUnicatRTP
-	default:
+	mapTechs := map[string]Tech{
+		string(TechAudioSocket): TechAudioSocket,
+		string(TechLocal):       TechLocal,
+		string(TechPJSIP):       TechPJSIP,
+		string(TechSIP):         TechSIP,
+		string(TechSnoop):       TechSnoop,
+		string(TechUnicatRTP):   TechUnicatRTP,
+	}
+
+	tmp := strings.ToLower(tmps[0])
+	res, ok := mapTechs[tmp]
+	if !ok {
 		return TechNone
 	}
+
+	return res
 }

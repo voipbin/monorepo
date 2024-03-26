@@ -14,6 +14,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
@@ -886,8 +887,8 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 
 		expectCallID         uuid.UUID
 		expectExternalHost   string
-		expectEncapsulation  string
-		expectTransport      string
+		expectEncapsulation  externalmedia.Encapsulation
+		expectTransport      externalmedia.Transport
 		expectConnectionType string
 		expectFormat         string
 		expectDirection      string

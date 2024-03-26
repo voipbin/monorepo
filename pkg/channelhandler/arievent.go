@@ -19,14 +19,11 @@ func (h *channelHandler) ARIStasisStart(ctx context.Context, e *ari.StasisStart)
 
 	// get stasis name and parse the stasis data
 	stasisName := e.Application
-	stasisData := map[channel.StasisDataType]string{}
-	for k, v := range e.Args {
-		stasisData[channel.StasisDataType(k)] = v
-	}
+	stasisData := h.parseStasisData(e)
 
 	// get and set the channel type
 	chContext := channel.Context(stasisData[channel.StasisDataTypeContext])
-	chType := h.getChannelType(ctx, chContext)
+	chType := h.getChannelType(chContext)
 	direction := channel.Direction(stasisData[channel.StasisDataTypeDirection])
 
 	// update channel's stasis info
@@ -56,14 +53,13 @@ func (h *channelHandler) ARIStasisStart(ctx context.Context, e *ari.StasisStart)
 }
 
 // getChannelType returns channel type of the given channel context.
-func (h *channelHandler) getChannelType(ctx context.Context, chContext channel.Context) channel.Type {
+func (h *channelHandler) getChannelType(chContext channel.Context) channel.Type {
 
 	mapChannelType := map[channel.Context]channel.Type{
 		channel.ContextApplication:   channel.TypeApplication,
 		channel.ContextConfIncoming:  channel.TypeConfbridge,
 		channel.ContextConfOutgoing:  channel.TypeConfbridge,
 		channel.ContextExternalMedia: channel.TypeExternal,
-		channel.ContextExternalSoop:  channel.TypeExternal,
 		channel.ContextCallIncoming:  channel.TypeCall,
 		channel.ContextCallOutgoing:  channel.TypeCall,
 		channel.ContextCallService:   channel.TypeCall,
@@ -103,4 +99,30 @@ func (h *channelHandler) ARIChannelStateChange(ctx context.Context, e *ari.Chann
 	}
 
 	return res, nil
+}
+
+// parseStasisData returns initialized stasis data.
+func (h *channelHandler) parseStasisData(e *ari.StasisStart) map[channel.StasisDataType]string {
+	res := map[channel.StasisDataType]string{}
+
+	tech := channel.GetTech(e.Channel.Name)
+	if tech == channel.TechAudioSocket {
+		// the audiosocket tech is special.
+		// we can not set the 1 key here because the asterisk doesn't allowed it.
+		i := 0
+		for k := range e.Args {
+			if i == 0 {
+				res[channel.StasisDataTypeBridgeID] = k
+			}
+			i++
+		}
+		res[channel.StasisDataTypeContext] = string(channel.ContextExternalMedia)
+		res[channel.StasisDataTypeContextType] = string(channel.ContextTypeCall)
+	} else {
+		for k, v := range e.Args {
+			res[channel.StasisDataType(k)] = v
+		}
+	}
+
+	return res
 }

@@ -27,8 +27,8 @@ func Test_Create(t *testing.T) {
 		localIP        string
 		localPort      int
 		externalHost   string
-		encapsulation  string
-		transport      string
+		encapsulation  externalmedia.Encapsulation
+		transport      externalmedia.Transport
 		connectionType string
 		format         string
 		direction      string
@@ -47,11 +47,11 @@ func Test_Create(t *testing.T) {
 			"127.0.0.1",
 			8080,
 			"127.0.0.1:8090",
-			constEncapsulation,
-			constTransport,
-			constConnectionType,
-			constFormat,
-			constDirection,
+			defaultEncapsulation,
+			defaultTransport,
+			defaultConnectionType,
+			defaultFormat,
+			defaultDirection,
 
 			uuid.FromStringOrNil("905be206-97b8-11ed-94ee-4316f5a24184"),
 
@@ -64,11 +64,11 @@ func Test_Create(t *testing.T) {
 				LocalIP:        "127.0.0.1",
 				LocalPort:      8080,
 				ExternalHost:   "127.0.0.1:8090",
-				Encapsulation:  constEncapsulation,
-				Transport:      constTransport,
-				ConnectionType: constConnectionType,
-				Format:         constFormat,
-				Direction:      constDirection,
+				Encapsulation:  defaultEncapsulation,
+				Transport:      defaultTransport,
+				ConnectionType: defaultConnectionType,
+				Format:         defaultFormat,
+				Direction:      defaultDirection,
 			},
 		},
 	}

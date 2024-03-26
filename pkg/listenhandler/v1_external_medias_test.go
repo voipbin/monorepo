@@ -23,8 +23,8 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 		expectReferenceType  externalmedia.ReferenceType
 		expectReferenceID    uuid.UUID
 		expectExternalHost   string
-		expectEncapsulation  string
-		expectTransport      string
+		expectEncapsulation  externalmedia.Encapsulation
+		expectTransport      externalmedia.Transport
 		expectConnectionType string
 		expectFormat         string
 		expectDirection      string

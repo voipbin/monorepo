@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
@@ -286,8 +287,8 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 
 		expectConfbridgeID   uuid.UUID
 		expectExternalHost   string
-		expectEncapsulation  string
-		expectTransport      string
+		expectEncapsulation  externalmedia.Encapsulation
+		expectTransport      externalmedia.Transport
 		expectConnectionType string
 		expectFormat         string
 		expectDirection      string

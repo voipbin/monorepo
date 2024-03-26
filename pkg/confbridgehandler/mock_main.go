@@ -13,6 +13,7 @@ import (
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
@@ -140,7 +141,7 @@ func (mr *MockConfbridgeHandlerMockRecorder) Delete(ctx, id interface{}) *gomock
 }
 
 // ExternalMediaStart mocks base method.
-func (m *MockConfbridgeHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*confbridge.Confbridge, error) {
+func (m *MockConfbridgeHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format, direction string) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalHost, encapsulation, transport, connectionType, format, direction)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
