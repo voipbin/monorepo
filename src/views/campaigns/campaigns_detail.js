@@ -206,21 +206,7 @@ const CampaignsDetail = () => {
                 <CButton type="submit" disabled={buttonDisable} onClick={() => UpdateResource()}>Update Resource</CButton>
                 <br />
                 <br />
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_actions}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.actions, null, 2)}
-                      rows={15}
-                    />
-                  </CCol>
-                </CRow>
-
+                
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
