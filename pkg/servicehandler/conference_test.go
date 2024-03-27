@@ -2,17 +2,20 @@ package servicehandler
 
 import (
 	"context"
+	"net/http"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
 )
 
 func Test_ConferenceCreate(t *testing.T) {
@@ -671,6 +674,73 @@ func Test_ConferenceTranscribeStop(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConferenceMediaStreamStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent         *amagent.Agent
+		conferenceID  uuid.UUID
+		encapsulation string
+		writer        http.ResponseWriter
+		request       *http.Request
+
+		responseConference *cfconference.Conference
+
+		expectRes []*cfconference.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			uuid.FromStringOrNil("9543aae2-eb4a-11ee-987e-e725fbe471f2"),
+			"rtp",
+			&mockResponseWriter{},
+			&http.Request{},
+
+			&cfconference.Conference{
+				ID:         uuid.FromStringOrNil("9543aae2-eb4a-11ee-987e-e725fbe471f2"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
+			},
+			[]*cfconference.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("9543aae2-eb4a-11ee-987e-e725fbe471f2"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockWebsock := websockhandler.NewMockWebsockHandler(mc)
+
+			h := serviceHandler{
+				reqHandler:     mockReq,
+				dbHandler:      mockDB,
+				websockHandler: mockWebsock,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
+			mockWebsock.EXPECT().RunMediaStream(ctx, tt.writer, tt.request, cmexternalmedia.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.encapsulation).Return(nil)
+
+			if err := h.ConferenceMediaStreamStart(ctx, tt.agent, tt.conferenceID, tt.encapsulation, tt.writer, tt.request); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

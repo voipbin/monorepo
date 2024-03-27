@@ -637,3 +637,50 @@ func callsIDSilenceDELETE(c *gin.Context) {
 
 	c.AbortWithStatus(200)
 }
+
+// callsIDMediaStreamGET handles GET /calls/{id}/media_stream request.
+// It starts the in/out media streaming of the call.
+// @Summary     Start the call media streaming.
+// @Description Start the call media streaming.
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/meida_stream [get]
+func callsIDMediaStreamGET(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDMediaStreamGET",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+
+	var requestParam request.ParamCallsIDMediaStreamGET
+	if err := c.BindQuery(&requestParam); err != nil {
+		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("parameter", requestParam).Debugf("callsIDMediaStreamGET. Received request detail. id: %S", id)
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallMediaStreamStart(c.Request.Context(), &a, id, requestParam.Encapsulation, c.Writer, c.Request); err != nil {
+		log.Errorf("Could not start the call media streaming. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}

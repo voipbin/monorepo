@@ -16,10 +16,11 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	calls.POST("/:id/talk", callsIDTalkPOST)
 	calls.POST("/:id/hold", callsIDHoldPOST)
 	calls.DELETE("/:id/hold", callsIDHoldDELETE)
-	calls.POST("/:id/mute", callsIDMutePOST)
-	calls.DELETE("/:id/mute", callsIDMuteDELETE)
+	calls.GET("/:id/media_stream", callsIDMediaStreamGET)
 	calls.POST("/:id/moh", callsIDMOHPOST)
 	calls.DELETE("/:id/moh", callsIDMOHDELETE)
+	calls.POST("/:id/mute", callsIDMutePOST)
+	calls.DELETE("/:id/mute", callsIDMuteDELETE)
 	calls.POST("/:id/silence", callsIDSilencePOST)
 	calls.DELETE("/:id/silence", callsIDSilenceDELETE)
 }

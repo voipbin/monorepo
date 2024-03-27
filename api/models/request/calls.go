@@ -50,3 +50,9 @@ type BodyCallsIDMutePost struct {
 type BodyCallsIDMuteDelete struct {
 	Direction cmcall.MuteDirection `json:"direction"`
 }
+
+// ParamCallsIDMediaStreamGET is rquest param define for
+// GET /v1.0/calls/<call-id>/media_stream
+type ParamCallsIDMediaStreamGET struct {
+	Encapsulation string `form:"encapsulation"`
+}
