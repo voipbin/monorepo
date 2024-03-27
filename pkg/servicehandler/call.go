@@ -3,11 +3,13 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -530,6 +532,36 @@ func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *amagent.Agent, c
 		// no call info found
 		log.Infof("Could not unmute the call. err: %v", errReq)
 		return errReq
+	}
+
+	return nil
+}
+
+// CallMediaStreamStart starts a media streaming of the call
+// it returns error if it failed.
+func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *amagent.Agent, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "CallMediaStreamStart",
+		"agent":         a,
+		"call_id":       callID,
+		"encapsulation": encapsulation,
+	})
+
+	c, err := h.callGet(ctx, a, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
+	}
+
+	if errRun := h.websockHandler.RunMediaStream(ctx, w, r, cmexternalmedia.ReferenceTypeCall, callID, encapsulation); errRun != nil {
+		log.Errorf("Could not run the meida stream handler correctly. err: %v", errRun)
+		return errRun
 	}
 
 	return nil

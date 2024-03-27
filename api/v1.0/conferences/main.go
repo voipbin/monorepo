@@ -11,6 +11,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conferences.GET("/:id", conferencesIDGET)
 	conferences.DELETE("/:id", conferencesIDDELETE)
 	conferences.PUT("/:id", conferencesIDPUT)
+	conferences.GET("/:id/media_stream", conferencesIDMediaStreamGET)
 	conferences.POST("/:id/recording_start", conferencesIDRecordingStartPOST)
 	conferences.POST("/:id/recording_stop", conferencesIDRecordingStopPOST)
 	conferences.POST("/:id/transcribe_start", conferencesIDTranscribeStartPOST)

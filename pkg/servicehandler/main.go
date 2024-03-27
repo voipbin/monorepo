@@ -118,6 +118,7 @@ type ServiceHandler interface {
 	CallTalk(ctx context.Context, a *amagent.Agent, callID uuid.UUID, text string, gender string, language string) error
 	CallHoldOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error
 	CallHoldOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error
+	CallMediaStreamStart(ctx context.Context, a *amagent.Agent, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error
 	CallMuteOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID, direction cmcall.MuteDirection) error
 	CallMuteOff(ctx context.Context, a *amagent.Agent, callID uuid.UUID, direction cmcall.MuteDirection) error
 	CallMOHOn(ctx context.Context, a *amagent.Agent, callID uuid.UUID) error
@@ -252,6 +253,7 @@ type ServiceHandler interface {
 	ConferenceDelete(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconference.WebhookMessage, error)
+	ConferenceMediaStreamStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error
 	ConferenceRecordingStart(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceRecordingStop(ctx context.Context, a *amagent.Agent, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceTranscribeStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error)

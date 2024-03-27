@@ -23,8 +23,8 @@ func setupServer(app *gin.Engine) {
 func Test_wsGet(t *testing.T) {
 
 	type test struct {
-		name     string
-		customer amagent.Agent
+		name  string
+		agent amagent.Agent
 	}
 
 	tests := []test{
@@ -49,14 +49,14 @@ func Test_wsGet(t *testing.T) {
 
 			r.Use(func(c *gin.Context) {
 				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("agent", tt.customer)
+				c.Set("agent", tt.agent)
 			})
 			setupServer(r)
 
 			reqQuery := "/v1.0/ws"
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().WebsockCreate(req.Context(), &tt.customer, c.Writer, req).Return(nil)
+			mockSvc.EXPECT().WebsockCreate(req.Context(), &tt.agent, c.Writer, req).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

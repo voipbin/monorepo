@@ -38,3 +38,9 @@ type BodyConferencesIDPUT struct {
 type BodyConferencesIDTranscribeStartPOST struct {
 	Language string `json:"language"`
 }
+
+// ParamConferencesIDMediaStreamGET is rquest param define for
+// GET /v1.0/conferences/<conference-id>/media_stream
+type ParamConferencesIDMediaStreamGET struct {
+	Encapsulation string `form:"encapsulation"`
+}
