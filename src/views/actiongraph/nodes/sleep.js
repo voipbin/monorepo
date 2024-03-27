@@ -7,7 +7,7 @@ import { useStore } from '../store';
 
 // duration: 1000,
 const selector = (id) => (store) => ({
-  setDuration: (e) => store.updateNode(id, { duration: e.target.value }),
+  setDuration: (e) => store.updateNode(id, { duration: parseInt(e.target.value, 10) }),
 });
 
 export default function Sleep({ id, data }) {
@@ -23,7 +23,7 @@ export default function Sleep({ id, data }) {
       <p className={tw('rounded-t-md px-2 py-1 bg-blue-500 text-white text-sm')}>Sleep</p>
 
       <label className={tw('flex flex-col px-2 pt-1 pb-4')}>
-        <p className={tw('text-xs font-bold mb-2')}>Duration</p>
+        <p className={tw('text-xs font-bold mb-2')}>Duration(ms)</p>
         <input type="number" className="nodrag" value={data.duration} onChange={setDuration} />
       </label>
 

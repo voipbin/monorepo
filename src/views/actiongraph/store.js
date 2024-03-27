@@ -378,8 +378,18 @@ export const useStore = create((set, get) => ({
       }
 
       node["data"] = node.option;
+      if (node["data"] == undefined || node["data"] == "") {
+        node["data"] = {};
+        console.log("The node has invalid option. Created a default option. node: %o", node);
+      }
+
+      if (node["id"] == undefined ||node["id"] == "" || node["id"] == startID) {
+        node["id"] = uuidv4();
+        console.log("The node has no id. Created a new id. node: %o", node);
+      }
       
       // add nodes
+      console.log("Adding a init node. node: %o", node);
       set({nodes: [...get().nodes, node]});
 
       addAction(node.id, node.type, node.next_id, node.option);
