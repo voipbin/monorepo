@@ -585,6 +585,20 @@ func (mr *MockServiceHandlerMockRecorder) CallMOHOn(ctx, a, callID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallMOHOn", reflect.TypeOf((*MockServiceHandler)(nil).CallMOHOn), ctx, a, callID)
 }
 
+// CallMediaStreamStart mocks base method.
+func (m *MockServiceHandler) CallMediaStreamStart(ctx context.Context, a *agent.Agent, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallMediaStreamStart", ctx, a, callID, encapsulation, w, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallMediaStreamStart indicates an expected call of CallMediaStreamStart.
+func (mr *MockServiceHandlerMockRecorder) CallMediaStreamStart(ctx, a, callID, encapsulation, w, r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallMediaStreamStart", reflect.TypeOf((*MockServiceHandler)(nil).CallMediaStreamStart), ctx, a, callID, encapsulation, w, r)
+}
+
 // CallMuteOff mocks base method.
 func (m *MockServiceHandler) CallMuteOff(ctx context.Context, a *agent.Agent, callID uuid.UUID, direction call.MuteDirection) error {
 	m.ctrl.T.Helper()
@@ -1358,6 +1372,20 @@ func (m *MockServiceHandler) ConferenceGets(ctx context.Context, a *agent.Agent,
 func (mr *MockServiceHandlerMockRecorder) ConferenceGets(ctx, a, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), ctx, a, size, token)
+}
+
+// ConferenceMediaStreamStart mocks base method.
+func (m *MockServiceHandler) ConferenceMediaStreamStart(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceMediaStreamStart", ctx, a, conferenceID, encapsulation, w, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceMediaStreamStart indicates an expected call of ConferenceMediaStreamStart.
+func (mr *MockServiceHandlerMockRecorder) ConferenceMediaStreamStart(ctx, a, conferenceID, encapsulation, w, r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceMediaStreamStart", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceMediaStreamStart), ctx, a, conferenceID, encapsulation, w, r)
 }
 
 // ConferenceRecordingStart mocks base method.

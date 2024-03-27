@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"reflect"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -17,6 +19,7 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
 )
 
 func Test_callGet(t *testing.T) {
@@ -793,6 +796,73 @@ func Test_CallGets(t *testing.T) {
 
 			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}
+
+func Test_CallMediaStreamStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent         *amagent.Agent
+		callID        uuid.UUID
+		encapsulation string
+		writer        http.ResponseWriter
+		request       *http.Request
+
+		responseCall *cmcall.Call
+
+		expectRes []*cmcall.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&amagent.Agent{
+				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			uuid.FromStringOrNil("1299b152-e921-11ee-889f-7b65e5d7a225"),
+			"rtp",
+			&mockResponseWriter{},
+			&http.Request{},
+
+			&cmcall.Call{
+				ID:         uuid.FromStringOrNil("1299b152-e921-11ee-889f-7b65e5d7a225"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				TMDelete:   defaultTimestamp,
+			},
+			[]*cmcall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("1fbeb120-b08c-11ee-9298-8373260919fa"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockWebsock := websockhandler.NewMockWebsockHandler(mc)
+
+			h := serviceHandler{
+				reqHandler:     mockReq,
+				dbHandler:      mockDB,
+				websockHandler: mockWebsock,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockWebsock.EXPECT().RunMediaStream(ctx, tt.writer, tt.request, cmexternalmedia.ReferenceTypeCall, tt.callID, tt.encapsulation).Return(nil)
+
+			if err := h.CallMediaStreamStart(ctx, tt.agent, tt.callID, tt.encapsulation, tt.writer, tt.request); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

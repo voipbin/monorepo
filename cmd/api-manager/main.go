@@ -105,7 +105,7 @@ func run(
 	// create handlers
 	requestHandler := requesthandler.NewRequestHandler(sock, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
-	websockHandler := websockhandler.NewWebsockHandler()
+	websockHandler := websockhandler.NewWebsockHandler(requestHandler)
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler)
 
 	if errSub := runSubscribe(sock, zmqPubHandler); errSub != nil {

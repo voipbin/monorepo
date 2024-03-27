@@ -899,3 +899,59 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 		})
 	}
 }
+
+func Test_callsIDMediaStreamGET(t *testing.T) {
+
+	type test struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+
+		expectCallID        uuid.UUID
+		expectEncapsulation string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			amagent.Agent{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/906c71fe-e922-11ee-808c-a721a8e44e90/media_stream?encapsulation=rtp",
+
+			uuid.FromStringOrNil("906c71fe-e922-11ee-808c-a721a8e44e90"),
+			"rtp",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			c, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("agent", tt.agent)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallMediaStreamStart(req.Context(), &tt.agent, tt.expectCallID, tt.expectEncapsulation, c.Writer, req).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
