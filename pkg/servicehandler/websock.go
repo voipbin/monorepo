@@ -15,7 +15,7 @@ func (h *serviceHandler) WebsockCreate(ctx context.Context, a *amagent.Agent, w 
 		"agent": a,
 	})
 
-	if errRun := h.websockHandler.Run(ctx, w, r, a); errRun != nil {
+	if errRun := h.websockHandler.RunSubscription(ctx, w, r, a); errRun != nil {
 		log.Errorf("Could not run the websock handler correctly. err: %v", errRun)
 		return errRun
 	}

@@ -3,10 +3,12 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -345,4 +347,34 @@ func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *amagen
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// ConferenceMediaStreamStart starts a media streaming of the conference
+// it returns error if it failed.
+func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *amagent.Agent, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ConferenceMediaStreamStart",
+		"agent":         a,
+		"conference_id": conferenceID,
+		"encapsulation": encapsulation,
+	})
+
+	c, err := h.conferenceGet(ctx, a, conferenceID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return fmt.Errorf("agent has no permission")
+	}
+
+	if errRun := h.websockHandler.RunMediaStream(ctx, w, r, cmexternalmedia.ReferenceTypeConfbridge, c.ConfbridgeID, encapsulation); errRun != nil {
+		log.Errorf("Could not run the meida stream handler correctly. err: %v", errRun)
+		return errRun
+	}
+
+	return nil
 }

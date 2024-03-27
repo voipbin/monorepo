@@ -19,6 +19,7 @@ Welcome to voipbin's documentation!
    message
    agent
    conference
+   mediastream
    conversation
    extension
    number
