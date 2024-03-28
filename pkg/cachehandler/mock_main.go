@@ -18,7 +18,6 @@ import (
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -303,35 +302,6 @@ func (m *MockCacheHandler) GroupcallSet(ctx context.Context, data *groupcall.Gro
 func (mr *MockCacheHandlerMockRecorder) GroupcallSet(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSet", reflect.TypeOf((*MockCacheHandler)(nil).GroupcallSet), ctx, data)
-}
-
-// NumberGetByNumber mocks base method.
-func (m *MockCacheHandler) NumberGetByNumber(ctx context.Context, num string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetByNumber", ctx, num)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetByNumber indicates an expected call of NumberGetByNumber.
-func (mr *MockCacheHandlerMockRecorder) NumberGetByNumber(ctx, num interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetByNumber", reflect.TypeOf((*MockCacheHandler)(nil).NumberGetByNumber), ctx, num)
-}
-
-// NumberSetByNumber mocks base method.
-func (m *MockCacheHandler) NumberSetByNumber(ctx context.Context, numb *number.Number) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberSetByNumber", ctx, numb)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// NumberSetByNumber indicates an expected call of NumberSetByNumber.
-func (mr *MockCacheHandlerMockRecorder) NumberSetByNumber(ctx, numb interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSetByNumber", reflect.TypeOf((*MockCacheHandler)(nil).NumberSetByNumber), ctx, numb)
 }
 
 // RecordingGet mocks base method.

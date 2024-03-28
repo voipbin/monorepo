@@ -7,7 +7,7 @@ toolchain go1.22.0
 require (
 	github.com/dongri/phonenumber v0.1.2
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-sql-driver/mysql v1.8.0
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
@@ -19,7 +19,7 @@ require (
 	github.com/ttacon/libphonenumber v1.2.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240321060456-89e09b2001fc
 	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20240313031507-379b1a425709
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240322092400-046d1a0583af
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240328045438-e49432e3adb6
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240313050849-b74c46e8ee3b
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240313053651-4edf6033535b
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240313054753-a427ebcc89b1
@@ -43,7 +43,7 @@ require (
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20240313050741-a2ced5030a06 // indirect
 	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20240313050825-1c666b883013 // indirect
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4 // indirect
-	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20240313054229-aa9ebb27bdf7 // indirect
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20240328013407-1d8264a6d809 // indirect
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20240313054209-d19ab08b5a2c // indirect
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20240313064601-888fe8578646 // indirect
