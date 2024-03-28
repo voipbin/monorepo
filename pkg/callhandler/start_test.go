@@ -247,11 +247,12 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 		responseUUIDCall    uuid.UUID
 		responseUUIDBridge  uuid.UUID
 		responseBridge      *bridge.Bridge
-		responseNumber      *number.Number
+		responseNumbers     []number.Number
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseCall        *call.Call
 
-		expectCall *call.Call
+		expectFilters map[string]string
+		expectCall    *call.Call
 	}
 
 	tests := []test{
@@ -282,10 +283,12 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			&bridge.Bridge{
 				ID: "ab5d36ce-5e5e-11ed-917e-a70e0240c226",
 			},
-			&number.Number{
-				ID:         uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
-				CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
-				CallFlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
+			[]number.Number{
+				{
+					ID:         uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
+					CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
+					CallFlowID: uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
+				},
 			},
 			&fmactiveflow.Activeflow{
 				ID:            uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
@@ -312,6 +315,10 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				},
 			},
 
+			map[string]string{
+				"number":  "+123456789",
+				"deleted": "false",
+			},
 			&call.Call{
 				ID:         uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
 				CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
@@ -380,10 +387,11 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDCall)
-			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.responseDestination.Target).Return(tt.responseNumber, nil)
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumber.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseNumber.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
+
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
 			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)

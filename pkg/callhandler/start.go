@@ -389,13 +389,25 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 	log.Debugf("Starting the flow incoming call handler. source_target: %s, destinaiton_target: %s", source.Target, destination.Target)
 
 	// get number info
-	numb, err := h.reqHandler.NumberV1NumberGetByNumber(ctx, destination.Target)
+	filters := map[string]string{
+		"number":  destination.Target,
+		"deleted": "false",
+	}
+	numbs, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
 	if err != nil {
-		log.Debugf("Could not get a number info of the destination. err: %v", err)
+		log.Errorf("Could not get numbers info. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
 		return nil
 	}
-	log.WithField("number", numb).Debugf("Found number info. number_id: %s", numb.ID)
+
+	if len(numbs) == 0 {
+		log.Errorf("No number info found. len: %d", len(numbs))
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
+	}
+
+	numb := numbs[0]
+	log.WithField("number", numb).Infof("Found number info. number_id: %s", numb.ID)
 
 	// start the call type flow
 	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination)

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -142,29 +141,6 @@ func (h *handler) ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge
 	key := fmt.Sprintf("confbridge:%s", data.ID)
 
 	if err := h.setSerialize(ctx, key, data); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// NumberGetByNumber returns number call info
-func (h *handler) NumberGetByNumber(ctx context.Context, num string) (*number.Number, error) {
-	key := fmt.Sprintf("number-number:%s", num)
-
-	var res number.Number
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// NumberSetByNumber sets the number info into the cache.
-func (h *handler) NumberSetByNumber(ctx context.Context, numb *number.Number) error {
-	key := fmt.Sprintf("number-number:%s", numb.Number)
-
-	if err := h.setSerialize(ctx, key, numb); err != nil {
 		return err
 	}
 

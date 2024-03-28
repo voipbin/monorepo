@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -55,9 +54,6 @@ type CacheHandler interface {
 
 	GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
 	GroupcallSet(ctx context.Context, data *groupcall.Groupcall) error
-
-	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
-	NumberSetByNumber(ctx context.Context, numb *number.Number) error
 
 	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingSet(ctx context.Context, record *recording.Recording) error
