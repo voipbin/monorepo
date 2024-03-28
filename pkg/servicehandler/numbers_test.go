@@ -24,8 +24,10 @@ func Test_OrderNumberGets(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		response  []nmnumber.Number
-		expectRes []*nmnumber.WebhookMessage
+		response []nmnumber.Number
+
+		expectFilters map[string]string
+		expectRes     []*nmnumber.WebhookMessage
 	}{
 		{
 			"normal",
@@ -41,6 +43,11 @@ func Test_OrderNumberGets(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("2130337e-7b1c-11eb-a431-b714a0a4b6fc"),
 				},
+			},
+
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*nmnumber.WebhookMessage{
 				{
@@ -64,7 +71,7 @@ func Test_OrderNumberGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize, map[string]string{"deleted": "false"}).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.NumberGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
