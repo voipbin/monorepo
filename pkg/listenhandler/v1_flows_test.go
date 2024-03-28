@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -157,11 +158,10 @@ func Test_v1FlowsGet(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		customerID uuid.UUID
-		flowType   flow.Type
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		flowType        flow.Type
+		pageToken       string
+		pageSize        uint64
+		responseFilters map[string]string
 
 		responseFlows []*flow.Flow
 
@@ -170,16 +170,18 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			"1 item",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{},
+			map[string]string{
+				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
+				"deleted":     "false",
+			},
 
 			[]*flow.Flow{
 				{
@@ -202,18 +204,18 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			"has various filters",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false&filter_type=flow",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false&filter_type=flow",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
 			map[string]string{
-				"deleted": "false",
-				"type":    string(flow.TypeFlow),
+				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
+				"deleted":     "false",
+				"type":        string(flow.TypeFlow),
 			},
 
 			[]*flow.Flow{
@@ -237,16 +239,17 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{},
+			map[string]string{
+				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
+			},
 
 			[]*flow.Flow{
 				{
@@ -279,16 +282,17 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			"empty",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
 			flow.TypeNone,
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{},
+			map[string]string{
+				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+			},
 
 			[]*flow.Flow{},
 			&rabbitmqhandler.Response{
@@ -300,17 +304,17 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			"type flow",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&filter_type=flow",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&filter_type=flow",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
 			flow.TypeFlow,
 			"2020-10-10T03:30:17.000000",
 			10,
 			map[string]string{
-				"type": string(flow.TypeFlow),
+				"customer_id": "49e66560-7f4c-11ec-9d15-2396902a0309",
+				"type":        string(flow.TypeFlow),
 			},
 
 			[]*flow.Flow{
@@ -338,15 +342,18 @@ func Test_v1FlowsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
+				utilHandler: mockUtil,
 				rabbitSock:  mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseFlows, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockFlowHandler.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseFlows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

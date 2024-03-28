@@ -191,19 +191,11 @@ func (h *listenHandler) v1FlowsGet(ctx context.Context, m *rabbitmqhandler.Reque
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
 
-	// get filters
-	filters := map[string]string{}
-	if u.Query().Has("filter_deleted") {
-		filters["deleted"] = u.Query().Get("filter_deleted")
-	}
-	if u.Query().Has("filter_type") {
-		filters["type"] = u.Query().Get("filter_type")
-	}
-
-	tmp, err := h.flowHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize, filters)
+	// gets the list of flows
+	tmp, err := h.flowHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err

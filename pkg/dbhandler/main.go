@@ -34,7 +34,7 @@ type DBHandler interface {
 	FlowCreate(ctx context.Context, f *flow.Flow) error
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error)
+	FlowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
 	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error
 	FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error

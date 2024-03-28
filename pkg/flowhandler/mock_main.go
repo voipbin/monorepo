@@ -97,19 +97,19 @@ func (mr *MockFlowHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockFlowHandler)(nil).Get), ctx, id)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockFlowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
+// Gets mocks base method.
+func (m *MockFlowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, size, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockFlowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, size, filters interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockFlowHandlerMockRecorder) Gets(ctx, token, size, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockFlowHandler)(nil).GetsByCustomerID), ctx, customerID, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockFlowHandler)(nil).Gets), ctx, token, size, filters)
 }
 
 // Update mocks base method.

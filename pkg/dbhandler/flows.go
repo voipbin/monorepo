@@ -216,46 +216,50 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	return res, nil
 }
 
-// FlowGetsByCustomerID returns list of flows.
-func (h *handler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
-
+// FlowGets returns flows.
+func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			customer_id = ?
-			and tm_create < ?
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
 	`, flowSelect)
 
+	if token == "" {
+		token = h.util.TimeGetCurTime()
+	}
+
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id":
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
 
-		case "type":
-			q = fmt.Sprintf("%s and type >= ?", q)
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, v)
 		}
 	}
 
 	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
 	values = append(values, strconv.FormatUint(size, 10))
-
 	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. FlowGets. err: %v", err)
 	}
 	defer rows.Close()
 
-	var res []*flow.Flow
+	res := []*flow.Flow{}
 	for rows.Next() {
 		u, err := h.flowGetFromRow(rows)
 		if err != nil {
@@ -266,7 +270,6 @@ func (h *handler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID
 	}
 
 	return res, nil
-
 }
 
 // FlowUpdate updates the most of flow information.
