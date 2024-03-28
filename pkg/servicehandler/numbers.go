@@ -55,11 +55,12 @@ func (h *serviceHandler) NumberGets(ctx context.Context, a *amagent.Agent, size 
 
 	// filters
 	filters := map[string]string{
-		"deleted": "false", // we don't need deleted items
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false", // we don't need deleted items
 	}
 
 	// get available numbers
-	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get numbers info. err: %v", err)
 		return nil, err
