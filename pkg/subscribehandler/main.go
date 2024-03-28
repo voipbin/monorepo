@@ -9,7 +9,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
@@ -17,7 +19,8 @@ import (
 
 // list of publishers
 const (
-	publisherFlowManager = "flow-manager"
+	publisherCustomerManager = commonoutline.ServiceNameQueueManager
+	publisherFlowManager     = "flow-manager"
 )
 
 // SubscribeHandler interface
@@ -125,8 +128,12 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	start := time.Now()
 	switch {
 
-	//// flow-manager
+	//// customer-manager
+	// customer
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cucustomer.EventTypeCustomerDeleted)):
+		err = h.processEventCUCustomerDeleted(ctx, m)
 
+	//// flow-manager
 	// flow
 	case m.Publisher == publisherFlowManager && (m.Type == string(fmflow.EventTypeFlowDeleted)):
 		err = h.processEventFMFlowDeleted(ctx, m)

@@ -104,23 +104,6 @@ func (h *numberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Numbe
 	return res, nil
 }
 
-// GetByNumber returns number info of the given number
-func (h *numberHandler) GetByNumber(ctx context.Context, num string) (*number.Number, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "GetByNumber",
-		"number_number": num,
-	})
-	log.Debugf("Getting a number by number. number: %s", num)
-
-	res, err := h.dbGetByNumber(ctx, num)
-	if err != nil {
-		log.Errorf("Could not get number info. err: %v", err)
-		return nil, errors.Wrap(err, "could not get number info")
-	}
-
-	return res, nil
-}
-
 // Get returns number info of the given id
 func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -137,19 +120,17 @@ func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, 
 	return res, nil
 }
 
-// GetsByCustomerID returns list of numbers info of the given customer_id
-func (h *numberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
+// Gets returns list of numbers info of the given filters
+func (h *numberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
+		"func":       "Gets",
+		"page_size":  pageSize,
+		"page_token": pageToken,
+		"filters":    filters,
 	})
-	log.Debugf("GetNumbers. customer_id: %s", customerID)
+	log.Debugf("Gets.")
 
-	if pageToken == "" {
-		pageToken = h.utilHandler.TimeGetCurTime()
-	}
-
-	res, err := h.dbGetsByCustomerID(ctx, customerID, pageSize, pageToken, filters)
+	res, err := h.dbGets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get numbers. err: %v", err)
 		return nil, errors.Wrap(err, "could not get numbers")

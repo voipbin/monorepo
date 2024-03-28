@@ -23,10 +23,10 @@ func (h *subscribeHandler) processEventFMFlowDeleted(ctx context.Context, m *rab
 		return err
 	}
 
-	log.Debugf("Received flow deleted event. Remove related flow ids. flow_id: %s", f.ID)
-	if errRemove := h.numberHandler.RemoveNumbersFlowID(ctx, f.ID); errRemove != nil {
-		log.Errorf("Could not handle the groupcall created event. err: %v", errRemove)
-		return errors.Wrap(errRemove, "Could not handle the groupcall created event.")
+	log.WithField("flow", f).Debugf("Received flow deleted event. flow_id: %s", f.ID)
+	if errRemove := h.numberHandler.EventFlowDeleted(ctx, f); errRemove != nil {
+		log.Errorf("Could not handle the flow deleted event. err: %v", errRemove)
+		return errors.Wrap(errRemove, "Could not handle the flow deleted event.")
 	}
 
 	return nil

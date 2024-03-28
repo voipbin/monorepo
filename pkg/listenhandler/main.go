@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
 )
@@ -32,14 +33,14 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	utilHandler utilhandler.UtilHandler
+	rabbitSock  rabbitmqhandler.Rabbit
 
 	numberHandler numberhandler.NumberHandler
 }
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-	regAny  = "(.*)"
 
 	// v1
 
@@ -50,7 +51,6 @@ var (
 	regV1NumbersGet       = regexp.MustCompile(`/v1/numbers\?`)
 	regV1Numbers          = regexp.MustCompile(`/v1/numbers$`)
 	regV1NumbersID        = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
-	regV1NumbersNumber    = regexp.MustCompile("/v1/numbers/+" + regAny + "$")
 	regV1NumbersIDFlowIDs = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
 	regV1NumbersRenew     = regexp.MustCompile(`/v1/numbers/renew$`)
 )
@@ -87,6 +87,7 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.NumberHandler) ListenHandler {
 	h := &listenHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		rabbitSock:    rabbitSock,
 		numberHandler: numberHandler,
 	}
@@ -194,11 +195,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1NumbersIDFlowIDsPut(ctx, m)
 		requestType = "/v1/numbers/<number-id>/flow_id"
-
-	// GET /numbers/<number>
-	case regV1NumbersNumber.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1NumbersNumberGet(ctx, m)
-		requestType = "/v1/numbers/<number>"
 
 	// POST /numbers/renew
 	case regV1NumbersRenew.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:

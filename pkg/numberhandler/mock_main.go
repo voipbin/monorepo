@@ -10,6 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -67,6 +69,34 @@ func (mr *MockNumberHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockNumberHandler)(nil).Delete), ctx, id)
 }
 
+// EventCustomerDeleted mocks base method.
+func (m *MockNumberHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCustomerDeleted indicates an expected call of EventCustomerDeleted.
+func (mr *MockNumberHandlerMockRecorder) EventCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerDeleted", reflect.TypeOf((*MockNumberHandler)(nil).EventCustomerDeleted), ctx, cu)
+}
+
+// EventFlowDeleted mocks base method.
+func (m *MockNumberHandler) EventFlowDeleted(ctx context.Context, f *flow.Flow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventFlowDeleted", ctx, f)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventFlowDeleted indicates an expected call of EventFlowDeleted.
+func (mr *MockNumberHandlerMockRecorder) EventFlowDeleted(ctx, f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventFlowDeleted", reflect.TypeOf((*MockNumberHandler)(nil).EventFlowDeleted), ctx, f)
+}
+
 // Get mocks base method.
 func (m *MockNumberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
@@ -97,48 +127,19 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), countyCode, limit)
 }
 
-// GetByNumber mocks base method.
-func (m *MockNumberHandler) GetByNumber(ctx context.Context, num string) (*number.Number, error) {
+// Gets mocks base method.
+func (m *MockNumberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByNumber", ctx, num)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByNumber indicates an expected call of GetByNumber.
-func (mr *MockNumberHandlerMockRecorder) GetByNumber(ctx, num interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetByNumber), ctx, num)
-}
-
-// GetsByCustomerID mocks base method.
-func (m *MockNumberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, pageSize, pageToken, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, pageSize, pageToken, filters)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockNumberHandlerMockRecorder) GetsByCustomerID(ctx, customerID, pageSize, pageToken, filters interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockNumberHandlerMockRecorder) Gets(ctx, pageSize, pageToken, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockNumberHandler)(nil).GetsByCustomerID), ctx, customerID, pageSize, pageToken, filters)
-}
-
-// RemoveNumbersFlowID mocks base method.
-func (m *MockNumberHandler) RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveNumbersFlowID", ctx, flowID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveNumbersFlowID indicates an expected call of RemoveNumbersFlowID.
-func (mr *MockNumberHandlerMockRecorder) RemoveNumbersFlowID(ctx, flowID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveNumbersFlowID", reflect.TypeOf((*MockNumberHandler)(nil).RemoveNumbersFlowID), ctx, flowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockNumberHandler)(nil).Gets), ctx, pageSize, pageToken, filters)
 }
 
 // RenewNumbers mocks base method.

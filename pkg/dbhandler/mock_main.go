@@ -91,64 +91,19 @@ func (mr *MockDBHandlerMockRecorder) NumberGet(ctx, id interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGet", reflect.TypeOf((*MockDBHandler)(nil).NumberGet), ctx, id)
 }
 
-// NumberGetByNumber mocks base method.
-func (m *MockDBHandler) NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetByNumber", ctx, numb)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetByNumber indicates an expected call of NumberGetByNumber.
-func (mr *MockDBHandlerMockRecorder) NumberGetByNumber(ctx, numb interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetByNumber", reflect.TypeOf((*MockDBHandler)(nil).NumberGetByNumber), ctx, numb)
-}
-
 // NumberGets mocks base method.
-func (m *MockDBHandler) NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
+func (m *MockDBHandler) NumberGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "NumberGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NumberGets indicates an expected call of NumberGets.
-func (mr *MockDBHandlerMockRecorder) NumberGets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) NumberGets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGets", reflect.TypeOf((*MockDBHandler)(nil).NumberGets), ctx, customerID, size, token, filters)
-}
-
-// NumberGetsByCallFlowID mocks base method.
-func (m *MockDBHandler) NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetsByCallFlowID", ctx, flowID, size, token, filters)
-	ret0, _ := ret[0].([]*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetsByCallFlowID indicates an expected call of NumberGetsByCallFlowID.
-func (mr *MockDBHandlerMockRecorder) NumberGetsByCallFlowID(ctx, flowID, size, token, filters interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByCallFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByCallFlowID), ctx, flowID, size, token, filters)
-}
-
-// NumberGetsByMessageFlowID mocks base method.
-func (m *MockDBHandler) NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGetsByMessageFlowID", ctx, flowID, size, token, filters)
-	ret0, _ := ret[0].([]*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGetsByMessageFlowID indicates an expected call of NumberGetsByMessageFlowID.
-func (mr *MockDBHandlerMockRecorder) NumberGetsByMessageFlowID(ctx, flowID, size, token, filters interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByMessageFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByMessageFlowID), ctx, flowID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGets", reflect.TypeOf((*MockDBHandler)(nil).NumberGets), ctx, size, token, filters)
 }
 
 // NumberGetsByTMRenew mocks base method.

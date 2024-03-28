@@ -189,15 +189,14 @@ func Test_UpdateInfo(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
-		filters    map[string]string
+		pageSize  uint64
+		pageToken string
+		filters   map[string]string
 
 		responseNumbers []*number.Number
 	}
@@ -206,18 +205,18 @@ func Test_GetsByCustomerID(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
 			10,
 			"2021-02-26 18:26:49.000",
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "0b22cb36-eca8-11ee-a178-2f4c3561dcfd",
+				"deleted":     "false",
 			},
 
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("da535752-7a4d-11eb-aec4-5bac74c24370"),
 					Number:              "+821021656521",
-					CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
+					CustomerID:          uuid.FromStringOrNil("0b22cb36-eca8-11ee-a178-2f4c3561dcfd"),
 					ProviderName:        number.ProviderNameTelnyx,
 					ProviderReferenceID: "1580568175064384684",
 					Status:              number.StatusActive,
@@ -229,28 +228,16 @@ func Test_GetsByCustomerID(t *testing.T) {
 			},
 		},
 		{
-			"empty token",
-			uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
+			"empty result",
+
 			10,
-			"",
+			"2021-02-26 18:26:49.000",
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "17ea600e-eca8-11ee-b3c1-576ea96bdbfb",
+				"deleted":     "false",
 			},
 
-			[]*number.Number{
-				{
-					ID:                  uuid.FromStringOrNil("b72d1844-7bdd-11eb-a2bb-4370f115b44c"),
-					Number:              "+821021656521",
-					CustomerID:          uuid.FromStringOrNil("0598bd6a-7ff4-11ec-aba4-a7de6d96d9b3"),
-					ProviderName:        number.ProviderNameTelnyx,
-					ProviderReferenceID: "1580568175064384684",
-					Status:              number.StatusActive,
-					T38Enabled:          false,
-					EmergencyEnabled:    false,
-					TMPurchase:          "2021-02-26 18:26:49.000",
-					TMCreate:            "2021-02-26 18:26:49.000",
-				},
-			},
+			[]*number.Number{},
 		},
 	}
 
@@ -270,71 +257,17 @@ func Test_GetsByCustomerID(t *testing.T) {
 				db:                  mockDB,
 				numberHandlerTelnyx: mockTelnyx,
 			}
-
 			ctx := context.Background()
 
-			if tt.pageToken == "" {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, gomock.Any(), tt.filters).Return(tt.responseNumbers, nil)
-			} else {
-				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseNumbers, nil)
-			}
+			mockDB.EXPECT().NumberGets(ctx, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseNumbers, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.pageSize, tt.pageToken, tt.filters)
+			res, err := h.Gets(ctx, tt.pageSize, tt.pageToken, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(tt.responseNumbers, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseNumbers, res)
-			}
-		})
-	}
-}
-
-func Test_GetByNumber(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		number         string
-		responseNumber *number.Number
-	}{
-		{
-			"normal",
-
-			"+821100000001",
-			&number.Number{
-				ID: uuid.FromStringOrNil("e48134a4-7318-11ed-8617-0be7df22c985"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
-
-			h := numberHandler{
-				reqHandler:          mockReq,
-				db:                  mockDB,
-				numberHandlerTelnyx: mockTelnyx,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().NumberGetByNumber(ctx, tt.number).Return(tt.responseNumber, nil)
-			res, err := h.GetByNumber(ctx, tt.number)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.responseNumber, res) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseNumber, res)
 			}
 		})
 	}

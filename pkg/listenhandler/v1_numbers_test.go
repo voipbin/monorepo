@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
@@ -227,83 +228,16 @@ func Test_ProcessV1NumbersIDGet(t *testing.T) {
 	}
 }
 
-func Test_ProcessV1NumbersNumberGet(t *testing.T) {
-
-	type test struct {
-		name       string
-		num        string
-		resultData *number.Number
-
-		request  *rabbitmqhandler.Request
-		response *rabbitmqhandler.Response
-	}
-
-	tests := []test{
-		{
-			"normal",
-			"+821021656521",
-			&number.Number{
-				ID:                  uuid.FromStringOrNil("52f48d94-7a57-11eb-bda1-57eb6d071e62"),
-				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
-				Name:                "test name",
-				Detail:              "test detail",
-				ProviderName:        number.ProviderNameTelnyx,
-				ProviderReferenceID: "",
-				Status:              number.StatusActive,
-				T38Enabled:          false,
-				EmergencyEnabled:    false,
-			},
-			&rabbitmqhandler.Request{
-				URI:    "/v1/numbers/%2B821021656521",
-				Method: rabbitmqhandler.RequestMethodGet,
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"52f48d94-7a57-11eb-bda1-57eb6d071e62","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockNumber := numberhandler.NewMockNumberHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:    mockSock,
-				numberHandler: mockNumber,
-			}
-
-			mockNumber.EXPECT().GetByNumber(gomock.Any(), tt.num).Return(tt.resultData, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.response, res) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
-			}
-
-		})
-	}
-}
-
 func Test_processV1NumbersGet(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
-		filters    map[string]string
+		pageSize  uint64
+		pageToken string
 
-		resultData []*number.Number
+		responseFilters map[string]string
+		responseNumbers []*number.Number
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
@@ -313,18 +247,18 @@ func Test_processV1NumbersGet(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 			10,
 			"2021-03-01 03:30:17.000000",
-			map[string]string{
-				"deleted": "false",
-			},
 
+			map[string]string{
+				"customer_id": "bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2",
+				"deleted":     "false",
+			},
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("eeafd418-7a4e-11eb-8750-9bb0ca1d7926"),
 					Number:              "+821021656521",
-					CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+					CustomerID:          uuid.FromStringOrNil("bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2"),
 					Name:                "test name",
 					Detail:              "test detail",
 					ProviderName:        number.ProviderNameTelnyx,
@@ -335,30 +269,30 @@ func Test_processV1NumbersGet(t *testing.T) {
 				},
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_deleted=false",
+				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2","number":"+821021656521","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
 			"2 results",
 
-			uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 			10,
 			"2021-03-01 03:30:17.000000",
-			map[string]string{
-				"deleted": "false",
-			},
 
+			map[string]string{
+				"customer_id": "dcff90a8-eca8-11ee-8816-0fa58b162524",
+				"deleted":     "false",
+			},
 			[]*number.Number{
 				{
 					ID:                  uuid.FromStringOrNil("5c18ee62-8800-11ec-bb8b-b74be365ebf2"),
 					Number:              "+821100000001",
-					CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+					CustomerID:          uuid.FromStringOrNil("dcff90a8-eca8-11ee-8816-0fa58b162524"),
 					Name:                "test name",
 					Detail:              "test detail",
 					ProviderName:        number.ProviderNameTelnyx,
@@ -370,7 +304,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 				{
 					ID:                  uuid.FromStringOrNil("69dc1916-8800-11ec-8e68-e74880ae3121"),
 					Number:              "+821100000002",
-					CustomerID:          uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
+					CustomerID:          uuid.FromStringOrNil("dcff90a8-eca8-11ee-8816-0fa58b162524"),
 					Name:                "test name",
 					Detail:              "test detail",
 					ProviderName:        number.ProviderNameTelnyx,
@@ -381,13 +315,13 @@ func Test_processV1NumbersGet(t *testing.T) {
 				},
 			},
 			&rabbitmqhandler.Request{
-				URI:    "/v1/numbers?customer_id=72f3b054-7ff4-11ec-9af9-0b8c5dbee258&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_deleted=false",
+				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=dcff90a8-eca8-11ee-8816-0fa58b162524&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"5c18ee62-8800-11ec-bb8b-b74be365ebf2","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821100000001","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"69dc1916-8800-11ec-8e68-e74880ae3121","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821100000002","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"5c18ee62-8800-11ec-bb8b-b74be365ebf2","customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","number":"+821100000001","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"69dc1916-8800-11ec-8e68-e74880ae3121","customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","number":"+821100000002","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -397,15 +331,18 @@ func Test_processV1NumbersGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
+				utilHandler:   mockUtil,
 				rabbitSock:    mockSock,
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.resultData, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockNumber.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseNumbers, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

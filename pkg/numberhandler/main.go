@@ -10,6 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -24,17 +26,16 @@ type NumberHandler interface {
 
 	Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error)
 	Get(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	GetByNumber(ctx context.Context, num string) (*number.Number, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error)
-
+	Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error)
 	Delete(ctx context.Context, id uuid.UUID) (*number.Number, error)
-
-	RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUID) error
 
 	UpdateInfo(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*number.Number, error)
 	UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error)
 
 	RenewNumbers(ctx context.Context, days int, hours int, tmRenew string) ([]*number.Number, error)
+
+	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
+	EventFlowDeleted(ctx context.Context, f *fmflow.Flow) error
 }
 
 // numberHandler structure for service handle

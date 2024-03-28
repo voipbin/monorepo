@@ -5,32 +5,33 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
 )
 
-func Test_processEvent_processEventFMFlowDeleted(t *testing.T) {
+func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *rabbitmqhandler.Event
 
-		expectFlow *fmflow.Flow
+		expectCustomer *cucustomer.Customer
 	}{
 		{
 			name: "normal",
 
 			event: &rabbitmqhandler.Event{
-				Publisher: "flow-manager",
-				Type:      fmflow.EventTypeFlowDeleted,
+				Publisher: string(commonoutline.ServiceNameCustomerManager),
+				Type:      cucustomer.EventTypeCustomerDeleted,
 				DataType:  "application/json",
-				Data:      []byte(`{"id":"7d08051c-2d64-11ee-92d1-bf5dc689d1d5"}`),
+				Data:      []byte(`{"id":"c7e1cd82-ecb5-11ee-8425-779e09b1f43b"}`),
 			},
 
-			expectFlow: &fmflow.Flow{
-				ID: uuid.FromStringOrNil("7d08051c-2d64-11ee-92d1-bf5dc689d1d5"),
+			expectCustomer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("c7e1cd82-ecb5-11ee-8425-779e09b1f43b"),
 			},
 		},
 	}
@@ -48,7 +49,7 @@ func Test_processEvent_processEventFMFlowDeleted(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().EventFlowDeleted(gomock.Any(), tt.expectFlow).Return(nil)
+			mockNumber.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			h.processEvent(tt.event)
 		})

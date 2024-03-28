@@ -98,23 +98,6 @@ func (h *numberHandler) dbDelete(ctx context.Context, id uuid.UUID) (*number.Num
 	return res, nil
 }
 
-// dbGetByNumber returns number info of the given number
-func (h *numberHandler) dbGetByNumber(ctx context.Context, num string) (*number.Number, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "dbGetByNumber",
-		"number_number": num,
-	})
-	log.Debugf("Getting a number by number. number: %s", num)
-
-	number, err := h.db.NumberGetByNumber(ctx, num)
-	if err != nil {
-		log.Errorf("Could not get number info. number: %s, err:%v", num, err)
-		return nil, err
-	}
-
-	return number, nil
-}
-
 // dbGet returns number info of the given id
 func (h *numberHandler) dbGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -131,17 +114,19 @@ func (h *numberHandler) dbGet(ctx context.Context, id uuid.UUID) (*number.Number
 	return number, nil
 }
 
-// dbGetsByCustomerID returns list of numbers info of the given customer_id
-func (h *numberHandler) dbGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
+// dbGets returns list of numbers info of the given customer_id
+func (h *numberHandler) dbGets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "dbGetsByCustomerID",
-		"customer_id": customerID,
+		"func":       "dbGets",
+		"page_size":  pageSize,
+		"page_token": pageToken,
+		"filters":    filters,
 	})
-	log.Debugf("GetNumbers. customer_id: %s", customerID)
+	log.Debugf("GetNumbers.")
 
-	numbers, err := h.db.NumberGets(ctx, customerID, pageSize, pageToken, filters)
+	numbers, err := h.db.NumberGets(ctx, pageSize, pageToken, filters)
 	if err != nil {
-		log.Errorf("Could not get numbers. customer_id: %s, err:%v", customerID, err)
+		log.Errorf("Could not get numbers. err:%v", err)
 		return nil, err
 	}
 	log.WithField("numbers", numbers).Debugf("Found numbers info. count: %d", len(numbers))
