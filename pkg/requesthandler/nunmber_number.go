@@ -13,28 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// NumberV1NumberGet sends the /v1/numbers/<number> GET request to number-manager
-func (r *requestHandler) NumberV1NumberGetByNumber(ctx context.Context, num string) (*nmnumber.Number, error) {
-
-	uri := fmt.Sprintf("/v1/numbers/%s", url.QueryEscape(num))
-
-	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not get number .status: %d", tmp.StatusCode)
-	}
-
-	res := nmnumber.Number{}
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
 // NumberV1NumberGet sends a request to number-manager
 // to get a given id of number.
 // Returns number
@@ -62,8 +40,8 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 // NumberV1NumberGets sends a request to number-manager
 // to get a list of numbers.
 // Returns list of numbers
-func (r *requestHandler) NumberV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]nmnumber.Number, error) {
-	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	for k, v := range filters {
 		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)

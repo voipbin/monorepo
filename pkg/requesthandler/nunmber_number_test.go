@@ -90,10 +90,9 @@ func Test_NumberV1NumberGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -104,16 +103,16 @@ func Test_NumberV1NumberGets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 			"2021-03-02 03:23:20.995000",
 			10,
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "b7041f62-7ff5-11ec-b1dd-d7e05b3c5096",
+				"deleted":     "false",
 			},
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096&filter_deleted=false", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&filter_customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096&filter_deleted=false", url.QueryEscape("2021-03-02 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -155,7 +154,7 @@ func Test_NumberV1NumberGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NumberV1NumberGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.NumberV1NumberGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
