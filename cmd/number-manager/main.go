@@ -163,6 +163,7 @@ func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameFlowEvent),
+		string(commonoutline.QueueNameCustomerEvent),
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameNumberSubscribe), subscribeTargets, numberHandler)
 

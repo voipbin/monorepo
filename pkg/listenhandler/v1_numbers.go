@@ -162,42 +162,6 @@ func (h *listenHandler) processV1NumbersIDPut(ctx context.Context, m *rabbitmqha
 	return res, nil
 }
 
-// processV1NumbersNumberGet handles GET /v1/numbers/<number> request
-func (h *listenHandler) processV1NumbersNumberGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1NumbersNumberGet",
-		"request": m,
-	})
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 4 {
-		return simpleResponse(400), nil
-	}
-
-	num := uriItems[3]
-	log.Debugf("Executing processV1OrderNumbersNumberGet. number: %s", num)
-
-	number, err := h.numberHandler.GetByNumber(ctx, num)
-	if err != nil {
-		log.Debugf("Could not get a number. number: %s, err: %v", num, err)
-		return simpleResponse(500), nil
-	}
-
-	data, err := json.Marshal(number)
-	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
-		return simpleResponse(500), nil
-	}
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
-	return res, nil
-}
-
 // processV1NumbersGet handles GET /v1/numbers request
 func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -215,16 +179,11 @@ func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *rabbitmqhand
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
 	// get filters
-	filters := map[string]string{}
-	if u.Query().Has("filter_deleted") {
-		filters["deleted"] = u.Query().Get("filter_deleted")
-	}
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
 
-	numbers, err := h.numberHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken, filters)
+	numbers, err := h.numberHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get numbers. err: %v", err)
 		return simpleResponse(500), nil

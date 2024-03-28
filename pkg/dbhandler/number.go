@@ -226,34 +226,6 @@ func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 	return res, nil
 }
 
-// numberGetFromDBByNumber returns number info from the DB by number.
-func (h *handler) numberGetFromDBByNumber(ctx context.Context, numb string) (*number.Number, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-		where
-			number = ?
-			and tm_delete >= ?
-	`, numberSelect)
-
-	row, err := h.db.Query(q, numb, DefaultTimeStamp)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. numberGetFromDBByNumber. err: %v", err)
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err := h.numberGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get number. numberGetFromDBByNumber, err: %v", err)
-	}
-
-	return res, nil
-}
-
 // NumberGet returns number.
 func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
@@ -273,33 +245,34 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, 
 	return res, nil
 }
 
-// NumberGetByNumber returns number by number.
-func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.Number, error) {
-
-	res, err := h.NumberGetFromCacheByNumber(ctx, numb)
-	if err == nil {
-		return res, nil
-	}
-
-	res, err = h.numberGetFromDBByNumber(ctx, numb)
-	if err != nil {
-		return nil, err
-	}
-
-	// set to the cache
-	_ = h.numberSetToCache(ctx, res)
-
-	return res, nil
-}
-
 func (h *handler) numberGetsMergeFilters(query string, values []interface{}, filters map[string]string) (string, []interface{}) {
+
 	for k, v := range filters {
 		switch k {
+		case "customer_id":
+			query = fmt.Sprintf("%s and customer_id = ?", query)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "message_flow_id":
+			query = fmt.Sprintf("%s and message_flow_id = ?", query)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "call_flow_id":
+			query = fmt.Sprintf("%s and call_flow_id = ?", query)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				query = fmt.Sprintf("%s and tm_delete >= ?", query)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		default:
+			query = fmt.Sprintf("%s and %s = ?", query, k)
+			values = append(values, v)
 		}
 	}
 
@@ -307,30 +280,27 @@ func (h *handler) numberGetsMergeFilters(query string, values []interface{}, fil
 }
 
 // NumberGets returns a list of numbers.
-func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
-
+func (h *handler) NumberGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, numberSelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
-	// merge filters
 	q, values = h.numberGetsMergeFilters(q, values, filters)
-
-	// complete the query
 	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
 	values = append(values, strconv.FormatUint(size, 10))
-
 	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. NumberGets err: %v", err)
 	}
 	defer rows.Close()
 
@@ -338,89 +308,14 @@ func (h *handler) NumberGets(ctx context.Context, customerID uuid.UUID, size uin
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberGets, err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. NumberGets. err: %v", err)
 		}
 
 		res = append(res, u)
 	}
 
 	return res, nil
-}
 
-// NumberGetsByCallFlowID returns a list of numbers by call_flow_id.
-func (h *handler) NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
-
-	q := fmt.Sprintf(`%s
-	where
-		call_flow_id = ?
-		and tm_create < ?
-	`, numberSelect)
-
-	values := []interface{}{
-		flowID.Bytes(),
-		token,
-	}
-
-	// merge filters and complete query
-	q, values = h.numberGetsMergeFilters(q, values, filters)
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGetsByCallFlowID. err: %v", err)
-	}
-	defer rows.Close()
-
-	res := []*number.Number{}
-	for rows.Next() {
-		u, err := h.numberGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberGetsByCallFlowID, err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// NumberGetsByMessageFlowID returns a list of numbers by message_flow_id.
-func (h *handler) NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
-
-	q := fmt.Sprintf(`%s
-	where
-		message_flow_id = ?
-		and tm_create < ?
-	`, numberSelect)
-
-	values := []interface{}{
-		flowID.Bytes(),
-		token,
-	}
-
-	// merge filters and complete query
-	q, values = h.numberGetsMergeFilters(q, values, filters)
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGetsByMessageFlowID. err: %v", err)
-	}
-	defer rows.Close()
-
-	res := []*number.Number{}
-	for rows.Next() {
-		u, err := h.numberGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberGetsByMessageFlowID, err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
 }
 
 // NumberDelete sets the delte timestamp.
@@ -585,33 +480,6 @@ func (h *handler) NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error {
 
 // NumberGetsByTMRenew returns a list of numbers.
 func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[string]string) ([]*number.Number, error) {
-	// // prepare
-	// q := fmt.Sprintf(`%s
-	// 	where
-	// 		tm_renew < ?
-	// 		and tm_delete >= ?
-	// 	order by
-	// 		tm_create
-	// 	`, numberSelect)
-
-	// rows, err := h.db.Query(q, tmRenew, DefaultTimeStamp)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %v", err)
-	// }
-	// defer rows.Close()
-
-	// res := []*number.Number{}
-	// for rows.Next() {
-	// 	u, err := h.numberGetFromRow(rows)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("could not get data. NumberGetsByTMRenew, err: %v", err)
-	// 	}
-
-	// 	res = append(res, u)
-	// }
-
-	// return res, nil
-
 	// prepare
 	q := fmt.Sprintf(`%s
 		where
