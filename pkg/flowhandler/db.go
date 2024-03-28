@@ -98,16 +98,16 @@ func (h *flowHandler) Create(
 	return res, nil
 }
 
-// GetsByCustomerID returns list of flows
-func (h *flowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
+// Gets returns list of flows
+func (h *flowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
-		"token":       token,
-		"limit":       size,
+		"func":  "Gets",
+		"token": token,
+		"size":  size,
+		"limit": size,
 	})
 
-	res, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, size, filters)
+	res, err := h.db.FlowGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err

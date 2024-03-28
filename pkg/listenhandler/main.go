@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
@@ -29,7 +30,8 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	utilHandler utilhandler.UtilHandler
+	rabbitSock  rabbitmqhandler.Rabbit
 
 	flowHandler       flowhandler.FlowHandler
 	activeflowHandler activeflowhandler.ActiveflowHandler
@@ -100,6 +102,7 @@ func NewListenHandler(
 	variableHandler variablehandler.VariableHandler,
 ) ListenHandler {
 	h := &listenHandler{
+		utilHandler:       utilhandler.NewUtilHandler(),
 		rabbitSock:        rabbitSock,
 		flowHandler:       flowHandler,
 		activeflowHandler: activeflowHandler,

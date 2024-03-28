@@ -204,19 +204,18 @@ func Test_Delete(t *testing.T) {
 func Test_Gets(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		customerID uuid.UUID
-		token      string
-		limit      uint64
-		filters    map[string]string
+		name    string
+		token   string
+		limit   uint64
+		filters map[string]string
 	}{
 		{
 			"normal",
-			uuid.FromStringOrNil("938cdf96-7f4c-11ec-94d3-8ba7d397d7fb"),
 			"2020-10-10T03:30:17.000000",
 			10,
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "938cdf96-7f4c-11ec-94d3-8ba7d397d7fb",
+				"deleted":     "false",
 			},
 		},
 	}
@@ -232,9 +231,9 @@ func Test_Gets(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().FlowGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit, tt.filters).Return(nil, nil)
+			mockDB.EXPECT().FlowGets(ctx, tt.token, tt.limit, tt.filters).Return(nil, nil)
 
-			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit, tt.filters)
+			_, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

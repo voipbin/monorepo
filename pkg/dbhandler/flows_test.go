@@ -142,9 +142,8 @@ func Test_FlowGets(t *testing.T) {
 		name  string
 		flows []flow.Flow
 
-		customerID uuid.UUID
-		size       uint64
-		filters    map[string]string
+		size    uint64
+		filters map[string]string
 
 		expectRes []*flow.Flow
 	}{
@@ -152,37 +151,37 @@ func Test_FlowGets(t *testing.T) {
 			"normal",
 			[]flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					ID:         uuid.FromStringOrNil("3449b114-eccb-11ee-bac0-9b1dbae9fdf2"),
+					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
 					Name:       "test1",
 					Persist:    true,
 				},
 				{
-					ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					ID:         uuid.FromStringOrNil("349c7cfa-eccb-11ee-87cc-6b61ba525e13"),
+					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
 					Name:       "test2",
 					Persist:    true,
 				},
 			},
 
-			uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 			10,
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "34c78666-eccb-11ee-bd07-7b7ad4965e58",
+				"deleted":     "false",
 			},
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					ID:         uuid.FromStringOrNil("349c7cfa-eccb-11ee-87cc-6b61ba525e13"),
+					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
 					Name:       "test2",
 					Persist:    true,
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					ID:         uuid.FromStringOrNil("3449b114-eccb-11ee-bac0-9b1dbae9fdf2"),
+					CustomerID: uuid.FromStringOrNil("34c78666-eccb-11ee-bd07-7b7ad4965e58"),
 					Name:       "test1",
 					Persist:    true,
 					TMUpdate:   DefaultTimeStamp,
@@ -194,25 +193,25 @@ func Test_FlowGets(t *testing.T) {
 			"has filter type",
 			[]flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("5770b548-b099-11ee-95a1-2fc9e56873ac"),
-					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					ID:         uuid.FromStringOrNil("54bee342-eccb-11ee-acb8-1358b69975c0"),
+					CustomerID: uuid.FromStringOrNil("54e61d5e-eccb-11ee-8af8-639740efc157"),
 					Type:       flow.TypeFlow,
 					Name:       "test filter type",
 					Persist:    true,
 				},
 			},
 
-			uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 			10,
 			map[string]string{
-				"deleted": "false",
-				"type":    string(flow.TypeFlow),
+				"customer_id": "54e61d5e-eccb-11ee-8af8-639740efc157",
+				"deleted":     "false",
+				"type":        string(flow.TypeFlow),
 			},
 
 			[]*flow.Flow{
 				{
-					ID:         uuid.FromStringOrNil("5770b548-b099-11ee-95a1-2fc9e56873ac"),
-					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
+					ID:         uuid.FromStringOrNil("54bee342-eccb-11ee-acb8-1358b69975c0"),
+					CustomerID: uuid.FromStringOrNil("54e61d5e-eccb-11ee-8af8-639740efc157"),
 					Type:       flow.TypeFlow,
 					Name:       "test filter type",
 					Persist:    true,
@@ -246,7 +245,7 @@ func Test_FlowGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
+			res, err := h.FlowGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
