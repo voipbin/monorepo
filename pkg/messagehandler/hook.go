@@ -68,16 +68,27 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 		return nil, nil, fmt.Errorf("destination address is empty")
 	}
 
-	toNum := hm.Data.Payload.To[0].PhoneNumber
-	log = log.WithField("number", toNum)
+	destinationNumber := hm.Data.Payload.To[0].PhoneNumber
+	log.Debugf("Parsed destination number. destination_number: %s", destinationNumber)
 
 	// get number info
-	num, err := h.reqHandler.NumberV1NumberGetByNumber(ctx, toNum)
+	filters := map[string]string{
+		"number":  destinationNumber,
+		"deleted": "false",
+	}
+	numbs, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
 	if err != nil {
-		log.Errorf("Could not get number info. err: %v", err)
+		log.Errorf("Could not get numbers info. err: %v", err)
 		return nil, nil, err
 	}
-	log.WithField("number", num).Debugf("Found number info. number_id: %s", num.ID)
+
+	if len(numbs) == 0 {
+		log.Errorf("No number info found. len: %d", len(numbs))
+		return nil, nil, err
+	}
+
+	num := numbs[0]
+	log.WithField("number", num).Infof("Found number info. number_id: %s", num.ID)
 
 	// get informations
 	source := hm.GetSource()
@@ -91,7 +102,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 
 	log.WithField("message", res).Debugf("Created message. message_id: %s", res.ID)
 
-	return res, num, nil
+	return res, &num, nil
 }
 
 // executeMessageFlow executes the given number's messageflow with message.
