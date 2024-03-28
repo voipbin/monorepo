@@ -172,8 +172,8 @@ func (r *requestHandler) FlowV1FlowUpdateActions(ctx context.Context, flowID uui
 // FlowV1FlowGets sends a request to flow-manager
 // to getting a list of flows.
 // it returns detail list of flows if it succeed.
-func (r *requestHandler) FlowV1FlowGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]fmflow.Flow, error) {
-	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]fmflow.Flow, error) {
+	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	for k, v := range filters {
 		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
