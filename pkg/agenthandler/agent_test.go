@@ -53,7 +53,7 @@ func Test_Gets(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
@@ -127,7 +127,7 @@ func Test_Create(t *testing.T) {
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -187,7 +187,7 @@ func Test_Delete(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
@@ -245,7 +245,7 @@ func Test_deleteForce(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -302,7 +302,7 @@ func Test_UpdateStatus(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
@@ -428,7 +428,7 @@ func Test_isOnlyAdmin(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 

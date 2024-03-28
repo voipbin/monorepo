@@ -28,21 +28,14 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *rabbitmqhan
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
 	// parse the filters
 	filters := h.utilHandler.URLParseFilters(u)
-	if customerID != uuid.Nil {
-		filters["customer_id"] = customerID.String()
-	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "processV1AgentsGet",
-		"customer_id": customerID,
-		"size":        pageSize,
-		"token":       pageToken,
-		"filters":     filters,
+		"func":    "processV1AgentsGet",
+		"size":    pageSize,
+		"token":   pageToken,
+		"filters": filters,
 	})
 
 	tmp, err := h.agentHandler.Gets(ctx, pageSize, pageToken, filters)

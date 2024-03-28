@@ -343,6 +343,19 @@ func Test_AgentGets(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:   "empty",
+			agents: []*agent.Agent{},
+
+			size: 2,
+			filters: map[string]string{
+				"username": "282b439e-eca7-11ee-9d38-637a094feef1@test.com",
+				"deleted":  "false",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes:       []*agent.Agent{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -373,7 +386,7 @@ func Test_AgentGets(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

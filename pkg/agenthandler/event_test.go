@@ -58,7 +58,7 @@ func Test_EventGroupcallCreated(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -116,7 +116,7 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -180,7 +180,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
 			}
 			ctx := context.Background()

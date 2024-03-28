@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
@@ -299,18 +298,13 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 
 	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
 	values = append(values, strconv.FormatUint(size, 10))
-	logrus.WithFields(logrus.Fields{
-		"query":  q,
-		"values": values,
-	}).Debugf("test log. query info.")
-
 	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGets. err: %v", err)
 	}
 	defer rows.Close()
 
-	var res []*agent.Agent
+	res := []*agent.Agent{}
 	for rows.Next() {
 		u, err := h.agentGetFromRow(rows)
 		if err != nil {

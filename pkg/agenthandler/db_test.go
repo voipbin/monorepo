@@ -53,7 +53,7 @@ func Test_dbGets(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -100,7 +100,7 @@ func Test_dbLogin(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -151,7 +151,7 @@ func Test_dbUpdateInfo(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -204,7 +204,7 @@ func Test_dbUpdatePassword(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -258,7 +258,7 @@ func Test_dbUpdatePermission(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -315,7 +315,7 @@ func Test_dbUpdateTagIDs(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -376,7 +376,7 @@ func Test_dbUpdateAddresses(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -430,7 +430,7 @@ func Test_dbUpdateStatus(t *testing.T) {
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 

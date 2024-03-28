@@ -42,7 +42,7 @@ type agentHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
-	notifyhandler notifyhandler.NotifyHandler
+	notifyHandler notifyhandler.NotifyHandler
 }
 
 // NewAgentHandler return AgentHandler interface
@@ -51,7 +51,7 @@ func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandl
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
-		notifyhandler: notifyHandler,
+		notifyHandler: notifyHandler,
 	}
 }
 
