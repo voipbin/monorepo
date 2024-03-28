@@ -281,13 +281,13 @@ func Test_ActiveflowGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
-		size    uint64
-		token   string
-		filters map[string]string
+		agent *amagent.Agent
+		size  uint64
+		token string
 
-		response  []fmactiveflow.Activeflow
-		expectRes []*fmactiveflow.WebhookMessage
+		responseActiveflows []fmactiveflow.Activeflow
+		expectFilters       map[string]string
+		expectRes           []*fmactiveflow.WebhookMessage
 	}{
 		{
 			"normal",
@@ -298,14 +298,15 @@ func Test_ActiveflowGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"deleted": "false",
-			},
 
 			[]fmactiveflow.Activeflow{
 				{
 					ID: uuid.FromStringOrNil("23dc5a36-cb23-11ed-8a25-8f48bd8c19bf"),
 				},
+			},
+			map[string]string{
+				"customer_id": "1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3",
+				"deleted":     "false",
 			},
 			[]*fmactiveflow.WebhookMessage{
 				{
@@ -327,10 +328,9 @@ func Test_ActiveflowGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGets(ctx, tt.agent.CustomerID, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseActiveflows, nil)
 
 			res, err := h.ActiveflowGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
