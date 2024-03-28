@@ -95,7 +95,7 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 		log.Errorf("Could not get created agent info. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentCreated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentCreated, res)
 
 	log.WithField("agent", res).Debug("Created a new agent.")
 
@@ -120,7 +120,7 @@ func (h *agentHandler) dbDelete(ctx context.Context, id uuid.UUID) (*agent.Agent
 		log.Errorf("Could not get deleted agent info. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentDeleted, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentDeleted, res)
 
 	return res, nil
 }
@@ -167,7 +167,7 @@ func (h *agentHandler) dbUpdateInfo(ctx context.Context, id uuid.UUID, name stri
 		log.Errorf("Could not get updated agent. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
 
 	return res, nil
 }
@@ -196,7 +196,7 @@ func (h *agentHandler) dbUpdatePassword(ctx context.Context, id uuid.UUID, passw
 		log.Errorf("Could not get updated agent. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
 
 	return res, nil
 }
@@ -220,7 +220,7 @@ func (h *agentHandler) dbUpdatePermission(ctx context.Context, id uuid.UUID, per
 		log.Errorf("Could not get updated agent. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
 
 	return res, nil
 }
@@ -244,7 +244,7 @@ func (h *agentHandler) dbUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs 
 		log.Errorf("Could not get updated agent. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
 
 	return res, nil
 }
@@ -267,7 +267,7 @@ func (h *agentHandler) dbUpdateAddresses(ctx context.Context, id uuid.UUID, addr
 		log.Errorf("Could not get updated agent. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
 
 	return res, nil
 }
@@ -291,7 +291,7 @@ func (h *agentHandler) dbUpdateStatus(ctx context.Context, id uuid.UUID, status 
 		log.Errorf("Could not get updated agent info. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentStatusUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentStatusUpdated, res)
 
 	return res, nil
 }

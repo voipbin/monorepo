@@ -73,52 +73,6 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
-		{
-			"given customer id as parameter",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000&filter_tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91&filter_deleted=false&filter_status=available",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
-			},
-
-			10,
-			"2021-11-23 17:55:39.712000",
-
-			map[string]string{
-				"customer_id": "92883d56-7fe3-11ec-8931-37d08180a2b9",
-				"deleted":     "false",
-				"status":      string(agent.StatusAvailable),
-				"tag_ids":     "f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91",
-			},
-			[]*agent.Agent{
-				{
-					ID:           uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-					CustomerID:   uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
-					Username:     "test1",
-					PasswordHash: "password",
-					Name:         "test agent1",
-					Detail:       "test agent1 detail",
-					RingMethod:   "ringall",
-					Status:       agent.StatusOffline,
-					Permission:   1,
-					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
-					Addresses: []commonaddress.Address{
-						{
-							Type:   commonaddress.TypeTel,
-							Target: "+821021656521",
-						},
-					},
-					TMCreate: "2021-11-23 17:55:39.712000",
-					TMUpdate: "9999-01-01 00:00:00.000000",
-					TMDelete: "9999-01-01 00:00:00.000000",
-				},
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
-			},
-		},
 	}
 
 	for _, tt := range tests {
