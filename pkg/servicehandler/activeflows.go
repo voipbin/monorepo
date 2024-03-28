@@ -152,10 +152,11 @@ func (h *serviceHandler) ActiveflowGets(ctx context.Context, a *amagent.Agent, s
 
 	// filters
 	filters := map[string]string{
-		"deleted": "false", // we don't need deleted items
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false", // we don't need deleted items
 	}
 
-	tmps, err := h.reqHandler.FlowV1ActiveflowGets(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.FlowV1ActiveflowGets(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get activeflows info. err: %v", err)
 		return nil, err
