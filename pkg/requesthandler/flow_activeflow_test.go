@@ -530,10 +530,9 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -543,7 +542,6 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("55699982-ca70-11ed-95a2-7b8828ed327b"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -552,7 +550,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=55699982-ca70-11ed-95a2-7b8828ed327b&filter_deleted=false",
+				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -567,9 +565,8 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 			},
 		},
 		{
-			"2 calls",
+			"2 items",
 
-			uuid.FromStringOrNil("55cf52d6-ca70-11ed-a9fd-63015ac80bab"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -578,7 +575,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=55cf52d6-ca70-11ed-a9fd-63015ac80bab&filter_deleted=false",
+				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -610,7 +607,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FlowV1ActiveflowGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.FlowV1ActiveflowGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
