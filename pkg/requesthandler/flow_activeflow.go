@@ -74,8 +74,8 @@ func (r *requestHandler) FlowV1ActiveflowGet(ctx context.Context, activeflowID u
 // FlowV1ActiveflowGets sends a request to flow-manager
 // to getting a list of activeflow info.
 // it returns detail list of activeflow info if it succeed.
-func (r *requestHandler) FlowV1ActiveflowGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]fmactiveflow.Activeflow, error) {
-	uri := fmt.Sprintf("/v1/activeflows?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]fmactiveflow.Activeflow, error) {
+	uri := fmt.Sprintf("/v1/activeflows?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	for k, v := range filters {
 		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
