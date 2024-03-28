@@ -107,12 +107,11 @@ func Test_NumberV1NumberGets(t *testing.T) {
 			10,
 			map[string]string{
 				"customer_id": "b7041f62-7ff5-11ec-b1dd-d7e05b3c5096",
-				"deleted":     "false",
 			},
 
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&filter_customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096&filter_deleted=false", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&filter_customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096", url.QueryEscape("2021-03-02 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
