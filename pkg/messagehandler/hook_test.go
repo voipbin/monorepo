@@ -31,8 +31,10 @@ func Test_Hook(t *testing.T) {
 		expectToNum string
 
 		responseUUID    uuid.UUID
-		responseNumber  *nmnumber.Number
+		responseNumbers []nmnumber.Number
 		responseMessage *message.Message
+
+		expectFilters map[string]string
 	}{
 		{
 			name: "normal",
@@ -90,11 +92,18 @@ func Test_Hook(t *testing.T) {
 			expectToNum: "+15734531118",
 
 			responseUUID: uuid.FromStringOrNil("b256f22e-197c-11ee-aadb-2375ad35a2c2"),
-			responseNumber: &nmnumber.Number{
-				ID:     uuid.FromStringOrNil("67afdd50-a65d-11ec-84fa-8b61a2028c6a"),
-				Number: "+15734531118",
+			responseNumbers: []nmnumber.Number{
+				{
+					ID:     uuid.FromStringOrNil("67afdd50-a65d-11ec-84fa-8b61a2028c6a"),
+					Number: "+15734531118",
+				},
 			},
 			responseMessage: &message.Message{},
+
+			expectFilters: map[string]string{
+				"number":  "+15734531118",
+				"deleted": "false",
+			},
 		},
 	}
 
@@ -118,10 +127,9 @@ func Test_Hook(t *testing.T) {
 
 				messageHandlerMessagebird: mockMessagebird,
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.expectToNum).Return(tt.responseNumber, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
