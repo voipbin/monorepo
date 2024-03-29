@@ -111,8 +111,7 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 			pageToken: "2020-09-20 03:23:20.995000",
 			pageSize:  10,
 			filters: map[string]string{
-				"customer_id": "b1e8f6c0-549b-11ee-a209-a7fe0fc532fa",
-				"deleted":     "false",
+				"deleted": "false",
 			},
 
 			response: &rabbitmqhandler.Response{
@@ -122,7 +121,7 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/trunks?page_token=%s&page_size=10&filter_customer_id=b1e8f6c0-549b-11ee-a209-a7fe0fc532fa&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/trunks?page_token=%s&page_size=10&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
