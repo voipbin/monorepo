@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
@@ -16,27 +17,27 @@ import (
 func Test_processV1ConferencesGet(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		request    *rabbitmqhandler.Request
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
-		filters    map[string]string
+		name      string
+		request   *rabbitmqhandler.Request
+		pageSize  uint64
+		pageToken string
 
-		confs     []*conference.Conference
-		expectRes *rabbitmqhandler.Response
+		responseFilters     map[string]string
+		responseConferences []*conference.Conference
+		expectRes           *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8",
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8"),
 			10,
 			"2020-05-03 21:35:02.809",
-			map[string]string{},
 
+			map[string]string{
+				"customer_id": "24676972-7f49-11ec-bc89-b7d33e9d3ea8",
+			},
 			[]*conference.Conference{
 				{
 					ID:         uuid.FromStringOrNil("0addf332-9312-11eb-95e8-9b90e44428a0"),
@@ -52,14 +53,15 @@ func Test_processV1ConferencesGet(t *testing.T) {
 		{
 			"have confbridge and flow id",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=3be94c82-7f49-11ec-814e-ff2a9d84a806",
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=3be94c82-7f49-11ec-814e-ff2a9d84a806",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("3be94c82-7f49-11ec-814e-ff2a9d84a806"),
 			10,
 			"2020-05-03 21:35:02.809",
-			map[string]string{},
 
+			map[string]string{
+				"customer_id": "3be94c82-7f49-11ec-814e-ff2a9d84a806",
+			},
 			[]*conference.Conference{
 				{
 					ID:                uuid.FromStringOrNil("33b1138a-3bef-11ec-a187-f77a455f3ced"),
@@ -84,16 +86,16 @@ func Test_processV1ConferencesGet(t *testing.T) {
 		{
 			"have confbridge and with conference type",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=4d4d8ce0-7f49-11ec-a61f-1358990ed631&filter_type=conference",
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=4d4d8ce0-7f49-11ec-a61f-1358990ed631&filter_type=conference",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("4d4d8ce0-7f49-11ec-a61f-1358990ed631"),
 			10,
 			"2020-05-03 21:35:02.809",
-			map[string]string{
-				"type": string(conference.TypeConference),
-			},
 
+			map[string]string{
+				"customer_id": "4d4d8ce0-7f49-11ec-a61f-1358990ed631",
+				"type":        string(conference.TypeConference),
+			},
 			[]*conference.Conference{
 				{
 					ID:                uuid.FromStringOrNil("c1e0a078-3de6-11ec-ae88-13052faf6ad7"),
@@ -123,15 +125,18 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
+				utilHandler:       mockUtil,
 				rabbitSock:        mockSock,
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.confs, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseConferences, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -140,7 +145,6 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
-
 		})
 	}
 }

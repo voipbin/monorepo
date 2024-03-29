@@ -30,7 +30,7 @@ type ConferenceHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	GetByConfbridgeID(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conference.Conference, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error)
 	Update(
 		ctx context.Context,
 		id uuid.UUID,

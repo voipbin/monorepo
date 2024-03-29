@@ -113,18 +113,18 @@ func (mr *MockConferenceHandlerMockRecorder) GetByConfbridgeID(ctx, id interface
 }
 
 // Gets mocks base method.
-func (m *MockConferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conference.Conference, error) {
+func (m *MockConferenceHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferenceHandler)(nil).Gets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferenceHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // RecordingStart mocks base method.

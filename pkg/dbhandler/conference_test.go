@@ -469,9 +469,8 @@ func Test_ConferenceGets(t *testing.T) {
 		name        string
 		conferences []*conference.Conference
 
-		customerID uuid.UUID
-		count      int
-		filters    map[string]string
+		count   int
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*conference.Conference
@@ -489,10 +488,10 @@ func Test_ConferenceGets(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
 			10,
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "91f25410-7f45-11ec-97d1-8b4f8cee4768",
+				"deleted":     "false",
 			},
 
 			"2023-01-03 21:35:02.809",
@@ -548,11 +547,11 @@ func Test_ConferenceGets(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("80a965e0-7f45-11ec-a078-7f296665fa3d"),
 			10,
 			map[string]string{
-				"deleted": "false",
-				"type":    string(conference.TypeConference),
+				"customer_id": "80a965e0-7f45-11ec-a078-7f296665fa3d",
+				"deleted":     "false",
+				"type":        string(conference.TypeConference),
 			},
 
 			"2023-01-03 21:35:02.809",
@@ -594,9 +593,10 @@ func Test_ConferenceGets(t *testing.T) {
 			"empty",
 			[]*conference.Conference{},
 
-			uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
 			0,
-			map[string]string{},
+			map[string]string{
+				"customer_id": "3f84e9f4-ed84-11ee-9bfb-2bce0d221d0b",
+			},
 
 			"2023-01-03 21:35:02.809",
 			[]*conference.Conference{},
@@ -626,7 +626,7 @@ func Test_ConferenceGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConferenceGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.ConferenceGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

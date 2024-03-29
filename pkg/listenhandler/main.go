@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
@@ -31,6 +32,7 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	rabbitSock    rabbitmqhandler.Rabbit
 	queueListen   string
 	exchangeDelay string
@@ -101,6 +103,7 @@ func NewListenHandler(
 	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) ListenHandler {
 	h := &listenHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		rabbitSock:    rabbitSock,
 		queueListen:   queueListen,
 		exchangeDelay: exchangeDelay,

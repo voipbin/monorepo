@@ -32,19 +32,10 @@ func (h *listenHandler) processV1ConferencesGet(ctx context.Context, m *rabbitmq
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
 	// get filters
-	filters := map[string]string{}
-	if u.Query().Has("filter_deleted") {
-		filters["deleted"] = u.Query().Get("filter_deleted")
-	}
-	if u.Query().Has("filter_type") {
-		filters["type"] = u.Query().Get("filter_type")
-	}
+	filters := h.utilHandler.URLParseFilters(u)
 
-	confs, err := h.conferenceHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
+	confs, err := h.conferenceHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil
