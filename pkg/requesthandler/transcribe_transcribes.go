@@ -41,8 +41,12 @@ func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcri
 // TranscribeV1TranscribeGets sends a request to transcribe-manager
 // to getting a list of transcribe info.
 // it returns detail list of transcribe info if it succeed.
-func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtranscribe.Transcribe, error) {
-	uri := fmt.Sprintf("/v1/transcribes?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]tmtranscribe.Transcribe, error) {
+	uri := fmt.Sprintf("/v1/transcribes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceTranscribeTranscribes, 30000, 0, ContentTypeJSON, nil)
 	switch {
