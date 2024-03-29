@@ -23,12 +23,12 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240328053508-a6603b09c7cd
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240329051213-4d293f7eb369
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240329081555-926615748334
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240329004725-f5f463943d89
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240328055052-ec1c723aa183
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240313064944-17d68585dc25
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240313065019-34db2d786767
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20240329081015-d32619da0dcd
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
