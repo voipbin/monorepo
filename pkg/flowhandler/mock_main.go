@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
@@ -80,6 +81,20 @@ func (m *MockFlowHandler) Delete(ctx context.Context, id uuid.UUID) (*flow.Flow,
 func (mr *MockFlowHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFlowHandler)(nil).Delete), ctx, id)
+}
+
+// EventCustomerDeleted mocks base method.
+func (m *MockFlowHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCustomerDeleted indicates an expected call of EventCustomerDeleted.
+func (mr *MockFlowHandlerMockRecorder) EventCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerDeleted", reflect.TypeOf((*MockFlowHandler)(nil).EventCustomerDeleted), ctx, cu)
 }
 
 // Get mocks base method.

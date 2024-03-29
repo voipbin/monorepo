@@ -246,19 +246,19 @@ func (h *activeflowHandler) ReleaseLock(ctx context.Context, id uuid.UUID) error
 	return h.db.ActiveflowReleaseLock(ctx, id)
 }
 
-// GetsByCustomerID returns list of activeflows
-func (h *activeflowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
+// Gets returns list of activeflows
+func (h *activeflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
-		"token":       token,
-		"limit":       size,
+		"func":    "Gets",
+		"token":   token,
+		"limit":   size,
+		"filters": filters,
 	})
 	log.Debug("Getting activeflows.")
 
-	res, err := h.db.ActiveflowGetsByCustomerID(ctx, customerID, token, size, filters)
+	res, err := h.db.ActiveflowGets(ctx, token, size, filters)
 	if err != nil {
-		log.Errorf("Could not get flows. err: %v", err)
+		log.Errorf("Could not get activeflows. err: %v", err)
 		return nil, err
 	}
 

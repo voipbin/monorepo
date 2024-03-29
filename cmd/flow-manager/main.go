@@ -25,6 +25,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/subscribehandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
@@ -157,6 +158,12 @@ func run(dbHandler dbhandler.DBHandler) {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
+
+	// run sbuscriber
+	if errSubs := runSubscribe(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), flowHandler, activeflowHandler); errSubs != nil {
+		log.Errorf("Could not run the subscriber correctly. err: %v", errSubs)
+		return
+	}
 }
 
 // runListen runs the listen service
@@ -173,6 +180,22 @@ func runListen(
 	// run the service
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameFlowRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)
+	}
+
+	return nil
+}
+
+// runSubscribe runs the subscribed event handler
+func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, subscribeQueue string, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
+
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCustomerEvent),
+	}
+	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, subscribeQueue, subscribeTargets, flowHandler, activeflowHandler)
+
+	// run
+	if err := subHandler.Run(); err != nil {
+		return err
 	}
 
 	return nil
