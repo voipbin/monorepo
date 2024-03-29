@@ -330,15 +330,14 @@ func Test_ActiveflowDelete(t *testing.T) {
 	}
 }
 
-func Test_ActiveflowGetsByCustomerID(t *testing.T) {
+func Test_ActiveflowGets(t *testing.T) {
 
 	tests := []struct {
 		name        string
 		activeflows []activeflow.Activeflow
 
-		customerID uuid.UUID
-		size       uint64
-		filters    map[string]string
+		size    uint64
+		filters map[string]string
 
 		expectRes []*activeflow.Activeflow
 	}{
@@ -346,31 +345,31 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 			"have no actions",
 			[]activeflow.Activeflow{
 				{
-					ID:         uuid.FromStringOrNil("49c467e0-add1-11ec-b88b-87989662b8c0"),
-					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
+					ID:         uuid.FromStringOrNil("b9c89d28-ecda-11ee-a4c3-3f9069ec91c9"),
+					CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 				},
 				{
-					ID:         uuid.FromStringOrNil("4a107676-add1-11ec-ad99-33457dadbc35"),
-					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
+					ID:         uuid.FromStringOrNil("ba4c00d2-ecda-11ee-9b4e-efecfed060d2"),
+					CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 				},
 			},
 
-			uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
 			10,
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "c3419d78-ecda-11ee-96fd-276b944569e9",
+				"deleted":     "false",
 			},
 
 			[]*activeflow.Activeflow{
 				{
-					ID:         uuid.FromStringOrNil("4a107676-add1-11ec-ad99-33457dadbc35"),
-					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
+					ID:         uuid.FromStringOrNil("ba4c00d2-ecda-11ee-9b4e-efecfed060d2"),
+					CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("49c467e0-add1-11ec-b88b-87989662b8c0"),
-					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
+					ID:         uuid.FromStringOrNil("b9c89d28-ecda-11ee-a4c3-3f9069ec91c9"),
+					CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -391,7 +390,6 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 				db:    dbTest,
 				cache: mockCache,
 			}
-
 			ctx := context.Background()
 
 			for _, activeflow := range tt.activeflows {
@@ -402,9 +400,8 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			// time.Sleep(time.Microsecond * 100)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			flows, err := h.ActiveflowGetsByCustomerID(ctx, tt.customerID, h.util.TimeGetCurTime(), tt.size, tt.filters)
+			flows, err := h.ActiveflowGets(ctx, h.util.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

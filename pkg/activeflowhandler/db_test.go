@@ -596,26 +596,25 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		token      string
-		size       uint64
-		filters    map[string]string
+		token   string
+		size    uint64
+		filters map[string]string
 
 		responseGet []*activeflow.Activeflow
 	}{
 		{
 			"test normal",
 
-			uuid.FromStringOrNil("e3bb9832-f81d-11ec-bcd9-9f298317c9f9"),
 			"2020-10-10T03:30:17.000000",
 			10,
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "e3bb9832-f81d-11ec-bcd9-9f298317c9f9",
+				"deleted":     "false",
 			},
 
 			[]*activeflow.Activeflow{
@@ -640,12 +639,11 @@ func Test_GetsByCustomerID(t *testing.T) {
 				notifyHandler:   mockNotify,
 				variableHandler: mockVariableHandler,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGetsByCustomerID(ctx, tt.customerID, tt.token, tt.size, tt.filters).Return(tt.responseGet, nil)
+			mockDB.EXPECT().ActiveflowGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseGet, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.size, tt.filters)
+			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

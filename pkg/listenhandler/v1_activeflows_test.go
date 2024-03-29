@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -135,11 +136,10 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
 
+		responseFilters     map[string]string
 		responseActiveflows []*activeflow.Activeflow
 
 		expectRes *rabbitmqhandler.Response
@@ -147,17 +147,17 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			"1 item",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
+				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
-			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
 			"2020-10-10 03:30:17.000000",
 			10,
-			map[string]string{
-				"deleted": "false",
-			},
 
+			map[string]string{
+				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
+				"deleted":     "false",
+			},
 			[]*activeflow.Activeflow{
 				{
 					ID:         uuid.FromStringOrNil("ae07a96a-cbda-11ed-bbc9-5324a1a8b94b"),
@@ -173,17 +173,17 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
+				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
-			uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
 			"2020-10-10 03:30:17.000000",
 			10,
-			map[string]string{
-				"deleted": "false",
-			},
 
+			map[string]string{
+				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
+				"deleted":     "false",
+			},
 			[]*activeflow.Activeflow{
 				{
 					ID: uuid.FromStringOrNil("ae3724b0-cbda-11ed-a44c-1be0474024bd"),
@@ -201,18 +201,18 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			"empty",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
+				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
 			"2020-10-10 03:30:17.000000",
 			10,
-			map[string]string{
-				"deleted": "false",
-			},
 
+			map[string]string{
+				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+				"deleted":     "false",
+			},
 			[]*activeflow.Activeflow{},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -227,17 +227,20 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActiveflowHandler := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
+				utilHandler:       mockUtil,
 				rabbitSock:        mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActiveflowHandler,
 			}
 
-			mockActiveflowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseActiveflows, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseActiveflows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

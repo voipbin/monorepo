@@ -25,7 +25,7 @@ type DBHandler interface {
 	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error
 	ActiveflowDelete(ctx context.Context, id uuid.UUID) error
-	ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error)
+	ActiveflowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error)
 	ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 	ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error

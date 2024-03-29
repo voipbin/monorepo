@@ -296,46 +296,54 @@ func (h *handler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 	return h.cache.ActiveflowReleaseLock(ctx, id)
 }
 
-// ActiveflowGetsByCustomerID returns list of activeflows.
-func (h *handler) ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
-
+// ActiveflowGets returns flows.
+func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			customer_id = ?
-			and tm_create < ?
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
 	`, activeflowSelect)
 
+	if token == "" {
+		token = h.util.TimeGetCurTime()
+	}
+
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id", "flow_id", "reference_id", "current_stack_id", "forward_stack_id", "forward_action_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
 		}
 	}
 
 	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
 	values = append(values, strconv.FormatUint(size, 10))
-
 	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ActiveflowGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ActiveflowGets. err: %v", err)
 	}
 	defer rows.Close()
 
-	var res []*activeflow.Activeflow
+	res := []*activeflow.Activeflow{}
 	for rows.Next() {
 		u, err := h.activeflowGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. ActiveflowGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. ActiveflowGets. err: %v", err)
 		}
 
 		res = append(res, u)

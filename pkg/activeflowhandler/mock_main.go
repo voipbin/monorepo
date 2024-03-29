@@ -10,6 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
@@ -67,6 +69,34 @@ func (mr *MockActiveflowHandlerMockRecorder) Delete(ctx, id interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockActiveflowHandler)(nil).Delete), ctx, id)
 }
 
+// EventCallHangup mocks base method.
+func (m *MockActiveflowHandler) EventCallHangup(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCallHangup", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCallHangup indicates an expected call of EventCallHangup.
+func (mr *MockActiveflowHandlerMockRecorder) EventCallHangup(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallHangup", reflect.TypeOf((*MockActiveflowHandler)(nil).EventCallHangup), ctx, c)
+}
+
+// EventCustomerDeleted mocks base method.
+func (m *MockActiveflowHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCustomerDeleted indicates an expected call of EventCustomerDeleted.
+func (mr *MockActiveflowHandlerMockRecorder) EventCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerDeleted", reflect.TypeOf((*MockActiveflowHandler)(nil).EventCustomerDeleted), ctx, cu)
+}
+
 // Execute mocks base method.
 func (m *MockActiveflowHandler) Execute(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -111,19 +141,19 @@ func (mr *MockActiveflowHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockActiveflowHandler)(nil).Get), ctx, id)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockActiveflowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
+// Gets mocks base method.
+func (m *MockActiveflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, size, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockActiveflowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, size, filters interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockActiveflowHandlerMockRecorder) Gets(ctx, token, size, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockActiveflowHandler)(nil).GetsByCustomerID), ctx, customerID, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockActiveflowHandler)(nil).Gets), ctx, token, size, filters)
 }
 
 // PushActions mocks base method.
