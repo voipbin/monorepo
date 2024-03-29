@@ -79,12 +79,12 @@ func Test_ConferencecallGets(t *testing.T) {
 		name  string
 		agent *amagent.Agent
 
-		token   string
-		limit   uint64
-		filters map[string]string
+		token string
+		limit uint64
 
-		response  []cfconferencecall.Conferencecall
-		expectRes []*cfconferencecall.WebhookMessage
+		response      []cfconferencecall.Conferencecall
+		expectFilters map[string]string
+		expectRes     []*cfconferencecall.WebhookMessage
 	}{
 		{
 			"normal",
@@ -96,14 +96,15 @@ func Test_ConferencecallGets(t *testing.T) {
 
 			"2020-09-20T03:23:20.995000",
 			10,
-			map[string]string{
-				"deleted": "false",
-			},
 
 			[]cfconferencecall.Conferencecall{
 				{
 					ID: uuid.FromStringOrNil("7fc9cf36-50ca-11ee-9003-c76f7d344275"),
 				},
+			},
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*cfconferencecall.WebhookMessage{
 				{
@@ -127,7 +128,7 @@ func Test_ConferencecallGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferencecallGets(ctx, tt.agent.CustomerID, tt.token, tt.limit, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferencecallGets(ctx, tt.token, tt.limit, tt.expectFilters).Return(tt.response, nil)
 			res, err := h.ConferencecallGets(ctx, tt.agent, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
