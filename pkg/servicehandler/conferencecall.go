@@ -76,11 +76,12 @@ func (h *serviceHandler) ConferencecallGets(ctx context.Context, a *amagent.Agen
 	}
 
 	filters := map[string]string{
-		"deleted": "false",
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false",
 	}
 
 	// get conferences
-	tmps, err := h.reqHandler.ConferenceV1ConferencecallGets(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.ConferenceV1ConferencecallGets(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
