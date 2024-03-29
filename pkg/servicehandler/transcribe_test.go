@@ -89,8 +89,10 @@ func Test_TranscribeGets(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		response  []tmtranscribe.Transcribe
-		expectRes []*tmtranscribe.WebhookMessage
+		response []tmtranscribe.Transcribe
+
+		expectFilters map[string]string
+		expectRes     []*tmtranscribe.WebhookMessage
 	}{
 		{
 			"normal",
@@ -109,6 +111,11 @@ func Test_TranscribeGets(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("df6c8bf0-8270-11ed-8a5a-0b5818b7baac"),
 				},
+			},
+
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*tmtranscribe.WebhookMessage{
 				{
@@ -135,7 +142,7 @@ func Test_TranscribeGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 			res, err := h.TranscribeGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
