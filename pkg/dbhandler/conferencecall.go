@@ -213,29 +213,36 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 	return res, nil
 }
 
-// ConferencecallGetsByCustomerID returns a list of conferencecalls of the given customer_id.
-func (h *handler) ConferencecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
+// ConferencecallGets returns a list of conferencecalls of the given filters.
+func (h *handler) ConferencecallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 			%s
 		where
-			customer_id = ?
-			and tm_create < ?
+			tm_create < ?
 	`, conferencecallSelect)
 
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id", "conference_id", "reference_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
 		}
 	}
 
@@ -253,54 +260,6 @@ func (h *handler) ConferencecallGetsByCustomerID(ctx context.Context, customerID
 		u, err := h.conferencecallGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("could not get data. ConferencecallGets, err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
-// ConferencecallGetsByConferenceID returns a list of conferencecalls of the given conference_id.
-func (h *handler) ConferencecallGetsByConferenceID(ctx context.Context, conferenceID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			conference_id = ?
-			and tm_create < ?
-	`, conferencecallSelect)
-
-	values := []interface{}{
-		conferenceID.Bytes(),
-		token,
-	}
-
-	for k, v := range filters {
-		switch k {
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ConferencecallGetsByConferenceID. err: %v", err)
-	}
-	defer rows.Close()
-
-	res := []*conferencecall.Conferencecall{}
-	for rows.Next() {
-		u, err := h.conferencecallGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. ConferencecallGetsByConferenceID, err: %v", err)
 		}
 
 		res = append(res, u)

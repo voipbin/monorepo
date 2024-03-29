@@ -83,18 +83,18 @@ func (mr *MockConferencecallHandlerMockRecorder) GetByReferenceID(ctx, reference
 }
 
 // Gets mocks base method.
-func (m *MockConferencecallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
+func (m *MockConferencecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*conferencecall.Conferencecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockConferencecallHandlerMockRecorder) Gets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
+func (mr *MockConferencecallHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferencecallHandler)(nil).Gets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferencecallHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // HealthCheck mocks base method.

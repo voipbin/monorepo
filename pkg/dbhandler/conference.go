@@ -340,31 +340,34 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 }
 
 // ConferenceGets returns a list of conferences.
-func (h *handler) ConferenceGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*conference.Conference, error) {
+func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, conferenceSelect)
 
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id", "confbridge_id", "flow_id", "recording_id", "transcribe_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
 
-		case "type":
-			q = fmt.Sprintf("%s and type = ?", q)
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, v)
 		}
 	}

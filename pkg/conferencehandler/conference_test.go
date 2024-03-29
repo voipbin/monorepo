@@ -595,9 +595,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceGets(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseConference, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
