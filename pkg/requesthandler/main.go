@@ -659,7 +659,7 @@ type RequestHandler interface {
 
 	// conference-manager conference
 	ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
-	ConferenceV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cfconference.Conference, error)
+	ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cfconference.Conference, error)
 	ConferenceV1ConferenceCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -683,7 +683,7 @@ type RequestHandler interface {
 
 	// conference-manager conferencecall
 	ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
-	ConferenceV1ConferencecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cfconferencecall.Conferencecall, error)
+	ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int, delay int) error
 
