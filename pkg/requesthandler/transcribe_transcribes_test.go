@@ -80,9 +80,9 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -92,13 +92,15 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 		{
 			"1 item",
 
-			uuid.FromStringOrNil("adddce70-8093-11ed-9a79-530f80f428d8"),
 			"2020-09-20T03:23:20.995000",
 			10,
+			map[string]string{
+				"customer_id": "adddce70-8093-11ed-9a79-530f80f428d8",
+			},
 
 			"bin-manager.transcribe-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=adddce70-8093-11ed-9a79-530f80f428d8",
+				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=adddce70-8093-11ed-9a79-530f80f428d8",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -116,13 +118,15 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 		{
 			"2 items",
 
-			uuid.FromStringOrNil("bb3c9146-8093-11ed-a0df-6fbf1a76cbd3"),
 			"2020-09-20T03:23:20.995000",
 			10,
+			map[string]string{
+				"customer_id": "bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
+			},
 
 			"bin-manager.transcribe-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
+				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -155,7 +159,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TranscribeV1TranscribeGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
