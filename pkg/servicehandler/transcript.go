@@ -32,7 +32,12 @@ func (h *serviceHandler) TranscriptGets(ctx context.Context, a *amagent.Agent, t
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmps, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, transcribeID)
+	filters := map[string]string{
+		"transcribe_id": transcribeID.String(),
+		"deleted":       "false",
+	}
+
+	tmps, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 100, filters)
 	if err != nil {
 		log.Errorf("Could not get transcripts from the transcribe-manager. err: %v", err)
 		return nil, err

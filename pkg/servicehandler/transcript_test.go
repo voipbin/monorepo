@@ -26,7 +26,8 @@ func Test_TranscriptGets(t *testing.T) {
 		responseTranscribe  *tmtranscribe.Transcribe
 		responseTranscripts []tmtranscript.Transcript
 
-		expectRes []*tmtranscript.WebhookMessage
+		expectFilters map[string]string
+		expectRes     []*tmtranscript.WebhookMessage
 	}
 
 	tests := []test{
@@ -54,6 +55,10 @@ func Test_TranscriptGets(t *testing.T) {
 				},
 			},
 
+			expectFilters: map[string]string{
+				"transcribe_id": "9eafc870-8284-11ed-92de-d74d9e2342cb",
+				"deleted":       "false",
+			},
 			expectRes: []*tmtranscript.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("9ede9632-8284-11ed-bf13-43420adb75f6"),
@@ -80,7 +85,7 @@ func Test_TranscriptGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, tt.transcribeID).Return(tt.responseTranscripts, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseTranscripts, nil)
 
 			res, err := h.TranscriptGets(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
