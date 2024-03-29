@@ -4649,18 +4649,18 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGet(ctx, transcr
 }
 
 // TranscribeV1TranscribeGets mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscribeGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]transcribe.Transcribe, error) {
+func (m *MockRequestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1TranscribeGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]transcribe.Transcribe)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TranscribeV1TranscribeGets indicates an expected call of TranscribeV1TranscribeGets.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeGets), ctx, pageToken, pageSize, filters)
 }
 
 // TranscribeV1TranscribeHealthCheck mocks base method.
@@ -4708,18 +4708,18 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStop(ctx, transc
 }
 
 // TranscribeV1TranscriptGets mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscriptGets(ctx context.Context, transcribeID uuid.UUID) ([]transcript.Transcript, error) {
+func (m *MockRequestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]transcript.Transcript, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1TranscriptGets", ctx, transcribeID)
+	ret := m.ctrl.Call(m, "TranscribeV1TranscriptGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]transcript.Transcript)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TranscribeV1TranscriptGets indicates an expected call of TranscribeV1TranscriptGets.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscriptGets(ctx, transcribeID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscriptGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscriptGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscriptGets), ctx, transcribeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscriptGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscriptGets), ctx, pageToken, pageSize, filters)
 }
 
 // TransferV1TransferStart mocks base method.

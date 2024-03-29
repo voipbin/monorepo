@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
-	"github.com/gofrs/uuid"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -14,8 +14,12 @@ import (
 // TranscribeV1TranscriptGets sends a request to transcribe-manager
 // to getting a list of transcript info.
 // it returns detail list of transcript info if it succeed.
-func (r *requestHandler) TranscribeV1TranscriptGets(ctx context.Context, transcribeID uuid.UUID) ([]tmtranscript.Transcript, error) {
-	uri := fmt.Sprintf("/v1/transcripts?transcribe_id=%s", transcribeID)
+func (r *requestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]tmtranscript.Transcript, error) {
+	uri := fmt.Sprintf("/v1/transcripts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceTranscribeTranscripts, 30000, 0, ContentTypeJSON, nil)
 	switch {

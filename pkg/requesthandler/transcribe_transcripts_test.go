@@ -17,7 +17,9 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 	type test struct {
 		name string
 
-		transcribeID uuid.UUID
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -30,11 +32,15 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("8fe05f90-8229-11ed-a215-a78ed418d1c0"),
+			"2020-09-20T03:23:20.995000",
+			10,
+			map[string]string{
+				"transcribe_id": "8fe05f90-8229-11ed-a215-a78ed418d1c0",
+			},
 
 			"bin-manager.transcribe-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/transcripts?transcribe_id=8fe05f90-8229-11ed-a215-a78ed418d1c0",
+				URI:      "/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_transcribe_id=8fe05f90-8229-11ed-a215-a78ed418d1c0",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -64,7 +70,7 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TranscribeV1TranscriptGets(ctx, tt.transcribeID)
+			res, err := reqHandler.TranscribeV1TranscriptGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
