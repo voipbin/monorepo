@@ -59,7 +59,7 @@ func conferencesGET(c *gin.Context) {
 	// get conferences
 	confs, err := serviceHandler.ConferenceGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
-		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
+		logrus.Errorf("Could not get conferences. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
