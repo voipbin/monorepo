@@ -94,7 +94,7 @@ func Test_Recording(t *testing.T) {
 			mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, tt.recordingID, tt.language).Return(nil, fmt.Errorf(""))
 
 			// create
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, tt.responseUUID).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)

@@ -15,7 +15,7 @@ func (h *streamingHandler) Create(ctx context.Context, customerID uuid.UUID, tre
 		"func": "Create",
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	tmp := &streaming.Streaming{
 		ID:              id,
 		CustomerID:      customerID,

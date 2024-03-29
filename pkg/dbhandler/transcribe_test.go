@@ -92,7 +92,7 @@ func Test_TranscribeCreate(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscribeSet(gomock.Any(), gomock.Any())
 			if err := h.TranscribeCreate(context.Background(), tt.transcribe); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -112,13 +112,14 @@ func Test_TranscribeCreate(t *testing.T) {
 	}
 }
 
-func Test_TranscribeGetsByCustomerID(t *testing.T) {
+func Test_TranscribeGets(t *testing.T) {
 
 	tests := []struct {
 		name        string
 		transcribes []*transcribe.Transcribe
 
-		customerID uuid.UUID
+		// customerID uuid.UUID
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*transcribe.Transcribe
@@ -127,18 +128,22 @@ func Test_TranscribeGetsByCustomerID(t *testing.T) {
 			"normal",
 			[]*transcribe.Transcribe{
 				{
-					ID:         uuid.FromStringOrNil("5a543dc8-7e2e-11ed-98b6-1f655462baf9"),
-					CustomerID: uuid.FromStringOrNil("5a89c4de-7e2e-11ed-97c8-a30faed31cf2"),
+					ID:         uuid.FromStringOrNil("68ad867c-ed95-11ee-b44e-a707b64e6732"),
+					CustomerID: uuid.FromStringOrNil("68fdd924-ed95-11ee-a7ea-57b90b872fde"),
 				},
 			},
 
-			uuid.FromStringOrNil("5a89c4de-7e2e-11ed-97c8-a30faed31cf2"),
+			// uuid.FromStringOrNil("5a89c4de-7e2e-11ed-97c8-a30faed31cf2"),
+			map[string]string{
+				"customer_id": "68fdd924-ed95-11ee-a7ea-57b90b872fde",
+				"deleted":     "false",
+			},
 
 			"2021-01-01 00:00:00.000",
 			[]*transcribe.Transcribe{
 				{
-					ID:           uuid.FromStringOrNil("5a543dc8-7e2e-11ed-98b6-1f655462baf9"),
-					CustomerID:   uuid.FromStringOrNil("5a89c4de-7e2e-11ed-97c8-a30faed31cf2"),
+					ID:           uuid.FromStringOrNil("68ad867c-ed95-11ee-b44e-a707b64e6732"),
+					CustomerID:   uuid.FromStringOrNil("68fdd924-ed95-11ee-a7ea-57b90b872fde"),
 					StreamingIDs: []uuid.UUID{},
 					TMCreate:     "2021-01-01 00:00:00.000",
 					TMUpdate:     DefaultTimeStamp,
@@ -150,7 +155,9 @@ func Test_TranscribeGetsByCustomerID(t *testing.T) {
 			"empty",
 			[]*transcribe.Transcribe{},
 
-			uuid.FromStringOrNil("a8053398-a296-11ec-a7c7-33a89a071234"),
+			map[string]string{
+				"customer_id": "b231e14e-ed95-11ee-a29f-7be740276529",
+			},
 
 			"",
 			[]*transcribe.Transcribe{},
@@ -159,30 +166,33 @@ func Test_TranscribeGetsByCustomerID(t *testing.T) {
 			"2 items",
 			[]*transcribe.Transcribe{
 				{
-					ID:         uuid.FromStringOrNil("89076d02-7e2e-11ed-9d33-cb5ddc245e50"),
-					CustomerID: uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
+					ID:         uuid.FromStringOrNil("e710ddd4-ed95-11ee-8c7b-6327cccb7082"),
+					CustomerID: uuid.FromStringOrNil("c1644a94-ed95-11ee-b2c8-8bf8e129a2f7"),
 				},
 				{
-					ID:         uuid.FromStringOrNil("8937c114-7e2e-11ed-8566-ffc2c99e510d"),
-					CustomerID: uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
+					ID:         uuid.FromStringOrNil("e73f074a-ed95-11ee-9634-176a962a17b8"),
+					CustomerID: uuid.FromStringOrNil("c1644a94-ed95-11ee-b2c8-8bf8e129a2f7"),
 				},
 			},
 
-			uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
+			map[string]string{
+				"customer_id": "c1644a94-ed95-11ee-b2c8-8bf8e129a2f7",
+				"deleted":     "false",
+			},
 
 			"2021-01-01 00:00:00.000",
 			[]*transcribe.Transcribe{
 				{
-					ID:           uuid.FromStringOrNil("89076d02-7e2e-11ed-9d33-cb5ddc245e50"),
-					CustomerID:   uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
+					ID:           uuid.FromStringOrNil("e710ddd4-ed95-11ee-8c7b-6327cccb7082"),
+					CustomerID:   uuid.FromStringOrNil("c1644a94-ed95-11ee-b2c8-8bf8e129a2f7"),
 					StreamingIDs: []uuid.UUID{},
 					TMCreate:     "2021-01-01 00:00:00.000",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
 				{
-					ID:           uuid.FromStringOrNil("8937c114-7e2e-11ed-8566-ffc2c99e510d"),
-					CustomerID:   uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
+					ID:           uuid.FromStringOrNil("e73f074a-ed95-11ee-9634-176a962a17b8"),
+					CustomerID:   uuid.FromStringOrNil("c1644a94-ed95-11ee-b2c8-8bf8e129a2f7"),
 					StreamingIDs: []uuid.UUID{},
 					TMCreate:     "2021-01-01 00:00:00.000",
 					TMUpdate:     DefaultTimeStamp,
@@ -209,7 +219,7 @@ func Test_TranscribeGetsByCustomerID(t *testing.T) {
 
 			// creates messages for test
 			for i := 0; i < len(tt.transcribes); i++ {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 
 				if err := h.TranscribeCreate(ctx, tt.transcribes[i]); err != nil {
@@ -217,7 +227,7 @@ func Test_TranscribeGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.TranscribeGetsByCustomerID(ctx, tt.customerID, 10, utilhandler.GetCurTime())
+			res, err := h.TranscribeGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -283,13 +293,13 @@ func Test_TranscribeSetStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 			if err := h.TranscribeCreate(ctx, tt.transcribe); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 			if err := h.TranscribeSetStatus(ctx, tt.id, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

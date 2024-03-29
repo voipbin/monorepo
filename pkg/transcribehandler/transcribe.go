@@ -43,13 +43,13 @@ func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, ref
 }
 
 // Gets returns list of transcribes.
-func (h *transcribeHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error) {
+func (h *transcribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Gets",
-		"customer_id": customerID,
+		"func":    "Gets",
+		"filters": filters,
 	})
 
-	res, err := h.db.TranscribeGetsByCustomerID(ctx, customerID, size, token)
+	res, err := h.db.TranscribeGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get transcribes. err: %v", err)
 		return nil, err

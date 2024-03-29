@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -78,7 +79,7 @@ func (h *handler) TranscriptCreate(ctx context.Context, t *transcript.Transcript
 		t.Message,
 
 		t.TMTranscript,
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 	)
 	if err != nil {
@@ -193,6 +194,62 @@ func (h *handler) TranscriptGetsByTranscribeID(ctx context.Context, transcribeID
 		u, err := h.transcriptGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("could not get data. TranscriptGetsByTranscribeID, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// TranscriptGets returns list of transcripts.
+func (h *handler) TranscriptGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error) {
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
+	`, transcriptSelect)
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id", "transcribe_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+	rows, err := h.db.Query(q, values...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. TranscriptGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*transcript.Transcript{}
+	for rows.Next() {
+		u, err := h.transcriptGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. TranscriptGets. err: %v", err)
 		}
 
 		res = append(res, u)

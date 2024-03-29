@@ -28,7 +28,7 @@ func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.
 	}
 
 	// create transcribing
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	tr, err := h.Create(
 		ctx,
 		id,

@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
@@ -77,7 +78,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TranscriptCreate(ctx, tt.expectReqCreate).Return(nil)
 			mockDB.EXPECT().TranscriptGet(ctx, tt.responseUUID).Return(tt.responseTranscript, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscript.CustomerID, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
@@ -99,32 +100,24 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		transcribeID uuid.UUID
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseTranscripts []*transcript.Transcript
-
-		expectReqCreate []*transcript.Transcript
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("87d87c60-821a-11ed-a6e2-4f8ea6cd0a1d"),
-
-			[]*transcript.Transcript{
-				{
-					ID: uuid.FromStringOrNil("c33a05bc-821a-11ed-91e6-b34b3f52cdf9"),
-				},
-				{
-					ID: uuid.FromStringOrNil("c36d26b8-821a-11ed-aeae-83a320a63874"),
-				},
+			10,
+			"2020-05-03%2021:35:02.809",
+			map[string]string{
+				"customer_id": "cf322d78-ed98-11ee-813d-1ff686765c1f",
 			},
 
 			[]*transcript.Transcript{
 				{
-					ID: uuid.FromStringOrNil("c33a05bc-821a-11ed-91e6-b34b3f52cdf9"),
-				},
-				{
-					ID: uuid.FromStringOrNil("c36d26b8-821a-11ed-aeae-83a320a63874"),
+					ID: uuid.FromStringOrNil("cf8dc02a-ed98-11ee-bc86-53c66222068a"),
 				},
 			},
 		},
@@ -135,28 +128,23 @@ func Test_Gets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transcriptHandler{
-				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscriptGetsByTranscribeID(ctx, tt.transcribeID).Return(tt.responseTranscripts, nil)
-
-			res, err := h.Gets(ctx, tt.transcribeID)
+			mockDB.EXPECT().TranscriptGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTranscripts, nil)
+			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectReqCreate) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectReqCreate, res)
-			}
 		})
 	}
 }

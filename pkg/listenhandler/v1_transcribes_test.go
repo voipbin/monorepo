@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
@@ -93,22 +94,26 @@ func Test_processV1TranscribesGet(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
+		pageSize  uint64
+		pageToken string
 
+		responseFilters     map[string]string
 		responseTranscribes []*transcribe.Transcribe
 		expectRes           *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=079ffd84-7f68-11ed-ae05-430c9b75ab3b",
+				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=079ffd84-7f68-11ed-ae05-430c9b75ab3b",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("079ffd84-7f68-11ed-ae05-430c9b75ab3b"),
+
 			10,
 			"2020-05-03 21:35:02.809",
+
+			map[string]string{
+				"customer_id": "079ffd84-7f68-11ed-ae05-430c9b75ab3b",
+			},
 			[]*transcribe.Transcribe{
 				{
 					ID:         uuid.FromStringOrNil("0710ac06-7f68-11ed-b2cd-877b6dca8ac7"),
@@ -124,12 +129,16 @@ func Test_processV1TranscribesGet(t *testing.T) {
 		{
 			"2 items",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
+				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+
 			10,
 			"2020-05-03 21:35:02.809",
+
+			map[string]string{
+				"customer_id": "871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
+			},
 			[]*transcribe.Transcribe{
 				{
 					ID:         uuid.FromStringOrNil("873a8eec-7f68-11ed-9c2b-5f1311cc5a88"),
@@ -153,15 +162,18 @@ func Test_processV1TranscribesGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:        mockSock,
+				utilHandler:       mockUtil,
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.responseTranscribes, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseTranscribes, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

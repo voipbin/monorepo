@@ -23,7 +23,7 @@ type TranscribeHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error)
 
 	HealthCheck(ctx context.Context, id uuid.UUID, retryCount int)
 

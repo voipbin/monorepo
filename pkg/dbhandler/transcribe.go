@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -40,6 +41,7 @@ const (
 
 // transcribeGetFromRow gets the transcribe from the row.
 func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, error) {
+	var tmpDirection sql.NullString
 	var tmpStreamingIDs sql.NullString
 
 	res := &transcribe.Transcribe{}
@@ -53,7 +55,7 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 		&res.Status,
 		&res.HostID,
 		&res.Language,
-		&res.Direction,
+		&tmpDirection,
 
 		&tmpStreamingIDs,
 
@@ -62,6 +64,11 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. transcribeGetFromRow. err: %v", err)
+	}
+
+	// Direction
+	if tmpDirection.Valid {
+		res.Direction = transcribe.Direction(tmpDirection.String)
 	}
 
 	// StreamingIDs
@@ -127,7 +134,7 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 
 		tmpStreamingIDs,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -231,7 +238,7 @@ func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerDelete. err: %v", err)
 	}
@@ -262,7 +269,7 @@ func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *
 		return fmt.Errorf("could not marshal the transcripts. TranscribeAddTranscript. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, m, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, m, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. TranscribeAddTranscript. err: %v", err)
 	}
@@ -273,23 +280,46 @@ func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *
 	return nil
 }
 
-// TranscribeGetsByCustomerID returns a list of transcribes of the given customerID.
-func (h *handler) TranscribeGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error) {
-
+// TranscribeGets returns list of transcribes.
+func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error) {
 	// prepare
 	q := fmt.Sprintf(`%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create
-		desc limit ?
-		`, transcribeSelect)
+	where
+		tm_create < ?
+	`, transcribeSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id", "reference_id", "host_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TranscribeGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. TranscribeGets. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -297,7 +327,7 @@ func (h *handler) TranscribeGetsByCustomerID(ctx context.Context, customerID uui
 	for rows.Next() {
 		u, err := h.transcribeGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. TranscribeGetsByCustomerID, err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. TranscribeGets. err: %v", err)
 		}
 
 		res = append(res, u)
@@ -352,7 +382,7 @@ func (h *handler) TranscribeSetStatus(ctx context.Context, id uuid.UUID, status 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not query. TranscribeSetStatus. err: %v", err)
 	}

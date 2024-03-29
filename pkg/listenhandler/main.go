@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
@@ -36,6 +37,7 @@ type listenHandler struct {
 	hostID     uuid.UUID
 	rabbitSock rabbitmqhandler.Rabbit
 
+	utilHandler       utilhandler.UtilHandler
 	reqHandler        requesthandler.RequestHandler
 	transcribeHandler transcribehandler.TranscribeHandler
 	transcriptHandler transcripthandler.TranscriptHandler
@@ -94,8 +96,10 @@ func NewListenHandler(
 	transcriptHandler transcripthandler.TranscriptHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		hostID:            hostID,
-		rabbitSock:        rabbitSock,
+		hostID:     hostID,
+		rabbitSock: rabbitSock,
+
+		utilHandler:       utilhandler.NewUtilHandler(),
 		reqHandler:        reqHandler,
 		transcribeHandler: transcribeHandler,
 		transcriptHandler: transcriptHandler,

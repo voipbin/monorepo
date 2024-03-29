@@ -79,7 +79,7 @@ func Test_TranscriptCreate(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscriptSet(gomock.Any(), gomock.Any())
 			if err := h.TranscriptCreate(context.Background(), tt.transcript); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -99,13 +99,13 @@ func Test_TranscriptCreate(t *testing.T) {
 	}
 }
 
-func Test_TranscriptGetsByTranscribeID(t *testing.T) {
+func Test_TranscriptGets(t *testing.T) {
 
 	tests := []struct {
 		name        string
 		transcripts []*transcript.Transcript
 
-		transcribeID uuid.UUID
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*transcript.Transcript
@@ -119,7 +119,10 @@ func Test_TranscriptGetsByTranscribeID(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("4dda38ac-7e30-11ed-876b-3bf1eb420c31"),
+			map[string]string{
+				"transcribe_id": "4dda38ac-7e30-11ed-876b-3bf1eb420c31",
+				"deleted":       "false",
+			},
 
 			"2021-01-01 00:00:00.000",
 			[]*transcript.Transcript{
@@ -135,7 +138,9 @@ func Test_TranscriptGetsByTranscribeID(t *testing.T) {
 			"empty",
 			[]*transcript.Transcript{},
 
-			uuid.FromStringOrNil("8077cdec-7e30-11ed-93c6-efc2ead67105"),
+			map[string]string{
+				"customer_id": "8077cdec-7e30-11ed-93c6-efc2ead67105",
+			},
 
 			"",
 			[]*transcript.Transcript{},
@@ -153,7 +158,10 @@ func Test_TranscriptGetsByTranscribeID(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("89560596-7e30-11ed-b714-e7b0632f17e9"),
+			map[string]string{
+				"transcribe_id": "89560596-7e30-11ed-b714-e7b0632f17e9",
+				"deleted":       "false",
+			},
 
 			"2021-01-01 00:00:00.000",
 			[]*transcript.Transcript{
@@ -190,7 +198,7 @@ func Test_TranscriptGetsByTranscribeID(t *testing.T) {
 
 			// creates messages for test
 			for i := 0; i < len(tt.transcripts); i++ {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
 
 				if err := h.TranscriptCreate(ctx, tt.transcripts[i]); err != nil {
@@ -198,7 +206,7 @@ func Test_TranscriptGetsByTranscribeID(t *testing.T) {
 				}
 			}
 
-			res, err := h.TranscriptGetsByTranscribeID(ctx, tt.transcribeID)
+			res, err := h.TranscriptGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

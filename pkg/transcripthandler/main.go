@@ -57,7 +57,7 @@ type TranscriptHandler interface {
 		message string,
 		tmTranscript string,
 	) (*transcript.Transcript, error)
-	Gets(ctx context.Context, transcribeID uuid.UUID) ([]*transcript.Transcript, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error)
 
 	Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) (*transcript.Transcript, error)
 }

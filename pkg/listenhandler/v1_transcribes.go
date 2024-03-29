@@ -71,18 +71,18 @@ func (h *listenHandler) processV1TranscribesGet(ctx context.Context, m *rabbitmq
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
 
-	calls, err := h.transcribeHandler.Gets(ctx, customerID, pageSize, pageToken)
+	tmp, err := h.transcribeHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get transcribes. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(calls)
+	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", calls, err)
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 
