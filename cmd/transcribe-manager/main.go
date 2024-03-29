@@ -15,6 +15,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -36,9 +37,6 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.transcribe-manager.request", "rabbitmq queue name for request listen")
-
-var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.transcribe-manager.event", "rabbitmq exchange name for event notify")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -139,6 +137,10 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 
 // runListen runs the listen service
 func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListen",
+	})
+
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
@@ -148,7 +150,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// request handler
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
 
 	hostID := uuid.Must(uuid.NewV4())
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, *gcpCredential)
@@ -158,8 +160,8 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// run
 	listenVolatile := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
-	if err := listenHandler.Run(*rabbitQueueListen, listenVolatile, *rabbitExchangeDelay); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	if err := listenHandler.Run(*rabbitQueueListen, listenVolatile, string(commonoutline.QueueNameDelay)); err != nil {
+		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
 	return nil

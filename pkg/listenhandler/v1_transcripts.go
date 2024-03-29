@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
+	"strconv"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -22,9 +22,15 @@ func (h *listenHandler) processV1TranscriptsGet(ctx context.Context, m *rabbitmq
 		return nil, err
 	}
 
-	transcribeID := uuid.FromStringOrNil(u.Query().Get("transcribe_id"))
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
 
-	tmp, err := h.transcriptHandler.Gets(ctx, transcribeID)
+	// parse the filters
+	filters := h.utilHandler.URLParseFilters(u)
+
+	tmp, err := h.transcriptHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get transcribes. err: %v", err)
 		return simpleResponse(500), nil

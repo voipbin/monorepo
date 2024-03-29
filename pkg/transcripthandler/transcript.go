@@ -26,7 +26,7 @@ func (h *transcriptHandler) Create(
 		},
 	)
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	tr := &transcript.Transcript{
 		ID:           id,
 		CustomerID:   customerID,
@@ -56,15 +56,13 @@ func (h *transcriptHandler) Create(
 }
 
 // Gets returns list of transcripts.
-func (h *transcriptHandler) Gets(ctx context.Context, transcribeID uuid.UUID) ([]*transcript.Transcript, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Gets",
-			"transcribe_id": transcribeID,
-		},
-	)
+func (h *transcriptHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Gets",
+		"filters": filters,
+	})
 
-	res, err := h.db.TranscriptGetsByTranscribeID(ctx, transcribeID)
+	res, err := h.db.TranscriptGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get transcripts. err: %v", err)
 		return nil, err

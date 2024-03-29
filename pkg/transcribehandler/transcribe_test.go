@@ -114,18 +114,20 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseTranscribes []*transcribe.Transcribe
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("2fd5bd08-7f6c-11ed-8d71-67bb37305dd8"),
 			10,
 			"2020-05-03%2021:35:02.809",
+			map[string]string{
+				"customer_id": "2fd5bd08-7f6c-11ed-8d71-67bb37305dd8",
+			},
 
 			[]*transcribe.Transcribe{
 				{
@@ -151,11 +153,10 @@ func Test_Gets(t *testing.T) {
 				notifyHandler:     mockNotify,
 				transcriptHandler: mockGoogle,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGetsByCustomerID(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseTranscribes, nil)
-			_, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			mockDB.EXPECT().TranscribeGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTranscribes, nil)
+			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

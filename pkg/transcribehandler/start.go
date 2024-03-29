@@ -130,7 +130,7 @@ func (h *transcribeHandler) startLive(
 	})
 
 	// create transcribe id
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	log = log.WithField("transcribe_id", id)
 
 	directions := []transcript.Direction{transcript.Direction(direction)}
