@@ -156,6 +156,8 @@ gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20240313070856-7d3433af905
 gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20240313070856-7d3433af905d/go.mod h1:17gqjrJrd3bywleYmZovHJ6Ct3xtO2hTx0g5+Zb9z/w=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450 h1:ggM/ZaGAMoJMD8sucY6p2f0k1WQ/cxwdDpQjVXN+cfs=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450/go.mod h1:nXwJeGScrKeMXowtYco+HUG0qAxLE8KW1Uub3hEuXk4=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20240329081015-d32619da0dcd h1:c7x0I9MIWaZonXfm+swRZN4rBoXM4U4KbrdhTuIDdsc=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20240329081015-d32619da0dcd/go.mod h1:XJRgBSEPE9wULymJW+H1xwg/P4bqEMnyCeA3eT6+Gtk=
 gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34 h1:l9QJ2Nu/p4RHs1f8dTf4g/5duqFL9q19sHF/3pJ2X0s=
 gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34/go.mod h1:EBcHdy7XAa3XnbboyGSOco2Wbc0wOi3JZm+6pTbSNsg=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230716174942-b6a22e86ff12 h1:8dZWZIM/ZE/NbC+nZcTiQul2Z9pKDlvQBC4KzqtWX8c=
