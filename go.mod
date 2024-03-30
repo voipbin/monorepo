@@ -39,7 +39,7 @@ require (
 require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/pebbe/zmq4 v1.2.11
-	github.com/pion/rtp v1.8.4
+	github.com/pion/rtp v1.8.5
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240328054741-55144017eccd
