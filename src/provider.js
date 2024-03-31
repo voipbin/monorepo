@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom";
+import FileSaver from "file-saver";
+
+
 
 const hostname = 'https://api.voipbin.net/v1.0/'
 
@@ -107,6 +110,13 @@ export const Delete = (target) => {
                 reject(new Error("Could not fetch the data. err: %o", e));
             });
     });
+}
+
+export const Download = (target, filename) => {
+  console.log("Downloading the file. target: %s, filename: %s", target, filename);
+  let authToken = localStorage.getItem("token");
+  const tmpTarget = hostname + target + '?token=' + authToken;
+  saveAs(tmpTarget, filename);  
 }
 
 export const ParseData = (data) => {

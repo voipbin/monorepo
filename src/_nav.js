@@ -34,6 +34,8 @@ import {
   cilLocomotive,
   cilLoopCircular,
   cilPaperclip,
+  cilMediaPlay,
+  cilFont,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { useEffect } from 'react'
@@ -313,6 +315,36 @@ const routes = {
   ]
 };
 
+const recordings = {
+  component: CNavGroup,
+  name: 'Recordings',
+  icon: <CIcon icon={cilMediaPlay} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Recordings',
+      to: '/resources/recordings/recordings_list',
+    },
+  ]
+};
+
+const transcribes = {
+  component: CNavGroup,
+  name: 'Transcribes',
+  icon: <CIcon icon={cilFont} customClassName="nav-icon" />,
+  items: [
+    {
+      component: CNavItem,
+      name: 'Transcribes',
+      to: '/resources/transcribes/transcribes_list',
+    },
+  ]
+};
+
+
+
+//// Campaign ////////////////////////////////////////////////////////////////////////////////
+
 const campaigns = {
   component: CNavGroup,
   name: 'Campaigns',
@@ -358,119 +390,116 @@ const outplans = {
   ]
 };
 
-
-
-export const navProjectAdmin = [
-  dashboard,
-
-  // resource -----------------------------------------------------------------------
+// groupProject defines menu groups for project resource management.
+const groupProject = [
   {
     component: CNavTitle,
-    name: 'Resource',
+    name: 'Project Admin',
   },
-  calls,
+
   customers,
-  numbers,
-  flows,
-  agents,
-  queues,
-  tags,
-  billing_accounts,
-  conferences,
-  chatbots,
-  conversations,
-  chats,
-  messages,
-  trunks,
-  extensions,
   providers,
   routes,
+];
 
-  // outbound campaign -----------------------------------------------------------------------
+// groupAdmin defines menu groups for admin resource management.
+const groupAdmin = [
+  {
+    component: CNavTitle,
+    name: 'Admin',
+  },
+
+  numbers,
+  billing_accounts,
+];
+
+// groupManager defines menu groups for normal resource management.
+const groupResourceManager = [
+  {
+    component: CNavTitle,
+    name: 'Resource',
+  },
+
+  flows,
+  agents,
+  queues,
+  tags,
+  conferences,
+  chatbots,
+  recordings,
+  transcribes,
+  trunks,
+  extensions,
+];
+
+// groupCommnunication defines menu groups for communication.
+const groupCommnunication = [
+  {
+    component: CNavTitle,
+    name: 'Communication',
+  },
+
+  calls,
+  conversations,
+  chats,
+  messages,
+];
+
+// groupCampaign defines menu groups for campaign management.
+const groupCampaign = [
   {
     component: CNavTitle,
     name: 'Outbound Campaign',
   },
+
   campaigns,
   outdials,
   outplans,
-]
+];
 
+// groupAgent defines menu groups for agent permission user.
+const groupAgent = [
+  {
+    component: CNavTitle,
+    name: 'Resource',
+  },
+
+  calls,
+  conferences,
+  conversations,
+  chats,
+  messages,
+];
+
+// navCustomerAdmin defines navigation menu for customer admin permission.
 export const navCustomerAdmin = [
   dashboard,
-
-  // resource -----------------------------------------------------------------------
-  {
-    component: CNavTitle,
-    name: 'Resource',
-  },
-  calls,
-  numbers,
-  flows,
-  agents,
-  queues,
-  tags,
-  billing_accounts,
-  conferences,
-  chatbots,
-  conversations,
-  chats,
-  messages,
-  trunks,
-  extensions,
-
-  // outbound campaign -----------------------------------------------------------------------
-  {
-    component: CNavTitle,
-    name: 'Outbound Campaign',
-  },
-  campaigns,
-  outdials,
-  outplans,
+  ...groupCommnunication,
+  ...groupResourceManager,
+  ...groupAdmin,
+  ...groupCampaign,
 ]
 
+// navCustomerManager defines navigation menu for customer manager permission.
 export const navCustomerManager = [
   dashboard,
-
-  // resource -----------------------------------------------------------------------
-  {
-    component: CNavTitle,
-    name: 'Resource',
-  },
-  calls,
-  flows,
-  agents,
-  queues,
-  tags,
-  conferences,
-  chatbots,
-  conversations,
-  chats,
-  messages,
-  trunks,
-  extensions,
-
-  // outbound campaign -----------------------------------------------------------------------
-  {
-    component: CNavTitle,
-    name: 'Outbound Campaign',
-  },
-  campaigns,
-  outdials,
-  outplans,
+  ...groupCommnunication,
+  ...groupResourceManager,
+  ...groupCampaign,
 ]
 
+// navCustomerAgent defines navigation menu for customer agent permission.
 export const navCustomerAgent = [
   dashboard,
-
-  // resource -----------------------------------------------------------------------
-  {
-    component: CNavTitle,
-    name: 'Resource',
-  },
-  calls,
-  conferences,
-  conversations,
-  chats,
-  messages,
+  ...groupCommnunication,
 ]
+
+// navProjectAdmin defines navigation menu for project admin permission.
+export const navProjectAdmin = [
+  dashboard,
+  ...groupCommnunication,
+  ...groupResourceManager,
+  ...groupAdmin,
+  ...groupCampaign,
+  ...groupProject,
+];

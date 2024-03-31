@@ -221,11 +221,6 @@ const Login = () => {
                     <p>
                       The voipbin is currently operating in development mode.<br /> Kindly submit a sign-up request to the administrator for registration.
                     </p>
-                    <p>
-                      Use the below credentials for guest use.<br />
-                      username: guest@voipbin.net <br />
-                      password: guest
-                    </p>
 
                     <Link to='javascript:void(0)' onClick={() => window.location = 'mailto:pchero21@gmail.com'}>
                       <CButton color="primary" className="mt-3" active tabIndex={-1}>
