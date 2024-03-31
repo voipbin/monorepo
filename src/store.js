@@ -55,6 +55,56 @@ const resourceChatroommessagesReducer = (state = resourceChatroommessagesInitial
   }
 }
 
+
+///////////////////////////////////////////////////////////
+// resource transcripts
+const resourceTranscriptsInitial = {
+  data: {},
+}
+
+export const TRANSCRIPTS_SET_WITH_CHATROOMID = 'TRANSCRIPTS_SET_WITH_TRANSCRIBEID';
+export const TranscriptsSetWithTranscribeID = (transcribeID, data) => {
+  return {
+    type: CHATROOMMESSAGES_SET_WITH_CHATROOMID,
+    chatroom_id: transcribeID,
+    data: data,
+  }
+}
+
+export const TRANSCRIPTS_ADD_WITH_TRANSCRIBEID = 'TRANSCRIPTS_ADD_WITH_TRANSCRIBEID';
+export const TranscriptsAddWithTranscribeID = (transcribeID, data) => {
+  return {
+    type: TRANSCRIPTS_ADD_WITH_TRANSCRIBEID,
+    chatroom_id: transcribeID,
+    data: data,
+  }
+}
+
+const resourceTranscriptsReducer = (state = resourceTranscriptsInitial, action) => {
+  let newState = {
+    data: state.data,
+  };
+
+  switch (action.type) {
+    case TRANSCRIPTS_SET_WITH_CHATROOMID:
+      newState.data[action.chatroom_id] = action.data;
+      return newState;
+
+    case TRANSCRIPTS_ADD_WITH_TRANSCRIBEID:
+      const roomID = action.data["transcribe_id"];
+      if (newState.data[roomID]) {
+        newState.data[roomID] = [action.data, ...newState.data[roomID]];
+      } else {
+        newState.data[roomID] = [action.data];
+      }
+      return newState;
+
+    default:
+      return newState;
+  }
+}
+
+
 ///////////////////////////////////////////////////////////
 // resource currentcall
 const resourceCurrentcallInitial = {

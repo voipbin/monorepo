@@ -124,6 +124,16 @@ const TagsList = React.lazy(() => import('./views/tags/tags_list'))
 const TagsDetail = React.lazy(() => import('./views/tags/tags_detail'))
 const TagsCreate = React.lazy(() => import('./views/tags/tags_create'))
 
+// recordings
+const RecordingsList = React.lazy(() => import('./views/recordings/recordings_list'))
+const RecordingsDetail = React.lazy(() => import('./views/recordings/recordings_detail'))
+
+// transcripts
+const TranscribesList = React.lazy(() => import('./views/transcribes/transcribes_list'))
+const TranscribesDetail = React.lazy(() => import('./views/transcribes/transcribes_detail'))
+const TranscriptsList = React.lazy(() => import('./views/transcribes/transcripts_list'))
+
+
 
 //
 // outbound campaign ----------------------------------------------------------------
@@ -255,6 +265,14 @@ const routes = [
   { path: '/resources/tags/tags_list', name: 'TagsList', element: TagsList },
   { path: '/resources/tags/tags_create', name: 'TagsCreate', element: TagsCreate },
   { path: '/resources/tags/tags_detail/:id', name: 'TagsDetail', element: TagsDetail },
+
+  { path: '/resources/recordings/recordings_list', name: 'RecordingsList', element: RecordingsList },
+  { path: '/resources/recordings/recordings_detail/:id', name: 'RecordingsDetail', element: RecordingsDetail },
+
+  { path: '/resources/transcribes/transcribes_list', name: 'TranscribesList', element: TranscribesList },
+  { path: '/resources/transcribes/transcribes_detail/:id', name: 'TranscribesDetail', element: TranscribesDetail },
+
+  { path: '/resources/transcribes/:id/transcripts_list', name: 'TranscriptsList', element: TranscriptsList },
 
 
   //
