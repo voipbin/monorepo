@@ -17,7 +17,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.9.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240328054741-55144017eccd
 	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20240313031507-379b1a425709
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240328053508-a6603b09c7cd
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240401064615-0805c6621fbf
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20240313031908-f098e3fb6f12
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20240313050741-a2ced5030a06
 	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20240313050825-1c666b883013
@@ -32,7 +32,7 @@ require (
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20240313054055-78ecba56f1bc
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240313064944-17d68585dc25
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20240313065038-1498b922bb24
-	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240313065019-34db2d786767
+	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240330083852-ab008a2e3880
 	gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20240313070856-7d3433af905d
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20240329081015-d32619da0dcd
 	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34
