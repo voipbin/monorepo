@@ -113,6 +113,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 
 		referenceType  cmexternalmedia.ReferenceType
 		referenceID    uuid.UUID
+		noInsertMedia  bool
 		externalHost   string
 		encapsulation  string
 		transport      string
@@ -130,6 +131,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 
 			cmexternalmedia.ReferenceTypeCall,
 			uuid.FromStringOrNil("94a6ec48-97c2-11ed-bd66-afb196d5c598"),
+			true,
 			"localhost:5060",
 			"rtp",
 			"udp",
@@ -147,7 +149,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 				URI:      "/v1/external-medias",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"reference_type":"call","reference_id":"94a6ec48-97c2-11ed-bd66-afb196d5c598","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"reference_type":"call","reference_id":"94a6ec48-97c2-11ed-bd66-afb196d5c598","no_insert_media":true,"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 			&cmexternalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("e8337d9a-97c2-11ed-93ad-5bcba5332622"),
@@ -169,7 +171,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ExternalMediaStart(ctx, tt.referenceType, tt.referenceID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1ExternalMediaStart(ctx, tt.referenceType, tt.referenceID, tt.noInsertMedia, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
