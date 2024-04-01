@@ -70,6 +70,8 @@ gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240326082204-5f592be678
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240326082204-5f592be678a6/go.mod h1:pL3ui1Kx+xpxfxetexxOGUsYrWqmZdXkJW1hRKCvBjo=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240328053508-a6603b09c7cd h1:aD4sBQTO8eVuF5EUNC/DG/mxBsKc+RWK51iHz6YT0T4=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240328053508-a6603b09c7cd/go.mod h1:ZlPR0fsQS234zed7sPYjh3PMwYgfH0/DnsFoNRycuPE=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240401064615-0805c6621fbf h1:V39mlROveNVczZH3PUDYqy+dCIcV/tQnJceSV7jegpE=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240401064615-0805c6621fbf/go.mod h1:aL/VXCTE5JCh6QHVGQecR8nd1Q8VdgShKddmkazGMAg=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20240107131318-b7b0a039e080 h1:BrDIp+T2+ehGEv1xTw97SIUtSTahX6P0IKl4wljWRfk=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20240107131318-b7b0a039e080/go.mod h1:KKRlhl06+E8wiUOn0F3Yrrov9YD7IsUcjZvi9kNI8xk=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20240224144531-92dae0c9e1da h1:St6JDRVQeiJ2iNEP6OZHBklGtHyeC5KoJcdGIvTH6gg=
@@ -150,6 +152,8 @@ gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240223190113-d088696
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240223190113-d0886960565c/go.mod h1:v9eDQ52AvspS4b0sSCLUrypnrrklJLPVCes38Z563GA=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240313065019-34db2d786767 h1:NW+o4MEFh8hwE0hpA20fN47vJSQwQ3qdgQA8fJERKg4=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240313065019-34db2d786767/go.mod h1:t7B95gTDmn1D2Hjk5v5yZiD9eIvbtDI64NceiTlnd4g=
+gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240330083852-ab008a2e3880 h1:lBy27vTTwaiiZzWl0G3XXqiF1b5xjssBGKY+/d/fnco=
+gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240330083852-ab008a2e3880/go.mod h1:PkA9JM8qFrkS+KUYOholLKZxbUaurYbOuayJlrxGQss=
 gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20230727164950-43d37418e642 h1:GNg+yaV9dHciCb+akY1Q2Hx9OrhVecS41wfnCbs6TZI=
 gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20230727164950-43d37418e642/go.mod h1:ePqrH0knoh8gXQCBNxWO8ig+UNNS6B85YTRknVbsyio=
 gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20240313070856-7d3433af905d h1:QLwh3muv+qPJvPzBmmfMANEgEJT8JzaWgGj5v4qTiwo=
