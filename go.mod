@@ -14,15 +14,15 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/pion/rtp v1.8.4
+	github.com/pion/rtp v1.8.5
 	github.com/prometheus/client_golang v1.19.0
 	github.com/prometheus/common v0.51.1 // indirect
 	github.com/prometheus/procfs v0.13.0 // indirect
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240328053508-a6603b09c7cd
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240329051213-4d293f7eb369
-	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240313065019-34db2d786767 // indirect
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20240401064615-0805c6621fbf
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240401065503-dca12e4dc09e
+	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240330083852-ab008a2e3880 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20240313071253-ebca1db1437c // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
