@@ -30,7 +30,7 @@ func (h *confbridgeHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID
 		return nil, fmt.Errorf("the confbridge has external media already")
 	}
 
-	tmp, err := h.externalMediaHandler.Start(ctx, externalmedia.ReferenceTypeConfbridge, c.ID, externalHost, encapsulation, transport, connectionType, format, direction)
+	tmp, err := h.externalMediaHandler.Start(ctx, externalmedia.ReferenceTypeConfbridge, c.ID, true, externalHost, encapsulation, transport, connectionType, format, direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
 		return nil, err

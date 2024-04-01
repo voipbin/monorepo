@@ -70,6 +70,9 @@ func (h *callHandler) Start(ctx context.Context, cn *channel.Channel) error {
 	case channel.ContextRecording:
 		return h.startContextRecording(ctx, cn)
 
+	case channel.ContextExternalSoop:
+		return h.startContextExternalSoop(ctx, cn)
+
 	case channel.ContextExternalMedia:
 		return h.startContextExternalMedia(ctx, cn)
 
@@ -126,6 +129,31 @@ func (h *callHandler) startContextRecording(ctx context.Context, cn *channel.Cha
 		return errors.Wrap(errRecord, "could not start the recording")
 	}
 	log.Infof("Recording started. id: %s, name: %s, reference_type: %s, reference_id: %s", recordingID, recordingName, referenceType, referenceID)
+
+	return nil
+}
+
+// startContextExternalSoop handles contextExternalSnoop context type of StasisStart event.
+func (h *callHandler) startContextExternalSoop(ctx context.Context, cn *channel.Channel) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startHandlerContextExternalSnoop",
+		"channel_id": cn.ID,
+	})
+	log.Infof("Executing startHandlerContextExternalSnoop. channel_id: %s", cn.ID)
+
+	callID := cn.StasisData[channel.StasisDataTypeCallID]
+	bridgeID := cn.StasisData[channel.StasisDataTypeBridgeID]
+	log = log.WithFields(logrus.Fields{
+		"call_id":   callID,
+		"bridge_id": bridgeID,
+	})
+	log.Debugf("Parsed info. call_id: %s, bridge_id: %s", callID, bridgeID)
+
+	// put the channel to the bridge
+	if errJoin := h.bridgeHandler.ChannelJoin(ctx, bridgeID, cn.ID, "", false, false); errJoin != nil {
+		log.Errorf("Could not add the external snoop channel to the bridge. channel_id: %s, err: %v", cn.ID, errJoin)
+		return errors.Wrap(errJoin, "could not set a call type for channel")
+	}
 
 	return nil
 }

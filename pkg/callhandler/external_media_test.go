@@ -73,7 +73,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockExternal.EXPECT().Start(ctx, externalmedia.ReferenceTypeCall, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Start(ctx, externalmedia.ReferenceTypeCall, tt.id, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
 			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 

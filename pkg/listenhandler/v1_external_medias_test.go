@@ -22,6 +22,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 
 		expectReferenceType  externalmedia.ReferenceType
 		expectReferenceID    uuid.UUID
+		expectNoInsertMedia  bool
 		expectExternalHost   string
 		expectEncapsulation  externalmedia.Encapsulation
 		expectTransport      externalmedia.Transport
@@ -40,11 +41,12 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 				URI:      "/v1/external-medias",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type":"call","reference_id":"45832182-97b2-11ed-8f17-33590535a404","external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"reference_type":"call","reference_id":"45832182-97b2-11ed-8f17-33590535a404","no_insert_media":false,"external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 
 			externalmedia.ReferenceTypeCall,
 			uuid.FromStringOrNil("45832182-97b2-11ed-8f17-33590535a404"),
+			false,
 			"127.0.0.1:8080",
 			"rtp",
 			"udp",
@@ -80,6 +82,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 				gomock.Any(),
 				tt.expectReferenceType,
 				tt.expectReferenceID,
+				tt.expectNoInsertMedia,
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,

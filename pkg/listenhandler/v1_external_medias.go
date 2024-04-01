@@ -73,6 +73,7 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *rabb
 		ctx,
 		req.ReferenceType,
 		req.ReferenceID,
+		req.NoInsertMedia,
 		req.ExternalHost,
 		externalmedia.Encapsulation(req.Encapsulation),
 		externalmedia.Transport(req.Transport),
