@@ -41,6 +41,7 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 		ctx,
 		externalmedia.ReferenceType(referenceType),
 		referenceID,
+		true,
 		hostAddr,
 		constEncapsulation,
 		constTransport,
