@@ -37,7 +37,7 @@ func (h *callHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, exte
 		return nil, fmt.Errorf("the call has external media already")
 	}
 
-	tmp, err := h.externalMediaHandler.Start(ctx, externalmedia.ReferenceTypeCall, c.ID, externalHost, encapsulation, transport, connectionType, format, direction)
+	tmp, err := h.externalMediaHandler.Start(ctx, externalmedia.ReferenceTypeCall, c.ID, true, externalHost, encapsulation, transport, connectionType, format, direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
 		return nil, err

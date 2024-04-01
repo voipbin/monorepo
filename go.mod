@@ -17,12 +17,12 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240321060456-89e09b2001fc
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20240328054741-55144017eccd
 	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20240313031507-379b1a425709
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240328045438-e49432e3adb6
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240313050849-b74c46e8ee3b
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240313053651-4edf6033535b
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240313054753-a427ebcc89b1
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20240329081555-926615748334
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20240329045829-45dc5f4e4e76
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20240329004725-f5f463943d89
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20240328055052-ec1c723aa183
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20240313064944-17d68585dc25
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20240313065038-1498b922bb24
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20240313070648-addf67d64996
@@ -45,12 +45,12 @@ require (
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20231117134833-7918f76572d4 // indirect
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20240328013407-1d8264a6d809 // indirect
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20240313052650-d3e4c79af4c0 // indirect
-	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20240313054209-d19ab08b5a2c // indirect
+	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20240328053936-9008e28c2268 // indirect
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20240313064601-888fe8578646 // indirect
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20240313054055-78ecba56f1bc // indirect
-	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240313065019-34db2d786767 // indirect
+	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20240330083852-ab008a2e3880 // indirect
 	gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20240313070856-7d3433af905d // indirect
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450 // indirect
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20240329081015-d32619da0dcd // indirect
 	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20240313071253-ebca1db1437c // indirect

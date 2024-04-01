@@ -20,7 +20,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func Test_Start_reference_type_call(t *testing.T) {
+func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -61,8 +61,7 @@ func Test_Start_reference_type_call(t *testing.T) {
 			"both",
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
-				// AsteriskID: "42:01:0a:a4:00:05",
+				ID:        uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
 				ChannelID: "8066017c-02fb-11ec-ba6c-c320820accf1",
 				BridgeID:  "500d0b6e-eb39-11ee-a30a-9392749106cc",
 			},
@@ -70,11 +69,6 @@ func Test_Start_reference_type_call(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ID:         "8066017c-02fb-11ec-ba6c-c320820accf1",
 			},
-			// uuid.FromStringOrNil("9b6c7a78-96e3-11ed-904b-9baa2c0183fd"),
-			// &bridge.Bridge{
-			// 	ID: "9b6c7a78-96e3-11ed-904b-9baa2c0183fd",
-			// },
-			// uuid.FromStringOrNil("80981342-96e3-11ed-bc85-830940cba8ea"),
 			uuid.FromStringOrNil("488feb00-96e3-11ed-8ae7-1fe9bc7a995f"),
 			uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
 
@@ -134,7 +128,129 @@ func Test_Start_reference_type_call(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 
-			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectExternalMedia, res) {
+				t.Errorf("Wrong match.\nexpect: %vgot: %v", tt.expectExternalMedia, res)
+			}
+		})
+	}
+}
+
+func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
+	tests := []struct {
+		name string
+
+		referenceType  externalmedia.ReferenceType
+		referenceID    uuid.UUID
+		externalHost   string
+		encapsulation  externalmedia.Encapsulation
+		transport      externalmedia.Transport
+		connectionType string
+		format         string
+		direction      channel.SnoopDirection
+
+		responseCall                *call.Call
+		responseChannel             *channel.Channel
+		responseUUIDBridgeID        uuid.UUID
+		responseBridge              *bridge.Bridge
+		responseUUIDSnoopID         uuid.UUID
+		responseUUIDChannelID       uuid.UUID
+		responseUUIDExternalMediaID uuid.UUID
+
+		expectBridgeArgs    string
+		expectChannelData   string
+		expectExternalMedia *externalmedia.ExternalMedia
+	}{
+		{
+			"normal",
+
+			externalmedia.ReferenceTypeCall,
+			uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+			"example.com",
+			externalmedia.EncapsulationRTP,
+			"udp",
+			"client",
+			"ulaw",
+			channel.SnoopDirectionBoth,
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				// AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID: "8066017c-02fb-11ec-ba6c-c320820accf1",
+			},
+			&channel.Channel{
+				AsteriskID: "42:01:0a:a4:00:05",
+				ID:         "8066017c-02fb-11ec-ba6c-c320820accf1",
+			},
+			uuid.FromStringOrNil("9b6c7a78-96e3-11ed-904b-9baa2c0183fd"),
+			&bridge.Bridge{
+				ID: "9b6c7a78-96e3-11ed-904b-9baa2c0183fd",
+			},
+			uuid.FromStringOrNil("80981342-96e3-11ed-bc85-830940cba8ea"),
+			uuid.FromStringOrNil("488feb00-96e3-11ed-8ae7-1fe9bc7a995f"),
+			uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
+
+			"reference_type=call-snoop,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
+			"context_type=call,context=call-externalmedia,bridge_id=9b6c7a78-96e3-11ed-904b-9baa2c0183fd,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
+			&externalmedia.ExternalMedia{
+				ID:             uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
+				AsteriskID:     "42:01:0a:a4:00:05",
+				ChannelID:      "488feb00-96e3-11ed-8ae7-1fe9bc7a995f",
+				ReferenceType:  externalmedia.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				LocalIP:        "",
+				LocalPort:      0,
+				ExternalHost:   "example.com",
+				Encapsulation:  "rtp",
+				Transport:      "udp",
+				ConnectionType: "client",
+				Format:         "ulaw",
+				Direction:      "both",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &externalMediaHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridgeID)
+			mockBridge.EXPECT().Start(ctx, tt.responseChannel.AsteriskID, tt.responseUUIDBridgeID.String(), tt.expectBridgeArgs, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDSnoopID)
+			mockChannel.EXPECT().StartSnoop(ctx, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), tt.direction, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
+			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.externalHost, string(tt.encapsulation), string(tt.transport), tt.connectionType, tt.format, string(tt.direction), tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExternalMediaID)
+			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
+
+			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, string(tt.direction))
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -241,7 +357,7 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 
-			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, "both")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
