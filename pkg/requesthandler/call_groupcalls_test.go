@@ -18,10 +18,9 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -31,7 +30,6 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("aa584af4-be33-11ed-aa3e-af30b76641da"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -40,7 +38,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=aa584af4-be33-11ed-aa3e-af30b76641da&filter_deleted=false",
+				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -57,7 +55,6 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 		{
 			"2 calls",
 
-			uuid.FromStringOrNil("aca75b42-be33-11ed-95f1-dfdca58a24cf"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -66,7 +63,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=aca75b42-be33-11ed-95f1-dfdca58a24cf&filter_deleted=false",
+				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -98,7 +95,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1GroupcallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.CallV1GroupcallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
