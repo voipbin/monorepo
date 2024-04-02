@@ -62,14 +62,14 @@ func (h *recordingHandler) Started(ctx context.Context, id uuid.UUID) (*recordin
 	return res, nil
 }
 
-// GetsByCustomerID returns list of recordings of the given customerID
-func (h *recordingHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
+// Gets returns list of recordings of the given filters
+func (h *recordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
+		"func":    "Gets",
+		"filters": filters,
 	})
 
-	res, err := h.db.RecordingGets(ctx, customerID, size, token)
+	res, err := h.db.RecordingGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get reocordings. err: %v", err)
 		return nil, err

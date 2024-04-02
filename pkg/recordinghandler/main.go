@@ -22,7 +22,7 @@ type RecordingHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	Get(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	GetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error)
 	Start(
 		ctx context.Context,
 		referenceType recording.ReferenceType,

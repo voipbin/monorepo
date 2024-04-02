@@ -31,10 +31,9 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *rabbitmqh
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	filters := h.utilHandler.URLParseFilters(u)
 
-	tmps, err := h.recordingHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
+	tmps, err := h.recordingHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil

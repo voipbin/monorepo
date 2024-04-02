@@ -36,13 +36,10 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, m *rabbitmqhandle
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
 	// get filters
 	filters := h.utilHandler.URLParseFilters(u)
 
-	calls, err := h.callHandler.Gets(ctx, customerID, pageSize, pageToken, filters)
+	calls, err := h.callHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
 		return simpleResponse(500), nil

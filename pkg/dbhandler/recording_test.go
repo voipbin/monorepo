@@ -131,8 +131,9 @@ func Test_RecordingGets(t *testing.T) {
 	type test struct {
 		name string
 
-		customerID uuid.UUID
 		recordings []*recording.Recording
+
+		filters map[string]string
 
 		responseCurTime string
 
@@ -142,7 +143,6 @@ func Test_RecordingGets(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 			[]*recording.Recording{
 				{
 					ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
@@ -154,6 +154,10 @@ func Test_RecordingGets(t *testing.T) {
 				},
 			},
 
+			map[string]string{
+				"customer_id": "f15430d8-7f43-11ec-b82c-b7ffeefaf0b9",
+				"deleted":     "false",
+			},
 			"2020-04-18 03:22:17.995000",
 
 			[]*recording.Recording{
@@ -185,9 +189,12 @@ func Test_RecordingGets(t *testing.T) {
 		},
 		{
 			"empty",
-			uuid.FromStringOrNil("08cb92b0-7f44-11ec-8753-6f51eae532cc"),
+
 			[]*recording.Recording{},
 
+			map[string]string{
+				"customer_id": "08cb92b0-7f44-11ec-8753-6f51eae532cc",
+			},
 			"2020-04-18 03:22:17.995000",
 
 			[]*recording.Recording{},
@@ -206,7 +213,6 @@ func Test_RecordingGets(t *testing.T) {
 				db:          dbTest,
 				cache:       mockCache,
 			}
-
 			ctx := context.Background()
 
 			for _, recording := range tt.recordings {
@@ -215,7 +221,7 @@ func Test_RecordingGets(t *testing.T) {
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime())
+			res, err := h.RecordingGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

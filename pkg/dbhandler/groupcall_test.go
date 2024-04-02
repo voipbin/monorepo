@@ -700,8 +700,7 @@ func Test_GroupcallGets(t *testing.T) {
 		name       string
 		groupcalls []*groupcall.Groupcall
 
-		customerID uuid.UUID
-		filters    map[string]string
+		filters map[string]string
 
 		responseCurTime string
 
@@ -721,9 +720,10 @@ func Test_GroupcallGets(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
 				},
 			},
-			uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "fc86423c-aef0-11ee-a9c6-f7e96941fc95",
+				"deleted":     "false",
 			},
 
 			"2020-04-18 03:22:17.995000",
@@ -761,9 +761,9 @@ func Test_GroupcallGets(t *testing.T) {
 			"empty",
 			[]*groupcall.Groupcall{},
 
-			uuid.FromStringOrNil("fce1b9aa-aef0-11ee-b858-6ff6c7db63ee"),
 			map[string]string{
-				"deleted": "true",
+				"customer_id": "fce1b9aa-aef0-11ee-b858-6ff6c7db63ee",
+				"deleted":     "true",
 			},
 
 			"2020-04-18 03:22:17.995000",
@@ -793,7 +793,7 @@ func Test_GroupcallGets(t *testing.T) {
 				_ = h.GroupcallCreate(ctx, gc)
 			}
 
-			res, err := h.GroupcallGets(context.Background(), tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.GroupcallGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

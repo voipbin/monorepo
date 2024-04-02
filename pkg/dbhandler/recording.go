@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	uuid "github.com/gofrs/uuid"
 
@@ -274,17 +275,45 @@ func (h *handler) RecordingGetByRecordingName(ctx context.Context, recordingName
 }
 
 // RecordingGets returns a list of records.
-func (h *handler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
+func (h *handler) RecordingGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
-		and tm_delete >= ?
-	order by tm_create desc limit ?`, recordingSelect)
+		tm_create < ?
+	`, recordingSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id", "reference_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RecordingGets. err: %v", err)
 	}
