@@ -12,10 +12,10 @@ import (
 )
 
 // Gets returns queues
-func (h *queueHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
+func (h *queueHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
 	log := logrus.WithField("func", "Gets")
 
-	res, err := h.db.QueueGets(ctx, customerID, size, token, filters)
+	res, err := h.db.QueueGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get queues info. err: %v", err)
 		return nil, err
@@ -38,17 +38,12 @@ func (h *queueHandler) Get(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 }
 
 // Delete updates the queue's basic info.
-func (h *queueHandler) Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
+func (h *queueHandler) dbDelete(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "Delete",
 		"queue_id": id,
 	})
 	log.Debug("Deleting the queue info.")
-
-	if err := h.db.QueueSetExecute(ctx, id, queue.ExecuteStop); err != nil {
-		log.Errorf("Could not update the queue execute to stop. err: %v", err)
-		return nil, err
-	}
 
 	if err := h.db.QueueDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the queue. err: %v", err)

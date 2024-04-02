@@ -223,10 +223,9 @@ func Test_QueueGets(t *testing.T) {
 		name string
 		data []*queue.Queue
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
-		filters    map[string]string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseCurtime string
 		expectRes       []*queue.Queue
@@ -258,11 +257,11 @@ func Test_QueueGets(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 			2,
 			"2021-04-18T03:22:17.994000",
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "68079af2-7f54-11ec-99c2-53bfcf885867",
+				"deleted":     "false",
 			},
 
 			"2020-04-18T03:22:17.995000",
@@ -319,7 +318,7 @@ func Test_QueueGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueueGets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			res, err := h.QueueGets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

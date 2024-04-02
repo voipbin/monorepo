@@ -20,21 +20,20 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageSize   uint64
-		token      string
-		filters    map[string]string
+		pageSize uint64
+		token    string
+		filters  map[string]string
 
 		responseQueues []*queue.Queue
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("e2fc1400-d25a-11ec-9cd3-73acb3bb9c85"),
 			100,
 			"2020-05-03 21:35:02.809",
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "e2fc1400-d25a-11ec-9cd3-73acb3bb9c85",
+				"deleted":     "false",
 			},
 
 			[]*queue.Queue{
@@ -62,9 +61,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGets(ctx, tt.customerID, tt.pageSize, tt.token, tt.filters).Return(tt.responseQueues, nil)
+			mockDB.EXPECT().QueueGets(ctx, tt.pageSize, tt.token, tt.filters).Return(tt.responseQueues, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.pageSize, tt.token, tt.filters)
+			res, err := h.Gets(ctx, tt.pageSize, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -127,7 +126,7 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func Test_dbDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -161,15 +160,13 @@ func Test_Delete(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueSetExecute(ctx, tt.queueID, queue.ExecuteStop).Return(nil)
 			mockDB.EXPECT().QueueDelete(ctx, tt.queueID).Return(nil)
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueDeleted, tt.responseQueue)
 
-			res, err := h.Delete(ctx, tt.queueID)
+			res, err := h.dbDelete(ctx, tt.queueID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

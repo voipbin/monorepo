@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	service "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
@@ -67,6 +68,20 @@ func (m *MockQueuecallHandler) Delete(ctx context.Context, id uuid.UUID) (*queue
 func (mr *MockQueuecallHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockQueuecallHandler)(nil).Delete), ctx, id)
+}
+
+// EventCUCustomerDeleted mocks base method.
+func (m *MockQueuecallHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerDeleted indicates an expected call of EventCUCustomerDeleted.
+func (mr *MockQueuecallHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockQueuecallHandler)(nil).EventCUCustomerDeleted), ctx, cu)
 }
 
 // EventCallCallHangup mocks base method.
@@ -150,19 +165,19 @@ func (mr *MockQueuecallHandlerMockRecorder) GetByReferenceID(ctx, referenceID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockQueuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
+// Gets mocks base method.
+func (m *MockQueuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockQueuecallHandlerMockRecorder) GetsByCustomerID(ctx, customerID, size, token, filters interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockQueuecallHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByCustomerID), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueuecallHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // HealthCheck mocks base method.

@@ -20,14 +20,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
-		filters    map[string]string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		response []*queuecall.Queuecall
 
@@ -36,7 +35,6 @@ func Test_GetsByCustomerID(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("073e9dfe-7f56-11ec-97c6-a7b797137c40"),
 			1000,
 			"2021-04-18 03:22:17.994000",
 			map[string]string{
@@ -74,9 +72,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGetsByCustomerID(gomock.Any(), tt.customerID, tt.size, tt.token, tt.filters).Return(tt.response, nil)
+			mockDB.EXPECT().QueuecallGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.response, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
