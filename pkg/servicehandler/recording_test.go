@@ -24,7 +24,9 @@ func Test_RecordingGets(t *testing.T) {
 		token string
 
 		responseRecording []cmrecording.Recording
-		expectRes         []*cmrecording.WebhookMessage
+
+		expectFilters map[string]string
+		expectRes     []*cmrecording.WebhookMessage
 	}
 
 	tests := []test{
@@ -55,6 +57,10 @@ func Test_RecordingGets(t *testing.T) {
 				},
 			},
 
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
+			},
 			[]*cmrecording.WebhookMessage{
 				{
 					ID:         uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
@@ -82,7 +88,7 @@ func Test_RecordingGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.agent.CustomerID, tt.size, tt.token).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseRecording, nil)
 
 			res, err := h.RecordingGets(ctx, tt.agent, tt.size, tt.token)
 
