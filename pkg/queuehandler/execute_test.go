@@ -81,7 +81,7 @@ func Test_Execute(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &queueHandler{
-				utilhandler:   mockUtil,
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,

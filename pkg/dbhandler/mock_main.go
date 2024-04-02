@@ -96,18 +96,18 @@ func (mr *MockDBHandlerMockRecorder) QueueGet(ctx, id interface{}) *gomock.Call 
 }
 
 // QueueGets mocks base method.
-func (m *MockDBHandler) QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
+func (m *MockDBHandler) QueueGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueGets", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "QueueGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueueGets indicates an expected call of QueueGets.
-func (mr *MockDBHandlerMockRecorder) QueueGets(ctx, customerID, size, token, filters interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) QueueGets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueGets", reflect.TypeOf((*MockDBHandler)(nil).QueueGets), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueGets", reflect.TypeOf((*MockDBHandler)(nil).QueueGets), ctx, size, token, filters)
 }
 
 // QueueIncreaseTotalAbandonedCount mocks base method.
@@ -294,19 +294,19 @@ func (mr *MockDBHandlerMockRecorder) QueuecallGetByReferenceID(ctx, referenceID 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallGetByReferenceID), ctx, referenceID)
 }
 
-// QueuecallGetsByCustomerID mocks base method.
-func (m *MockDBHandler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
+// QueuecallGets mocks base method.
+func (m *MockDBHandler) QueuecallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallGetsByCustomerID", ctx, customerID, size, token, filters)
+	ret := m.ctrl.Call(m, "QueuecallGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// QueuecallGetsByCustomerID indicates an expected call of QueuecallGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) QueuecallGetsByCustomerID(ctx, customerID, size, token, filters interface{}) *gomock.Call {
+// QueuecallGets indicates an expected call of QueuecallGets.
+func (mr *MockDBHandlerMockRecorder) QueuecallGets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallGetsByCustomerID), ctx, customerID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGets", reflect.TypeOf((*MockDBHandler)(nil).QueuecallGets), ctx, size, token, filters)
 }
 
 // QueuecallSetStatusAbandoned mocks base method.

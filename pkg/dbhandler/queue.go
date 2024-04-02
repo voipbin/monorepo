@@ -285,26 +285,38 @@ func (h *handler) QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 }
 
 // QueueGets returns queues.
-func (h *handler) QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
+func (h *handler) QueueGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, queueSelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+
 		}
 	}
 

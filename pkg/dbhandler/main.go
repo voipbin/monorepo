@@ -27,7 +27,7 @@ type DBHandler interface {
 	QueueCreate(ctx context.Context, a *queue.Queue) error
 	QueueDelete(ctx context.Context, id uuid.UUID) error
 	QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error)
+	QueueGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error)
 	QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error
@@ -50,14 +50,14 @@ type DBHandler interface {
 
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
-	QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
+	QueuecallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
+	// QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
 	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
 	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
 	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error
-	// QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
 }
 
