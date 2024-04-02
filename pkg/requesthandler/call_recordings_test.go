@@ -17,9 +17,9 @@ func Test_CallV1RecordingGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -29,13 +29,15 @@ func Test_CallV1RecordingGets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("c9869b68-8ebf-11ed-8133-9380f47d55fe"),
 			"2020-09-20T03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/recordings?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=c9869b68-8ebf-11ed-8133-9380f47d55fe",
+				URI:      "/v1/recordings?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -53,13 +55,15 @@ func Test_CallV1RecordingGets(t *testing.T) {
 		{
 			"2 items",
 
-			uuid.FromStringOrNil("c9efb170-8ebf-11ed-9710-4bad3233a5d5"),
 			"2020-09-20T03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/recordings?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=c9efb170-8ebf-11ed-9710-4bad3233a5d5",
+				URI:      "/v1/recordings?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -92,7 +96,7 @@ func Test_CallV1RecordingGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1RecordingGets(ctx, tt.customerID, tt.pageSize, tt.pageToken)
+			res, err := reqHandler.CallV1RecordingGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -44,9 +44,8 @@ func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcri
 func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	for k, v := range filters {
-		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
-	}
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceTranscribeTranscribes, 30000, 0, ContentTypeJSON, nil)
 	switch {

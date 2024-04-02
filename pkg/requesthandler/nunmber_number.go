@@ -43,9 +43,8 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 func (r *requestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	for k, v := range filters {
-		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
-	}
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
