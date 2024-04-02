@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -256,6 +257,90 @@ func Test_EventCallConfbridgeLeaved(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			h.EventCallConfbridgeLeaved(ctx, tt.referenceID, tt.conferenceID)
+		})
+	}
+}
+
+func Test_EventCUCustomerDeleted(t *testing.T) {
+	tests := []struct {
+		name string
+
+		customer *cucustomer.Customer
+
+		responseQueuecalls []*queuecall.Queuecall
+
+		expectFilters map[string]string
+	}{
+		{
+			name: "normal",
+
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("51813b9e-f08b-11ee-ae42-e79a06af2749"),
+			},
+
+			responseQueuecalls: []*queuecall.Queuecall{
+				{
+					ID:     uuid.FromStringOrNil("6cf821a8-f08b-11ee-ba34-87171b9d8aec"),
+					Status: queuecall.StatusDone,
+				},
+				{
+					ID:     uuid.FromStringOrNil("6d6aca96-f08b-11ee-8eda-b357cf02292b"),
+					Status: queuecall.StatusDone,
+				},
+				{
+					ID:     uuid.FromStringOrNil("6d999c9a-f08b-11ee-a47a-03dddb8092f7"),
+					Status: queuecall.StatusDone,
+				},
+				{
+					ID:     uuid.FromStringOrNil("6dccccc8-f08b-11ee-a0e6-1fccc2222158"),
+					Status: queuecall.StatusDone,
+				},
+			},
+
+			expectFilters: map[string]string{
+				"customer_id": "51813b9e-f08b-11ee-ae42-e79a06af2749",
+				"deleted":     "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &queuecallHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+				queueHandler:  mockQueue,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueuecalls, nil)
+
+			// kick
+			for _, qc := range tt.responseQueuecalls {
+				mockDB.EXPECT().QueuecallGet(ctx, qc.ID).Return(qc, nil)
+			}
+
+			// delete
+			for _, qc := range tt.responseQueuecalls {
+				mockDB.EXPECT().QueuecallDelete(ctx, qc.ID).Return(nil)
+				mockDB.EXPECT().QueuecallGet(ctx, qc.ID).Return(qc, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, qc.CustomerID, queuecall.EventTypeQueuecallDeleted, qc)
+			}
+
+			if errDelete := h.EventCUCustomerDeleted(ctx, tt.customer); errDelete != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errDelete)
+			}
 		})
 	}
 }

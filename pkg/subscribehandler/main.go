@@ -14,6 +14,7 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
@@ -134,19 +135,25 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	var err error
 	start := time.Now()
 	ctx := context.Background()
+
 	switch {
 
 	//// call-manager
 	// call
-	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHangup)):
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmcall.EventTypeCallHangup)):
 		err = h.processEventCMCallHangup(ctx, m)
 
 	// confbridge
-	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeJoined)):
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmconfbridge.EventTypeConfbridgeJoined)):
 		err = h.processEventCMConfbridgeJoined(ctx, m)
 
-	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
 		err = h.processEventCMConfbridgeLeaved(ctx, m)
+
+	//// customer-manager
+	// customer
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cucustomer.EventTypeCustomerDeleted)):
+		err = h.processEventCUCustomerDeleted(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

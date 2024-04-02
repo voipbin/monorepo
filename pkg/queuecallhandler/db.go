@@ -12,14 +12,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
-// GetsByCustomerID returns queuecalls of the given customer_id
-func (h *queuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
+// Gets returns queuecalls of the given customer_id
+func (h *queuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
+		"func":    "Gets",
+		"filters": filters,
 	})
 
-	res, err := h.db.QueuecallGetsByCustomerID(ctx, customerID, size, token, filters)
+	res, err := h.db.QueuecallGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
 		return nil, err

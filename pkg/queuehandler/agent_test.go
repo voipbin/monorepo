@@ -108,7 +108,7 @@ func Test_GetAgents(t *testing.T) {
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
-				utilhandler:   mockUtil,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()

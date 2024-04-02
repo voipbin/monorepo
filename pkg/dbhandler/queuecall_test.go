@@ -134,15 +134,14 @@ func Test_QueuecallCreate(t *testing.T) {
 	}
 }
 
-func Test_QueuecallGetsByCustomerID(t *testing.T) {
+func Test_QueuecallGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 		data []*queuecall.Queuecall
 
-		customerID uuid.UUID
-		size       uint64
-		filters    map[string]string
+		size    uint64
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*queuecall.Queuecall
@@ -152,29 +151,29 @@ func Test_QueuecallGetsByCustomerID(t *testing.T) {
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("a8818302-5a7b-11ec-b948-a3d1ac87eeea"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					CustomerID:    uuid.FromStringOrNil("38959f28-f03e-11ee-9a3e-d7ddc59a75be"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 				},
 				{
 					ID:            uuid.FromStringOrNil("a8d4bff4-5a7b-11ec-b7f7-a3905f3d70e9"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					CustomerID:    uuid.FromStringOrNil("38959f28-f03e-11ee-9a3e-d7ddc59a75be"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 				},
 			},
 
-			uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 			2,
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "38959f28-f03e-11ee-9a3e-d7ddc59a75be",
+				"deleted":     "false",
 			},
 
 			"2023-02-14 03:22:17.994000",
 			[]*queuecall.Queuecall{
 				{
 					ID:            uuid.FromStringOrNil("a8818302-5a7b-11ec-b948-a3d1ac87eeea"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					CustomerID:    uuid.FromStringOrNil("38959f28-f03e-11ee-9a3e-d7ddc59a75be"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 					Source:        commonaddress.Address{},
@@ -188,7 +187,7 @@ func Test_QueuecallGetsByCustomerID(t *testing.T) {
 				},
 				{
 					ID:            uuid.FromStringOrNil("a8d4bff4-5a7b-11ec-b7f7-a3905f3d70e9"),
-					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					CustomerID:    uuid.FromStringOrNil("38959f28-f03e-11ee-9a3e-d7ddc59a75be"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
 					Source:        commonaddress.Address{},
@@ -219,7 +218,6 @@ func Test_QueuecallGetsByCustomerID(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 			2,
 			map[string]string{
 				"deleted":      "false",
@@ -277,7 +275,6 @@ func Test_QueuecallGetsByCustomerID(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 			2,
 			map[string]string{
 				"deleted":  "false",
@@ -343,7 +340,7 @@ func Test_QueuecallGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueuecallGetsByCustomerID(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.QueuecallGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
