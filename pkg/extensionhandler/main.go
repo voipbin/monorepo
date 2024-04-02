@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
@@ -30,6 +31,8 @@ type ExtensionHandler interface {
 	Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*extension.Extension, error)
 	GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	Update(ctx context.Context, id uuid.UUID, name string, detail string, password string) (*extension.Extension, error)
+
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // extensionHandler structure for service handle
