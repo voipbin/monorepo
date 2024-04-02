@@ -80,10 +80,11 @@ func (h *serviceHandler) QueueGets(ctx context.Context, a *amagent.Agent, size u
 
 	// filters
 	filters := map[string]string{
-		"deleted": "false", // we don't need deleted items
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false", // we don't need deleted items
 	}
 
-	tmps, err := h.reqHandler.QueueV1QueueGets(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.QueueV1QueueGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get queues from the queue-manager. err: %v", err)
 		return nil, err
