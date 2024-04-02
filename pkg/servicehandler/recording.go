@@ -80,7 +80,13 @@ func (h *serviceHandler) RecordingGets(ctx context.Context, a *amagent.Agent, si
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.CallV1RecordingGets(ctx, a.CustomerID, size, token)
+	// filters
+	filters := map[string]string{
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false", // we don't need deleted items
+	}
+
+	tmp, err := h.reqHandler.CallV1RecordingGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err
