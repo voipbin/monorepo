@@ -222,12 +222,11 @@ func (r *requestHandler) CallV1CallGet(ctx context.Context, callID uuid.UUID) (*
 // CallV1CallGets sends a request to call-manager
 // to getting a list of call info.
 // it returns detail list of call info if it succeed.
-func (r *requestHandler) CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cmcall.Call, error) {
-	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmcall.Call, error) {
+	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	for k, v := range filters {
-		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
-	}
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, 30000, 0, ContentTypeNone, nil)
 	switch {

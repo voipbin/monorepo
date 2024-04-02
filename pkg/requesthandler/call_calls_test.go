@@ -445,10 +445,9 @@ func Test_CallV1CallGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -458,7 +457,6 @@ func Test_CallV1CallGets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("820f1436-7f52-11ec-a626-df15ba0fc033"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -467,7 +465,7 @@ func Test_CallV1CallGets(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=820f1436-7f52-11ec-a626-df15ba0fc033&filter_deleted=false",
+				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -484,7 +482,6 @@ func Test_CallV1CallGets(t *testing.T) {
 		{
 			"2 calls",
 
-			uuid.FromStringOrNil("8e553ff4-7f52-11ec-ab5a-7b43917ef4fb"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -493,7 +490,7 @@ func Test_CallV1CallGets(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=8e553ff4-7f52-11ec-ab5a-7b43917ef4fb&filter_deleted=false",
+				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -525,7 +522,7 @@ func Test_CallV1CallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.CallV1CallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

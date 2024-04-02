@@ -16,8 +16,11 @@ import (
 // CallV1RecordingGets sends a request to call-manager
 // to getting recordings.
 // it returns list of recordings if it succeed.
-func (r *requestHandler) CallV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error) {
-	uri := fmt.Sprintf("/v1/recordings?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(token), size, customerID)
+func (r *requestHandler) CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmrecording.Recording, error) {
+	uri := fmt.Sprintf("/v1/recordings?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
