@@ -93,9 +93,8 @@ func (r *requestHandler) ChatV1MessagechatGet(ctx context.Context, messagechatID
 func (r *requestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechat.Messagechat, error) {
 	uri := fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	for k, v := range filters {
-		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
-	}
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

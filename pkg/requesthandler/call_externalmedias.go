@@ -19,9 +19,8 @@ import (
 func (r *requestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmexternalmedia.ExternalMedia, error) {
 	uri := fmt.Sprintf("/v1/external-medias?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	for k, v := range filters {
-		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
-	}
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {

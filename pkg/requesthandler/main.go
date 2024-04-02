@@ -5,6 +5,7 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -394,7 +395,7 @@ type RequestHandler interface {
 	) (*cmcall.Call, error)
 	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cmcall.Call, error)
+	CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
 	CallV1CallMediaStop(ctx context.Context, callID uuid.UUID) error
 	CallV1CallPlay(ctx context.Context, callID uuid.UUID, mediaURLs []string) error
@@ -449,7 +450,7 @@ type RequestHandler interface {
 		ringMethod cmgroupcall.RingMethod,
 		answerMethod cmgroupcall.AnswerMethod,
 	) (*cmgroupcall.Groupcall, error)
-	CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]cmgroupcall.Groupcall, error)
+	CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmgroupcall.Groupcall, error)
 	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallDelete(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallHangup(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
@@ -460,7 +461,7 @@ type RequestHandler interface {
 
 	// call-manager recordings
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
-	CallV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error)
+	CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmrecording.Recording, error)
 	CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
 	CallV1RecordingStart(
 		ctx context.Context,
@@ -954,4 +955,12 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.Serv
 	initPrometheus(namespace)
 
 	return h
+}
+
+func parseFilters(uri string, filters map[string]string) string {
+	for k, v := range filters {
+		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+	}
+
+	return uri
 }

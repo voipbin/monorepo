@@ -42,9 +42,8 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	for k, v := range filters {
-		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
-	}
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeNone, nil)
 	switch {
