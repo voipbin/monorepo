@@ -17,10 +17,9 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		filters    map[string]string
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -30,7 +29,6 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("b24479ee-7ff1-11ec-a54e-6bf84d5eae5b"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -39,7 +37,7 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b&filter_deleted=false",
+				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -56,7 +54,6 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 		{
 			"2 results",
 
-			uuid.FromStringOrNil("b24479ee-7ff1-11ec-a54e-6bf84d5eae5b"),
 			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
@@ -65,7 +62,7 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b&filter_deleted=false",
+				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
@@ -97,7 +94,7 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QueueV1QueuecallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.QueueV1QueuecallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
