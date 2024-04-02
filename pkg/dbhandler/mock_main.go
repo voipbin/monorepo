@@ -445,6 +445,21 @@ func (mr *MockDBHandlerMockRecorder) TrunkGet(ctx, id interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGet", reflect.TypeOf((*MockDBHandler)(nil).TrunkGet), ctx, id)
 }
 
+// TrunkGetByDomainName mocks base method.
+func (m *MockDBHandler) TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGetByDomainName", ctx, domainName)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGetByDomainName indicates an expected call of TrunkGetByDomainName.
+func (mr *MockDBHandlerMockRecorder) TrunkGetByDomainName(ctx, domainName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGetByDomainName", reflect.TypeOf((*MockDBHandler)(nil).TrunkGetByDomainName), ctx, domainName)
+}
+
 // TrunkGets mocks base method.
 func (m *MockDBHandler) TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error) {
 	m.ctrl.T.Helper()

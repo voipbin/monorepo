@@ -115,6 +115,19 @@ func Test_TrunkCreate(t *testing.T) {
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCache.EXPECT().TrunkGetByDomainName(ctx, tt.trunk.DomainName).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
+			res, err = h.TrunkGetByDomainName(ctx, tt.trunk.DomainName)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }

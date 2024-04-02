@@ -2,6 +2,7 @@ package trunkhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -113,7 +114,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDBBin.EXPECT().TrunkGets(ctx, uint64(1), "", tt.expectFilters).Return([]*trunk.Trunk{}, nil)
+			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, fmt.Errorf(""))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDBBin.EXPECT().TrunkCreate(ctx, tt.expectTrunk)
 			mockDBBin.EXPECT().TrunkGet(ctx, tt.expectTrunk.ID).Return(tt.responseTrunk, nil)
@@ -250,9 +251,7 @@ func Test_GetByDomainName(t *testing.T) {
 
 		domainName string
 
-		responseTrunks []*trunk.Trunk
-
-		expectFilters map[string]string
+		responseTrunk *trunk.Trunk
 		expectRes     *trunk.Trunk
 	}
 
@@ -262,16 +261,10 @@ func Test_GetByDomainName(t *testing.T) {
 
 			"test",
 
-			[]*trunk.Trunk{
-				{
-					ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
-				},
+			&trunk.Trunk{
+				ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
 			},
 
-			map[string]string{
-				"deleted":     "false",
-				"domain_name": "test",
-			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("efce1da4-cdc6-11ee-8fd0-93756984748c"),
 			},
@@ -290,7 +283,7 @@ func Test_GetByDomainName(t *testing.T) {
 		}
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkGets(ctx, uint64(1), "", tt.expectFilters).Return(tt.responseTrunks, nil)
+		mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(tt.responseTrunk, nil)
 		res, err := h.GetByDomainName(ctx, tt.domainName)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)

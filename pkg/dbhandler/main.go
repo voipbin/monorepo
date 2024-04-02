@@ -77,6 +77,7 @@ type DBHandler interface {
 		allowedIPs []string,
 	) error
 	TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
+	TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
 	TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error)
 	TrunkDelete(ctx context.Context, id uuid.UUID) error
 }
