@@ -19,8 +19,8 @@ import (
 // QueueV1QueueGets sends a request to queue-manager
 // to get a list of queues.
 // Returns list of queues
-func (r *requestHandler) QueueV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueue.Queue, error) {
-	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueue.Queue, error) {
+	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	for k, v := range filters {
 		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
