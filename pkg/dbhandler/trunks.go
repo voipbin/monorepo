@@ -320,6 +320,36 @@ func (h *handler) TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, err
 	return res, nil
 }
 
+// TrunkGetByDomainName returns Trunk of the given domain name.
+func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
+
+	res, err := h.trunkGetByDomainNameFromCache(ctx, domainName)
+	if err == nil {
+		return res, nil
+	}
+
+	filters := map[string]string{
+		"domain_name": domainName,
+		"deleted":     "false",
+	}
+
+	tmp, err := h.TrunkGets(ctx, 1, "", filters)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(tmp) == 0 {
+		return nil, ErrNotFound
+	}
+
+	res = tmp[0]
+
+	// set to the cache
+	_ = h.trunkSetToCache(ctx, res)
+
+	return res, nil
+}
+
 // TrunkGets returns trunks.
 func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error) {
 	// prepare
@@ -339,7 +369,7 @@ func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filt
 	for k, v := range filters {
 		switch k {
 		case "customer_id":
-			q = fmt.Sprintf("%s and customer_id = ?", q)
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
 

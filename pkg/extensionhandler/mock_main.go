@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
@@ -64,6 +65,20 @@ func (m *MockExtensionHandler) Delete(ctx context.Context, id uuid.UUID) (*exten
 func (mr *MockExtensionHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockExtensionHandler)(nil).Delete), ctx, id)
+}
+
+// EventCUCustomerDeleted mocks base method.
+func (m *MockExtensionHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerDeleted indicates an expected call of EventCUCustomerDeleted.
+func (mr *MockExtensionHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockExtensionHandler)(nil).EventCUCustomerDeleted), ctx, cu)
 }
 
 // Get mocks base method.
