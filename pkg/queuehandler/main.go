@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
@@ -38,7 +39,7 @@ type QueueHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Execute(ctx context.Context, id uuid.UUID)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queue.Queue, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error)
 	UpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
@@ -61,10 +62,12 @@ type QueueHandler interface {
 	RemoveQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)
 
 	GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
+
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 type queueHandler struct {
-	utilhandler   utilhandler.UtilHandler
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyhandler notifyhandler.NotifyHandler
@@ -77,7 +80,7 @@ func NewQueueHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 ) QueueHandler {
 	return &queueHandler{
-		utilhandler:   utilhandler.NewUtilHandler(),
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyhandler: notifyHandler,

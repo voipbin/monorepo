@@ -323,41 +323,37 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 	return res, nil
 }
 
-// QueuecallGetsByCustomerID returns QueueCalls.
-func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
-
+// QueuecallGets returns queuecalls.
+func (h *handler) QueuecallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, queuecallSelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id", "queue_id", "reference_id", "reference_activeflow_id", "forward_action_id", "exit_action_id", "confbridge_id", "service_agent_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
 
-		case "reference_id":
-			q = fmt.Sprintf("%s and reference_id = ?", q)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "queue_id":
-			q = fmt.Sprintf("%s and queue_id = ?", q)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "status":
-			q = fmt.Sprintf("%s and status = ?", q)
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, v)
 
 		}
@@ -368,7 +364,7 @@ func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid
 
 	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueuecallGets. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -376,7 +372,7 @@ func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid
 	for rows.Next() {
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGets. err: %v", err)
 		}
 
 		res = append(res, u)
@@ -384,6 +380,68 @@ func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid
 
 	return res, nil
 }
+
+// // QueuecallGetsByCustomerID returns QueueCalls.
+// func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
+
+// 	// prepare
+// 	q := fmt.Sprintf(`%s
+// 	where
+// 		customer_id = ?
+// 		and tm_create < ?
+// 	`, queuecallSelect)
+
+// 	values := []interface{}{
+// 		customerID.Bytes(),
+// 		token,
+// 	}
+
+// 	for k, v := range filters {
+// 		switch k {
+// 		case "deleted":
+// 			if v == "false" {
+// 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+// 				values = append(values, DefaultTimeStamp)
+// 			}
+
+// 		case "reference_id":
+// 			q = fmt.Sprintf("%s and reference_id = ?", q)
+// 			tmp := uuid.FromStringOrNil(v)
+// 			values = append(values, tmp.Bytes())
+
+// 		case "queue_id":
+// 			q = fmt.Sprintf("%s and queue_id = ?", q)
+// 			tmp := uuid.FromStringOrNil(v)
+// 			values = append(values, tmp.Bytes())
+
+// 		case "status":
+// 			q = fmt.Sprintf("%s and status = ?", q)
+// 			values = append(values, v)
+
+// 		}
+// 	}
+
+// 	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+// 	values = append(values, strconv.FormatUint(size, 10))
+
+// 	rows, err := h.db.Query(q, values...)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not query. QueuecallGetsByCustomerID. err: %v", err)
+// 	}
+// 	defer rows.Close()
+
+// 	var res []*queuecall.Queuecall
+// 	for rows.Next() {
+// 		u, err := h.queuecallGetFromRow(rows)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByCustomerID. err: %v", err)
+// 		}
+
+// 		res = append(res, u)
+// 	}
+
+// 	return res, nil
+// }
 
 // QueuecallDelete deletes the queuecall.
 func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {

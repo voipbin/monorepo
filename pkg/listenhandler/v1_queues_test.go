@@ -8,6 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
@@ -147,10 +148,9 @@ func Test_processV1QueuesGet(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
-		filters    map[string]string
+		pageSize        uint64
+		pageToken       string
+		responseFilters map[string]string
 
 		queues []*queue.Queue
 
@@ -163,11 +163,11 @@ func Test_processV1QueuesGet(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
-			uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
 			10,
 			"2020-05-03 21:35:02.809",
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "570b5094-7f55-11ec-b5cd-1b925f9028af",
+				"deleted":     "false",
 			},
 
 			[]*queue.Queue{
@@ -190,11 +190,11 @@ func Test_processV1QueuesGet(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
-			uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
 			10,
 			"2020-05-03 21:35:02.809",
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "6a7ce2b4-7f55-11ec-a666-8b44aa06d0db",
+				"deleted":     "false",
 			},
 
 			[]*queue.Queue{
@@ -220,16 +220,19 @@ func Test_processV1QueuesGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				utilHanlder: mockUtil,
+				rabbitSock:  mockSock,
 
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.filters).Return(tt.queues, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockQueue.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.queues, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

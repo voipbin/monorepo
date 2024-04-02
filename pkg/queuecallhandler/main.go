@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -41,7 +42,7 @@ type QueuecallHandler interface {
 	) (*queuecall.Queuecall, error)
 	Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error)
 	UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 
@@ -54,6 +55,7 @@ type QueuecallHandler interface {
 	EventCallCallHangup(ctx context.Context, referenceID uuid.UUID)
 	EventCallConfbridgeJoined(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
 	EventCallConfbridgeLeaved(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)

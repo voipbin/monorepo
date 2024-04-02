@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
@@ -29,7 +30,8 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	utilHanlder utilhandler.UtilHandler
+	rabbitSock  rabbitmqhandler.Rabbit
 
 	queueHandler     queuehandler.QueueHandler
 	queuecallHandler queuecallhandler.QueuecallHandler
@@ -103,7 +105,8 @@ func NewListenHandler(
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock: rabbitSock,
+		utilHanlder: utilhandler.NewUtilHandler(),
+		rabbitSock:  rabbitSock,
 
 		queueHandler:     queueHandler,
 		queuecallHandler: queuecallHandler,
