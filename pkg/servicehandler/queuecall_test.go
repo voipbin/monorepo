@@ -21,10 +21,10 @@ func Test_QueuecallGets(t *testing.T) {
 		agent     *amagent.Agent
 		pageToken string
 		pageSize  uint64
-		filters map[string]string
 
-		response  []qmqueuecall.Queuecall
-		expectRes []*qmqueuecall.WebhookMessage
+		responseQueuecalls []qmqueuecall.Queuecall
+		expectFilters      map[string]string
+		expectRes          []*qmqueuecall.WebhookMessage
 	}
 
 	tests := []test{
@@ -37,14 +37,15 @@ func Test_QueuecallGets(t *testing.T) {
 			},
 			"2021-03-01 01:00:00.995000",
 			10,
-			map[string]string{
-				"deleted":"false",
-			},
 
 			[]qmqueuecall.Queuecall{
 				{
 					ID: uuid.FromStringOrNil("cccf3e1a-6413-11ec-9874-afa5340c4843"),
 				},
+			},
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*qmqueuecall.WebhookMessage{
 				{
@@ -68,7 +69,7 @@ func Test_QueuecallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseQueuecalls, nil)
 
 			res, err := h.QueuecallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
