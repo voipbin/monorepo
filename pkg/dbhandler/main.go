@@ -41,7 +41,7 @@ type DBHandler interface {
 	CallDelete(ctx context.Context, id uuid.UUID) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
-	CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*call.Call, error)
+	CallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*call.Call, error)
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error
 	CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error
@@ -103,7 +103,7 @@ type DBHandler interface {
 
 	// groupcall
 	GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
-	GroupcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error)
+	GroupcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error)
 	GroupcallCreate(ctx context.Context, data *groupcall.Groupcall) error
 	GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error
 	GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.UUID) error
@@ -119,7 +119,7 @@ type DBHandler interface {
 	RecordingDelete(ctx context.Context, id uuid.UUID) error
 	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingGetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error)
-	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
+	RecordingGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error)
 	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status) error
 }
 

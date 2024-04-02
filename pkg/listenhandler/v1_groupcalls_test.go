@@ -131,15 +131,14 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 		responseFilters    map[string]string
 		responseGroupcalls []*groupcall.Groupcall
 
-		expectCusomterID uuid.UUID
-		expectPageSize   uint64
-		expectPageToken  string
-		expectRes        *rabbitmqhandler.Response
+		expectPageSize  uint64
+		expectPageToken string
+		expectRes       *rabbitmqhandler.Response
 	}{
 		{
 			name: "normal",
 			request: &rabbitmqhandler.Request{
-				URI:    "/v1/groupcalls?page_size=10&page_token=2023-05-03%2021:35:02.809&customer_id=256d8080-bd7e-11ed-b083-93a9d3f167e7&filter_deleted=false",
+				URI:    "/v1/groupcalls?page_size=10&page_token=2023-05-03%2021:35:02.809&filter_customer_id=256d8080-bd7e-11ed-b083-93a9d3f167e7&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
@@ -152,11 +151,11 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			},
 
 			responseFilters: map[string]string{
-				"deleted": "false",
+				"customer_id": "256d8080-bd7e-11ed-b083-93a9d3f167e7",
+				"deleted":     "false",
 			},
-			expectCusomterID: uuid.FromStringOrNil("256d8080-bd7e-11ed-b083-93a9d3f167e7"),
-			expectPageSize:   10,
-			expectPageToken:  "2023-05-03 21:35:02.809",
+			expectPageSize:  10,
+			expectPageToken: "2023-05-03 21:35:02.809",
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -183,7 +182,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectCusomterID, tt.expectPageSize, tt.expectPageToken, tt.responseFilters).Return(tt.responseGroupcalls, nil)
+			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, tt.responseFilters).Return(tt.responseGroupcalls, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

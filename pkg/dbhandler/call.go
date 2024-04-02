@@ -398,27 +398,38 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 }
 
 // CallGets returns a list of calls.
-func (h *handler) CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*call.Call, error) {
+func (h *handler) CallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*call.Call, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, callSelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id", "flow_id", "active_flow_id", "confbridge_id", "master_call_id", "recording_id", "external_media_id", "groupcall_id", "dialroute_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
 		}
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
@@ -15,25 +16,29 @@ import (
 
 func Test_processV1RecordingsGet(t *testing.T) {
 	type test struct {
-		name       string
-		request    *rabbitmqhandler.Request
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
-		recordings []*recording.Recording
-		expectRes  *rabbitmqhandler.Response
+		name      string
+		request   *rabbitmqhandler.Request
+		pageSize  uint64
+		pageToken string
+
+		responseFilters    map[string]string
+		responseRecordings []*recording.Recording
+		expectRes          *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
 			"basic",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=c15af818-7f51-11ec-8eeb-f733ba8df393",
+				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=c15af818-7f51-11ec-8eeb-f733ba8df393",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("c15af818-7f51-11ec-8eeb-f733ba8df393"),
 			10,
 			"2020-05-03 21:35:02.809",
+
+			map[string]string{
+				"customer_id": "c15af818-7f51-11ec-8eeb-f733ba8df393",
+			},
 			[]*recording.Recording{
 				{
 					ID:            uuid.FromStringOrNil("cfa4d576-6128-11eb-b69b-9f7a738a1ad7"),
@@ -59,17 +64,20 @@ func Test_processV1RecordingsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
+				utilHandler:      mockUtil,
 				rabbitSock:       mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockRecording.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseRecordings, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

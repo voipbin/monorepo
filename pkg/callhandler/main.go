@@ -45,7 +45,7 @@ type CallHandler interface {
 	DigitsGet(ctx context.Context, id uuid.UUID) (string, error)
 	DigitsSet(ctx context.Context, id uuid.UUID, digits string) error
 
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*call.Call, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*call.Call, error)
 	Get(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	Delete(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)

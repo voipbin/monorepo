@@ -214,8 +214,7 @@ func Test_CallGets(t *testing.T) {
 		name  string
 		calls []*call.Call
 
-		customerID uuid.UUID
-		filters    map[string]string
+		filters map[string]string
 
 		responseCurTime string
 
@@ -235,9 +234,10 @@ func Test_CallGets(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
 				},
 			},
-			uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
+
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "739625ca-7f43-11ec-8d25-4f519d029295",
+				"deleted":     "false",
 			},
 
 			"2020-04-18 03:22:17.995000",
@@ -283,9 +283,9 @@ func Test_CallGets(t *testing.T) {
 			"empty",
 			[]*call.Call{},
 
-			uuid.FromStringOrNil("cd1bc551-c4e8-45c8-a457-d41d65e1f18c"),
 			map[string]string{
-				"deleted": "true",
+				"customer_id": "cd1bc551-c4e8-45c8-a457-d41d65e1f18c",
+				"deleted":     "true",
 			},
 
 			"2020-04-18 03:22:17.995000",
@@ -315,7 +315,7 @@ func Test_CallGets(t *testing.T) {
 				_ = h.CallCreate(ctx, c)
 			}
 
-			res, err := h.CallGets(context.Background(), tt.customerID, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.CallGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -415,10 +415,11 @@ func Test_CallGets_delete(t *testing.T) {
 			}
 
 			filters := map[string]string{
-				"deleted": "false",
+				"customer_id": tt.customerID.String(),
+				"deleted":     "false",
 			}
 
-			res, err := h.CallGets(context.Background(), tt.customerID, 10, utilhandler.TimeGetCurTime(), filters)
+			res, err := h.CallGets(ctx, 10, utilhandler.TimeGetCurTime(), filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

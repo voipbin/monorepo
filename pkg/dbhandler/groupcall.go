@@ -267,27 +267,38 @@ func (h *handler) GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Gr
 }
 
 // GroupcallGets returns a list of groupcalls.
-func (h *handler) GroupcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error) {
+func (h *handler) GroupcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 	where
-		customer_id = ?
-		and tm_create < ?
+		tm_create < ?
 	`, groupcallSelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
-		customerID.Bytes(),
 		token,
 	}
 
 	for k, v := range filters {
 		switch k {
+		case "customer_id", "flow_id", "master_call_id", "master_groupcall_id", "answer_call_id", "answer_groupcall_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
 		case "deleted":
 			if v == "false" {
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
 		}
 	}
 

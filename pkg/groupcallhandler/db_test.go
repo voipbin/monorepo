@@ -147,20 +147,20 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
-		filters    map[string]string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseGroupcalls []*groupcall.Groupcall
 	}{
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("b3944c9c-bd7c-11ed-874c-6b6fb342a46d"),
-			size:       10,
-			token:      "2023-01-18 03:22:18.995000",
-			filters:    map[string]string{},
+			size:  10,
+			token: "2023-01-18 03:22:18.995000",
+			filters: map[string]string{
+				"customer_id": "b3944c9c-bd7c-11ed-874c-6b6fb342a46d",
+			},
 
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
@@ -191,9 +191,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGets(ctx, tt.customerID, tt.size, tt.token, tt.filters).Return(tt.responseGroupcalls, nil)
+			mockDB.EXPECT().GroupcallGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseGroupcalls, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token, tt.filters)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

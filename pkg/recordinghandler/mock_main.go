@@ -81,19 +81,19 @@ func (mr *MockRecordingHandlerMockRecorder) GetByRecordingName(ctx, recordingNam
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRecordingName", reflect.TypeOf((*MockRecordingHandler)(nil).GetByRecordingName), ctx, recordingName)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockRecordingHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
+// Gets mocks base method.
+func (m *MockRecordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockRecordingHandlerMockRecorder) GetsByCustomerID(ctx, customerID, size, token interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockRecordingHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockRecordingHandler)(nil).GetsByCustomerID), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockRecordingHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // Start mocks base method.

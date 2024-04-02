@@ -78,10 +78,9 @@ func Test_processV1CallsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request    *rabbitmqhandler.Request
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
+		request   *rabbitmqhandler.Request
+		pageSize  uint64
+		pageToken string
 
 		responseCalls   []*call.Call
 		responseFilters map[string]string
@@ -94,7 +93,6 @@ func Test_processV1CallsGet(t *testing.T) {
 				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac03d4ea-7f50-11ec-908d-d39407ab524d&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("ac03d4ea-7f50-11ec-908d-d39407ab524d"),
 			10,
 			"2020-05-03 21:35:02.809",
 
@@ -105,7 +103,8 @@ func Test_processV1CallsGet(t *testing.T) {
 				},
 			},
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
+				"deleted":     "false",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -120,7 +119,6 @@ func Test_processV1CallsGet(t *testing.T) {
 				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac35aeb6-7f50-11ec-b7c5-abac92baf1fb&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
 			10,
 			"2020-05-03 21:35:02.809",
 
@@ -135,7 +133,8 @@ func Test_processV1CallsGet(t *testing.T) {
 				},
 			},
 			map[string]string{
-				"deleted": "false",
+				"customer_id": "ac35aeb6-7f50-11ec-b7c5-abac92baf1fb",
+				"deleted":     "false",
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -161,7 +160,7 @@ func Test_processV1CallsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockCall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseCalls, nil)
+			mockCall.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseCalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
