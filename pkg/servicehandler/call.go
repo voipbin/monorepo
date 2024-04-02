@@ -154,11 +154,12 @@ func (h *serviceHandler) CallGets(ctx context.Context, a *amagent.Agent, size ui
 
 	// filters
 	filters := map[string]string{
-		"deleted": "false", // we don't need deleted items
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false", // we don't need deleted items
 	}
 
 	// get calls
-	tmps, err := h.reqHandler.CallV1CallGets(ctx, a.CustomerID, token, size, filters)
+	tmps, err := h.reqHandler.CallV1CallGets(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err

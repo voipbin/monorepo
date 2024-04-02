@@ -746,8 +746,9 @@ func Test_CallGets(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		response  []cmcall.Call
-		expectRes []*cmcall.WebhookMessage
+		responseCalls []cmcall.Call
+		expectFilters map[string]string
+		expectRes     []*cmcall.WebhookMessage
 	}{
 		{
 			"normal",
@@ -764,6 +765,10 @@ func Test_CallGets(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("1fbeb120-b08c-11ee-9298-8373260919fa"),
 				},
+			},
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*cmcall.WebhookMessage{
 				{
@@ -787,7 +792,7 @@ func Test_CallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize, map[string]string{"deleted": "false"}).Return(tt.response, nil)
+			mockReq.EXPECT().CallV1CallGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseCalls, nil)
 
 			res, err := h.CallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
