@@ -24,6 +24,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/subscribehandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/trunkhandler"
 )
 
@@ -138,6 +139,9 @@ func initProm(endpoint, listen string) {
 
 // NewWorker creates worker interface
 func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "run",
+	})
 
 	dbAst := dbhandler.NewHandler(sqlAst, cache)
 	dbBin := dbhandler.NewHandler(sqlBin, cache)
@@ -151,11 +155,55 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler)
 	trunkHandler := trunkhandler.NewTrunkHandler(reqHandler, dbBin, notifyHandler)
 	contactHandler := contacthandler.NewContactHandler(reqHandler, dbAst, dbBin)
+
+	// run listen
+	if errListen := runListen(rabbitSock, reqHandler, trunkHandler, extensionHandler, contactHandler); errListen != nil {
+		log.Errorf("Could not run the listener. err: %v", errListen)
+		return errListen
+	}
+
+	// run subscriber
+	if errSubscribe := runSubscribe(rabbitSock, extensionHandler, trunkHandler); errSubscribe != nil {
+		log.Errorf("Could not run the subscriber. err: %v", errSubscribe)
+		return errSubscribe
+	}
+
+	return nil
+}
+
+// runListen runs the listen service
+func runListen(rabbitSock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, trunkHandler trunkhandler.TrunkHandler, extensionHandler extensionhandler.ExtensionHandler, contactHandler contacthandler.ContactHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListen",
+	})
+
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, trunkHandler, extensionHandler, contactHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameRegistrarRequest), string(commonoutline.QueueNameDelay)); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	}
+
+	return nil
+}
+
+// runSubscribe runs the subscribed event handler
+func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, extensionHandler extensionhandler.ExtensionHandler, trunkHandler trunkhandler.TrunkHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runSubscribe",
+	})
+
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCustomerEvent),
+	}
+	log.WithField("subscribe_targets", subscribeTargets).Debugf("Subscribe target details. len: %d", len(subscribeTargets))
+
+	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameRegistrarSubscribe), subscribeTargets, extensionHandler, trunkHandler)
+
+	// run
+	if err := subHandler.Run(); err != nil {
+		log.Errorf("Could not run the subscribehandler correctly. err: %v", err)
+		return err
 	}
 
 	return nil

@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new trunk and returns a created trunk info
@@ -107,22 +106,12 @@ func (h *trunkHandler) GetByDomainName(ctx context.Context, domainName string) (
 		"domain_name": domainName,
 	})
 
-	filters := map[string]string{
-		"deleted":     "false",
-		"domain_name": domainName,
-	}
-
-	tmp, err := h.db.TrunkGets(ctx, 1, "", filters)
+	res, err := h.db.TrunkGetByDomainName(ctx, domainName)
 	if err != nil {
 		log.Errorf("Could not get trunk info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get trunk info")
 	}
 
-	if len(tmp) == 0 {
-		return nil, dbhandler.ErrNotFound
-	}
-
-	res := tmp[0]
 	return res, nil
 }
 

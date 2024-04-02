@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
@@ -35,6 +36,8 @@ type TrunkHandler interface {
 	GetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
 	Update(ctx context.Context, id uuid.UUID, name string, detail string, authTypes []sipauth.AuthType, username string, password string, allowedIPs []string) (*trunk.Trunk, error)
 	Delete(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
+
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // trunkHandler structure for service handle
