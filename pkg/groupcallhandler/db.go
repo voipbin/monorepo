@@ -154,10 +154,10 @@ func (h *groupcallHandler) UpdateAnswerGroupcallID(ctx context.Context, id uuid.
 	return res, nil
 }
 
-// Delete deletes the groupcall.
-func (h *groupcallHandler) Delete(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+// dbDelete deletes the groupcall.
+func (h *groupcallHandler) dbDelete(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "Delete",
+		"func":         "dbDelete",
 		"groupcall_id": id,
 	})
 

@@ -254,7 +254,6 @@ func Test_hangingUpWithCause(t *testing.T) {
 				notifyHandler:  mockNotfiy,
 				channelHandler: mockChannel,
 			}
-
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()

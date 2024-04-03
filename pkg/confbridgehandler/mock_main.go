@@ -15,6 +15,7 @@ import (
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // MockConfbridgeHandler is a mock of ConfbridgeHandler interface.
@@ -140,6 +141,20 @@ func (mr *MockConfbridgeHandlerMockRecorder) Delete(ctx, id interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockConfbridgeHandler)(nil).Delete), ctx, id)
 }
 
+// EventCUCustomerDeleted mocks base method.
+func (m *MockConfbridgeHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerDeleted indicates an expected call of EventCUCustomerDeleted.
+func (mr *MockConfbridgeHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockConfbridgeHandler)(nil).EventCUCustomerDeleted), ctx, cu)
+}
+
 // ExternalMediaStart mocks base method.
 func (m *MockConfbridgeHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType, format, direction string) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
@@ -213,6 +228,21 @@ func (m *MockConfbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbri
 func (mr *MockConfbridgeHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConfbridgeHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockConfbridgeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockConfbridgeHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConfbridgeHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // Join mocks base method.

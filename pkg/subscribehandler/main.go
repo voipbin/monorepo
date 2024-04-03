@@ -13,10 +13,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
 )
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -31,7 +34,10 @@ type subscribeHandler struct {
 	subscribeTargets []string
 
 	ariEventHandler arieventhandler.ARIEventHandler
-	callHandler     callhandler.CallHandler
+
+	callHandler       callhandler.CallHandler
+	groupcallHandler  groupcallhandler.GroupcallHandler
+	confbridgeHandler confbridgehandler.ConfbridgeHandler
 }
 
 var (
@@ -86,13 +92,17 @@ func NewSubscribeHandler(
 	subscribeTargets []string,
 	ariEventHandler arieventhandler.ARIEventHandler,
 	callHandler callhandler.CallHandler,
+	groupcallHandler groupcallhandler.GroupcallHandler,
+	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock:       sock,
-		subscribeQueue:   subscribeQueue,
-		subscribeTargets: subscribeTargets,
-		ariEventHandler:  ariEventHandler,
-		callHandler:      callHandler,
+		rabbitSock:        sock,
+		subscribeQueue:    subscribeQueue,
+		subscribeTargets:  subscribeTargets,
+		ariEventHandler:   ariEventHandler,
+		callHandler:       callHandler,
+		groupcallHandler:  groupcallHandler,
+		confbridgeHandler: confbridgeHandler,
 	}
 
 	return h
@@ -164,8 +174,13 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 	case m.Publisher == string(commonoutline.ServiceNameAsteriskProxy):
 		err = h.processEventAsteriskProxy(ctx, m)
 
+	// customer-manager
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type == cucustomer.EventTypeCustomerDeleted:
+		err = h.processEventCUCustomerDeleted(ctx, m)
+
+	// flow-manager
 	case m.Publisher == string(commonoutline.ServiceNameFlowManager) && m.Type == fmactiveflow.EventTypeActiveflowUpdated:
-		err = h.processEventActiveflowUpdated(ctx, m)
+		err = h.processEventFMActiveflowUpdated(ctx, m)
 
 	default:
 		// ignore the event.

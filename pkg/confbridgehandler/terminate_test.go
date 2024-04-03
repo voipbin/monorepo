@@ -24,7 +24,8 @@ func Test_Terminating(t *testing.T) {
 
 		id uuid.UUID
 
-		responseConfbridge *confbridge.Confbridge
+		responseConfbridge       *confbridge.Confbridge
+		responseConfbridgeUpdate *confbridge.Confbridge
 	}{
 		{
 			"have no bridge id",
@@ -32,10 +33,16 @@ func Test_Terminating(t *testing.T) {
 			uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
 
 			&confbridge.Confbridge{
-				ID:     uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
-				Type:   confbridge.TypeConnect,
-				Status: confbridge.StatusTerminating,
+				ID:       uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+				Type:     confbridge.TypeConnect,
+				Status:   confbridge.StatusProgressing,
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
+			&confbridge.Confbridge{
+				ID:       uuid.FromStringOrNil("947d3525-8bda-4a6c-8167-7579680c334c"),
+				Type:     confbridge.TypeConnect,
+				Status:   confbridge.StatusTerminating,
+				TMDelete: dbhandler.DefaultTimeStamp},
 		},
 		{
 			"have bridge id",
@@ -45,9 +52,11 @@ func Test_Terminating(t *testing.T) {
 			&confbridge.Confbridge{
 				ID:       uuid.FromStringOrNil("0e9ad733-f027-4ba3-932f-dede201f3726"),
 				Type:     confbridge.TypeConnect,
-				Status:   confbridge.StatusTerminating,
+				Status:   confbridge.StatusProgressing,
 				BridgeID: "ea17cc48-592d-4054-8424-ead8c3e45a26",
+				TMDelete: dbhandler.DefaultTimeStamp,
 			},
+			nil,
 		},
 	}
 
@@ -76,12 +85,14 @@ func Test_Terminating(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+
 			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.id, confbridge.StatusTerminating).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminating, tt.responseConfbridge)
 
 			if tt.responseConfbridge.BridgeID == "" {
-				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridgeUpdate, nil)
 				mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminated).Return(nil)
 				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminated, tt.responseConfbridge)

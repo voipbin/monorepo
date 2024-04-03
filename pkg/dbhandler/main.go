@@ -88,6 +88,7 @@ type DBHandler interface {
 	ConfbridgeDelete(ctx context.Context, id uuid.UUID) error
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) (*confbridge.Confbridge, error)
+	ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error)
 	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
 	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error

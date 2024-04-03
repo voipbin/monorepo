@@ -250,10 +250,10 @@ func (h *callHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status cal
 	return res, nil
 }
 
-// Delete deletes the call
-func (h *callHandler) Delete(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+// dbDelete deletes the call
+func (h *callHandler) dbDelete(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Delete",
+		"func":    "dbDelete",
 		"call_id": id,
 	})
 

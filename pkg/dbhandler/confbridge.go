@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -278,6 +279,64 @@ func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) 
 	res, err := h.confbridgeGetFromRow(row)
 	if err != nil {
 		return nil, fmt.Errorf("could not get call. ConfbridgeGetByBridgeID, err: %v", err)
+	}
+
+	return res, nil
+}
+
+// ConfbridgeGets returns a list of confbridges.
+func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
+
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
+	`, confbridgeSelect)
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id", "recording_id", "external_media_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ConfbridgeGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*confbridge.Confbridge{}
+	for rows.Next() {
+		u, err := h.confbridgeGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. confbridgeGetFromRow, err: %v", err)
+		}
+
+		res = append(res, u)
 	}
 
 	return res, nil

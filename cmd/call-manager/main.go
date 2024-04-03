@@ -155,7 +155,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 
 	// run subscribe listener
-	if err := runSubscribe(rabbitSock, ariEventHandler, callHandler); err != nil {
+	if err := runSubscribe(rabbitSock, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler); err != nil {
 		return err
 	}
 
@@ -172,16 +172,25 @@ func runSubscribe(
 	rabbitSock rabbitmqhandler.Rabbit,
 	ariEventHandler arieventhandler.ARIEventHandler,
 	callHandler callhandler.CallHandler,
+	groupcallHandler groupcallhandler.GroupcallHandler,
+	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 ) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runSubscribe",
+	})
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameAsteriskEventAll),
+		string(commonoutline.QueueNameCustomerEvent),
+		string(commonoutline.QueueNameFlowEvent),
 	}
-	ariEventListenHandler := subscribehandler.NewSubscribeHandler(rabbitSock, commonoutline.QueueNameCallSubscribe, subscribeTargets, ariEventHandler, callHandler)
+	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
+
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(rabbitSock, commonoutline.QueueNameCallSubscribe, subscribeTargets, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler)
 
 	// run
 	if err := ariEventListenHandler.Run(); err != nil {
-		logrus.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
+		log.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
 	}
 
 	return nil
@@ -197,12 +206,15 @@ func runRequestListen(
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
 ) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runRequestListen",
+	})
 
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameCallRequest), string(commonoutline.QueueNameDelay)); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
 	return nil
