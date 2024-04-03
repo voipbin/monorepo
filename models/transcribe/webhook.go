@@ -14,9 +14,9 @@ type WebhookMessage struct {
 	ReferenceType ReferenceType `json:"reference_type"` // reference's type
 	ReferenceID   uuid.UUID     `json:"reference_id"`   // call/conference/recording's id
 
-	Status   Status    `json:"status"`
-	HostID   uuid.UUID `json:"host_id"`  // host id
-	Language string    `json:"language"` // BCP47 type's language code. en-US
+	Status    Status    `json:"status"`
+	Language  string    `json:"language"` // BCP47 type's language code. en-US
+	Direction Direction `json:"direction"`
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -34,9 +34,9 @@ func (h *Transcribe) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
-		Status:   h.Status,
-		HostID:   h.HostID,
-		Language: h.Language,
+		Status:    h.Status,
+		Language:  h.Language,
+		Direction: h.Direction,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
