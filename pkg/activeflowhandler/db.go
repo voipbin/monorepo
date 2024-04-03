@@ -186,10 +186,10 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	return res, err
 }
 
-// Delete deletes activeflow
-func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+// dbDelete deletes activeflow
+func (h *activeflowHandler) dbDelete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "Delete",
+		"func":          "dbDelete",
 		"activeflow_id": id,
 	})
 

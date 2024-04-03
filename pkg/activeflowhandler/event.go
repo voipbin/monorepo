@@ -48,17 +48,6 @@ func (h *activeflowHandler) EventCustomerDeleted(ctx context.Context, cu *cmcust
 		return errors.Wrap(err, "could not get activeflows list")
 	}
 
-	// stop all activeflows
-	for _, af := range afs {
-		log.Debugf("Stopping activeflow info. activeflow_id: %s", af.ID)
-		tmp, err := h.Stop(ctx, af.ID)
-		if err != nil {
-			log.Errorf("Could not stop activeflow info. err: %v", err)
-			continue
-		}
-		log.WithField("activeflow", tmp).Debugf("Stopped activeflow info. activeflow_id: %s", tmp.ID)
-	}
-
 	// delete all activeflows
 	for _, af := range afs {
 		log.Debugf("Deleting activeflow info. activeflow_id: %s", af.ID)

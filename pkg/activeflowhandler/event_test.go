@@ -95,10 +95,14 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			},
 			responseActiveflows: []*activeflow.Activeflow{
 				{
-					ID: uuid.FromStringOrNil("83faabd2-ecdf-11ee-bed3-3f83c1ac3dbd"),
+					ID:       uuid.FromStringOrNil("83faabd2-ecdf-11ee-bed3-3f83c1ac3dbd"),
+					Status:   activeflow.StatusEnded,
+					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID: uuid.FromStringOrNil("8454d30a-ecdf-11ee-939e-c7eac852f244"),
+					ID:       uuid.FromStringOrNil("8454d30a-ecdf-11ee-939e-c7eac852f244"),
+					Status:   activeflow.StatusEnded,
+					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 			},
 		},
@@ -125,21 +129,10 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().ActiveflowGets(ctx, gomock.Any(), uint64(1000), tt.expectFilters).Return(tt.responseActiveflows, nil)
 
-			// stop()
-			for _, af := range tt.responseActiveflows {
-				mockDB.EXPECT().ActiveflowGet(ctx, af.ID).Return(af, nil)
-				switch af.ReferenceType {
-				case activeflow.ReferenceTypeCall:
-					mockReq.EXPECT().CallV1CallHangup(ctx, af.ReferenceID).Return(&cmcall.Call{}, nil)
-				}
-
-				mockDB.EXPECT().ActiveflowSetStatus(ctx, af.ID, activeflow.StatusEnded).Return(nil)
-				mockDB.EXPECT().ActiveflowGet(ctx, af.ID).Return(af, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveflowUpdated, af)
-			}
-
 			// delete
 			for _, af := range tt.responseActiveflows {
+				mockDB.EXPECT().ActiveflowGet(ctx, af.ID).Return(af, nil)
+
 				mockDB.EXPECT().ActiveflowDelete(ctx, af.ID).Return(nil)
 				mockDB.EXPECT().ActiveflowGet(ctx, af.ID).Return(af, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveflowDeleted, af)
