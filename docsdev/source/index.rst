@@ -12,6 +12,7 @@ Welcome to voipbin's documentation!
    glossary
    intro
    quickstart
+   common
    api
    flow
    activeflow
@@ -39,7 +40,7 @@ Welcome to voipbin's documentation!
    websocket
    trunk
    billing_account
-   common
+   transcribe
 
 
 Indices and tables
