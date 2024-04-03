@@ -171,37 +171,6 @@ func (h *handler) TranscriptGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 	return res, nil
 }
 
-// TranscriptGetsByTranscribeID returns a list of transcripts of the given transcribeID.
-func (h *handler) TranscriptGetsByTranscribeID(ctx context.Context, transcribeID uuid.UUID) ([]*transcript.Transcript, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-		where
-			transcribe_id = ?
-		order by
-			tm_create
-		asc
-		`, transcriptSelect)
-
-	rows, err := h.db.Query(q, transcribeID.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. TranscriptGetsByTranscribeID. err: %v", err)
-	}
-	defer rows.Close()
-
-	res := []*transcript.Transcript{}
-	for rows.Next() {
-		u, err := h.transcriptGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. TranscriptGetsByTranscribeID, err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
-}
-
 // TranscriptGets returns list of transcripts.
 func (h *handler) TranscriptGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error) {
 	// prepare
