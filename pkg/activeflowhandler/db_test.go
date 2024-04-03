@@ -537,7 +537,7 @@ func Test_SetForwardActionID(t *testing.T) {
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func Test_dbDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -584,7 +584,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseGet, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.responseGet)
 
-			res, err := h.Delete(ctx, tt.id)
+			res, err := h.dbDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
