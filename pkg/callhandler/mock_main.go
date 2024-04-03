@@ -17,7 +17,9 @@ import (
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
 // MockCallHandler is a mock of CallHandler interface.
@@ -272,6 +274,34 @@ func (m *MockCallHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits st
 func (mr *MockCallHandlerMockRecorder) DigitsSet(ctx, id, digits interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DigitsSet", reflect.TypeOf((*MockCallHandler)(nil).DigitsSet), ctx, id, digits)
+}
+
+// EventCUCustomerDeleted mocks base method.
+func (m *MockCallHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerDeleted indicates an expected call of EventCUCustomerDeleted.
+func (mr *MockCallHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockCallHandler)(nil).EventCUCustomerDeleted), ctx, cu)
+}
+
+// EventFMActiveflowUpdated mocks base method.
+func (m *MockCallHandler) EventFMActiveflowUpdated(ctx context.Context, a *activeflow.Activeflow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventFMActiveflowUpdated", ctx, a)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventFMActiveflowUpdated indicates an expected call of EventFMActiveflowUpdated.
+func (mr *MockCallHandlerMockRecorder) EventFMActiveflowUpdated(ctx, a interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventFMActiveflowUpdated", reflect.TypeOf((*MockCallHandler)(nil).EventFMActiveflowUpdated), ctx, a)
 }
 
 // ExternalMediaStart mocks base method.

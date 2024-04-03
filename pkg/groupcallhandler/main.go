@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -45,6 +46,8 @@ type GroupcallHandler interface {
 	HangupGroupcall(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
 
 	IsGroupcallTypeAddress(destination *commonaddress.Address) bool
+
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // groupcallHandler structure for service handle

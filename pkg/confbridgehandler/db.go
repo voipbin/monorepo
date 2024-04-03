@@ -88,6 +88,23 @@ func (h *confbridgeHandler) GetByBridgeID(ctx context.Context, bridgeID string) 
 	return res, nil
 }
 
+// Gets returns confbridge of the given filters
+func (h *confbridgeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Gets",
+		"filters": filters,
+	})
+
+	// get confbridges
+	res, err := h.db.ConfbridgeGets(ctx, size, token, filters)
+	if err != nil {
+		log.Errorf("Could not get the confbridges. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // UpdateRecordingID updates the confbridge's recording id.
 // if the recording id is not uuid.Nil, it also adds to the recording_ids
 func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*confbridge.Confbridge, error) {
@@ -227,10 +244,10 @@ func (h *confbridgeHandler) AddChannelCallID(ctx context.Context, id uuid.UUID, 
 	return res, nil
 }
 
-// Delete deletes the confbridge
-func (h *confbridgeHandler) Delete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+// dbDelete deletes the confbridge
+func (h *confbridgeHandler) dbDelete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "Delete",
+		"func":          "dbDelete",
 		"confbridge_id": id,
 	})
 

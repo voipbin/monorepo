@@ -13,7 +13,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -110,6 +112,9 @@ type CallHandler interface {
 
 	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*call.Call, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
+
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
+	EventFMActiveflowUpdated(ctx context.Context, a *fmactiveflow.Activeflow) error
 }
 
 // callHandler structure for service handle

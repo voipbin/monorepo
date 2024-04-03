@@ -838,6 +838,21 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeGetByBridgeID(ctx, bridgeID inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeGetByBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeGetByBridgeID), ctx, bridgeID)
 }
 
+// ConfbridgeGets mocks base method.
+func (m *MockDBHandler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeGets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfbridgeGets indicates an expected call of ConfbridgeGets.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeGets(ctx, size, token, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeGets", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeGets), ctx, size, token, filters)
+}
+
 // ConfbridgeRemoveChannelCallID mocks base method.
 func (m *MockDBHandler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error {
 	m.ctrl.T.Helper()

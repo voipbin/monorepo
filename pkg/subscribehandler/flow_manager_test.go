@@ -6,8 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 )
@@ -18,7 +18,8 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 		name  string
 		event *rabbitmqhandler.Event
 
-		expectCallID uuid.UUID
+		exectActiveflow *fmactiveflow.Activeflow
+		// expectCallID uuid.UUID
 	}{
 		{
 			name: "normal",
@@ -27,10 +28,12 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 				Publisher: "flow-manager",
 				Type:      "activeflow_updated",
 				DataType:  "application/json",
-				Data:      []byte(`{"status":"ended","reference_type":"call","reference_id":"376c0f2e-b5f7-11ed-ad49-13b40b99b414"}`),
+				Data:      []byte(`{"id":"e739a280-f161-11ee-8444-2385d7cef78a"}`),
 			},
 
-			expectCallID: uuid.FromStringOrNil("376c0f2e-b5f7-11ed-ad49-13b40b99b414"),
+			exectActiveflow: &fmactiveflow.Activeflow{
+				ID: uuid.FromStringOrNil("e739a280-f161-11ee-8444-2385d7cef78a"),
+			},
 		},
 	}
 
@@ -49,7 +52,7 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 				callHandler:     mockCall,
 			}
 
-			mockCall.EXPECT().HangingUp(gomock.Any(), tt.expectCallID, call.HangupReasonNormal).Return(&call.Call{}, nil)
+			mockCall.EXPECT().EventFMActiveflowUpdated(gomock.Any(), tt.exectActiveflow).Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)

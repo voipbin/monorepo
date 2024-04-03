@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Terminating starts terminating the conference
@@ -17,6 +18,18 @@ func (h *confbridgeHandler) Terminating(ctx context.Context, id uuid.UUID) (*con
 		"confbridge_id": id,
 	})
 	log.Debug("Terminating the confbridge.")
+
+	// get confbridge
+	tmp, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get confbridge info. err: %v", err)
+		return nil, errors.Wrap(err, "could not get confbridge info")
+	}
+
+	if tmp.Status == confbridge.StatusTerminated || tmp.Status == confbridge.StatusTerminating || tmp.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Infof("The confbridge is already terminated. status: %s", tmp.Status)
+		return tmp, nil
+	}
 
 	// update the status to the terminating
 	res, err := h.UpdateStatus(ctx, id, confbridge.StatusTerminating)

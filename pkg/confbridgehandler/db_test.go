@@ -96,6 +96,73 @@ func Test_Create(t *testing.T) {
 	}
 }
 
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		size    uint64
+		token   string
+		filters map[string]string
+
+		responseGets []*confbridge.Confbridge
+		expectRes    []*confbridge.Confbridge
+	}{
+		{
+			"normal",
+
+			10,
+			"2020-05-03%2021:35:02.809",
+			map[string]string{
+				"customer_id": "78a0debc-f0ce-11ee-8de6-9b2ff94e8b94",
+				"deleted":     "false",
+			},
+
+			[]*confbridge.Confbridge{
+				{
+					ID: uuid.FromStringOrNil("7904c314-f0ce-11ee-bc13-1789810328f5"),
+				},
+			},
+			[]*confbridge.Confbridge{
+				{
+					ID: uuid.FromStringOrNil("7904c314-f0ce-11ee-bc13-1789810328f5"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &confbridgeHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConfbridgeGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseGets, nil)
+
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
 func Test_UpdateRecordingID(t *testing.T) {
 
 	tests := []struct {
@@ -290,7 +357,7 @@ func Test_AddChannelCallID(t *testing.T) {
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func Test_dbDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -340,7 +407,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, tt.responseConfbridge)
 
-			res, err := h.Delete(ctx, tt.id)
+			res, err := h.dbDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
