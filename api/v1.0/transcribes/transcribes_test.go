@@ -122,7 +122,7 @@ func Test_transcribesGET(t *testing.T) {
 					ID: uuid.FromStringOrNil("6e812ad0-828a-11ed-bfe8-9f9b344a834b"),
 				},
 			},
-			`{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			`{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}
 
@@ -189,7 +189,7 @@ func Test_transcribesIDGET(t *testing.T) {
 			&tmtranscribe.WebhookMessage{
 				ID: uuid.FromStringOrNil("cced3564-828a-11ed-902f-6b70b24b6821"),
 			},
-			`{"id":"cced3564-828a-11ed-902f-6b70b24b6821","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"cced3564-828a-11ed-902f-6b70b24b6821","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -250,7 +250,7 @@ func Test_transcribesIDDelete(t *testing.T) {
 			&tmtranscribe.WebhookMessage{
 				ID: uuid.FromStringOrNil("9563c0da-828b-11ed-9ca3-d735336f3293"),
 			},
-			`{"id":"9563c0da-828b-11ed-9ca3-d735336f3293","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"9563c0da-828b-11ed-9ca3-d735336f3293","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -311,7 +311,7 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 			&tmtranscribe.WebhookMessage{
 				ID: uuid.FromStringOrNil("c61977a6-828b-11ed-b4c5-f73135cd3f5a"),
 			},
-			`{"id":"c61977a6-828b-11ed-b4c5-f73135cd3f5a","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"c61977a6-828b-11ed-b4c5-f73135cd3f5a","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 

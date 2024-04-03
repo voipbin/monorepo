@@ -17,7 +17,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Billing Account" href="billing_account.html" /> 
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,6 +44,18 @@
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Common</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#address">Address</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-struct-address-address">Address</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
@@ -70,15 +83,7 @@
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Common</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#address">Address</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#common-struct-address-address">Address</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
 </ul>
 
         </div>
@@ -132,6 +137,45 @@
 <li><p>name: Name.</p></li>
 <li><p>detail: Detail description.</p></li>
 </ul>
+<section id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>The tel type address. The target is destination number.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The extension type address. The target is extension number.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;2001&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The agent type address. The target is agent’s id.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;eed6a98a-f18d-11ee-96d3-133e13eafff9&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The sip type address. The target is sip address.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;testuser@example.com&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="type">
 <span id="common-struct-address-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this heading"></a></h3>
@@ -146,14 +190,14 @@
 <tr class="row-even"><td><p>agent</p></td>
 <td><p>Used for calling to the agent(target must be the agent’s id)</p></td>
 </tr>
-<tr class="row-odd"><td><p>endpoint</p></td>
-<td><p>Used for calling to endpoint(<a class="reference external" href="mailto:extension&#37;&#52;&#48;domain">extension<span>&#64;</span>domain</a>)</p></td>
+<tr class="row-odd"><td><p>extension</p></td>
+<td><p>Used for calling to extension.</p></td>
 </tr>
 <tr class="row-even"><td><p>sip</p></td>
 <td><p>SIP type address.</p></td>
 </tr>
 <tr class="row-odd"><td><p>tel</p></td>
-<td><p>Telephone type address.</p></td>
+<td><p>Telephone number type address.</p></td>
 </tr>
 <tr class="row-even"><td><p>line</p></td>
 <td><p>Line type address.</p></td>
@@ -168,7 +212,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="billing_account.html" class="btn btn-neutral float-left" title="Billing Account" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
