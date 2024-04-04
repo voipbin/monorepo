@@ -73,7 +73,13 @@
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Transcribe</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#real-time-capability">Real-Time capability</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#transcription">Transcription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enable-transcribe">Enable transcribe</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#automatic-trigger-in-the-flow">Automatic Trigger in the Flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interrupt-trigger-manual-api-request">Interrupt Trigger(Manual API Request)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#transcribe-struct-transcribe">Transcribe</a><ul>
@@ -127,8 +133,26 @@
 <span id="transcribe-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
 <p>Voipbin’s transcription functionality is designed to cater to a range of communication needs, covering calls, conferences, and recordings. This comprehensive support ensures that users can transcribe various types of interactions accurately and efficiently.</p>
 <p>Whether it’s a one-on-one conversation, a large conference call, or a recorded discussion, Voipbin’s transcription service handles it with ease. By distinguishing between audio input and output, it provides nuanced transcriptions that accurately reflect the dialogue exchanged during communication sessions. This differentiation ensures that users can clearly identify who said what, enhancing the clarity and usefulness of the transcribed content.</p>
-<p>One notable aspect of Voipbin’s transcription service is its real-time capability. This feature allows users to transcribe conversations as they happen, providing instant access to written records of ongoing discussions. Real-time transcription not only facilitates live communication but also streamlines documentation processes by eliminating the need for manual transcription after the fact. This functionality is particularly valuable in fast-paced environments where quick access to accurate information is essential.</p>
+<section id="real-time-capability">
+<h3>Real-Time capability<a class="headerlink" href="#real-time-capability" title="Permalink to this heading"></a></h3>
+<p>One notable aspect of Voipbin’s transcription service is its real-time capability. This feature enables users to transcribe conversations as they occur, providing instant access to written records of ongoing discussions. Real-time transcription not only facilitates live communication but also streamlines documentation processes by eliminating the need for manual transcription after the fact. This functionality is particularly valuable in fast-paced environments where quick access to accurate information is essential.</p>
+<p>Additionally, Voipbin offers enhanced flexibility through websocket event subscription. Users can subscribe or unsubscribe to the transcript event using websocket event subscribe, ensuring seamless integration with their applications or systems. This allows for dynamic control over real-time transcription notifications, tailored to specific needs and workflows.</p>
+<p>Moreover, Voipbin offers an added feature for enhanced integration and convenience. By including webhook information in your customer settings, you can receive real-time updates through the <cite>transcript_created</cite> event of your transcription process. This enables seamless integration with your existing systems or applications, ensuring that you stay informed of transcription progress without manual intervention.</p>
 <p>Overall, Voipbin’s transcription service offers a comprehensive solution for capturing and documenting verbal communication across various platforms. Whether users need transcriptions for analysis, reference, or archival purposes, Voipbin’s transcription feature delivers accurate and timely results, enhancing communication workflows and productivity.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, this is transcribe test call.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-04 07:15:59.233415&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 <section id="transcription">
 <span id="transcribe-overview-transcription"></span><h3>Transcription<a class="headerlink" href="#transcription" title="Permalink to this heading"></a></h3>
 <p>Voipbin’s transcription service not only captures the spoken word but also provides additional context by distinguishing between audio input and output. This unique feature enables users to discern the direction of the voice within each transcription, offering valuable insight into the flow of communication.</p>
@@ -163,6 +187,41 @@
 </pre></div>
 </div>
 </section>
+<section id="enable-transcribe">
+<h3>Enable transcribe<a class="headerlink" href="#enable-transcribe" title="Permalink to this heading"></a></h3>
+<p>Voipbin provides two different methods to start the transcribe.</p>
+<section id="automatic-trigger-in-the-flow">
+<h4>Automatic Trigger in the Flow<a class="headerlink" href="#automatic-trigger-in-the-flow" title="Permalink to this heading"></a></h4>
+<p>Add the <cite>transcribe_start</cite> action in the action flow. This action automatically triggers transcribe when the flow reaches it. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-transribe-start"><span class="std std-ref">here</span></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;95c7a67f-9643-4237-8b69-7320a70b382b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;44e1dabc-a8c1-4647-90ba-16d414231058&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="interrupt-trigger-manual-api-request">
+<h4>Interrupt Trigger(Manual API Request)<a class="headerlink" href="#interrupt-trigger-manual-api-request" title="Permalink to this heading"></a></h4>
+<p>The client can start the transcribe by API request sending. This allows you to start transcription manually in the middle of a call or conference. However, note that this method requires someone to initiate the API request.</p>
+<ul class="simple">
+<li><p>POST /v1.0/transcribes: See detail <a class="reference external" href="https://api.voipbin.net/swagger/index.html#/default/post_v1_0_transcribes">here</a>.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST --location &#39;https://api.voipbin.net/v1.0/transcribes?token=token&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 <section id="transcribe-struct-transcribe">
 <span id="id1"></span><h2>Transcribe<a class="headerlink" href="#transcribe-struct-transcribe" title="Permalink to this heading"></a></h2>
@@ -184,9 +243,9 @@
 <ul class="simple">
 <li><p>id: Transcribe’s ID.</p></li>
 <li><p>customer_id: Customer’s ID.</p></li>
-<li><p>reference_type: Reference type. See detail <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcribe-reference-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>reference_type: Reference type. See detail <a class="reference internal" href="#transcribe-struct-transcribe-reference-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>reference_id: Reference ID.</p></li>
-<li><p>status: Transcribe’s status. See detail <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcribe-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>status: Transcribe’s status. See detail <a class="reference internal" href="#transcribe-struct-transcribe-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>language: Transcribe’s language. BCP47 format.</p></li>
 </ul>
 <section id="example">
@@ -265,7 +324,7 @@
 <ul class="simple">
 <li><p>id: Transcription’s id.</p></li>
 <li><p>transcribe_id: Transcribe’s id.</p></li>
-<li><p>direction: Transcription’s direction. See detail <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcription-direction"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>direction: Transcription’s direction. See detail <a class="reference internal" href="#transcribe-struct-transcription-direction"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>message: Transcription’s message.</p></li>
 <li><p>tm_transcript: Transcription’s timestamp. “0001-01-01 00:00:00” is the beginning of the transcribe.</p></li>
 </ul>

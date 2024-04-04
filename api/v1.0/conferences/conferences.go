@@ -14,13 +14,14 @@ import (
 
 // conferencesGET handles GET /conferences request.
 // It returns list of conferences of the given customer.
-// @Summary     Get list of conferences
-// @Description get conferences of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyCallsGET
-// @Router      /v1.0/conferences [get]
+//
+//	@Summary		Get list of conferences
+//	@Description	get conferences of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyCallsGET
+//	@Router			/v1.0/conferences [get]
 func conferencesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesGET",
@@ -81,12 +82,13 @@ func conferencesGET(c *gin.Context) {
 
 // conferencesPOST handles POST /conferences request.
 // It creates a new conference and returns the created conferences of the given customer.
-// @Summary     Create a new conferences
-// @Description Create a new conference with the given information.
-// @Produce     json
-// @Param       conference body     request.BodyConferencesPOST true "The conference detail"
-// @Success     200        {object} conference.Conference
-// @Router      /v1.0/conferences [post]
+//
+//	@Summary		Create a new conferences
+//	@Description	Create a new conference with the given information.
+//	@Produce		json
+//	@Param			conference	body		request.BodyConferencesPOST	true	"The conference detail"
+//	@Success		200			{object}	conference.Conference
+//	@Router			/v1.0/conferences [post]
 func conferencesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesPOST",
@@ -134,13 +136,14 @@ func conferencesPOST(c *gin.Context) {
 
 // conferencesIDGET handles GET /conferences/{id} request.
 // It returns detail conference info.
-// @Summary     Returns detail conference info.
-// @Description Returns detail conference info of the given conference id.
-// @Produce     json
-// @Param       id    path     string true "The ID of the conference"
-// @Param       token query    string true "JWT token"
-// @Success     200   {object} conference.Conference
-// @Router      /v1.0/conferences/{id} [get]
+//
+//	@Summary		Returns detail conference info.
+//	@Description	Returns detail conference info of the given conference id.
+//	@Produce		json
+//	@Param			id		path		string	true	"The ID of the conference"
+//	@Param			token	query		string	true	"JWT token"
+//	@Success		200		{object}	conference.Conference
+//	@Router			/v1.0/conferences/{id} [get]
 func conferencesIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDGET",
@@ -176,13 +179,14 @@ func conferencesIDGET(c *gin.Context) {
 
 // conferencesIDPUT handles PUT /conferences/{id} request.
 // It updates the conference and returns updated conference info.
-// @Summary     Update conference info.
-// @Description Update conference info of the given conference id.
-// @Produce     json
-// @Param       id    path     string true "The ID of the conference"
-// @Param       token query    string true "JWT token"
-// @Success     200   {object} conference.Conference
-// @Router      /v1.0/conferences/{id} [put]
+//
+//	@Summary		Update conference info.
+//	@Description	Update conference info of the given conference id.
+//	@Produce		json
+//	@Param			id		path		string	true	"The ID of the conference"
+//	@Param			token	query		string	true	"JWT token"
+//	@Success		200		{object}	conference.Conference
+//	@Router			/v1.0/conferences/{id} [put]
 func conferencesIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDPUT",
@@ -225,12 +229,13 @@ func conferencesIDPUT(c *gin.Context) {
 
 // conferencesIDDELETE handles DELETE /conferences/{id} request.
 // It deletes the conference.
-// @Summary     Delete the conference.
-// @Description Delete the conference. All the participants in the conference will be kicked out.
-// @Produce     json
-// @Param       id path string true "The ID of the conference"
-// @Success     200
-// @Router      /v1.0/conferences/{id} [delete]
+//
+//	@Summary		Delete the conference.
+//	@Description	Delete the conference. All the participants in the conference will be kicked out.
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the conference"
+//	@Success		200
+//	@Router			/v1.0/conferences/{id} [delete]
 func conferencesIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDDELETE",
@@ -266,12 +271,13 @@ func conferencesIDDELETE(c *gin.Context) {
 
 // conferencesIDRecordingStartPOST handles DELETE /conferences/{id}/recording_start request.
 // It starts the conference recording.
-// @Summary     Starts the conference recording.
-// @Description Start the conference recording.
-// @Produce     json
-// @Param       id path string true "The ID of the conference"
-// @Success     200
-// @Router      /v1.0/conferences/{id}/recording_start [post]
+//
+//	@Summary		Starts the conference recording.
+//	@Description	Start the conference recording.
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the conference"
+//	@Success		200
+//	@Router			/v1.0/conferences/{id}/recording_start [post]
 func conferencesIDRecordingStartPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDRecordingStartPOST",
@@ -307,12 +313,13 @@ func conferencesIDRecordingStartPOST(c *gin.Context) {
 
 // conferencesIDRecordingStopPOST handles DELETE /conferences/{id}/recording_stop request.
 // It stops the conference recording.
-// @Summary     Stops the conference recording.
-// @Description Stops the conference recording.
-// @Produce     json
-// @Param       id path string true "The ID of the conference"
-// @Success     200
-// @Router      /v1.0/conferences/{id}/recording_stop [post]
+//
+//	@Summary		Stops the conference recording.
+//	@Description	Stops the conference recording.
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the conference"
+//	@Success		200
+//	@Router			/v1.0/conferences/{id}/recording_stop [post]
 func conferencesIDRecordingStopPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDRecordingStopPOST",
@@ -348,12 +355,14 @@ func conferencesIDRecordingStopPOST(c *gin.Context) {
 
 // conferencesIDTranscribeStartPOST handles DELETE /conferences/{id}/transcribe_start request.
 // It starts the conference transcribe.
-// @Summary     Starts the conference transcribe.
-// @Description Start the conference transcribe.
-// @Produce     json
-// @Param       id path string true "The ID of the conference"
-// @Success     200
-// @Router      /v1.0/conferences/{id}/transcribe_start [post]
+//
+//	@Summary		Starts the conference transcribe.
+//	@Description	Start the conference transcribe.
+//	@Produce		json
+//	@Param			id			path	string											true	"The ID of the conference"
+//	@Param			conference	body	request.BodyConferencesIDTranscribeStartPOST	true	"conference info"
+//	@Success		200
+//	@Router			/v1.0/conferences/{id}/transcribe_start [post]
 func conferencesIDTranscribeStartPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDTranscribeStartPOST",
@@ -397,12 +406,13 @@ func conferencesIDTranscribeStartPOST(c *gin.Context) {
 
 // conferencesIDTranscribeStopPOST handles DELETE /conferences/{id}/transcribe_stop request.
 // It stops the conference transcribe.
-// @Summary     Stops the conference transcribe.
-// @Description Stops the conference transcribe.
-// @Produce     json
-// @Param       id path string true "The ID of the conference"
-// @Success     200
-// @Router      /v1.0/conferences/{id}/transcribe_stop [post]
+//
+//	@Summary		Stops the conference transcribe.
+//	@Description	Stops the conference transcribe.
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the conference"
+//	@Success		200
+//	@Router			/v1.0/conferences/{id}/transcribe_stop [post]
 func conferencesIDTranscribeStopPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDTranscribeStopPOST",
@@ -438,12 +448,13 @@ func conferencesIDTranscribeStopPOST(c *gin.Context) {
 
 // conferencesIDMediaStreamGET handles GET /conferences/{id}/media_stream request.
 // It starts the in/out media streaming of the call.
-// @Summary     Start the conference media streaming.
-// @Description Start the conference media streaming.
-// @Produce     json
-// @Param       id path string true "The ID of the conference"
-// @Success     200
-// @Router      /v1.0/conferences/{id}/meida_stream [get]
+//
+//	@Summary		Start the conference media streaming.
+//	@Description	Start the conference media streaming.
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the conference"
+//	@Success		200
+//	@Router			/v1.0/conferences/{id}/meida_stream [get]
 func conferencesIDMediaStreamGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencesIDMediaStreamGET",

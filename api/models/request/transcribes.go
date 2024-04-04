@@ -8,11 +8,21 @@ import (
 // BodyTranscribesPOST defines request body for
 // POST /v1.0/transcribes
 type BodyTranscribesPOST struct {
-	ReferenceType tmtranscribe.ReferenceType `json:"transcribe_type"`
-	ReferenceID   uuid.UUID                  `json:"reference_id"`
-	Language      string                     `json:"language"`
-	Direction     tmtranscribe.Direction     `json:"direction"`
+	ReferenceType TranscribeReferenceType `json:"transcribe_type"`
+	ReferenceID   uuid.UUID               `json:"reference_id"`
+	Language      string                  `json:"language"`
+	Direction     tmtranscribe.Direction  `json:"direction"`
 }
+
+// TranscribeReferenceType define
+type TranscribeReferenceType string
+
+// list of TranscribeReferenceType types
+const (
+	TranscribeReferenceTypeCall       TranscribeReferenceType = "call"       // call
+	TranscribeReferenceTypeConference TranscribeReferenceType = "conference" // conference
+	TranscribeReferenceTypeRecording  TranscribeReferenceType = "recording"  // recording
+)
 
 // ParamTranscribesGET is rquest param define for
 // GET /v1.0/transcribes

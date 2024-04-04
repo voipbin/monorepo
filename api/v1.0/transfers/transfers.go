@@ -12,12 +12,12 @@ import (
 
 // transfersPOST handles POST /transfers request.
 // It starts a transfer the call and returns the result.
-// @Summary     Start a transfer
-// @Description Transfer the call
-// @Produce     json
-// @Param       transcribe body     request.BodyTransfersPOST true "Transfer info."
-// @Success     200        {object} transfer.Transfer
-// @Router      /v1.0/transfers [post]
+//	@Summary		Start a transfer
+//	@Description	Transfer the call
+//	@Produce		json
+//	@Param			transcribe	body		request.BodyTransfersPOST	true	"Transfer info."
+//	@Success		200			{object}	transfer.Transfer
+//	@Router			/v1.0/transfers [post]
 func transfersPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transfersPOST",

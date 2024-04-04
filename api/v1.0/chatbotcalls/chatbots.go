@@ -15,13 +15,13 @@ import (
 
 // chatbotcallsGET handles GET /chatbotcalls request.
 // It gets a list of chatbotcalls with the given info.
-// @Summary     Gets a list of chatbotcalls.
-// @Description Gets a list of chatbotcalls
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyChatbotcallsGET
-// @Router      /v1.0/chatbotcalls [get]
+//	@Summary		Gets a list of chatbotcalls.
+//	@Description	Gets a list of chatbotcalls
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyChatbotcallsGET
+//	@Router			/v1.0/chatbotcalls [get]
 func chatbotcallsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotcallsGET",
@@ -81,12 +81,12 @@ func chatbotcallsGET(c *gin.Context) {
 
 // chatbotcallsIDGET handles GET /chatbotcalls/{id} request.
 // It returns detail chatbotcall info.
-// @Summary     Returns detail chatbotcall info.
-// @Description Returns detail chatbotcall info of the given chatbotcall id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the chatbotcall"
-// @Success     200 {object} chatbotcall.Chatbotcall
-// @Router      /v1.0/chatbotcalls/{id} [get]
+//	@Summary		Returns detail chatbotcall info.
+//	@Description	Returns detail chatbotcall info of the given chatbotcall id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the chatbotcall"
+//	@Success		200	{object}	chatbotcall.Chatbotcall
+//	@Router			/v1.0/chatbotcalls/{id} [get]
 func chatbotcallsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotcallsIDGET",
@@ -122,12 +122,12 @@ func chatbotcallsIDGET(c *gin.Context) {
 
 // chatbotcallsIDDELETE handles DELETE /chatbotcalls/{id} request.
 // It deletes a exist chatbot info.
-// @Summary     Delete a existing chatbotcall.
-// @Description Delete a existing chatbotcall.
-// @Produce     json
-// @Param       id query string true "The chatbotcall's id"
-// @Success     200
-// @Router      /v1.0/chatbotcalls/{id} [delete]
+//	@Summary		Delete a existing chatbotcall.
+//	@Description	Delete a existing chatbotcall.
+//	@Produce		json
+//	@Param			id	query	string	true	"The chatbotcall's id"
+//	@Success		200
+//	@Router			/v1.0/chatbotcalls/{id} [delete]
 func chatbotcallsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotcallsIDDELETE",

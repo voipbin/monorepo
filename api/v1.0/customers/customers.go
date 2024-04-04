@@ -14,12 +14,12 @@ import (
 
 // customersPost handles POST /customers request.
 // It creates a new customer with the given info and returns created customer info.
-// @Summary     Create a new customer and returns detail created customer info.
-// @Description Create a new customer and returns detail created customer info.
-// @Produce     json
-// @Param       customer body     request.BodyCustomersPOST true "customer info."
-// @Success     200      {object} customer.Customer
-// @Router      /v1.0/customers [post]
+//	@Summary		Create a new customer and returns detail created customer info.
+//	@Description	Create a new customer and returns detail created customer info.
+//	@Produce		json
+//	@Param			customer	body		request.BodyCustomersPOST	true	"customer info."
+//	@Success		200			{object}	customer.Customer
+//	@Router			/v1.0/customers [post]
 func customersPost(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "customersPost",
@@ -71,13 +71,13 @@ func customersPost(c *gin.Context) {
 
 // customersGet handles GET /customers request.
 // It gets a list of customers with the given info.
-// @Summary     Gets a list of customers.
-// @Description Gets a list of customers
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyCustomersGET
-// @Router      /v1.0/customers [get]
+//	@Summary		Gets a list of customers.
+//	@Description	Gets a list of customers
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyCustomersGET
+//	@Router			/v1.0/customers [get]
 func customersGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "customersGET",
@@ -142,12 +142,12 @@ func customersGet(c *gin.Context) {
 
 // customersIDGet handles GET /customers/{id} request.
 // It returns detail customer info.
-// @Summary     Returns detail customer info.
-// @Description Returns detail customer info of the given customer id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the customer"
-// @Success     200 {object} customer.Customer
-// @Router      /v1.0/customers/{id} [get]
+//	@Summary		Returns detail customer info.
+//	@Description	Returns detail customer info of the given customer id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the customer"
+//	@Success		200	{object}	customer.Customer
+//	@Router			/v1.0/customers/{id} [get]
 func customersIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "customersIDGET",
@@ -184,11 +184,11 @@ func customersIDGet(c *gin.Context) {
 // customersIDPut handles PUT /customers/{id} request.
 // It updates a exist customer info with the given customer info.
 // And returns updated customer info if it succeed.
-// @Summary     Update a customer.
-// @Description Update a customer and returns detail updated customer info.
-// @Produce     json
-// @Success     200 {object} customer.Customer
-// @Router      /v1.0/customers/{id} [put]
+//	@Summary		Update a customer.
+//	@Description	Update a customer and returns detail updated customer info.
+//	@Produce		json
+//	@Success		200	{object}	customer.Customer
+//	@Router			/v1.0/customers/{id} [put]
 func customersIDPut(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "customersIDPUT",
@@ -231,11 +231,11 @@ func customersIDPut(c *gin.Context) {
 
 // customersIDDelete handles DELETE /customers/{id} request.
 // It deletes a exist customer info.
-// @Summary     Delete a existing customer.
-// @Description Delete a existing customer.
-// @Produce     json
-// @Success     200
-// @Router      /v1.0/customers/{id} [delete]
+//	@Summary		Delete a existing customer.
+//	@Description	Delete a existing customer.
+//	@Produce		json
+//	@Success		200
+//	@Router			/v1.0/customers/{id} [delete]
 func customersIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "customersIDDelete",
@@ -272,11 +272,11 @@ func customersIDDelete(c *gin.Context) {
 
 // customersIDBillingAccountIDPut handles PUT /customers/{id}/billing_account_id request.
 // It updates a customer's billing account id.
-// @Summary     Update a customer's billing account id.
-// @Description Update a customer's billing account id.
-// @Produce     json
-// @Success     200 {object} customer.Customer
-// @Router      /v1.0/customers/{id}/billing_account_id [put]
+//	@Summary		Update a customer's billing account id.
+//	@Description	Update a customer's billing account id.
+//	@Produce		json
+//	@Success		200	{object}	customer.Customer
+//	@Router			/v1.0/customers/{id}/billing_account_id [put]
 func customersIDBillingAccountIDPut(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "customersIDBillingAccountIDPut",

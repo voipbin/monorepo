@@ -14,13 +14,13 @@ import (
 
 // providersGET handles GET /providers request.
 // It returns list of providers of the given customer.
-// @Summary     List providers
-// @Description get providers of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} provider.WebhookMessage
-// @Router      /v1.0/providers [get]
+//	@Summary		List providers
+//	@Description	get providers of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	provider.WebhookMessage
+//	@Router			/v1.0/providers [get]
 func providersGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "providersGET",
@@ -82,12 +82,12 @@ func providersGET(c *gin.Context) {
 
 // providersPOST handles POST /providers request.
 // It creates a new provider.
-// @Summary     Create a new provider.
-// @Description create a new provider
-// @Produce     json
-// @Param       provider body     request.BodyProvidersPOST true "The provider detail"
-// @Success     200      {object} provider.WebhookMessage
-// @Router      /v1.0/providers [post]
+//	@Summary		Create a new provider.
+//	@Description	create a new provider
+//	@Produce		json
+//	@Param			provider	body		request.BodyProvidersPOST	true	"The provider detail"
+//	@Success		200			{object}	provider.WebhookMessage
+//	@Router			/v1.0/providers [post]
 func providersPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "providersPOST",
@@ -138,12 +138,12 @@ func providersPOST(c *gin.Context) {
 
 // providersIDDelete handles DELETE /providers/<provider-id> request.
 // It deletes the provider.
-// @Summary     Delete the provider
-// @Description Delete the provider of the given id
-// @Produce     json
-// @Param       id path string true "The ID of the provider"
-// @Success     200
-// @Router      /v1.0/provider/{id} [delete]
+//	@Summary		Delete the provider
+//	@Description	Delete the provider of the given id
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the provider"
+//	@Success		200
+//	@Router			/v1.0/provider/{id} [delete]
 func providersIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "providersIDDelete",
@@ -185,12 +185,12 @@ func providersIDDelete(c *gin.Context) {
 
 // providersIDGet handles GET /providers/<provider-id> request.
 // It gets the provider.
-// @Summary     Get the provider
-// @Description Get the provider of the given id
-// @Produce     json
-// @Param       id path string true "The ID of the provider"
-// @Success     200
-// @Router      /v1.0/providers/{id} [get]
+//	@Summary		Get the provider
+//	@Description	Get the provider of the given id
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the provider"
+//	@Success		200
+//	@Router			/v1.0/providers/{id} [get]
 func providersIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "providersIDGet",
@@ -228,13 +228,13 @@ func providersIDGet(c *gin.Context) {
 // providersIDPUT handles PUT /providers/{id} request.
 // It updates a provider basic info with the given info.
 // And returns updated provider info if it succeed.
-// @Summary     Update an provider and reuturns updated provider info.
-// @Description Update an provider and returns detail updated provider info.
-// @Produce     json
-// @Param       id          path string                     true "The ID of the provider"
-// @Param       update_info body request.BodyProvidersIDPUT true "Provider's update info"
-// @Success     200
-// @Router      /v1.0/providers/{id} [put]
+//	@Summary		Update an provider and reuturns updated provider info.
+//	@Description	Update an provider and returns detail updated provider info.
+//	@Produce		json
+//	@Param			id			path	string						true	"The ID of the provider"
+//	@Param			update_info	body	request.BodyProvidersIDPUT	true	"Provider's update info"
+//	@Success		200
+//	@Router			/v1.0/providers/{id} [put]
 func providersIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "providersIDPUT",
