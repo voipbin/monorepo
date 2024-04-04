@@ -1,31 +1,20 @@
 definitions:
-  account.Account:
-    properties:
-      balance:
-        description: USD
-        type: number
-      customer_id:
-        type: string
-      detail:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      payment_method:
-        type: string
-      payment_type:
-        type: string
-      tm_create:
-        description: timestamp
-        type: string
-      tm_delete:
-        type: string
-      tm_update:
-        type: string
-      type:
-        type: string
-    type: object
+  account.PaymentMethod:
+    enum:
+    - ""
+    - credit card
+    type: string
+    x-enum-varnames:
+    - PaymentMethodNone
+    - PaymentMethodCreditCard
+  account.PaymentType:
+    enum:
+    - ""
+    - prepaid
+    type: string
+    x-enum-varnames:
+    - PaymentTypeNone
+    - PaymentTypePrepaid
   action.Action:
     properties:
       id:
@@ -42,8 +31,93 @@ definitions:
         description: represent when this action has executed. This is used in call-manager.
         type: string
       type:
-        type: string
+        $ref: '#/definitions/action.Type'
     type: object
+  action.Type:
+    enum:
+    - amd
+    - answer
+    - beep
+    - branch
+    - call
+    - chatbot_talk
+    - condition_call_digits
+    - condition_call_status
+    - condition_datetime
+    - condition_variable
+    - confbridge_join
+    - conference_join
+    - connect
+    - conversation_send
+    - digits_receive
+    - digits_send
+    - echo
+    - external_media_start
+    - external_media_stop
+    - fetch
+    - fetch_flow
+    - goto
+    - hangup
+    - message_send
+    - mute
+    - play
+    - queue_join
+    - recording_start
+    - recording_stop
+    - sleep
+    - stop
+    - stream_echo
+    - talk
+    - transcribe_start
+    - transcribe_stop
+    - transcribe_recording
+    - variable_set
+    - webhook_send
+    type: string
+    x-enum-comments:
+      TypeConditionCallDigits: flow-manager. condition check(call's digits)
+      TypeConditionCallStatus: flow-manager. condition check(call's status)
+      TypeDigitsReceive: call-manager. receive the digits(dtmfs).
+      TypeFetchFlow: flow-manager.
+    x-enum-varnames:
+    - TypeAMD
+    - TypeAnswer
+    - TypeBeep
+    - TypeBranch
+    - TypeCall
+    - TypeChatbotTalk
+    - TypeConditionCallDigits
+    - TypeConditionCallStatus
+    - TypeConditionDatetime
+    - TypeConditionVariable
+    - TypeConfbridgeJoin
+    - TypeConferenceJoin
+    - TypeConnect
+    - TypeConversationSend
+    - TypeDigitsReceive
+    - TypeDigitsSend
+    - TypeEcho
+    - TypeExternalMediaStart
+    - TypeExternalMediaStop
+    - TypeFetch
+    - TypeFetchFlow
+    - TypeGoto
+    - TypeHangup
+    - TypeMessageSend
+    - TypeMute
+    - TypePlay
+    - TypeQueueJoin
+    - TypeRecordingStart
+    - TypeRecordingStop
+    - TypeSleep
+    - TypeStop
+    - TypeStreamEcho
+    - TypeTalk
+    - TypeTranscribeStart
+    - TypeTranscribeStop
+    - TypeTranscribeRecording
+    - TypeVariableSet
+    - TypeWebhookSend
   activeflow.Activeflow:
     properties:
       current_action:
@@ -73,14 +147,14 @@ definitions:
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/activeflow.ReferenceType'
       stack_map:
         additionalProperties:
           $ref: '#/definitions/stack.Stack'
         description: stack
         type: object
       status:
-        type: string
+        $ref: '#/definitions/activeflow.Status'
       tm_create:
         type: string
       tm_delete:
@@ -88,6 +162,30 @@ definitions:
       tm_update:
         type: string
     type: object
+  activeflow.ReferenceType:
+    enum:
+    - ""
+    - call
+    - message
+    type: string
+    x-enum-comments:
+      ReferenceTypeCall: call
+      ReferenceTypeMessage: message
+      ReferenceTypeNone: none
+    x-enum-varnames:
+    - ReferenceTypeNone
+    - ReferenceTypeCall
+    - ReferenceTypeMessage
+  activeflow.Status:
+    enum:
+    - ""
+    - running
+    - ended
+    type: string
+    x-enum-varnames:
+    - StatusNone
+    - StatusRunning
+    - StatusEnded
   activeflow.WebhookMessage:
     properties:
       current_action:
@@ -108,9 +206,9 @@ definitions:
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/activeflow.ReferenceType'
       status:
-        type: string
+        $ref: '#/definitions/activeflow.Status'
       tm_create:
         type: string
       tm_delete:
@@ -133,9 +231,36 @@ definitions:
         description: address's name.
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/address.Type'
         description: type of address
-        type: string
     type: object
+  address.Type:
+    enum:
+    - ""
+    - agent
+    - conference
+    - extension
+    - line
+    - sip
+    - tel
+    type: string
+    x-enum-comments:
+      TypeAgent: target is agent's id.
+      TypeConference: target is conference's id
+      TypeExtension: target is extension
+      TypeLine: target is naver line's id
+      TypeNone: no type specified
+      TypeSIP: target is sip destination
+      TypeTel: target tel number
+    x-enum-varnames:
+    - TypeNone
+    - TypeAgent
+    - TypeConference
+    - TypeExtension
+    - TypeLine
+    - TypeSIP
+    - TypeTel
   agent.Agent:
     properties:
       addresses:
@@ -159,14 +284,16 @@ definitions:
         description: hashed Password
         type: string
       permission:
+        allOf:
+        - $ref: '#/definitions/agent.Permission'
         description: agent's permission.
-        type: integer
       ring_method:
         description: agent's ring method
         type: string
       status:
+        allOf:
+        - $ref: '#/definitions/agent.Status'
         description: agent's status
-        type: string
       tag_ids:
         description: agent's tag ids
         items:
@@ -185,6 +312,57 @@ definitions:
         description: agent's username
         type: string
     type: object
+  agent.Permission:
+    enum:
+    - 0
+    - 65535
+    - 1
+    - 15
+    - 16
+    - 32
+    - 64
+    - 240
+    type: integer
+    x-enum-comments:
+      PermissionAll: "65535"
+      PermissionCustomerAdmin: 32. Permission for customer level admin
+      PermissionCustomerAgent: 16. Permission for customer level agent
+      PermissionCustomerAll: 240. Permission for customer level
+      PermissionCustomerManager: 64. Permission for customer level manager
+      PermissionProjectAll: 15. permission for project level
+      PermissionProjectSuperAdmin: 1. permission for voipbin project super admin.
+    x-enum-varnames:
+    - PermissionNone
+    - PermissionAll
+    - PermissionProjectSuperAdmin
+    - PermissionProjectAll
+    - PermissionCustomerAgent
+    - PermissionCustomerAdmin
+    - PermissionCustomerManager
+    - PermissionCustomerAll
+  agent.Status:
+    enum:
+    - ""
+    - available
+    - away
+    - busy
+    - offline
+    - ringing
+    type: string
+    x-enum-comments:
+      StatusAvailable: available
+      StatusAway: away
+      StatusBusy: busy
+      StatusNone: none
+      StatusOffline: offline
+      StatusRinging: voipbin is making a call to the agent
+    x-enum-varnames:
+    - StatusNone
+    - StatusAvailable
+    - StatusAway
+    - StatusBusy
+    - StatusOffline
+    - StatusRinging
   agent.WebhookMessage:
     properties:
       addresses:
@@ -205,14 +383,16 @@ definitions:
         description: agent's name
         type: string
       permission:
+        allOf:
+        - $ref: '#/definitions/agent.Permission'
         description: agent's permission.
-        type: integer
       ring_method:
         description: agent's ring method
         type: string
       status:
+        allOf:
+        - $ref: '#/definitions/agent.Status'
         description: agent's status
-        type: string
       tag_ids:
         description: agent's tag ids
         items:
@@ -231,13 +411,27 @@ definitions:
         description: agent's username
         type: string
     type: object
+  availablenumber.Feature:
+    enum:
+    - emergency
+    - fax
+    - mms
+    - sms
+    - voice
+    type: string
+    x-enum-varnames:
+    - FeatureEmergency
+    - FeatureFax
+    - FeatureMMS
+    - FeatureSMS
+    - FeatureVoice
   availablenumber.WebhookMessage:
     properties:
       country:
         type: string
       features:
         items:
-          type: string
+          $ref: '#/definitions/availablenumber.Feature'
         type: array
       number:
         type: string
@@ -249,7 +443,8 @@ definitions:
   call.Call:
     properties:
       action:
-        $ref: '#/definitions/action.Action'
+        allOf:
+        - $ref: '#/definitions/action.Action'
         description: call's current action.
       action_next_hold:
         description: call's next action hold. if true, don't allow to go next action
@@ -287,8 +482,9 @@ definitions:
           $ref: '#/definitions/route.Route'
         type: array
       direction:
+        allOf:
+        - $ref: '#/definitions/call.Direction'
         description: direction of call. incoming/outgoing
-        type: string
       external_media_id:
         description: external media id(current)
         type: string
@@ -299,9 +495,9 @@ definitions:
         description: groupcall id
         type: string
       hangup_by:
-        type: string
+        $ref: '#/definitions/call.HangupBy'
       hangup_reason:
-        type: string
+        $ref: '#/definitions/call.HangupReason'
       id:
         description: identity
         type: string
@@ -309,8 +505,9 @@ definitions:
         description: etc info
         type: string
       mute_direction:
+        allOf:
+        - $ref: '#/definitions/call.MuteDirection'
         description: mute direction
-        type: string
       recording_id:
         description: recording id(current)
         type: string
@@ -320,11 +517,13 @@ definitions:
           type: string
         type: array
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: source/destination
       status:
+        allOf:
+        - $ref: '#/definitions/call.Status'
         description: info
-        type: string
       tm_create:
         description: timestamp
         type: string
@@ -339,9 +538,121 @@ definitions:
       tm_update:
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/call.Type'
         description: call type
-        type: string
     type: object
+  call.Direction:
+    enum:
+    - incoming
+    - outgoing
+    type: string
+    x-enum-varnames:
+    - DirectionIncoming
+    - DirectionOutgoing
+  call.HangupBy:
+    enum:
+    - ""
+    - remote
+    - local
+    type: string
+    x-enum-comments:
+      HangupByLocal: local end hangup the call first.
+      HangupByNone: no one hangup yet.
+      HangupByRemote: remote end hangup the call first.
+    x-enum-varnames:
+    - HangupByNone
+    - HangupByRemote
+    - HangupByLocal
+  call.HangupReason:
+    enum:
+    - ""
+    - normal
+    - failed
+    - busy
+    - cancel
+    - timeout
+    - noanswer
+    - dialout
+    - amd
+    type: string
+    x-enum-comments:
+      HangupReasonAMD: the call's amd action result hung up the call.
+      HangupReasonBusy: the destination is on the line with another caller.
+      HangupReasonCanceled: call was cancelled by the originator before it was answered.
+      HangupReasonDialout: The call reached dialing timeout before it was answered.
+        This timeout is fired by our time out(outgoing call).
+      HangupReasonFailed: the call attempt(signal) was not reached to the phone network.
+      HangupReasonNoanswer: The call rejected with noanswer status.
+      HangupReasonNormal: the call has ended after answer.
+      HangupReasonTimeout: call reached max call duration after it was answered.
+    x-enum-varnames:
+    - HangupReasonNone
+    - HangupReasonNormal
+    - HangupReasonFailed
+    - HangupReasonBusy
+    - HangupReasonCanceled
+    - HangupReasonTimeout
+    - HangupReasonNoanswer
+    - HangupReasonDialout
+    - HangupReasonAMD
+  call.MuteDirection:
+    enum:
+    - ""
+    - both
+    - out
+    - in
+    type: string
+    x-enum-comments:
+      MuteDirectionBoth: mute the channel in/out both.
+      MuteDirectionIn: mute the channel incoming
+      MuteDirectionNone: none
+    x-enum-varnames:
+    - MuteDirectionNone
+    - MuteDirectionBoth
+    - MuteDirectionOut
+    - MuteDirectionIn
+  call.Status:
+    enum:
+    - dialing
+    - ringing
+    - progressing
+    - terminating
+    - canceling
+    - hangup
+    type: string
+    x-enum-comments:
+      StatusCanceling: The call originator is canceling the call.
+      StatusDialing: The call is created. We are dialing to the destination.
+      StatusHangup: The call has been completed.
+      StatusProgressing: The call has answered. The both endpoints are talking to
+        each other.
+      StatusRinging: The destination has confirmed that the call is ringng.
+      StatusTerminating: The call is terminating.
+    x-enum-varnames:
+    - StatusDialing
+    - StatusRinging
+    - StatusProgressing
+    - StatusTerminating
+    - StatusCanceling
+    - StatusHangup
+  call.Type:
+    enum:
+    - ""
+    - flow
+    - conference
+    - sip-service
+    type: string
+    x-enum-comments:
+      TypeConference: conference call.
+      TypeFlow: executing the call-flow
+      TypeSipService: sip-service call. Will execute the corresponding the pre-defined
+        sip-service by the destination.
+    x-enum-varnames:
+    - TypeNone
+    - TypeFlow
+    - TypeConference
+    - TypeSipService
   call.WebhookMessage:
     properties:
       action:
@@ -358,8 +669,7 @@ definitions:
       destination:
         $ref: '#/definitions/address.Address'
       direction:
-        description: direction of call. incoming/outgoing
-        type: string
+        $ref: '#/definitions/call.Direction'
       flow_id:
         description: flow id
         type: string
@@ -368,9 +678,9 @@ definitions:
           groupcall.
         type: string
       hangup_by:
-        type: string
+        $ref: '#/definitions/call.HangupBy'
       hangup_reason:
-        type: string
+        $ref: '#/definitions/call.HangupReason'
       id:
         description: identity
         type: string
@@ -378,8 +688,7 @@ definitions:
         description: etc info
         type: string
       mute_direction:
-        description: mute direction
-        type: string
+        $ref: '#/definitions/call.MuteDirection'
       recording_id:
         description: recording id(current)
         type: string
@@ -389,11 +698,13 @@ definitions:
           type: string
         type: array
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: source/destination
       status:
+        allOf:
+        - $ref: '#/definitions/call.Status'
         description: info
-        type: string
       tm_create:
         type: string
       tm_delete:
@@ -408,8 +719,9 @@ definitions:
       tm_update:
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/call.Type'
         description: call type
-        type: string
     type: object
   campaign.Campaign:
     properties:
@@ -423,10 +735,11 @@ definitions:
       detail:
         type: string
       end_handle:
-        type: string
+        $ref: '#/definitions/campaign.EndHandle'
       execute:
+        allOf:
+        - $ref: '#/definitions/campaign.Execute'
         description: if the execute is running, this sets to true
-        type: string
       flow_id:
         description: action settings
         type: string
@@ -446,7 +759,7 @@ definitions:
       service_level:
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/campaign.Status'
       tm_create:
         type: string
       tm_delete:
@@ -454,8 +767,51 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/campaign.Type'
     type: object
+  campaign.EndHandle:
+    enum:
+    - stop
+    - continue
+    type: string
+    x-enum-comments:
+      EndHandleContinue: the campaign will continue to run after outdial has no more
+        outdial target.
+      EndHandleStop: the campaign will stop if the outdial has no more outdial target
+    x-enum-varnames:
+    - EndHandleStop
+    - EndHandleContinue
+  campaign.Execute:
+    enum:
+    - run
+    - stop
+    type: string
+    x-enum-varnames:
+    - ExecuteRun
+    - ExecuteStop
+  campaign.Status:
+    enum:
+    - stop
+    - stopping
+    - run
+    type: string
+    x-enum-comments:
+      StatusStopping: preparing stop
+    x-enum-varnames:
+    - StatusStop
+    - StatusStopping
+    - StatusRun
+  campaign.Type:
+    enum:
+    - call
+    - flow
+    type: string
+    x-enum-comments:
+      TypeCall: make a call to the destination
+      TypeFlow: execute a flow with the destination
+    x-enum-varnames:
+    - TypeCall
+    - TypeFlow
   campaign.WebhookMessage:
     properties:
       actions:
@@ -468,7 +824,7 @@ definitions:
       detail:
         type: string
       end_handle:
-        type: string
+        $ref: '#/definitions/campaign.EndHandle'
       id:
         type: string
       name:
@@ -485,7 +841,7 @@ definitions:
       service_level:
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/campaign.Status'
       tm_create:
         type: string
       tm_delete:
@@ -493,8 +849,46 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/campaign.Type'
     type: object
+  campaigncall.ReferenceType:
+    enum:
+    - none
+    - call
+    - flow
+    type: string
+    x-enum-varnames:
+    - ReferenceTypeNone
+    - ReferenceTypeCall
+    - ReferenceTypeFlow
+  campaigncall.Result:
+    enum:
+    - ""
+    - success
+    - fail
+    type: string
+    x-enum-comments:
+      ResultFail: fail
+      ResultNone: no result.
+      ResultSuccess: success
+    x-enum-varnames:
+    - ResultNone
+    - ResultSuccess
+    - ResultFail
+  campaigncall.Status:
+    enum:
+    - dialing
+    - progressing
+    - done
+    type: string
+    x-enum-comments:
+      StatusDialing: the campaigncall is dialing(not answered yet)
+      StatusDone: the campaigncall is hungup
+      StatusProgressing: the campaigncall is progressing(the call answered)
+    x-enum-varnames:
+    - StatusDialing
+    - StatusProgressing
+    - StatusDone
   campaigncall.WebhookMessage:
     properties:
       activeflow_id:
@@ -524,15 +918,18 @@ definitions:
         description: reference id
         type: string
       reference_type:
+        allOf:
+        - $ref: '#/definitions/campaigncall.ReferenceType'
         description: none or call
-        type: string
       result:
-        type: string
+        $ref: '#/definitions/campaigncall.Result'
       source:
         $ref: '#/definitions/address.Address'
       status:
-        type: string
+        $ref: '#/definitions/campaigncall.Status'
       tm_create:
+        type: string
+      tm_delete:
         type: string
       tm_update:
         type: string
@@ -564,8 +961,18 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/chat.Type'
     type: object
+  chat.Type:
+    enum:
+    - normal
+    - group
+    type: string
+    x-enum-comments:
+      TypeNormal: 1:1 chat
+    x-enum-varnames:
+    - TypeNormal
+    - TypeGroup
   chat.WebhookMessage:
     properties:
       customer_id:
@@ -591,7 +998,7 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/chat.Type'
     type: object
   chatbot.Chatbot:
     properties:
@@ -600,7 +1007,7 @@ definitions:
       detail:
         type: string
       engine_type:
-        type: string
+        $ref: '#/definitions/chatbot.EngineType'
       id:
         type: string
       init_prompt:
@@ -615,6 +1022,17 @@ definitions:
       tm_update:
         type: string
     type: object
+  chatbot.EngineType:
+    enum:
+    - chatGPT
+    - clova
+    type: string
+    x-enum-comments:
+      EngineTypeChatGPT: openai chatGPT. https://chat.openai.com/chat
+      EngineTypeClova: naver clova. https://www.ncloud.com/product/aiService/chatbot
+    x-enum-varnames:
+    - EngineTypeChatGPT
+    - EngineTypeClova
   chatbot.WebhookMessage:
     properties:
       customer_id:
@@ -622,7 +1040,7 @@ definitions:
       detail:
         type: string
       engine_type:
-        type: string
+        $ref: '#/definitions/chatbot.EngineType'
       id:
         type: string
       init_prompt:
@@ -642,7 +1060,7 @@ definitions:
       activeflow_id:
         type: string
       chatbot_engine_type:
-        type: string
+        $ref: '#/definitions/chatbot.EngineType'
       chatbot_id:
         type: string
       confbridge_id:
@@ -650,7 +1068,7 @@ definitions:
       customer_id:
         type: string
       gender:
-        type: string
+        $ref: '#/definitions/chatbotcall.Gender'
       id:
         type: string
       language:
@@ -662,9 +1080,9 @@ definitions:
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/chatbotcall.ReferenceType'
       status:
-        type: string
+        $ref: '#/definitions/chatbotcall.Status'
       tm_create:
         type: string
       tm_delete:
@@ -676,6 +1094,16 @@ definitions:
       transcribe_id:
         type: string
     type: object
+  chatbotcall.Gender:
+    enum:
+    - male
+    - female
+    - neutral
+    type: string
+    x-enum-varnames:
+    - GenderMale
+    - GenderFemale
+    - GenderNuetral
   chatbotcall.Message:
     properties:
       content:
@@ -683,6 +1111,22 @@ definitions:
       role:
         type: string
     type: object
+  chatbotcall.ReferenceType:
+    enum:
+    - call
+    type: string
+    x-enum-varnames:
+    - ReferenceTypeCall
+  chatbotcall.Status:
+    enum:
+    - initiating
+    - progressing
+    - end
+    type: string
+    x-enum-varnames:
+    - StatusInitiating
+    - StatusProgressing
+    - StatusEnd
   chatbotcall.WebhookMessage:
     properties:
       activeflow_id:
@@ -694,7 +1138,7 @@ definitions:
       customer_id:
         type: string
       gender:
-        type: string
+        $ref: '#/definitions/chatbotcall.Gender'
       id:
         type: string
       language:
@@ -702,9 +1146,9 @@ definitions:
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/chatbotcall.ReferenceType'
       status:
-        type: string
+        $ref: '#/definitions/chatbotcall.Status'
       tm_create:
         type: string
       tm_delete:
@@ -718,6 +1162,8 @@ definitions:
     type: object
   chatroom.Chatroom:
     properties:
+      agent_id:
+        type: string
       chat_id:
         type: string
       customer_id:
@@ -743,10 +1189,22 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/chatroom.Type'
     type: object
+  chatroom.Type:
+    enum:
+    - unknown
+    - normal
+    - group
+    type: string
+    x-enum-varnames:
+    - TypeUnkonwn
+    - TypeNormal
+    - TypeGroup
   chatroom.WebhookMessage:
     properties:
+      agent_id:
+        type: string
       chat_id:
         type: string
       customer_id:
@@ -772,7 +1230,7 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/chatroom.Type'
     type: object
   conference.Conference:
     properties:
@@ -815,7 +1273,7 @@ definitions:
           type: string
         type: array
       status:
-        type: string
+        $ref: '#/definitions/conference.Status'
       timeout:
         description: timeout. second
         type: integer
@@ -835,8 +1293,37 @@ definitions:
           type: string
         type: array
       type:
-        type: string
+        $ref: '#/definitions/conference.Type'
     type: object
+  conference.Status:
+    enum:
+    - starting
+    - progressing
+    - terminating
+    - terminated
+    type: string
+    x-enum-varnames:
+    - StatusStarting
+    - StatusProgressing
+    - StatusTerminating
+    - StatusTerminated
+  conference.Type:
+    enum:
+    - ""
+    - conference
+    - connect
+    - queue
+    type: string
+    x-enum-comments:
+      TypeConference: conference for more than 3 calls join
+      TypeConnect: connect type kicks out the participant if the 1 call has left in
+        the conference.
+      TypeQueue: queue for conference room for queue.
+    x-enum-varnames:
+    - TypeNone
+    - TypeConference
+    - TypeConnect
+    - TypeQueue
   conferencecall.Conferencecall:
     properties:
       conference_id:
@@ -848,9 +1335,9 @@ definitions:
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/conferencecall.ReferenceType'
       status:
-        type: string
+        $ref: '#/definitions/conferencecall.Status'
       tm_create:
         type: string
       tm_delete:
@@ -858,6 +1345,34 @@ definitions:
       tm_update:
         type: string
     type: object
+  conferencecall.ReferenceType:
+    enum:
+    - call
+    type: string
+    x-enum-varnames:
+    - ReferenceTypeCall
+  conferencecall.Status:
+    enum:
+    - joining
+    - joined
+    - leaving
+    - leaved
+    type: string
+    x-enum-varnames:
+    - StatusJoining
+    - StatusJoined
+    - StatusLeaving
+    - StatusLeaved
+  conversation.ReferenceType:
+    enum:
+    - message
+    - line
+    type: string
+    x-enum-comments:
+      ReferenceTypeMessage: sms, mms
+    x-enum-varnames:
+    - ReferenceTypeMessage
+    - ReferenceTypeLine
   conversation.WebhookMessage:
     properties:
       account_id:
@@ -877,7 +1392,7 @@ definitions:
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/conversation.ReferenceType'
       source:
         $ref: '#/definitions/address.Address'
       tm_create:
@@ -1019,8 +1534,30 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/flow.Type'
     type: object
+  flow.Type:
+    enum:
+    - ""
+    - flow
+    - conference
+    - queue
+    - campaign
+    - transfer
+    type: string
+    x-enum-comments:
+      TypeCampaign: campaign-manager
+      TypeConference: conference-manager
+      TypeFlow: normal flow
+      TypeQueue: queue-manager
+      TypeTransfer: transfer-manager
+    x-enum-varnames:
+    - TypeNone
+    - TypeFlow
+    - TypeConference
+    - TypeQueue
+    - TypeCampaign
+    - TypeTransfer
   flow.WebhookMessage:
     properties:
       actions:
@@ -1042,9 +1579,882 @@ definitions:
       tm_update:
         type: string
       type:
+        $ref: '#/definitions/flow.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyActiveflowsPOST:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      flow_id:
+        type: string
+      id:
+        description: activeflow id
         type: string
     type: object
-  gitlab.com_voipbin_bin-manager_billing-manager.git_models_account.WebhookMessage:
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDAddressesPUT:
+    properties:
+      addresses:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+    required:
+    - addresses
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      ring_method:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDPermissionPUT:
+    properties:
+      permission:
+        $ref: '#/definitions/agent.Permission'
+    required:
+    - permission
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDStatusPUT:
+    properties:
+      status:
+        $ref: '#/definitions/agent.Status'
+    required:
+    - status
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDTagIDsPUT:
+    properties:
+      tag_ids:
+        items:
+          type: string
+        type: array
+    required:
+    - tag_ids
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsPOST:
+    properties:
+      addresses:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      detail:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      permission:
+        $ref: '#/definitions/agent.Permission'
+      ring_method:
+        type: string
+      tag_ids:
+        items:
+          type: string
+        type: array
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCallsPOST:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      destinations:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      flow_id:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+    required:
+    - destinations
+    - source
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDPUT:
+    properties:
+      detail:
+        type: string
+      end_handle:
+        $ref: '#/definitions/campaign.EndHandle'
+      name:
+        type: string
+      service_level:
+        type: integer
+      type:
+        $ref: '#/definitions/campaign.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDResourceInfoPUT:
+    properties:
+      next_campaign_id:
+        type: string
+      outdial_id:
+        type: string
+      outplan_id:
+        type: string
+      queue_id:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDStatusPUT:
+    properties:
+      status:
+        $ref: '#/definitions/campaign.Status'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsPOST:
+    properties:
+      actions:
+        description: this actions will be stored to the flow
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      detail:
+        type: string
+      end_handle:
+        $ref: '#/definitions/campaign.EndHandle'
+      name:
+        type: string
+      next_campaign_id:
+        type: string
+      outdial_id:
+        type: string
+      outplan_id:
+        description: resource info
+        type: string
+      queue_id:
+        type: string
+      service_level:
+        type: integer
+      type:
+        $ref: '#/definitions/campaign.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatbotsIDPUT:
+    properties:
+      detail:
+        type: string
+      engine_type:
+        $ref: '#/definitions/chatbot.EngineType'
+      init_prompt:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatbotsPOST:
+    properties:
+      detail:
+        type: string
+      engine_type:
+        $ref: '#/definitions/chatbot.EngineType'
+      init_prompt:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatmessagesPOST:
+    properties:
+      chat_id:
+        type: string
+      medias:
+        items:
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_chat-manager_git_models_media.Media'
+        type: array
+      source:
+        $ref: '#/definitions/address.Address'
+      text:
+        type: string
+      type:
+        $ref: '#/definitions/messagechat.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatroommessagesPOST:
+    properties:
+      chatroom_id:
+        type: string
+      text:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatroomsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatroomsPOST:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      participant_ids:
+        items:
+          type: string
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatsIDOwnerIDPUT:
+    properties:
+      owner_id:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatsPOST:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      participant_ids:
+        items:
+          type: string
+        type: array
+      type:
+        $ref: '#/definitions/chat.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConferencesIDTranscribeStartPOST:
+    properties:
+      language:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConferencesPOST:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      detail:
+        type: string
+      name:
+        type: string
+      post_actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      pre_actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      timeout:
+        description: timeout. second
+        type: integer
+      type:
+        $ref: '#/definitions/conference.Type'
+    required:
+    - type
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConversationAccountsPOST:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      secret:
+        type: string
+      token:
+        type: string
+      type:
+        $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_account.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConversationsIDMessagesPOST:
+    properties:
+      text:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCustomersPOST:
+    properties:
+      address:
+        type: string
+      detail:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+      username:
+        type: string
+      webhook_method:
+        type: string
+      webhook_uri:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyExtensionsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyExtensionsPOST:
+    properties:
+      detail:
+        type: string
+      extension:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyFlowsIDPUT:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyFlowsPOST:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyGroupcallsPOST:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      answer_method:
+        $ref: '#/definitions/groupcall.AnswerMethod'
+      destinations:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      flow_id:
+        type: string
+      ring_method:
+        $ref: '#/definitions/groupcall.RingMethod'
+      source:
+        $ref: '#/definitions/address.Address'
+    required:
+    - destinations
+    - source
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyLoginPOST:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyMessagesPOST:
+    properties:
+      destinations:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      source:
+        $ref: '#/definitions/address.Address'
+      text:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyNumbersIDFlowIDPUT:
+    properties:
+      call_flow_id:
+        type: string
+      message_flow_id:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyNumbersIDPUT:
+    properties:
+      call_flow_id:
+        type: string
+      detail:
+        type: string
+      message_flow_id:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyNumbersPOST:
+    properties:
+      call_flow_id:
+        type: string
+      detail:
+        type: string
+      message_flow_id:
+        type: string
+      name:
+        type: string
+      number:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsIDDataPUT:
+    properties:
+      data:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsPOST:
+    properties:
+      campaign_id:
+        type: string
+      data:
+        type: string
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutplansIDDialInfoPUT:
+    properties:
+      dial_timeout:
+        type: integer
+      max_try_count_0:
+        type: integer
+      max_try_count_1:
+        type: integer
+      max_try_count_2:
+        type: integer
+      max_try_count_3:
+        type: integer
+      max_try_count_4:
+        type: integer
+      source:
+        $ref: '#/definitions/address.Address'
+      try_interval:
+        type: integer
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutplansIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutplansPOST:
+    properties:
+      detail:
+        type: string
+      dial_timeout:
+        type: integer
+      max_try_count_0:
+        type: integer
+      max_try_count_1:
+        type: integer
+      max_try_count_2:
+        type: integer
+      max_try_count_3:
+        type: integer
+      max_try_count_4:
+        type: integer
+      name:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+      try_interval:
+        type: integer
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyProvidersIDPUT:
+    properties:
+      detail:
+        type: string
+      hostname:
+        type: string
+      name:
+        type: string
+      tech_headers:
+        additionalProperties:
+          type: string
+        type: object
+      tech_postfix:
+        type: string
+      tech_prefix:
+        type: string
+      type:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyProvidersPOST:
+    properties:
+      detail:
+        type: string
+      hostname:
+        type: string
+      name:
+        type: string
+      tech_headers:
+        additionalProperties:
+          type: string
+        type: object
+      tech_postfix:
+        type: string
+      tech_prefix:
+        type: string
+      type:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyQueuesIDActionsPUT:
+    properties:
+      timeout_service:
+        type: integer
+      timeout_wait:
+        type: integer
+      wait_actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyQueuesIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      routing_method:
+        $ref: '#/definitions/queue.RoutingMethod'
+      service_timeout:
+        type: integer
+      tag_ids:
+        items:
+          type: string
+        type: array
+      wait_actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      wait_timeout:
+        type: integer
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyQueuesIDTagIDsPUT:
+    properties:
+      tag_ids:
+        items:
+          type: string
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyRoutesPOST:
+    properties:
+      customer_id:
+        type: string
+      detail:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      provider_id:
+        type: string
+      target:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyTagsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyTranscribesPOST:
+    properties:
+      direction:
+        $ref: '#/definitions/transcribe.Direction'
+      language:
+        type: string
+      reference_id:
+        type: string
+      transcribe_type:
+        $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.TranscribeReferenceType'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyTransfersPOST:
+    properties:
+      transferee_addresses:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      transferer_call_id:
+        type: string
+      type:
+        $ref: '#/definitions/transfer.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.TranscribeReferenceType:
+    enum:
+    - call
+    - conference
+    - recording
+    type: string
+    x-enum-comments:
+      TranscribeReferenceTypeCall: call
+      TranscribeReferenceTypeConference: conference
+      TranscribeReferenceTypeRecording: recording
+    x-enum-varnames:
+    - TranscribeReferenceTypeCall
+    - TranscribeReferenceTypeConference
+    - TranscribeReferenceTypeRecording
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyActiveflowsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/activeflow.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyAgentsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/agent.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyAvailableNumbersGET:
+    properties:
+      result:
+        items:
+          $ref: '#/definitions/availablenumber.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyBillingAccountsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/call.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCampaignsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/campaign.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCampaignsIDCampaigncallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/campaigncall.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatbotcallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/chatbotcall.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatbotsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/chatbot.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatmessagesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/messagechat.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/chat.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyConversationsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/conversation.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyConversationsIDMessagesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_message.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCustomersGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/customer.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyFlowsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/flow.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyGroupcallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/groupcall.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyLoginPOST:
+    properties:
+      token:
+        type: string
+      username:
+        type: string
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyMessagesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_message-manager_git_models_message.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyNumbersGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/number.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyOutdialsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/outdial.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyOutplansGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/outplan.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyQueuecallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/queuecall.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyQueuesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/queue.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyRecordingsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/recording.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyTagsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/tag.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyTranscribesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/transcribe.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyTrunksGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/trunk.WebhookMessage'
+        type: array
+    type: object
+  gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Account:
     properties:
       balance:
         description: USD
@@ -1058,9 +2468,47 @@ definitions:
       name:
         type: string
       payment_method:
-        type: string
+        $ref: '#/definitions/account.PaymentMethod'
       payment_type:
+        $ref: '#/definitions/account.PaymentType'
+      tm_create:
+        description: timestamp
         type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Type'
+    type: object
+  gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Type:
+    enum:
+    - admin
+    - normal
+    type: string
+    x-enum-comments:
+      TypeAdmin: admin type
+      TypeNormal: normal type
+    x-enum-varnames:
+    - TypeAdmin
+    - TypeNormal
+  gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.WebhookMessage:
+    properties:
+      balance:
+        description: USD
+        type: number
+      customer_id:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      payment_method:
+        $ref: '#/definitions/account.PaymentMethod'
+      payment_type:
+        $ref: '#/definitions/account.PaymentType'
       tm_create:
         description: timestamp
         type: string
@@ -1069,9 +2517,17 @@ definitions:
       tm_update:
         type: string
     type: object
-  gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media:
+  gitlab_com_voipbin_bin-manager_chat-manager_git_models_media.Media:
     type: object
-  gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage:
+  gitlab_com_voipbin_bin-manager_conversation-manager_git_models_account.Type:
+    enum:
+    - line
+    - sms
+    type: string
+    x-enum-varnames:
+    - TypeLine
+    - TypeSMS
+  gitlab_com_voipbin_bin-manager_conversation-manager_git_models_account.WebhookMessage:
     properties:
       customer_id:
         description: customer
@@ -1096,9 +2552,9 @@ definitions:
         description: usually api token
         type: string
       type:
-        type: string
+        $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_account.Type'
     type: object
-  gitlab.com_voipbin_bin-manager_conversation-manager.git_models_media.Media:
+  gitlab_com_voipbin_bin-manager_conversation-manager_git_models_media.Media:
     properties:
       customer_id:
         type: string
@@ -1113,31 +2569,42 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/media.Type'
     type: object
-  gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage:
+  gitlab_com_voipbin_bin-manager_conversation-manager_git_models_message.Direction:
+    enum:
+    - ""
+    - outgoing
+    - incoming
+    type: string
+    x-enum-varnames:
+    - DirectionNond
+    - DirectionOutgoing
+    - DirectionIncoming
+  gitlab_com_voipbin_bin-manager_conversation-manager_git_models_message.WebhookMessage:
     properties:
       conversation_id:
         type: string
       customer_id:
         type: string
       direction:
-        type: string
+        $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_message.Direction'
       id:
         type: string
       medias:
         items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_media.Media'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_media.Media'
         type: array
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/conversation.ReferenceType'
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: source
       status:
-        type: string
+        $ref: '#/definitions/message.Status'
       text:
         type: string
       tm_create:
@@ -1147,16 +2614,38 @@ definitions:
       tm_update:
         type: string
     type: object
-  gitlab.com_voipbin_bin-manager_message-manager.git_models_message.WebhookMessage:
+  gitlab_com_voipbin_bin-manager_message-manager_git_models_message.Direction:
+    enum:
+    - outbound
+    - inbound
+    type: string
+    x-enum-comments:
+      DirectionInbound: direction inbound
+      DirectionOutbound: direction outbound.
+    x-enum-varnames:
+    - DirectionOutbound
+    - DirectionInbound
+  gitlab_com_voipbin_bin-manager_message-manager_git_models_message.Message:
     properties:
       customer_id:
         type: string
       direction:
-        type: string
+        $ref: '#/definitions/gitlab_com_voipbin_bin-manager_message-manager_git_models_message.Direction'
       id:
         type: string
+      medias:
+        items:
+          type: string
+        type: array
+      provider_name:
+        allOf:
+        - $ref: '#/definitions/message.ProviderName'
+        description: provider info
+      provider_reference_id:
+        type: string
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: from/to info
       targets:
         items:
@@ -1172,8 +2661,47 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/message.Type'
     type: object
+  gitlab_com_voipbin_bin-manager_message-manager_git_models_message.WebhookMessage:
+    properties:
+      customer_id:
+        type: string
+      direction:
+        $ref: '#/definitions/gitlab_com_voipbin_bin-manager_message-manager_git_models_message.Direction'
+      id:
+        type: string
+      source:
+        allOf:
+        - $ref: '#/definitions/address.Address'
+        description: from/to info
+      targets:
+        items:
+          $ref: '#/definitions/target.Target'
+        type: array
+      text:
+        description: message info
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        $ref: '#/definitions/message.Type'
+    type: object
+  groupcall.AnswerMethod:
+    enum:
+    - ""
+    - hangup_others
+    type: string
+    x-enum-comments:
+      AnswerMethodHangupOthers: hangup others
+      AnswerMethodNone: do nothing
+    x-enum-varnames:
+    - AnswerMethodNone
+    - AnswerMethodHangupOthers
   groupcall.Groupcall:
     properties:
       answer_call_id:
@@ -1183,7 +2711,7 @@ definitions:
         description: represents answered groupcall id
         type: string
       answer_method:
-        type: string
+        $ref: '#/definitions/groupcall.AnswerMethod'
       call_count:
         description: represent left number of calls for current dial
         type: integer
@@ -1216,11 +2744,11 @@ definitions:
       master_groupcall_id:
         type: string
       ring_method:
-        type: string
+        $ref: '#/definitions/groupcall.RingMethod'
       source:
         $ref: '#/definitions/address.Address'
       status:
-        type: string
+        $ref: '#/definitions/groupcall.Status'
       tm_create:
         description: timestamp
         type: string
@@ -1229,6 +2757,28 @@ definitions:
       tm_update:
         type: string
     type: object
+  groupcall.RingMethod:
+    enum:
+    - ""
+    - ring_all
+    - linear
+    type: string
+    x-enum-comments:
+      RingMethodRingAll: dial all
+    x-enum-varnames:
+    - RingMethodNone
+    - RingMethodRingAll
+    - RingMethodLinear
+  groupcall.Status:
+    enum:
+    - progressing
+    - hangingup
+    - hangup
+    type: string
+    x-enum-varnames:
+    - StatusProgressing
+    - StatusHangingup
+    - StatusHangup
   groupcall.WebhookMessage:
     properties:
       answer_call_id:
@@ -1238,7 +2788,7 @@ definitions:
         description: represents answered groupcall id
         type: string
       answer_method:
-        type: string
+        $ref: '#/definitions/groupcall.AnswerMethod'
       call_count:
         description: represent left number of calls for current dial
         type: integer
@@ -1271,11 +2821,11 @@ definitions:
       master_groupcall_id:
         type: string
       ring_method:
-        type: string
+        $ref: '#/definitions/groupcall.RingMethod'
       source:
         $ref: '#/definitions/address.Address'
       status:
-        type: string
+        $ref: '#/definitions/groupcall.Status'
       tm_create:
         description: timestamp
         type: string
@@ -1284,42 +2834,56 @@ definitions:
       tm_update:
         type: string
     type: object
-  message.Message:
-    properties:
-      customer_id:
-        type: string
-      direction:
-        type: string
-      id:
-        type: string
-      medias:
-        items:
-          type: string
-        type: array
-      provider_name:
-        description: provider info
-        type: string
-      provider_reference_id:
-        type: string
-      source:
-        $ref: '#/definitions/address.Address'
-        description: from/to info
-      targets:
-        items:
-          $ref: '#/definitions/target.Target'
-        type: array
-      text:
-        description: message info
-        type: string
-      tm_create:
-        type: string
-      tm_delete:
-        type: string
-      tm_update:
-        type: string
-      type:
-        type: string
-    type: object
+  media.Type:
+    enum:
+    - image
+    - video
+    - audio
+    - file
+    - location
+    - sticker
+    - template
+    - imagemap
+    - flex
+    type: string
+    x-enum-varnames:
+    - TypeImage
+    - TypeVideo
+    - TypeAudio
+    - TypeFile
+    - TypeLocation
+    - TypeSticker
+    - TypeTemplate
+    - TypeImagemap
+    - TypeFlex
+  message.ProviderName:
+    enum:
+    - telnyx
+    - twilio
+    - messagebird
+    type: string
+    x-enum-varnames:
+    - ProviderNameTelnyx
+    - ProviderNameTwilio
+    - ProviderNameMessagebird
+  message.Status:
+    enum:
+    - sending
+    - sent
+    - failed
+    - received
+    type: string
+    x-enum-varnames:
+    - StatusSending
+    - StatusSent
+    - StatusFailed
+    - StatusReceived
+  message.Type:
+    enum:
+    - sms
+    type: string
+    x-enum-varnames:
+    - TypeSMS
   messagechat.Messagechat:
     properties:
       chat_id:
@@ -1330,10 +2894,11 @@ definitions:
         type: string
       medias:
         items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_chat-manager_git_models_media.Media'
         type: array
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: message defines
       text:
         type: string
@@ -1344,8 +2909,16 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/messagechat.Type'
     type: object
+  messagechat.Type:
+    enum:
+    - system
+    - normal
+    type: string
+    x-enum-varnames:
+    - TypeSystem
+    - TypeNormal
   messagechat.WebhookMessage:
     properties:
       chat_id:
@@ -1356,7 +2929,7 @@ definitions:
         type: string
       medias:
         items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_chat-manager_git_models_media.Media'
         type: array
       source:
         $ref: '#/definitions/address.Address'
@@ -1369,10 +2942,12 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/messagechat.Type'
     type: object
   messagechatroom.Messagechatroom:
     properties:
+      agent_id:
+        type: string
       chatroom_id:
         type: string
       customer_id:
@@ -1381,12 +2956,13 @@ definitions:
         type: string
       medias:
         items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_chat-manager_git_models_media.Media'
         type: array
       messagechat_id:
         type: string
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: message defines
       text:
         type: string
@@ -1397,8 +2973,18 @@ definitions:
       tm_update:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/messagechatroom.Type'
     type: object
+  messagechatroom.Type:
+    enum:
+    - ""
+    - system
+    - normal
+    type: string
+    x-enum-varnames:
+    - TypeUnknown
+    - TypeSystem
+    - TypeNormal
   number.Number:
     properties:
       call_flow_id:
@@ -1418,11 +3004,11 @@ definitions:
       number:
         type: string
       provider_name:
-        type: string
+        $ref: '#/definitions/number.ProviderName'
       provider_reference_id:
         type: string
       status:
-        type: string
+        $ref: '#/definitions/number.Status'
       t38_enabled:
         type: boolean
       tm_create:
@@ -1437,6 +3023,26 @@ definitions:
       tm_update:
         type: string
     type: object
+  number.ProviderName:
+    enum:
+    - telnyx
+    - twilio
+    - messagebird
+    type: string
+    x-enum-varnames:
+    - ProviderNameTelnyx
+    - ProviderNameTwilio
+    - ProviderNameMessagebird
+  number.Status:
+    enum:
+    - ""
+    - active
+    - deleted
+    type: string
+    x-enum-varnames:
+    - StatusNone
+    - StatusActive
+    - StatusDeleted
   number.WebhookMessage:
     properties:
       call_flow_id:
@@ -1456,7 +3062,7 @@ definitions:
       number:
         type: string
       status:
-        type: string
+        $ref: '#/definitions/number.Status'
       t38_enabled:
         type: boolean
       tm_create:
@@ -1542,7 +3148,8 @@ definitions:
         description: basic info
         type: string
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: source settings
       tm_create:
         type: string
@@ -1579,7 +3186,8 @@ definitions:
         description: basic info
         type: string
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: source settings
       tm_create:
         type: string
@@ -1623,6 +3231,14 @@ definitions:
       type:
         type: string
     type: object
+  queue.RoutingMethod:
+    enum:
+    - ""
+    - random
+    type: string
+    x-enum-varnames:
+    - RoutingMethodNone
+    - RoutingMethodRandom
   queue.WebhookMessage:
     properties:
       customer_id:
@@ -1638,8 +3254,9 @@ definitions:
         description: basic info
         type: string
       routing_method:
+        allOf:
+        - $ref: '#/definitions/queue.RoutingMethod'
         description: operation info
-        type: string
       service_queuecall_ids:
         description: service queue call ids(ms).
         items:
@@ -1720,15 +3337,17 @@ definitions:
         description: referenced resource's type.
         type: string
       routing_method:
+        allOf:
+        - $ref: '#/definitions/queue.RoutingMethod'
         description: queue's routing method
-        type: string
       service_agent_id:
         type: string
       source:
-        $ref: '#/definitions/address.Address'
+        allOf:
+        - $ref: '#/definitions/address.Address'
         description: source address for calling to the agent.
       status:
-        type: string
+        $ref: '#/definitions/queuecall.Status'
       tag_ids:
         description: queue's tags
         items:
@@ -1756,6 +3375,32 @@ definitions:
         description: Updated timestamp.
         type: string
     type: object
+  queuecall.Status:
+    enum:
+    - initiating
+    - waiting
+    - connecting
+    - kicking
+    - service
+    - done
+    - abandoned
+    type: string
+    x-enum-comments:
+      StatusAbandoned: queue call has been abandoned.
+      StatusConnecting: queue call is connecting to the agent.
+      StatusDone: queue call done.
+      StatusInitiating: queue call is initiating.
+      StatusKicking: queue call is being kick from the queue
+      StatusService: queue call is being service now.
+      StatusWaiting: queue call is waiting in the wait actions.
+    x-enum-varnames:
+    - StatusInitiating
+    - StatusWaiting
+    - StatusConnecting
+    - StatusKicking
+    - StatusService
+    - StatusDone
+    - StatusAbandoned
   queuecall.WebhookMessage:
     properties:
       customer_id:
@@ -1786,6 +3431,12 @@ definitions:
       tm_update:
         type: string
     type: object
+  recording.Format:
+    enum:
+    - wav
+    type: string
+    x-enum-varnames:
+    - FormatWAV
   recording.Recording:
     properties:
       asterisk_id:
@@ -1802,7 +3453,7 @@ definitions:
           type: string
         type: array
       format:
-        type: string
+        $ref: '#/definitions/recording.Format'
       id:
         type: string
       recording_name:
@@ -1810,9 +3461,9 @@ definitions:
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/recording.ReferenceType'
       status:
-        type: string
+        $ref: '#/definitions/recording.Status'
       tm_create:
         type: string
       tm_delete:
@@ -1824,20 +3475,43 @@ definitions:
       tm_update:
         type: string
     type: object
+  recording.ReferenceType:
+    enum:
+    - call
+    - confbridge
+    type: string
+    x-enum-comments:
+      ReferenceTypeCall: call type.
+      ReferenceTypeConfbridge: confbridge type.
+    x-enum-varnames:
+    - ReferenceTypeCall
+    - ReferenceTypeConfbridge
+  recording.Status:
+    enum:
+    - initiating
+    - recording
+    - stopping
+    - ended
+    type: string
+    x-enum-varnames:
+    - StatusInitiating
+    - StatusRecording
+    - StatusStopping
+    - StatusEnded
   recording.WebhookMessage:
     properties:
       customer_id:
         type: string
       format:
-        type: string
+        $ref: '#/definitions/recording.Format'
       id:
         type: string
       reference_id:
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/recording.ReferenceType'
       status:
-        type: string
+        $ref: '#/definitions/recording.Status'
       tm_create:
         type: string
       tm_delete:
@@ -1848,864 +3522,6 @@ definitions:
         type: string
       tm_update:
         type: string
-    type: object
-  request.BodyActiveflowsPOST:
-    properties:
-      actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      flow_id:
-        type: string
-      id:
-        description: activeflow id
-        type: string
-    type: object
-  request.BodyAgentsIDAddressesPUT:
-    properties:
-      addresses:
-        items:
-          $ref: '#/definitions/address.Address'
-        type: array
-    required:
-    - addresses
-    type: object
-  request.BodyAgentsIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-      ring_method:
-        description: agent's ring method
-        type: string
-    type: object
-  request.BodyAgentsIDPermissionPUT:
-    properties:
-      permission:
-        description: agent's permission.
-        type: integer
-    required:
-    - permission
-    type: object
-  request.BodyAgentsIDStatusPUT:
-    properties:
-      status:
-        description: agent's status
-        type: string
-    required:
-    - status
-    type: object
-  request.BodyAgentsIDTagIDsPUT:
-    properties:
-      tag_ids:
-        items:
-          type: string
-        type: array
-    required:
-    - tag_ids
-    type: object
-  request.BodyAgentsPOST:
-    properties:
-      addresses:
-        items:
-          $ref: '#/definitions/address.Address'
-        type: array
-      detail:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      permission:
-        type: integer
-      ring_method:
-        type: string
-      tag_ids:
-        items:
-          type: string
-        type: array
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
-  request.BodyCallsPOST:
-    properties:
-      actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      destinations:
-        items:
-          $ref: '#/definitions/address.Address'
-        type: array
-      flow_id:
-        type: string
-      source:
-        $ref: '#/definitions/address.Address'
-    required:
-    - destinations
-    - source
-    type: object
-  request.BodyCampaignsIDPUT:
-    properties:
-      detail:
-        type: string
-      end_handle:
-        type: string
-      name:
-        type: string
-      service_level:
-        type: integer
-      type:
-        type: string
-    type: object
-  request.BodyCampaignsIDResourceInfoPUT:
-    properties:
-      next_campaign_id:
-        type: string
-      outdial_id:
-        type: string
-      outplan_id:
-        type: string
-      queue_id:
-        type: string
-    type: object
-  request.BodyCampaignsIDStatusPUT:
-    properties:
-      status:
-        type: string
-    type: object
-  request.BodyCampaignsPOST:
-    properties:
-      actions:
-        description: this actions will be stored to the flow
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      detail:
-        type: string
-      end_handle:
-        type: string
-      name:
-        type: string
-      next_campaign_id:
-        type: string
-      outdial_id:
-        type: string
-      outplan_id:
-        description: resource info
-        type: string
-      queue_id:
-        type: string
-      service_level:
-        type: integer
-      type:
-        type: string
-    type: object
-  request.BodyChatbotsIDPUT:
-    properties:
-      detail:
-        type: string
-      engine_type:
-        type: string
-      init_prompt:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyChatbotsPOST:
-    properties:
-      detail:
-        type: string
-      engine_type:
-        type: string
-      init_prompt:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyChatmessagesPOST:
-    properties:
-      chat_id:
-        type: string
-      medias:
-        items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
-        type: array
-      source:
-        $ref: '#/definitions/address.Address'
-      text:
-        type: string
-      type:
-        type: string
-    type: object
-  request.BodyChatroommessagesPOST:
-    properties:
-      chatroom_id:
-        type: string
-      text:
-        type: string
-    type: object
-  request.BodyChatroomsIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyChatroomsPOST:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-      participant_ids:
-        items:
-          type: string
-        type: array
-    type: object
-  request.BodyChatsIDOwnerIDPUT:
-    properties:
-      owner_id:
-        type: string
-    type: object
-  request.BodyChatsIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyChatsPOST:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-      owner_id:
-        type: string
-      participant_ids:
-        items:
-          type: string
-        type: array
-      type:
-        type: string
-    type: object
-  request.BodyConferencesPOST:
-    properties:
-      data:
-        additionalProperties: true
-        type: object
-      detail:
-        type: string
-      name:
-        type: string
-      post_actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      pre_actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      timeout:
-        description: timeout. second
-        type: integer
-      type:
-        type: string
-    required:
-    - type
-    type: object
-  request.BodyConversationAccountsPOST:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-      secret:
-        type: string
-      token:
-        type: string
-      type:
-        type: string
-    type: object
-  request.BodyConversationsIDMessagesPOST:
-    properties:
-      text:
-        type: string
-    type: object
-  request.BodyCustomersPOST:
-    properties:
-      address:
-        type: string
-      detail:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      phone_number:
-        type: string
-      username:
-        type: string
-      webhook_method:
-        type: string
-      webhook_uri:
-        type: string
-    type: object
-  request.BodyExtensionsIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-    type: object
-  request.BodyExtensionsPOST:
-    properties:
-      detail:
-        type: string
-      extension:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-    type: object
-  request.BodyFlowsIDPUT:
-    properties:
-      actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyFlowsPOST:
-    properties:
-      actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyGroupcallsPOST:
-    properties:
-      actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      answer_method:
-        type: string
-      destinations:
-        items:
-          $ref: '#/definitions/address.Address'
-        type: array
-      flow_id:
-        type: string
-      ring_method:
-        type: string
-      source:
-        $ref: '#/definitions/address.Address'
-    required:
-    - destinations
-    - source
-    type: object
-  request.BodyLoginPOST:
-    properties:
-      password:
-        type: string
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
-  request.BodyMessagesPOST:
-    properties:
-      destinations:
-        items:
-          $ref: '#/definitions/address.Address'
-        type: array
-      source:
-        $ref: '#/definitions/address.Address'
-      text:
-        type: string
-    type: object
-  request.BodyNumbersIDFlowIDPUT:
-    properties:
-      call_flow_id:
-        type: string
-      message_flow_id:
-        type: string
-    type: object
-  request.BodyNumbersIDPUT:
-    properties:
-      call_flow_id:
-        type: string
-      detail:
-        type: string
-      message_flow_id:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyNumbersPOST:
-    properties:
-      call_flow_id:
-        type: string
-      detail:
-        type: string
-      message_flow_id:
-        type: string
-      name:
-        type: string
-      number:
-        type: string
-    type: object
-  request.BodyOutdialsIDDataPUT:
-    properties:
-      data:
-        type: string
-    type: object
-  request.BodyOutdialsIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyOutdialsPOST:
-    properties:
-      campaign_id:
-        type: string
-      data:
-        type: string
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyOutplansIDDialInfoPUT:
-    properties:
-      dial_timeout:
-        type: integer
-      max_try_count_0:
-        type: integer
-      max_try_count_1:
-        type: integer
-      max_try_count_2:
-        type: integer
-      max_try_count_3:
-        type: integer
-      max_try_count_4:
-        type: integer
-      source:
-        $ref: '#/definitions/address.Address'
-      try_interval:
-        type: integer
-    type: object
-  request.BodyOutplansIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyOutplansPOST:
-    properties:
-      detail:
-        type: string
-      dial_timeout:
-        type: integer
-      max_try_count_0:
-        type: integer
-      max_try_count_1:
-        type: integer
-      max_try_count_2:
-        type: integer
-      max_try_count_3:
-        type: integer
-      max_try_count_4:
-        type: integer
-      name:
-        type: string
-      source:
-        $ref: '#/definitions/address.Address'
-      try_interval:
-        type: integer
-    type: object
-  request.BodyProvidersIDPUT:
-    properties:
-      detail:
-        type: string
-      hostname:
-        type: string
-      name:
-        type: string
-      tech_headers:
-        additionalProperties:
-          type: string
-        type: object
-      tech_postfix:
-        type: string
-      tech_prefix:
-        type: string
-      type:
-        type: string
-    type: object
-  request.BodyProvidersPOST:
-    properties:
-      detail:
-        type: string
-      hostname:
-        type: string
-      name:
-        type: string
-      tech_headers:
-        additionalProperties:
-          type: string
-        type: object
-      tech_postfix:
-        type: string
-      tech_prefix:
-        type: string
-      type:
-        type: string
-    type: object
-  request.BodyQueuesIDActionsPUT:
-    properties:
-      timeout_service:
-        type: integer
-      timeout_wait:
-        type: integer
-      wait_actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-    type: object
-  request.BodyQueuesIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-      routing_method:
-        description: operation info
-        type: string
-      service_timeout:
-        type: integer
-      tag_ids:
-        items:
-          type: string
-        type: array
-      wait_actions:
-        items:
-          $ref: '#/definitions/action.Action'
-        type: array
-      wait_timeout:
-        type: integer
-    type: object
-  request.BodyQueuesIDTagIDsPUT:
-    properties:
-      tag_ids:
-        items:
-          type: string
-        type: array
-    type: object
-  request.BodyRoutesPOST:
-    properties:
-      customer_id:
-        type: string
-      detail:
-        type: string
-      name:
-        type: string
-      priority:
-        type: integer
-      provider_id:
-        type: string
-      target:
-        type: string
-    type: object
-  request.BodyTagsIDPUT:
-    properties:
-      detail:
-        type: string
-      name:
-        type: string
-    type: object
-  request.BodyTranscribesPOST:
-    properties:
-      direction:
-        type: string
-      language:
-        type: string
-      reference_id:
-        type: string
-      transcribe_type:
-        type: string
-    type: object
-  request.BodyTransfersPOST:
-    properties:
-      transferee_addresses:
-        items:
-          $ref: '#/definitions/address.Address'
-        type: array
-      transferer_call_id:
-        type: string
-      type:
-        type: string
-    type: object
-  response.BodyActiveflowsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/activeflow.WebhookMessage'
-        type: array
-    type: object
-  response.BodyAgentsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/agent.WebhookMessage'
-        type: array
-    type: object
-  response.BodyAvailableNumbersGET:
-    properties:
-      result:
-        items:
-          $ref: '#/definitions/availablenumber.WebhookMessage'
-        type: array
-    type: object
-  response.BodyBillingAccountsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_billing-manager.git_models_account.WebhookMessage'
-        type: array
-    type: object
-  response.BodyCallsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/call.WebhookMessage'
-        type: array
-    type: object
-  response.BodyCampaignsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/campaign.WebhookMessage'
-        type: array
-    type: object
-  response.BodyCampaignsIDCampaigncallsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/campaigncall.WebhookMessage'
-        type: array
-    type: object
-  response.BodyChatbotcallsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/chatbotcall.WebhookMessage'
-        type: array
-    type: object
-  response.BodyChatbotsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/chatbot.WebhookMessage'
-        type: array
-    type: object
-  response.BodyChatmessagesGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/messagechat.WebhookMessage'
-        type: array
-    type: object
-  response.BodyChatsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/chat.WebhookMessage'
-        type: array
-    type: object
-  response.BodyConversationsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/conversation.WebhookMessage'
-        type: array
-    type: object
-  response.BodyConversationsIDMessagesGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage'
-        type: array
-    type: object
-  response.BodyCustomersGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/customer.WebhookMessage'
-        type: array
-    type: object
-  response.BodyFlowsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/flow.WebhookMessage'
-        type: array
-    type: object
-  response.BodyGroupcallsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/groupcall.WebhookMessage'
-        type: array
-    type: object
-  response.BodyLoginPOST:
-    properties:
-      token:
-        type: string
-      username:
-        type: string
-    type: object
-  response.BodyMessagesGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_message-manager.git_models_message.WebhookMessage'
-        type: array
-    type: object
-  response.BodyNumbersGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/number.WebhookMessage'
-        type: array
-    type: object
-  response.BodyOutdialsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/outdial.WebhookMessage'
-        type: array
-    type: object
-  response.BodyOutplansGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/outplan.WebhookMessage'
-        type: array
-    type: object
-  response.BodyQueuecallsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/queuecall.WebhookMessage'
-        type: array
-    type: object
-  response.BodyQueuesGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/queue.WebhookMessage'
-        type: array
-    type: object
-  response.BodyRecordingsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/recording.WebhookMessage'
-        type: array
-    type: object
-  response.BodyTagsGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/tag.WebhookMessage'
-        type: array
-    type: object
-  response.BodyTranscribesGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/transcribe.WebhookMessage'
-        type: array
-    type: object
-  response.BodyTrunksGET:
-    properties:
-      next_page_token:
-        type: string
-      result:
-        items:
-          $ref: '#/definitions/trunk.WebhookMessage'
-        type: array
     type: object
   route.Route:
     properties:
@@ -2757,6 +3573,17 @@ definitions:
       tm_update:
         type: string
     type: object
+  sipauth.AuthType:
+    enum:
+    - basic
+    - ip
+    type: string
+    x-enum-comments:
+      AuthTypeBasic: basic authentication
+      AuthTypeIP: ip
+    x-enum-varnames:
+    - AuthTypeBasic
+    - AuthTypeIP
   stack.Stack:
     properties:
       actions:
@@ -2815,6 +3642,35 @@ definitions:
         description: Updated timestamp.
         type: string
     type: object
+  target.Status:
+    enum:
+    - received
+    - queued
+    - gw_timeout
+    - sent
+    - dlr_timeout
+    - failed
+    - delivered
+    type: string
+    x-enum-comments:
+      StatusDLRTimeout: No DLR from downstream.
+      StatusDelivered: 'outbound: To the best of our knowledge, the message was delivered./
+        inbound: Transmitted to you, after receipt.'
+      StatusFailed: Failure DLR from gateway or downstream, which is notification
+        of message delivery failure.
+      StatusGWTimeout: No DLR (delivery receipt) from gateway.
+      StatusQueued: Released from scheduler and submitted to gateway. [Queued in scheduler,
+        due to outbound rate limiting.]
+      StatusReceived: Received by the Telnyx Messaging Services.
+      StatusSent: Success DLR received from gateway. Message has been sent downstream.
+    x-enum-varnames:
+    - StatusReceived
+    - StatusQueued
+    - StatusGWTimeout
+    - StatusSent
+    - StatusDLRTimeout
+    - StatusFailed
+    - StatusDelivered
   target.Target:
     properties:
       destination:
@@ -2823,17 +3679,47 @@ definitions:
         description: number of messages
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/target.Status'
       tm_update:
         type: string
     type: object
+  transcribe.Direction:
+    enum:
+    - both
+    - in
+    - out
+    type: string
+    x-enum-varnames:
+    - DirectionBoth
+    - DirectionIn
+    - DirectionOut
+  transcribe.ReferenceType:
+    enum:
+    - unknown
+    - recording
+    - call
+    - confbridge
+    type: string
+    x-enum-varnames:
+    - ReferenceTypeUnknown
+    - ReferenceTypeRecording
+    - ReferenceTypeCall
+    - ReferenceTypeConfbridge
+  transcribe.Status:
+    enum:
+    - progressing
+    - done
+    type: string
+    x-enum-varnames:
+    - StatusProgressing
+    - StatusDone
   transcribe.Transcribe:
     properties:
       customer_id:
         description: customer
         type: string
       direction:
-        type: string
+        $ref: '#/definitions/transcribe.Direction'
       host_id:
         description: host id
         type: string
@@ -2847,9 +3733,9 @@ definitions:
         description: call/conference/recording's id
         type: string
       reference_type:
-        type: string
+        $ref: '#/definitions/transcribe.ReferenceType'
       status:
-        type: string
+        $ref: '#/definitions/transcribe.Status'
       streaming_ids:
         items:
           type: string
@@ -2867,9 +3753,8 @@ definitions:
       customer_id:
         description: customer
         type: string
-      host_id:
-        description: host id
-        type: string
+      direction:
+        $ref: '#/definitions/transcribe.Direction'
       id:
         description: Transcribe id
         type: string
@@ -2880,10 +3765,11 @@ definitions:
         description: call/conference/recording's id
         type: string
       reference_type:
+        allOf:
+        - $ref: '#/definitions/transcribe.ReferenceType'
         description: reference's type
-        type: string
       status:
-        type: string
+        $ref: '#/definitions/transcribe.Status'
       tm_create:
         description: timestamp
         type: string
@@ -2919,8 +3805,16 @@ definitions:
         description: transferer/transferee info
         type: string
       type:
-        type: string
+        $ref: '#/definitions/transfer.Type'
     type: object
+  transfer.Type:
+    enum:
+    - attended
+    - blind
+    type: string
+    x-enum-varnames:
+    - TypeAttended
+    - TypeBlind
   trunk.Trunk:
     properties:
       allowed_ips:
@@ -2931,7 +3825,7 @@ definitions:
       auth_types:
         description: sip info
         items:
-          type: string
+          $ref: '#/definitions/sipauth.AuthType'
         type: array
       customer_id:
         type: string
@@ -2967,7 +3861,7 @@ definitions:
         type: array
       auth_types:
         items:
-          type: string
+          $ref: '#/definitions/sipauth.AuthType'
         type: array
       customer_id:
         type: string
@@ -3009,14 +3903,14 @@ paths:
         name: login_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyLoginPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyLoginPOST'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyLoginPOST'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyLoginPOST'
       summary: Generate the JWT token and return it.
   /ping:
     get:
@@ -3045,7 +3939,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyActiveflowsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyActiveflowsGET'
       summary: Get list of activeflows
     post:
       description: Create and execute the activeflow
@@ -3055,7 +3949,7 @@ paths:
         name: activeflow
         required: true
         schema:
-          $ref: '#/definitions/request.BodyActiveflowsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyActiveflowsPOST'
       produces:
       - application/json
       responses:
@@ -3140,7 +4034,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyAgentsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyAgentsGET'
       summary: List agents
     post:
       description: create a new agent
@@ -3150,7 +4044,7 @@ paths:
         name: agent
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsPOST'
       produces:
       - application/json
       responses:
@@ -3201,7 +4095,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDPUT'
       produces:
       - application/json
       responses:
@@ -3222,7 +4116,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsIDAddressesPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDAddressesPUT'
       produces:
       - application/json
       responses:
@@ -3231,7 +4125,7 @@ paths:
       summary: Update an agent info.
   /v1.0/agents/{id}/permission:
     put:
-      description: Update an agent permission info.
+      description: Update an agent password info.
       parameters:
       - description: The ID of the agent
         in: path
@@ -3243,13 +4137,13 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsIDPermissionPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDPermissionPUT'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-      summary: Update an agent's permission info.
+      summary: Update an agent's password info.
   /v1.0/agents/{id}/status:
     put:
       description: Update an agent status info.
@@ -3264,7 +4158,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsIDStatusPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDStatusPUT'
       produces:
       - application/json
       responses:
@@ -3285,7 +4179,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsIDTagIDsPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDTagIDsPUT'
       produces:
       - application/json
       responses:
@@ -3311,7 +4205,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyAvailableNumbersGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyAvailableNumbersGET'
       summary: List available numbers
   /v1.0/billing_accounts:
     get:
@@ -3331,7 +4225,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyBillingAccountsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyBillingAccountsGET'
       summary: Get list of billing accounts
     post:
       description: create a new billing account
@@ -3341,14 +4235,14 @@ paths:
         name: call
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCallsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCallsPOST'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/account.Account'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Account'
       summary: Create a new billing account
   /v1.0/billing_accounts/{id}:
     delete:
@@ -3365,7 +4259,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/account.Account'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Account'
       summary: delete billing account
     get:
       description: Returns detail billing account info of the given call id.
@@ -3381,7 +4275,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/account.Account'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Account'
       summary: Get detail billing account info.
     put:
       description: Update billing account of the given id
@@ -3397,7 +4291,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/account.Account'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Account'
       summary: Update billing account
   /v1.0/billing_accounts/{id}/balance_add_force:
     post:
@@ -3414,7 +4308,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/account.Account'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Account'
       summary: Adds the given balance to the billing account.
   /v1.0/billing_accounts/{id}/payment_info:
     put:
@@ -3431,7 +4325,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/account.Account'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_billing-manager_git_models_account.Account'
       summary: Update billing account's payment info
   /v1.0/calls:
     get:
@@ -3451,7 +4345,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyCallsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCallsGET'
       summary: Get list of calls
     post:
       description: dialing to destination
@@ -3461,7 +4355,7 @@ paths:
         name: call
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCallsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCallsPOST'
       produces:
       - application/json
       responses:
@@ -3549,6 +4443,21 @@ paths:
         "200":
           description: OK
       summary: Hold the call.
+  /v1.0/calls/{id}/meida_stream:
+    get:
+      description: Start the call media streaming.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Start the call media streaming.
   /v1.0/calls/{id}/moh:
     delete:
       description: MOH off the call.
@@ -3669,7 +4578,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyCallsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCallsGET'
       summary: Get list of calls
   /v1.0/campaigncalls/{id}:
     delete:
@@ -3720,7 +4629,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyCampaignsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCampaignsGET'
       summary: Gets a list of campaigns.
     post:
       description: Create a new campaign and returns detail created campaign info.
@@ -3730,7 +4639,7 @@ paths:
         name: campaign
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCampaignsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsPOST'
       produces:
       - application/json
       responses:
@@ -3783,7 +4692,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCampaignsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDPUT'
       produces:
       - application/json
       responses:
@@ -3806,7 +4715,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCampaignsIDStatusPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDStatusPUT'
       produces:
       - application/json
       responses:
@@ -3833,7 +4742,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyCampaignsIDCampaigncallsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCampaignsIDCampaigncallsGET'
       summary: Gets a list of campaigns.
   /v1.0/campaigns/{id}/next_campaign_id:
     put:
@@ -3849,7 +4758,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCampaignsIDResourceInfoPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDResourceInfoPUT'
       produces:
       - application/json
       responses:
@@ -3872,7 +4781,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCampaignsIDResourceInfoPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDResourceInfoPUT'
       produces:
       - application/json
       responses:
@@ -3895,7 +4804,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCampaignsIDStatusPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDStatusPUT'
       produces:
       - application/json
       responses:
@@ -3918,7 +4827,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCampaignsIDStatusPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCampaignsIDStatusPUT'
       produces:
       - application/json
       responses:
@@ -3945,7 +4854,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyChatbotcallsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatbotcallsGET'
       summary: Gets a list of chatbotcalls.
   /v1.0/chatbotcalls/{id}:
     delete:
@@ -3996,7 +4905,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyChatbotsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatbotsGET'
       summary: Gets a list of chatbots.
     post:
       description: Create a new chatbot and returns detail created chatbot info.
@@ -4006,7 +4915,7 @@ paths:
         name: chatbot
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatbotsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatbotsPOST'
       produces:
       - application/json
       responses:
@@ -4054,7 +4963,7 @@ paths:
         name: chatbot
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatbotsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatbotsIDPUT'
       produces:
       - application/json
       responses:
@@ -4081,7 +4990,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyChatmessagesGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatmessagesGET'
       summary: Gets a list of chatmessages.
     post:
       description: Create a new chatmessage and returns detail created chatmessage
@@ -4092,7 +5001,7 @@ paths:
         name: chatmessage
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatmessagesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatmessagesPOST'
       produces:
       - application/json
       responses:
@@ -4157,7 +5066,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyChatsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatsGET'
       summary: Gets a list of chatroommessages.
     post:
       description: Create a new chatroommessage and returns detail created chatroommessage
@@ -4168,7 +5077,7 @@ paths:
         name: chatroommessage
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatroommessagesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatroommessagesPOST'
       produces:
       - application/json
       responses:
@@ -4235,7 +5144,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyChatsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatsGET'
       summary: Gets a list of chatrooms.
     post:
       description: Create a new chatroom and returns detail created chatroom info.
@@ -4245,7 +5154,7 @@ paths:
         name: chatroom
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatroomsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatroomsPOST'
       produces:
       - application/json
       responses:
@@ -4300,7 +5209,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatroomsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatroomsIDPUT'
       produces:
       - application/json
       responses:
@@ -4327,7 +5236,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyChatsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyChatsGET'
       summary: Gets a list of chats.
     post:
       description: Create a new chat and returns detail created chat info.
@@ -4337,7 +5246,7 @@ paths:
         name: chat
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatsPOST'
       produces:
       - application/json
       responses:
@@ -4390,7 +5299,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatsIDPUT'
       produces:
       - application/json
       responses:
@@ -4413,7 +5322,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatsIDOwnerIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatsIDOwnerIDPUT'
       produces:
       - application/json
       responses:
@@ -4432,7 +5341,7 @@ paths:
         name: chat
         required: true
         schema:
-          $ref: '#/definitions/request.BodyChatsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyChatsPOST'
       produces:
       - application/json
       responses:
@@ -4480,7 +5389,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyCallsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCallsGET'
       summary: Get list of conferencecalls
   /v1.0/conferencecalls/{id}:
     delete:
@@ -4537,7 +5446,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyCallsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCallsGET'
       summary: Get list of conferences
     post:
       description: Create a new conference with the given information.
@@ -4547,7 +5456,7 @@ paths:
         name: conference
         required: true
         schema:
-          $ref: '#/definitions/request.BodyConferencesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConferencesPOST'
       produces:
       - application/json
       responses:
@@ -4614,6 +5523,21 @@ paths:
           schema:
             $ref: '#/definitions/conference.Conference'
       summary: Update conference info.
+  /v1.0/conferences/{id}/meida_stream:
+    get:
+      description: Start the conference media streaming.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Start the conference media streaming.
   /v1.0/conferences/{id}/recording_start:
     post:
       description: Start the conference recording.
@@ -4653,6 +5577,12 @@ paths:
         name: id
         required: true
         type: string
+      - description: conference info
+        in: body
+        name: conference
+        required: true
+        schema:
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConferencesIDTranscribeStartPOST'
       produces:
       - application/json
       responses:
@@ -4692,7 +5622,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyConversationsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyConversationsGET'
       summary: Gets a list of conversation accounts.
     post:
       description: Create a new conversation account and returns detail created conversation
@@ -4703,14 +5633,14 @@ paths:
         name: customer
         required: true
         schema:
-          $ref: '#/definitions/request.BodyConversationAccountsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConversationAccountsPOST'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_account.WebhookMessage'
       summary: Create a new conversation account and returns detail created conversation
         account info.
   /v1.0/conversation_accounts/{id}:
@@ -4729,7 +5659,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_account.WebhookMessage'
       summary: Returns detail conversation account info.
     put:
       description: Returns detail conversation account info of the given conversation
@@ -4746,7 +5676,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_account.WebhookMessage'
       summary: Returns detail conversation account info.
   /v1.0/conversations:
     get:
@@ -4766,7 +5696,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyConversationsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyConversationsGET'
       summary: Gets a list of conversations.
   /v1.0/conversations/{id}:
     get:
@@ -4803,7 +5733,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyConversationsIDMessagesGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyConversationsIDMessagesGET'
       summary: Gets a list of conversation messages.
     post:
       description: Send a message and returns a sent message info.
@@ -4813,14 +5743,14 @@ paths:
         name: message
         required: true
         schema:
-          $ref: '#/definitions/request.BodyConversationsIDMessagesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyConversationsIDMessagesPOST'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_conversation-manager_git_models_message.WebhookMessage'
       summary: Send a message and returns detail sent message info.
   /v1.0/customers:
     get:
@@ -4840,7 +5770,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyCustomersGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyCustomersGET'
       summary: Gets a list of customers.
     post:
       description: Create a new customer and returns detail created customer info.
@@ -4850,7 +5780,7 @@ paths:
         name: customer
         required: true
         schema:
-          $ref: '#/definitions/request.BodyCustomersPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyCustomersPOST'
       produces:
       - application/json
       responses:
@@ -4957,7 +5887,7 @@ paths:
         name: extension
         required: true
         schema:
-          $ref: '#/definitions/request.BodyExtensionsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyExtensionsPOST'
       produces:
       - application/json
       responses:
@@ -4994,7 +5924,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyExtensionsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyExtensionsIDPUT'
       produces:
       - application/json
       responses:
@@ -5021,7 +5951,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyFlowsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyFlowsGET'
       summary: Gets a list of flows.
     post:
       description: Create a new flow and returns detail created flow info.
@@ -5031,7 +5961,7 @@ paths:
         name: flow
         required: true
         schema:
-          $ref: '#/definitions/request.BodyFlowsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyFlowsPOST'
       produces:
       - application/json
       responses:
@@ -5084,7 +6014,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyFlowsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyFlowsIDPUT'
       produces:
       - application/json
       responses:
@@ -5111,7 +6041,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyGroupcallsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyGroupcallsGET'
       summary: Gets a list of groupcalls.
     post:
       description: Create a new groupcall and returns detail created groupcall info.
@@ -5121,7 +6051,7 @@ paths:
         name: flow
         required: true
         schema:
-          $ref: '#/definitions/request.BodyGroupcallsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyGroupcallsPOST'
       produces:
       - application/json
       responses:
@@ -5198,7 +6128,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyMessagesGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyMessagesGET'
       summary: List order messages
     post:
       description: Send a message and returns a sent message.
@@ -5208,14 +6138,14 @@ paths:
         name: message
         required: true
         schema:
-          $ref: '#/definitions/request.BodyMessagesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyMessagesPOST'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/message.Message'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_message-manager_git_models_message.Message'
       summary: Send a message and returns a sent message.
   /v1.0/messages/{id}:
     delete:
@@ -5232,7 +6162,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/message.Message'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_message-manager_git_models_message.Message'
       summary: Delete message
     get:
       description: get message of the given id
@@ -5248,7 +6178,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/message.Message'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_message-manager_git_models_message.Message'
       summary: Get message
   /v1.0/numbers:
     get:
@@ -5268,7 +6198,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyNumbersGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyNumbersGET'
       summary: List order numbers
     post:
       description: Create a new number and returns detail created number info.
@@ -5278,7 +6208,7 @@ paths:
         name: number
         required: true
         schema:
-          $ref: '#/definitions/request.BodyNumbersPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyNumbersPOST'
       produces:
       - application/json
       responses:
@@ -5328,7 +6258,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyNumbersIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyNumbersIDPUT'
       produces:
       - application/json
       responses:
@@ -5346,7 +6276,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyNumbersIDFlowIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyNumbersIDFlowIDPUT'
       produces:
       - application/json
       responses:
@@ -5364,7 +6294,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyNumbersIDFlowIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyNumbersIDFlowIDPUT'
       produces:
       - application/json
       responses:
@@ -5393,7 +6323,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyOutdialsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyOutdialsGET'
       summary: Gets a list of outdials.
     post:
       description: Create a new outdial and returns detail created outdial info.
@@ -5403,7 +6333,7 @@ paths:
         name: outdial
         required: true
         schema:
-          $ref: '#/definitions/request.BodyOutdialsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsPOST'
       produces:
       - application/json
       responses:
@@ -5456,7 +6386,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyOutdialsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsIDPUT'
       produces:
       - application/json
       responses:
@@ -5480,7 +6410,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyOutdialsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsIDPUT'
       produces:
       - application/json
       responses:
@@ -5503,7 +6433,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyOutdialsIDDataPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsIDDataPUT'
       produces:
       - application/json
       responses:
@@ -5540,7 +6470,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyOutdialsIDDataPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutdialsIDDataPUT'
       produces:
       - application/json
       responses:
@@ -5606,7 +6536,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyOutplansGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyOutplansGET'
       summary: Gets a list of outplans.
     post:
       description: Create a new outplan and returns detail created outplan info.
@@ -5616,7 +6546,7 @@ paths:
         name: outplan
         required: true
         schema:
-          $ref: '#/definitions/request.BodyOutplansPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutplansPOST'
       produces:
       - application/json
       responses:
@@ -5669,7 +6599,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyOutplansIDDialInfoPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyOutplansIDDialInfoPUT'
       produces:
       - application/json
       responses:
@@ -5721,7 +6651,7 @@ paths:
         name: provider
         required: true
         schema:
-          $ref: '#/definitions/request.BodyProvidersPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyProvidersPOST'
       produces:
       - application/json
       responses:
@@ -5758,7 +6688,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyProvidersIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyProvidersIDPUT'
       produces:
       - application/json
       responses:
@@ -5850,7 +6780,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyQueuesGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyQueuesGET'
       summary: List qeueus
     post:
       description: create a new queue
@@ -5860,7 +6790,7 @@ paths:
         name: agent
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsPOST'
       produces:
       - application/json
       responses:
@@ -5911,7 +6841,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyQueuesIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyQueuesIDPUT'
       produces:
       - application/json
       responses:
@@ -5932,7 +6862,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyAgentsIDTagIDsPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyAgentsIDTagIDsPUT'
       produces:
       - application/json
       responses:
@@ -5953,7 +6883,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyQueuesIDActionsPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyQueuesIDActionsPUT'
       produces:
       - application/json
       responses:
@@ -5974,7 +6904,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyQueuesIDTagIDsPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyQueuesIDTagIDsPUT'
       produces:
       - application/json
       responses:
@@ -6014,7 +6944,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyRecordingsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyRecordingsGET'
       summary: List recordings
   /v1.0/recordings/{id}:
     delete:
@@ -6078,7 +7008,7 @@ paths:
         name: route
         required: true
         schema:
-          $ref: '#/definitions/request.BodyRoutesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyRoutesPOST'
       produces:
       - application/json
       responses:
@@ -6129,7 +7059,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyQueuesIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyQueuesIDPUT'
       produces:
       - application/json
       responses:
@@ -6154,7 +7084,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyTagsGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyTagsGET'
       summary: List tags
     post:
       description: create a new tag.
@@ -6210,7 +7140,7 @@ paths:
         name: update_info
         required: true
         schema:
-          $ref: '#/definitions/request.BodyTagsIDPUT'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyTagsIDPUT'
       produces:
       - application/json
       responses:
@@ -6252,7 +7182,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyTranscribesGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyTranscribesGET'
       summary: Get list of transcribes
     post:
       description: transcribe a recording
@@ -6262,7 +7192,7 @@ paths:
         name: transcribe
         required: true
         schema:
-          $ref: '#/definitions/request.BodyTranscribesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyTranscribesPOST'
       produces:
       - application/json
       responses:
@@ -6297,7 +7227,7 @@ paths:
         name: transcribe
         required: true
         schema:
-          $ref: '#/definitions/request.BodyTranscribesPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyTranscribesPOST'
       produces:
       - application/json
       responses:
@@ -6324,7 +7254,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyTranscribesGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyTranscribesGET'
       summary: Get list of transcripts
   /v1.0/transfers:
     post:
@@ -6335,7 +7265,7 @@ paths:
         name: transcribe
         required: true
         schema:
-          $ref: '#/definitions/request.BodyTransfersPOST'
+          $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_request.BodyTransfersPOST'
       produces:
       - application/json
       responses:
@@ -6362,7 +7292,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.BodyTrunksGET'
+            $ref: '#/definitions/gitlab_com_voipbin_bin-manager_api-manager_git_api_models_response.BodyTrunksGET'
       summary: Gets a list of trunks.
     post:
       description: Create a new trunk and returns detail created trunk info.

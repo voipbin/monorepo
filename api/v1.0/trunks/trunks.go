@@ -14,11 +14,11 @@ import (
 
 // trunksPOST handles POST /trunks request.
 // It creates a new trunk with the given info and returns created trunk info.
-// @Summary     Create a new trunk and returns detail created trunk info.
-// @Description Create a new trunk and returns detail created trunk info.
-// @Produce     json
-// @Success     200 {object} trunk.Trunk
-// @Router      /v1.0/trunks [post]
+//	@Summary		Create a new trunk and returns detail created trunk info.
+//	@Description	Create a new trunk and returns detail created trunk info.
+//	@Produce		json
+//	@Success		200	{object}	trunk.Trunk
+//	@Router			/v1.0/trunks [post]
 func trunksPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "trunksPOST",
@@ -57,13 +57,13 @@ func trunksPOST(c *gin.Context) {
 
 // trunksPOST handles GET /trunks request.
 // It gets a list of trunks with the given info.
-// @Summary     Gets a list of trunks.
-// @Description Gets a list of trunks
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyTrunksGET
-// @Router      /v1.0/trunks [get]
+//	@Summary		Gets a list of trunks.
+//	@Description	Gets a list of trunks
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyTrunksGET
+//	@Router			/v1.0/trunks [get]
 func trunksGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "trunksGET",
@@ -123,12 +123,12 @@ func trunksGET(c *gin.Context) {
 
 // trunksIDGET handles GET /trunks/{id} request.
 // It returns detail trunk info.
-// @Summary     Returns detail trunk info.
-// @Description Returns detail trunk info of the given trunk id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the trunk"
-// @Success     200 {object} trunk.Trunk
-// @Router      /v1.0/trunks/{id} [get]
+//	@Summary		Returns detail trunk info.
+//	@Description	Returns detail trunk info of the given trunk id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the trunk"
+//	@Success		200	{object}	trunk.Trunk
+//	@Router			/v1.0/trunks/{id} [get]
 func trunksIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "trunksIDGET",
@@ -165,11 +165,11 @@ func trunksIDGET(c *gin.Context) {
 // trunksIDPUT handles PUT /trunks/{id} request.
 // It updates a exist trunk info with the given trunk info.
 // And returns updated trunk info if it succeed.
-// @Summary     Update a trunk and reuturns updated trunk info.
-// @Description Update a trunk and returns detail updated trunk info.
-// @Produce     json
-// @Success     200 {object} trunk.Trunk
-// @Router      /v1.0/trunks/{id} [put]
+//	@Summary		Update a trunk and reuturns updated trunk info.
+//	@Description	Update a trunk and returns detail updated trunk info.
+//	@Produce		json
+//	@Success		200	{object}	trunk.Trunk
+//	@Router			/v1.0/trunks/{id} [put]
 func trunksIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "trunksIDPUT",
@@ -212,11 +212,11 @@ func trunksIDPUT(c *gin.Context) {
 
 // trunksIDDELETE handles DELETE /trunks/{id} request.
 // It deletes a exist trunk info.
-// @Summary     Delete a existing trunk.
-// @Description Delete a existing trunk.
-// @Produce     json
-// @Success     200
-// @Router      /v1.0/trunks/{id} [delete]
+//	@Summary		Delete a existing trunk.
+//	@Description	Delete a existing trunk.
+//	@Produce		json
+//	@Success		200
+//	@Router			/v1.0/trunks/{id} [delete]
 func trunksIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "trunksIDDELETE",

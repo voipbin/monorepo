@@ -15,12 +15,12 @@ import (
 
 // flowsPOST handles POST /flows request.
 // It creates a new flow with the given info and returns created flow info.
-// @Summary     Create a new flow and returns detail created flow info.
-// @Description Create a new flow and returns detail created flow info.
-// @Produce     json
-// @Param       flow body     request.BodyFlowsPOST true "flow info."
-// @Success     200  {object} flow.Flow
-// @Router      /v1.0/flows [post]
+//	@Summary		Create a new flow and returns detail created flow info.
+//	@Description	Create a new flow and returns detail created flow info.
+//	@Produce		json
+//	@Param			flow	body		request.BodyFlowsPOST	true	"flow info."
+//	@Success		200		{object}	flow.Flow
+//	@Router			/v1.0/flows [post]
 func flowsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "flowsPOST",
@@ -60,13 +60,13 @@ func flowsPOST(c *gin.Context) {
 
 // flowsGET handles GET /flows request.
 // It gets a list of flows with the given info.
-// @Summary     Gets a list of flows.
-// @Description Gets a list of flows
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyFlowsGET
-// @Router      /v1.0/flows [get]
+//	@Summary		Gets a list of flows.
+//	@Description	Gets a list of flows
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyFlowsGET
+//	@Router			/v1.0/flows [get]
 func flowsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "flowsGET",
@@ -127,12 +127,12 @@ func flowsGET(c *gin.Context) {
 
 // flowsIDGET handles GET /flows/{id} request.
 // It returns detail flow info.
-// @Summary     Returns detail flow info.
-// @Description Returns detail flow info of the given flow id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the flow"
-// @Success     200 {object} flow.Flow
-// @Router      /v1.0/flows/{id} [get]
+//	@Summary		Returns detail flow info.
+//	@Description	Returns detail flow info of the given flow id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the flow"
+//	@Success		200	{object}	flow.Flow
+//	@Router			/v1.0/flows/{id} [get]
 func flowsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "flowsIDGET",
@@ -169,13 +169,13 @@ func flowsIDGET(c *gin.Context) {
 // flowsIDPUT handles PUT /flows/{id} request.
 // It updates a exist flow info with the given flow info.
 // And returns updated flow info if it succeed.
-// @Summary     Update a flow and reuturns updated flow info.
-// @Description Update a flow and returns detail updated flow info.
-// @Produce     json
-// @Param       id          query    string                 true "The flow's id"
-// @Param       update_info body     request.BodyFlowsIDPUT true "The update info"
-// @Success     200         {object} flow.Flow
-// @Router      /v1.0/flows/{id} [put]
+//	@Summary		Update a flow and reuturns updated flow info.
+//	@Description	Update a flow and returns detail updated flow info.
+//	@Produce		json
+//	@Param			id			query		string					true	"The flow's id"
+//	@Param			update_info	body		request.BodyFlowsIDPUT	true	"The update info"
+//	@Success		200			{object}	flow.Flow
+//	@Router			/v1.0/flows/{id} [put]
 func flowsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "flowsIDPUT",
@@ -226,12 +226,12 @@ func flowsIDPUT(c *gin.Context) {
 
 // flowsIDDELETE handles DELETE /flows/{id} request.
 // It deletes a exist flow info.
-// @Summary     Delete a existing flow.
-// @Description Delete a existing flow.
-// @Produce     json
-// @Param       id query string true "The flow's id"
-// @Success     200
-// @Router      /v1.0/flows/{id} [delete]
+//	@Summary		Delete a existing flow.
+//	@Description	Delete a existing flow.
+//	@Produce		json
+//	@Param			id	query	string	true	"The flow's id"
+//	@Success		200
+//	@Router			/v1.0/flows/{id} [delete]
 func flowsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "flowsIDDELETE",

@@ -44,7 +44,7 @@ func Test_transcribesPOST(t *testing.T) {
 
 			"/v1.0/transcribes",
 			request.BodyTranscribesPOST{
-				ReferenceType: tmtranscribe.ReferenceTypeCall,
+				ReferenceType: request.TranscribeReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
 				Language:      "en-US",
 				Direction:     tmtranscribe.DirectionBoth,

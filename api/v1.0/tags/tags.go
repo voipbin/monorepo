@@ -15,12 +15,12 @@ import (
 
 // tagsPOST handles POST /tag request.
 // It creates a new tag.
-// @Summary     Create a new tag.
-// @Description create a new tag.
-// @Produce     json
-// @Prama       tag body request.BodyTagsPOST true "Creating tag info."
-// @Success     200 {object} tag.Tag
-// @Router      /v1.0/tags [post]
+//	@Summary		Create a new tag.
+//	@Description	create a new tag.
+//	@Produce		json
+//	@Prama			tag body request.BodyTagsPOST true "Creating tag info."
+//	@Success		200	{object}	tag.Tag
+//	@Router			/v1.0/tags [post]
 func tagsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "tagsPOST",
@@ -61,12 +61,12 @@ func tagsPOST(c *gin.Context) {
 
 // tagsIDDelete handles DELETE /tags/<tag-id> request.
 // It deletes the tag.
-// @Summary     Delete the tag
-// @Description Delete the tag of the given id
-// @Produce     json
-// @Param       id path string true "The ID of the tag"
-// @Success     200
-// @Router      /v1.0/tags/{id} [delete]
+//	@Summary		Delete the tag
+//	@Description	Delete the tag of the given id
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the tag"
+//	@Success		200
+//	@Router			/v1.0/tags/{id} [delete]
 func tagsIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "tagsIDDelete",
@@ -108,12 +108,12 @@ func tagsIDDelete(c *gin.Context) {
 
 // tagsIDGet handles GET /tags/<tag-id> request.
 // It gets the tag.
-// @Summary     Get the tag
-// @Description Get the tag of the given id
-// @Produce     json
-// @Param       id  path     string true "The ID of the tag"
-// @Success     200 {object} tag.Tag
-// @Router      /v1.0/tags/{id} [get]
+//	@Summary		Get the tag
+//	@Description	Get the tag of the given id
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the tag"
+//	@Success		200	{object}	tag.Tag
+//	@Router			/v1.0/tags/{id} [get]
 func tagsIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "tagsIDGet",
@@ -155,13 +155,13 @@ func tagsIDGet(c *gin.Context) {
 
 // tagsGET handles GET /tags request.
 // It returns list of tags of the given customer.
-// @Summary     List tags
-// @Description get tags of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyTagsGET
-// @Router      /v1.0/tags [get]
+//	@Summary		List tags
+//	@Description	get tags of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyTagsGET
+//	@Router			/v1.0/tags [get]
 func tagsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "tagsGET",
@@ -224,13 +224,13 @@ func tagsGET(c *gin.Context) {
 
 // tagsIDPUT handles PUT /tags/{id} request.
 // It updates a tag's basic info with the given info.
-// @Summary     Update the tag info.
-// @Description Update the tag info.
-// @Produce     json
-// @Param       id          path string                true "The tag's id."
-// @Param       update_info body request.BodyTagsIDPUT true "The update info."
-// @Success     200
-// @Router      /v1.0/tags/{id} [put]
+//	@Summary		Update the tag info.
+//	@Description	Update the tag info.
+//	@Produce		json
+//	@Param			id			path	string					true	"The tag's id."
+//	@Param			update_info	body	request.BodyTagsIDPUT	true	"The update info."
+//	@Success		200
+//	@Router			/v1.0/tags/{id} [put]
 func tagsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "tagsIDPUT",

@@ -15,12 +15,12 @@ import (
 
 // outplansPOST handles POST /outplans request.
 // It creates a new outplan with the given info and returns created outplan info.
-// @Summary     Create a new outplan and returns detail created outplan info.
-// @Description Create a new outplan and returns detail created outplan info.
-// @Produce     json
-// @Param       outplan body     request.BodyOutplansPOST true "outplan info."
-// @Success     200     {object} outplan.WebhookMessage
-// @Router      /v1.0/outplans [post]
+//	@Summary		Create a new outplan and returns detail created outplan info.
+//	@Description	Create a new outplan and returns detail created outplan info.
+//	@Produce		json
+//	@Param			outplan	body		request.BodyOutplansPOST	true	"outplan info."
+//	@Success		200		{object}	outplan.WebhookMessage
+//	@Router			/v1.0/outplans [post]
 func outplansPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outplansPOST",
@@ -60,13 +60,13 @@ func outplansPOST(c *gin.Context) {
 
 // outplansGET handles GET /outplans request.
 // It gets a list of outplans with the given info.
-// @Summary     Gets a list of outplans.
-// @Description Gets a list of outplans
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyOutplansGET
-// @Router      /v1.0/outplans [get]
+//	@Summary		Gets a list of outplans.
+//	@Description	Gets a list of outplans
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyOutplansGET
+//	@Router			/v1.0/outplans [get]
 func outplansGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outplansGET",
@@ -126,12 +126,12 @@ func outplansGET(c *gin.Context) {
 
 // outplansIDGET handles GET /outplans/{id} request.
 // It returns detail outplans info.
-// @Summary     Returns detail outplans info.
-// @Description Returns detail outplans info of the given outplans id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the outplans"
-// @Success     200 {object} outplan.Outplan
-// @Router      /v1.0/outplans/{id} [get]
+//	@Summary		Returns detail outplans info.
+//	@Description	Returns detail outplans info of the given outplans id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the outplans"
+//	@Success		200	{object}	outplan.Outplan
+//	@Router			/v1.0/outplans/{id} [get]
 func outplansIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outplansIDGET",
@@ -167,12 +167,12 @@ func outplansIDGET(c *gin.Context) {
 
 // outplansIDDELETE handles DELETE /outplans/{id} request.
 // It deletes a exist outplan info.
-// @Summary     Delete a existing outplan.
-// @Description Delete a existing outplan.
-// @Produce     json
-// @Param       id query string true "The outplan's id"
-// @Success     200
-// @Router      /v1.0/outplans/{id} [delete]
+//	@Summary		Delete a existing outplan.
+//	@Description	Delete a existing outplan.
+//	@Produce		json
+//	@Param			id	query	string	true	"The outplan's id"
+//	@Success		200
+//	@Router			/v1.0/outplans/{id} [delete]
 func outplansIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outplansIDDELETE",
@@ -210,13 +210,13 @@ func outplansIDDELETE(c *gin.Context) {
 // outplansIDPUT handles PUT /outplans/{id} request.
 // It updates a exist outplan info with the given outplan info.
 // And returns updated outplan info if it succeed.
-// @Summary     Update a outplan and reuturns updated outplan info.
-// @Description Update a outplan and returns detail updated outplan info.
-// @Produce     json
-// @Param       id          query    string                    true "The outplan's id"
-// @Param       update_info body     request.BodyOutplansIDPUT true "The update info"
-// @Success     200         {object} outplan.Outplan
-// @Router      /v1.0/outplans/{id} [put]
+//	@Summary		Update a outplan and reuturns updated outplan info.
+//	@Description	Update a outplan and returns detail updated outplan info.
+//	@Produce		json
+//	@Param			id			query		string						true	"The outplan's id"
+//	@Param			update_info	body		request.BodyOutplansIDPUT	true	"The update info"
+//	@Success		200			{object}	outplan.Outplan
+//	@Router			/v1.0/outplans/{id} [put]
 func outplansIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outplansIDPUT",
@@ -261,13 +261,13 @@ func outplansIDPUT(c *gin.Context) {
 // outplansIDDialInfoPUT handles PUT /outplans/{id}/dialinfo request.
 // It updates a exist outplan info with the given outplan info.
 // And returns updated outplan info if it succeed.
-// @Summary     Update a outplan and reuturns updated outplan info.
-// @Description Update a outplan and returns detail updated outplan info.
-// @Produce     json
-// @Param       id          query    string                            true "The outplan's id"
-// @Param       update_info body     request.BodyOutplansIDDialInfoPUT true "The update info"
-// @Success     200         {object} outplan.Outplan
-// @Router      /v1.0/outplans/{id} [put]
+//	@Summary		Update a outplan and reuturns updated outplan info.
+//	@Description	Update a outplan and returns detail updated outplan info.
+//	@Produce		json
+//	@Param			id			query		string								true	"The outplan's id"
+//	@Param			update_info	body		request.BodyOutplansIDDialInfoPUT	true	"The update info"
+//	@Success		200			{object}	outplan.Outplan
+//	@Router			/v1.0/outplans/{id} [put]
 func outplansIDDialInfoPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outplansIDDialInfoPUT",

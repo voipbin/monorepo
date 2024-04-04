@@ -15,13 +15,13 @@ import (
 
 // queuesGET handles GET /queues request.
 // It returns list of queues of the given customer.
-// @Summary     List qeueus
-// @Description get queues of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyQueuesGET
-// @Router      /v1.0/queues [get]
+//	@Summary		List qeueus
+//	@Description	get queues of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyQueuesGET
+//	@Router			/v1.0/queues [get]
 func queuesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesGET",
@@ -83,12 +83,12 @@ func queuesGET(c *gin.Context) {
 
 // queuesPOST handles POST /queues request.
 // It creates a new queue.
-// @Summary     Create a new queue.
-// @Description create a new queue
-// @Produce     json
-// @Param       agent body     request.BodyAgentsPOST true "The queue detail"
-// @Success     200   {object} queue.WebhookMessage
-// @Router      /v1.0/queues [post]
+//	@Summary		Create a new queue.
+//	@Description	create a new queue
+//	@Produce		json
+//	@Param			agent	body		request.BodyAgentsPOST	true	"The queue detail"
+//	@Success		200		{object}	queue.WebhookMessage
+//	@Router			/v1.0/queues [post]
 func queuesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesPOST",
@@ -139,12 +139,12 @@ func queuesPOST(c *gin.Context) {
 
 // queuesIDDelete handles DELETE /queues/<queue-id> request.
 // It deletes the queue.
-// @Summary     Delete the queue
-// @Description Delete the queue of the given id
-// @Produce     json
-// @Param       id path string true "The ID of the queue"
-// @Success     200
-// @Router      /v1.0/queues/{id} [delete]
+//	@Summary		Delete the queue
+//	@Description	Delete the queue of the given id
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the queue"
+//	@Success		200
+//	@Router			/v1.0/queues/{id} [delete]
 func queuesIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesIDDelete",
@@ -186,12 +186,12 @@ func queuesIDDelete(c *gin.Context) {
 
 // queuesIDGet handles GET /queues/<queue-id> request.
 // It gets the queue.
-// @Summary     Get the queue
-// @Description Get the queue of the given id
-// @Produce     json
-// @Param       id path string true "The ID of the queue"
-// @Success     200
-// @Router      /v1.0/queues/{id} [get]
+//	@Summary		Get the queue
+//	@Description	Get the queue of the given id
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the queue"
+//	@Success		200
+//	@Router			/v1.0/queues/{id} [get]
 func queuesIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesIDGet",
@@ -229,13 +229,13 @@ func queuesIDGet(c *gin.Context) {
 // queuesIDPUT handles PUT /queues/{id} request.
 // It updates a queue basic info with the given info.
 // And returns updated queue info if it succeed.
-// @Summary     Update an queue and reuturns updated queue info.
-// @Description Update an queue and returns detail updated queue info.
-// @Produce     json
-// @Param       id          path string                  true "The ID of the queue"
-// @Param       update_info body request.BodyQueuesIDPUT true "Queue's update info"
-// @Success     200
-// @Router      /v1.0/queues/{id} [put]
+//	@Summary		Update an queue and reuturns updated queue info.
+//	@Description	Update an queue and returns detail updated queue info.
+//	@Produce		json
+//	@Param			id			path	string					true	"The ID of the queue"
+//	@Param			update_info	body	request.BodyQueuesIDPUT	true	"Queue's update info"
+//	@Success		200
+//	@Router			/v1.0/queues/{id} [put]
 func queuesIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesIDPUT",
@@ -280,13 +280,13 @@ func queuesIDPUT(c *gin.Context) {
 // queuesIDTagIDsPUT handles PUT /queues/{id}/tag_ids request.
 // It updates a queue's tag_ids info with the given info.
 // And returns error if it failed.
-// @Summary     Update an queue's tag_ids info.
-// @Description Update the queue's tag_ids.
-// @Produce     json
-// @Param       id          path string                        true "The ID of the queue"
-// @Param       update_info body request.BodyQueuesIDTagIDsPUT true "Queue's update info"
-// @Success     200
-// @Router      /v1.0/queues/{id}/tag_ids [put]
+//	@Summary		Update an queue's tag_ids info.
+//	@Description	Update the queue's tag_ids.
+//	@Produce		json
+//	@Param			id			path	string							true	"The ID of the queue"
+//	@Param			update_info	body	request.BodyQueuesIDTagIDsPUT	true	"Queue's update info"
+//	@Success		200
+//	@Router			/v1.0/queues/{id}/tag_ids [put]
 func queuesIDTagIDsPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesIDTagIDsPUT",
@@ -330,13 +330,13 @@ func queuesIDTagIDsPUT(c *gin.Context) {
 
 // queuesIDRoutingMethodPUT handles PUT /queues/{id}/routing_method request.
 // It updates a queue's routing_method info with the given info.
-// @Summary     Update an queue's tag_id info.
-// @Description Update an queue routing_method info.
-// @Produce     json
-// @Param       id          path string                        true "The ID of the queue"
-// @Param       update_info body request.BodyAgentsIDTagIDsPUT true "Queue's update info"
-// @Success     200
-// @Router      /v1.0/queues/{id}/routing_method [put]
+//	@Summary		Update an queue's tag_id info.
+//	@Description	Update an queue routing_method info.
+//	@Produce		json
+//	@Param			id			path	string							true	"The ID of the queue"
+//	@Param			update_info	body	request.BodyAgentsIDTagIDsPUT	true	"Queue's update info"
+//	@Success		200
+//	@Router			/v1.0/queues/{id}/routing_method [put]
 func queuesIDRoutingMethodPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesIDRoutingMethodPUT",
@@ -380,13 +380,13 @@ func queuesIDRoutingMethodPUT(c *gin.Context) {
 
 // queuesIDActionsPUT handles PUT /queues/{id}/actions request.
 // It updates a queue's action hadnle with the given info.
-// @Summary     Update an queue's action handle info.
-// @Description Update the queue's action handle info.
-// @Produce     json
-// @Param       id          path string                         true "The ID of the queue"
-// @Param       update_info body request.BodyQueuesIDActionsPUT true "Queue's update info"
-// @Success     200
-// @Router      /v1.0/queues/{id}/status [put]
+//	@Summary		Update an queue's action handle info.
+//	@Description	Update the queue's action handle info.
+//	@Produce		json
+//	@Param			id			path	string							true	"The ID of the queue"
+//	@Param			update_info	body	request.BodyQueuesIDActionsPUT	true	"Queue's update info"
+//	@Success		200
+//	@Router			/v1.0/queues/{id}/status [put]
 func queuesIDActionsPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuesIDActionsPUT",

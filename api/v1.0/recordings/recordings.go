@@ -14,13 +14,13 @@ import (
 
 // recordingsGET handles GET /recordings request.
 // It returns list of calls of the given customer.
-// @Summary     List recordings
-// @Description get recordings of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyRecordingsGET
-// @Router      /v1.0/recordings [get]
+//	@Summary		List recordings
+//	@Description	get recordings of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyRecordingsGET
+//	@Router			/v1.0/recordings [get]
 func recordingsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "recordingsGET",
@@ -80,12 +80,12 @@ func recordingsGET(c *gin.Context) {
 
 // recordingsIDGET handles GET /recordings/<id> request.
 // It returns a detail recording info.
-// @Summary     Returns a detail recording information.
-// @Description Returns a detial recording information of the given recording id.
-// @Produce     json
-// @Param       id  query    string true "The recording's id."
-// @Success     200 {object} recording.Recording
-// @Router      /v1.0/recordings/{id} [get]
+//	@Summary		Returns a detail recording information.
+//	@Description	Returns a detial recording information of the given recording id.
+//	@Produce		json
+//	@Param			id	query		string	true	"The recording's id."
+//	@Success		200	{object}	recording.Recording
+//	@Router			/v1.0/recordings/{id} [get]
 func recordingsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "recordingsIDGET",
@@ -121,12 +121,12 @@ func recordingsIDGET(c *gin.Context) {
 
 // recordingsIDDELETE handles DELETE /recordings/<id> request.
 // It deletes a recording info.
-// @Summary     Deletes a recording and returns a deleted recording information.
-// @Description Deletes a recording and returns a deleted recording information of the given recording id.
-// @Produce     json
-// @Param       id  query    string true "The recording's id."
-// @Success     200 {object} recording.Recording
-// @Router      /v1.0/recordings/{id} [delete]
+//	@Summary		Deletes a recording and returns a deleted recording information.
+//	@Description	Deletes a recording and returns a deleted recording information of the given recording id.
+//	@Produce		json
+//	@Param			id	query		string	true	"The recording's id."
+//	@Success		200	{object}	recording.Recording
+//	@Router			/v1.0/recordings/{id} [delete]
 func recordingsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "recordingsIDDELETE",

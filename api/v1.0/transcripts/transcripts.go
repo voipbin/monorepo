@@ -14,13 +14,13 @@ import (
 
 // transcriptsGET handles GET /transcripts request.
 // It returns list of transcripts of the given customer.
-// @Summary     Get list of transcripts
-// @Description get transcripts of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyTranscribesGET
-// @Router      /v1.0/transcripts [get]
+//	@Summary		Get list of transcripts
+//	@Description	get transcripts of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyTranscribesGET
+//	@Router			/v1.0/transcripts [get]
 func transcriptsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transcribesGET",

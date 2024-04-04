@@ -12,6 +12,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	request "gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
@@ -2934,7 +2935,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeGets(ctx, a, size, token int
 }
 
 // TranscribeStart mocks base method.
-func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *agent.Agent, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *agent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeStart", ctx, a, referenceType, referenceID, language, direction)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)
