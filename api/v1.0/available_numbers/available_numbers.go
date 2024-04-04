@@ -13,13 +13,13 @@ import (
 
 // availableNumbersGET handles GET /available_numbers request.
 // It returns list of available numbers of the given country.
-// @Summary     List available numbers
-// @Description get available numbers of the country
-// @Produce     json
-// @Param       page_size    query    int    false "The size of results. Max 100"
-// @Param       country_code query    string true  "The ISO country code"
-// @Success     200          {object} response.BodyAvailableNumbersGET
-// @Router      /v1.0/available_numbers [get]
+//	@Summary		List available numbers
+//	@Description	get available numbers of the country
+//	@Produce		json
+//	@Param			page_size		query		int		false	"The size of results. Max 100"
+//	@Param			country_code	query		string	true	"The ISO country code"
+//	@Success		200				{object}	response.BodyAvailableNumbersGET
+//	@Router			/v1.0/available_numbers [get]
 func availableNumbersGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "availableNumbersGET",

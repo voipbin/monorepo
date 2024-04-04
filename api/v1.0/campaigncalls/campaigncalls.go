@@ -16,13 +16,13 @@ import (
 // campaigncallsGET handles GET /campaigncalls request.
 // It returns list of campaigncalls of the given customer.
 
-// @Summary     Get list of calls
-// @Description get calls of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyCallsGET
-// @Router      /v1.0/campaigncalls [get]
+//	@Summary		Get list of calls
+//	@Description	get calls of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyCallsGET
+//	@Router			/v1.0/campaigncalls [get]
 func campaigncallsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaigncallsGET",
@@ -82,12 +82,12 @@ func campaigncallsGET(c *gin.Context) {
 
 // campaigncallsIDGET handles GET /campaigncalls/{id} request.
 // It returns detail campaigncall info.
-// @Summary     Returns detail campaigncall info.
-// @Description Returns detail campaigns info of the given campaigncall id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the campaigncall"
-// @Success     200 {object} campaigncall.WebhookMessage
-// @Router      /v1.0/campaigncalls/{id} [get]
+//	@Summary		Returns detail campaigncall info.
+//	@Description	Returns detail campaigns info of the given campaigncall id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the campaigncall"
+//	@Success		200	{object}	campaigncall.WebhookMessage
+//	@Router			/v1.0/campaigncalls/{id} [get]
 func campaigncallsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaigncallsIDGET",
@@ -123,12 +123,12 @@ func campaigncallsIDGET(c *gin.Context) {
 
 // campaigncallsIDDELETE handles DELETE /campaigncalls/{id} request.
 // It finishs a campaigncall.
-// @Summary     Finish a existing campaign.
-// @Description Delete a existing campaign.
-// @Produce     json
-// @Param       id query string true "The campaign's id"
-// @Success     200
-// @Router      /v1.0/campaigncalls/{id} [delete]
+//	@Summary		Finish a existing campaign.
+//	@Description	Delete a existing campaign.
+//	@Produce		json
+//	@Param			id	query	string	true	"The campaign's id"
+//	@Success		200
+//	@Router			/v1.0/campaigncalls/{id} [delete]
 func campaigncallsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaigncallsIDDELETE",

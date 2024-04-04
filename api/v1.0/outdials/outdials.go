@@ -15,12 +15,12 @@ import (
 
 // outdialsPOST handles POST /outdials request.
 // It creates a new outdial with the given info and returns created outdial info.
-// @Summary     Create a new outdial and returns detail created outdial info.
-// @Description Create a new outdial and returns detail created outdial info.
-// @Produce     json
-// @Param       outdial body     request.BodyOutdialsPOST true "outdial info."
-// @Success     200     {object} outdial.WebhookMessage
-// @Router      /v1.0/outdials [post]
+//	@Summary		Create a new outdial and returns detail created outdial info.
+//	@Description	Create a new outdial and returns detail created outdial info.
+//	@Produce		json
+//	@Param			outdial	body		request.BodyOutdialsPOST	true	"outdial info."
+//	@Success		200		{object}	outdial.WebhookMessage
+//	@Router			/v1.0/outdials [post]
 func outdialsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsPOST",
@@ -60,13 +60,13 @@ func outdialsPOST(c *gin.Context) {
 
 // outdialsGET handles GET /outdials request.
 // It gets a list of outdials with the given info.
-// @Summary     Gets a list of outdials.
-// @Description Gets a list of outdials
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyOutdialsGET
-// @Router      /v1.0/outdials [get]
+//	@Summary		Gets a list of outdials.
+//	@Description	Gets a list of outdials
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyOutdialsGET
+//	@Router			/v1.0/outdials [get]
 func outdialsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsGET",
@@ -126,12 +126,12 @@ func outdialsGET(c *gin.Context) {
 
 // outdialsIDGET handles GET /outdials/{id} request.
 // It returns detail outdials info.
-// @Summary     Returns detail outdials info.
-// @Description Returns detail outdials info of the given outdials id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the outdials"
-// @Success     200 {object} outdial.Outdial
-// @Router      /v1.0/outdials/{id} [get]
+//	@Summary		Returns detail outdials info.
+//	@Description	Returns detail outdials info of the given outdials id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the outdials"
+//	@Success		200	{object}	outdial.Outdial
+//	@Router			/v1.0/outdials/{id} [get]
 func outdialsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDGET",
@@ -167,12 +167,12 @@ func outdialsIDGET(c *gin.Context) {
 
 // outdialsIDDELETE handles DELETE /outdials/{id} request.
 // It deletes a exist outdial info.
-// @Summary     Delete a existing outdial.
-// @Description Delete a existing outdial.
-// @Produce     json
-// @Param       id query string true "The outdial's id"
-// @Success     200
-// @Router      /v1.0/outdials/{id} [delete]
+//	@Summary		Delete a existing outdial.
+//	@Description	Delete a existing outdial.
+//	@Produce		json
+//	@Param			id	query	string	true	"The outdial's id"
+//	@Success		200
+//	@Router			/v1.0/outdials/{id} [delete]
 func outdialsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDDELETE",
@@ -210,13 +210,13 @@ func outdialsIDDELETE(c *gin.Context) {
 // outdialsIDPUT handles PUT /outdials/{id} request.
 // It updates a exist outdial info with the given outdial info.
 // And returns updated outdial info if it succeed.
-// @Summary     Update a outdial and reuturns updated outdial info.
-// @Description Update a outdial and returns detail updated outdial info.
-// @Produce     json
-// @Param       id          query    string                    true "The outdial's id"
-// @Param       update_info body     request.BodyOutdialsIDPUT true "The update info"
-// @Success     200         {object} outdial.Outdial
-// @Router      /v1.0/outdials/{id} [put]
+//	@Summary		Update a outdial and reuturns updated outdial info.
+//	@Description	Update a outdial and returns detail updated outdial info.
+//	@Produce		json
+//	@Param			id			query		string						true	"The outdial's id"
+//	@Param			update_info	body		request.BodyOutdialsIDPUT	true	"The update info"
+//	@Success		200			{object}	outdial.Outdial
+//	@Router			/v1.0/outdials/{id} [put]
 func outdialsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDPUT",
@@ -261,13 +261,13 @@ func outdialsIDPUT(c *gin.Context) {
 // outdialsIDCampaignIDPUT handles PUT /outdials/{id}/campaign_id request.
 // It updates a exist outdial's campaign_id info with the given outdial info.
 // And returns updated outdial's campaign_id info if it succeed.
-// @Summary     Update a outdial's campaign_id and reuturns updated outdial info.
-// @Description Update a outdial's campaign_id and returns detail updated outdial info.
-// @Produce     json
-// @Param       id          query    string                    true "The outdial's id"
-// @Param       update_info body     request.BodyOutdialsIDPUT true "The update info"
-// @Success     200         {object} outdial.Outdial
-// @Router      /v1.0/outdials/{id}/campaign_id [put]
+//	@Summary		Update a outdial's campaign_id and reuturns updated outdial info.
+//	@Description	Update a outdial's campaign_id and returns detail updated outdial info.
+//	@Produce		json
+//	@Param			id			query		string						true	"The outdial's id"
+//	@Param			update_info	body		request.BodyOutdialsIDPUT	true	"The update info"
+//	@Success		200			{object}	outdial.Outdial
+//	@Router			/v1.0/outdials/{id}/campaign_id [put]
 func outdialsIDCampaignIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDCampaignIDPUT",
@@ -312,13 +312,13 @@ func outdialsIDCampaignIDPUT(c *gin.Context) {
 // outdialsIDDataPUT handles PUT /outdials/{id}/data request.
 // It updates a exist outdial's data info with the given outdial info.
 // And returns updated outdial's data info if it succeed.
-// @Summary     Update a outdial's data and reuturns updated outdial info.
-// @Description Update a outdial's data and returns detail updated outdial info.
-// @Produce     json
-// @Param       id          query    string                        true "The outdial's id"
-// @Param       update_info body     request.BodyOutdialsIDDataPUT true "The update info"
-// @Success     200         {object} outdial.Outdial
-// @Router      /v1.0/outdials/{id}/data [put]
+//	@Summary		Update a outdial's data and reuturns updated outdial info.
+//	@Description	Update a outdial's data and returns detail updated outdial info.
+//	@Produce		json
+//	@Param			id			query		string							true	"The outdial's id"
+//	@Param			update_info	body		request.BodyOutdialsIDDataPUT	true	"The update info"
+//	@Success		200			{object}	outdial.Outdial
+//	@Router			/v1.0/outdials/{id}/data [put]
 func outdialsIDDataPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDCampaignIDPUT",
@@ -363,13 +363,13 @@ func outdialsIDDataPUT(c *gin.Context) {
 // outdialsIDTargetsPOST handles POST /outdials/{id}/targets request.
 // It creates a new outdial's target info with the given target info.
 // And returns created outdial target's data info if it succeed.
-// @Summary     Create a new outdialtarget's data and reuturns updated outdial info.
-// @Description Update a outdial's data and returns detail updated outdial info.
-// @Produce     json
-// @Param       id          query    string                        true "The outdial's id"
-// @Param       update_info body     request.BodyOutdialsIDDataPUT true "The update info"
-// @Success     200         {object} outdial.Outdial
-// @Router      /v1.0/outdials/{id}/targets [post]
+//	@Summary		Create a new outdialtarget's data and reuturns updated outdial info.
+//	@Description	Update a outdial's data and returns detail updated outdial info.
+//	@Produce		json
+//	@Param			id			query		string							true	"The outdial's id"
+//	@Param			update_info	body		request.BodyOutdialsIDDataPUT	true	"The update info"
+//	@Success		200			{object}	outdial.Outdial
+//	@Router			/v1.0/outdials/{id}/targets [post]
 func outdialsIDTargetsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDTargetsPOST",
@@ -413,13 +413,13 @@ func outdialsIDTargetsPOST(c *gin.Context) {
 
 // outdialsIDTargetsIDGET handles GET /outdials/{id}/targets/{target_id} request.
 // It gets a exist outdialtarget info.
-// @Summary     Get a existing outdialtarget.
-// @Description Get a existing outdialtarget.
-// @Produce     json
-// @Param       id        query string true "The outdial's id"
-// @Param       target_id query string true "The outdialtarget's id"
-// @Success     200
-// @Router      /v1.0/outdials/{id}/targets/{target_id} [get]
+//	@Summary		Get a existing outdialtarget.
+//	@Description	Get a existing outdialtarget.
+//	@Produce		json
+//	@Param			id			query	string	true	"The outdial's id"
+//	@Param			target_id	query	string	true	"The outdialtarget's id"
+//	@Success		200
+//	@Router			/v1.0/outdials/{id}/targets/{target_id} [get]
 func outdialsIDTargetsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDTargetsIDGET",
@@ -460,13 +460,13 @@ func outdialsIDTargetsIDGET(c *gin.Context) {
 
 // outdialsIDTargetsIDDELETE handles DELETE /outdials/{id}/targets/{target_id} request.
 // It deletes a exist outdialtarget info.
-// @Summary     Delete a existing outdialtarget.
-// @Description Delete a existing outdialtarget.
-// @Produce     json
-// @Param       id        query string true "The outdial's id"
-// @Param       target_id query string true "The outdialtarget's id"
-// @Success     200
-// @Router      /v1.0/outdials/{id}/targets/{target_id} [delete]
+//	@Summary		Delete a existing outdialtarget.
+//	@Description	Delete a existing outdialtarget.
+//	@Produce		json
+//	@Param			id			query	string	true	"The outdial's id"
+//	@Param			target_id	query	string	true	"The outdialtarget's id"
+//	@Success		200
+//	@Router			/v1.0/outdials/{id}/targets/{target_id} [delete]
 func outdialsIDTargetsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDTargetsIDDELETE",
@@ -507,12 +507,12 @@ func outdialsIDTargetsIDDELETE(c *gin.Context) {
 
 // outdialsIDTargetsGET handles GET /outdials/{id}/targets request.
 // It gets a list of outdialtargets.
-// @Summary     Get a list of outdialtargets.
-// @Description Get a list of outdialtargets.
-// @Produce     json
-// @Param       id query string true "The outdial's id"
-// @Success     200
-// @Router      /v1.0/outdials/{id}/targets [get]
+//	@Summary		Get a list of outdialtargets.
+//	@Description	Get a list of outdialtargets.
+//	@Produce		json
+//	@Param			id	query	string	true	"The outdial's id"
+//	@Success		200
+//	@Router			/v1.0/outdials/{id}/targets [get]
 func outdialsIDTargetsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "outdialsIDTargetsGET",

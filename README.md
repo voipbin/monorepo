@@ -98,6 +98,8 @@ $ go build ./cmd/...
 ## swag
 Install the swaggo
 ```
+$ go install github.com/swaggo/swag/cmd/swag@latest
+
 $ go get -u -v github.com/go-swagger/go-swagger/cmd/swagger
 $ go get -u github.com/swaggo/swag/cmd/swag
 $ go get -u github.com/swaggo/gin-swagger

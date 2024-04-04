@@ -15,12 +15,12 @@ import (
 
 // chatroomsPOST handles POST /chatrooms request.
 // It creates a new chatroom with the given info and returns created chatroom info.
-// @Summary     Create a new chatroom and returns detail created chatroom info.
-// @Description Create a new chatroom and returns detail created chatroom info.
-// @Produce     json
-// @Param       chatroom body     request.BodyChatroomsPOST true "chatroom info."
-// @Success     200         {object} chatroom.WebhookMessage
-// @Router      /v1.0/chatrooms [post]
+//	@Summary		Create a new chatroom and returns detail created chatroom info.
+//	@Description	Create a new chatroom and returns detail created chatroom info.
+//	@Produce		json
+//	@Param			chatroom	body		request.BodyChatroomsPOST	true	"chatroom info."
+//	@Success		200			{object}	chatroom.WebhookMessage
+//	@Router			/v1.0/chatrooms [post]
 func chatroomsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatroomsPOST",
@@ -60,14 +60,14 @@ func chatroomsPOST(c *gin.Context) {
 
 // chatroomsGET handles GET /chatrooms request.
 // It gets a list of chatrooms with the given info.
-// @Summary     Gets a list of chatrooms.
-// @Description Gets a list of chatrooms
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Param       owner_id   query    string true  "The id of the chatroom owner"
-// @Success     200        {object} response.BodyChatsGET
-// @Router      /v1.0/chatrooms [get]
+//	@Summary		Gets a list of chatrooms.
+//	@Description	Gets a list of chatrooms
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Param			owner_id	query		string	true	"The id of the chatroom owner"
+//	@Success		200			{object}	response.BodyChatsGET
+//	@Router			/v1.0/chatrooms [get]
 func chatroomsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsGET",
@@ -133,12 +133,12 @@ func chatroomsGET(c *gin.Context) {
 
 // chatroomsIDGET handles GET /chatrooms/{id} request.
 // It returns detail chatroom info.
-// @Summary     Returns detail chatroom info.
-// @Description Returns detail chatroom info of the given chatroom id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the chatroom"
-// @Success     200 {object} chatroom.Chatroom
-// @Router      /v1.0/chatrooms/{id} [get]
+//	@Summary		Returns detail chatroom info.
+//	@Description	Returns detail chatroom info of the given chatroom id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the chatroom"
+//	@Success		200	{object}	chatroom.Chatroom
+//	@Router			/v1.0/chatrooms/{id} [get]
 func chatroomsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatroomsIDGET",
@@ -174,12 +174,12 @@ func chatroomsIDGET(c *gin.Context) {
 
 // chatroomsIDDELETE handles DELETE /chatrooms/{id} request.
 // It deletes the chatroom and returns deleted chatroom info.
-// @Summary     Deletes a chatroom and returns detail chatroom info.
-// @Description Deletes a chatroom and returns detail chatroom info.
-// @Produce     json
-// @Param       id  path     string true "The ID of the chatroom"
-// @Success     200 {object} chatroom.Chatroom
-// @Router      /v1.0/chatrooms/{id} [delete]
+//	@Summary		Deletes a chatroom and returns detail chatroom info.
+//	@Description	Deletes a chatroom and returns detail chatroom info.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the chatroom"
+//	@Success		200	{object}	chatroom.Chatroom
+//	@Router			/v1.0/chatrooms/{id} [delete]
 func chatroomsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatroomsIDGET",
@@ -216,13 +216,13 @@ func chatroomsIDDELETE(c *gin.Context) {
 // chatroomsIDPUT handles PUT /chatrooms/{id} request.
 // It updates a exist chat info with the given info.
 // And returns updated chat info if it succeed.
-// @Summary     Update a chat and reuturns updated info.
-// @Description Update a chat and returns detail updated info.
-// @Produce     json
-// @Param       id          query    string                 	true "The chatroom's id"
-// @Param       update_info body     request.BodyChatroomsIDPUT true "The update info"
-// @Success     200         {object} chat.Chat
-// @Router      /v1.0/chatrooms/{id} [put]
+//	@Summary		Update a chat and reuturns updated info.
+//	@Description	Update a chat and returns detail updated info.
+//	@Produce		json
+//	@Param			id			query		string						true	"The chatroom's id"
+//	@Param			update_info	body		request.BodyChatroomsIDPUT	true	"The update info"
+//	@Success		200			{object}	chat.Chat
+//	@Router			/v1.0/chatrooms/{id} [put]
 func chatroomsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatroomsIDPUT",

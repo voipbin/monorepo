@@ -14,12 +14,12 @@ import (
 
 // recordingfilesIDGET handles GET /recordingfiles/<id> request.
 // It returns recording file.
-// @Summary     Download the recording file
-// @Description Download the recording file
-// @Produce     json
-// @Param       id  query string true "The recordingfile's id."
-// @Success     200 "recording file"
-// @Router      /v1.0/recordingfiles/{id} [get]
+//	@Summary		Download the recording file
+//	@Description	Download the recording file
+//	@Produce		json
+//	@Param			id	query	string	true	"The recordingfile's id."
+//	@Success		200	"recording file"
+//	@Router			/v1.0/recordingfiles/{id} [get]
 func recordingfilesIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "recordingfilesIDGET",

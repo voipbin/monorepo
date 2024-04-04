@@ -14,12 +14,12 @@ import (
 
 // agentsPOST handles POST /agents request.
 // It creates a new agent.
-// @Summary     Create a new agent.
-// @Description create a new agent
-// @Produce     json
-// @Param       agent body     request.BodyAgentsPOST true "The agent detail"
-// @Success     200   {object} agent.Agent
-// @Router      /v1.0/agents [post]
+//	@Summary		Create a new agent.
+//	@Description	create a new agent
+//	@Produce		json
+//	@Param			agent	body		request.BodyAgentsPOST	true	"The agent detail"
+//	@Success		200		{object}	agent.Agent
+//	@Router			/v1.0/agents [post]
 func agentsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsPOST",
@@ -60,12 +60,12 @@ func agentsPOST(c *gin.Context) {
 
 // agentIDDelete handles DELETE /agents/<agent-id> request.
 // It deletes the agent.
-// @Summary     Delete the agent
-// @Description Delete the agent of the given id
-// @Produce     json
-// @Param       id path string true "The ID of the agent"
-// @Success     200
-// @Router      /v1.0/agents/{id} [delete]
+//	@Summary		Delete the agent
+//	@Description	Delete the agent of the given id
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the agent"
+//	@Success		200
+//	@Router			/v1.0/agents/{id} [delete]
 func agentsIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDDelete",
@@ -108,12 +108,12 @@ func agentsIDDelete(c *gin.Context) {
 
 // agentIDGet handles GET /agents/<agent-id> request.
 // It gets the agent.
-// @Summary     Get the agent
-// @Description Get the agent of the given id
-// @Produce     json
-// @Param       id path string true "The ID of the agent"
-// @Success     200
-// @Router      /v1.0/agents/{id} [get]
+//	@Summary		Get the agent
+//	@Description	Get the agent of the given id
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the agent"
+//	@Success		200
+//	@Router			/v1.0/agents/{id} [get]
 func agentsIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDGet",
@@ -151,15 +151,15 @@ func agentsIDGet(c *gin.Context) {
 
 // agentsGET handles GET /agents request.
 // It returns list of agents of the given user.
-// @Summary     List agents
-// @Description get agents of the user
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Param       tag_ids    query    string false "Comma seperated tag ids"
-// @Param       status     query    string false "Agent status"
-// @Success     200        {object} response.BodyAgentsGET
-// @Router      /v1.0/agents [get]
+//	@Summary		List agents
+//	@Description	get agents of the user
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Param			tag_ids		query		string	false	"Comma seperated tag ids"
+//	@Param			status		query		string	false	"Agent status"
+//	@Success		200			{object}	response.BodyAgentsGET
+//	@Router			/v1.0/agents [get]
 func agentsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsGET",
@@ -237,13 +237,13 @@ func agentsGET(c *gin.Context) {
 // agentsIDPUT handles PUT /agents/{id} request.
 // It updates a agent basic info with the given info.
 // And returns updated agent info if it succeed.
-// @Summary     Update an agent and reuturns updated agent info.
-// @Description Update an agent and returns detail updated agent info.
-// @Produce     json
-// @Param       id          path string                  true "The ID of the agent"
-// @Param       update_info body request.BodyAgentsIDPUT true "Agent's update info"
-// @Success     200
-// @Router      /v1.0/agents/{id} [put]
+//	@Summary		Update an agent and reuturns updated agent info.
+//	@Description	Update an agent and returns detail updated agent info.
+//	@Produce		json
+//	@Param			id			path	string					true	"The ID of the agent"
+//	@Param			update_info	body	request.BodyAgentsIDPUT	true	"Agent's update info"
+//	@Success		200
+//	@Router			/v1.0/agents/{id} [put]
 func agentsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDPUT",
@@ -287,13 +287,13 @@ func agentsIDPUT(c *gin.Context) {
 // agentsIDAddressesPUT handles PUT /agents/{id}/Addresses request.
 // It updates a agent's addresses info with the given info.
 // And returns updated agent info if it succeed.
-// @Summary     Update an agent info.
-// @Description Update an agent addresses info.
-// @Produce     json
-// @Param       id          path string                           true "The ID of the agent"
-// @Param       update_info body request.BodyAgentsIDAddressesPUT true "Agent's update info"
-// @Success     200
-// @Router      /v1.0/agents/{id}/addresses [put]
+//	@Summary		Update an agent info.
+//	@Description	Update an agent addresses info.
+//	@Produce		json
+//	@Param			id			path	string								true	"The ID of the agent"
+//	@Param			update_info	body	request.BodyAgentsIDAddressesPUT	true	"Agent's update info"
+//	@Success		200
+//	@Router			/v1.0/agents/{id}/addresses [put]
 func agentsIDAddressesPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDAddressesPUT",
@@ -336,13 +336,13 @@ func agentsIDAddressesPUT(c *gin.Context) {
 
 // agentsIDTagIDsPUT handles PUT /agents/{id}/tag_ids request.
 // It updates a agent's tag_ids info with the given info.
-// @Summary     Update an agent's tag_id info.
-// @Description Update an agent tag_ids info.
-// @Produce     json
-// @Param       id          path string                        true "The ID of the agent"
-// @Param       update_info body request.BodyAgentsIDTagIDsPUT true "Agent's update info"
-// @Success     200
-// @Router      /v1.0/agents/{id}/tag_ids [put]
+//	@Summary		Update an agent's tag_id info.
+//	@Description	Update an agent tag_ids info.
+//	@Produce		json
+//	@Param			id			path	string							true	"The ID of the agent"
+//	@Param			update_info	body	request.BodyAgentsIDTagIDsPUT	true	"Agent's update info"
+//	@Success		200
+//	@Router			/v1.0/agents/{id}/tag_ids [put]
 func agentsIDTagIDsPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDTagIDsPUT",
@@ -385,13 +385,13 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 
 // agentsIDStatusPUT handles PUT /agents/{id}/status request.
 // It updates a agent's status info with the given info.
-// @Summary     Update an agent's status info.
-// @Description Update an agent status info.
-// @Produce     json
-// @Param       id          path string                        true "The ID of the agent"
-// @Param       update_info body request.BodyAgentsIDStatusPUT true "Agent's update info"
-// @Success     200
-// @Router      /v1.0/agents/{id}/status [put]
+//	@Summary		Update an agent's status info.
+//	@Description	Update an agent status info.
+//	@Produce		json
+//	@Param			id			path	string							true	"The ID of the agent"
+//	@Param			update_info	body	request.BodyAgentsIDStatusPUT	true	"Agent's update info"
+//	@Success		200
+//	@Router			/v1.0/agents/{id}/status [put]
 func agentsIDStatusPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDStatusPUT",
@@ -436,13 +436,13 @@ func agentsIDStatusPUT(c *gin.Context) {
 
 // agentsIDPermissionPUT handles PUT /agents/{id}/permission request.
 // It updates a agent's permission info with the given info.
-// @Summary     Update an agent's permission info.
-// @Description Update an agent permission info.
-// @Produce     json
-// @Param       id          path string                        true "The ID of the agent"
-// @Param       update_info body request.BodyAgentsIDPermissionPUT true "Agent's update info"
-// @Success     200
-// @Router      /v1.0/agents/{id}/permission [put]
+//	@Summary		Update an agent's permission info.
+//	@Description	Update an agent permission info.
+//	@Produce		json
+//	@Param			id			path	string								true	"The ID of the agent"
+//	@Param			update_info	body	request.BodyAgentsIDPermissionPUT	true	"Agent's update info"
+//	@Success		200
+//	@Router			/v1.0/agents/{id}/permission [put]
 func agentsIDPermissionPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDPermissionPUT",
@@ -487,13 +487,13 @@ func agentsIDPermissionPUT(c *gin.Context) {
 
 // agentsIDPasswordPUT handles PUT /agents/{id}/password request.
 // It updates a agent's password info with the given info.
-// @Summary     Update an agent's password info.
-// @Description Update an agent password info.
-// @Produce     json
-// @Param       id          path string                        true "The ID of the agent"
-// @Param       update_info body request.BodyAgentsIDPermissionPUT true "Agent's update info"
-// @Success     200
-// @Router      /v1.0/agents/{id}/permission [put]
+//	@Summary		Update an agent's password info.
+//	@Description	Update an agent password info.
+//	@Produce		json
+//	@Param			id			path	string								true	"The ID of the agent"
+//	@Param			update_info	body	request.BodyAgentsIDPermissionPUT	true	"Agent's update info"
+//	@Success		200
+//	@Router			/v1.0/agents/{id}/permission [put]
 func agentsIDPasswordPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "agentsIDPasswordPUT",

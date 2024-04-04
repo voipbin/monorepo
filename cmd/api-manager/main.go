@@ -44,16 +44,16 @@ var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
-// @title          VoIPBIN project API
-// @version        3.1.0
-// @description    RESTful API documents for VoIPBIN project.
-// @termsOfService http://swagger.io/terms/
+//	@title			VoIPBIN project API
+//	@version		3.1.0
+//	@description	RESTful API documents for VoIPBIN project.
+//	@termsOfService	http://swagger.io/terms/
 
-// @contact.name  VoIPBIN Project
-// @contact.email pchero21@gmail.com
+//	@contact.name	VoIPBIN Project
+//	@contact.email	pchero21@gmail.com
 
-// @host api.voipbin.net
-// @BasePath
+//	@host	api.voipbin.net
+//	@BasePath
 func main() {
 
 	log := logrus.WithField("func", "main")

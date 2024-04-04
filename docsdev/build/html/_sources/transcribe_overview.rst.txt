@@ -6,9 +6,29 @@ Voipbin's transcription functionality is designed to cater to a range of communi
 
 Whether it's a one-on-one conversation, a large conference call, or a recorded discussion, Voipbin's transcription service handles it with ease. By distinguishing between audio input and output, it provides nuanced transcriptions that accurately reflect the dialogue exchanged during communication sessions. This differentiation ensures that users can clearly identify who said what, enhancing the clarity and usefulness of the transcribed content.
 
-One notable aspect of Voipbin's transcription service is its real-time capability. This feature allows users to transcribe conversations as they happen, providing instant access to written records of ongoing discussions. Real-time transcription not only facilitates live communication but also streamlines documentation processes by eliminating the need for manual transcription after the fact. This functionality is particularly valuable in fast-paced environments where quick access to accurate information is essential.
+Real-Time capability
+--------------------
+One notable aspect of Voipbin's transcription service is its real-time capability. This feature enables users to transcribe conversations as they occur, providing instant access to written records of ongoing discussions. Real-time transcription not only facilitates live communication but also streamlines documentation processes by eliminating the need for manual transcription after the fact. This functionality is particularly valuable in fast-paced environments where quick access to accurate information is essential.
+
+Additionally, Voipbin offers enhanced flexibility through websocket event subscription. Users can subscribe or unsubscribe to the transcript event using websocket event subscribe, ensuring seamless integration with their applications or systems. This allows for dynamic control over real-time transcription notifications, tailored to specific needs and workflows.
+
+Moreover, Voipbin offers an added feature for enhanced integration and convenience. By including webhook information in your customer settings, you can receive real-time updates through the `transcript_created` event of your transcription process. This enables seamless integration with your existing systems or applications, ensuring that you stay informed of transcription progress without manual intervention.
 
 Overall, Voipbin's transcription service offers a comprehensive solution for capturing and documenting verbal communication across various platforms. Whether users need transcriptions for analysis, reference, or archival purposes, Voipbin's transcription feature delivers accurate and timely results, enhancing communication workflows and productivity.
+
+.. code::
+
+    {
+        "type": "transcript_created",
+        "data": {
+            "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
+            "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
+            "direction": "out",
+            "message": "Hello, this is transcribe test call.",
+            "tm_transcript": "0001-01-01 00:00:08.991840",
+            "tm_create": "2024-04-04 07:15:59.233415"
+        }
+    }
 
 .. _transcribe-overview-transcription:
 
@@ -50,3 +70,40 @@ This audio in/out distinguish feature empowers users to gain a deeper understand
             "tm_create": "2024-04-01 07:17:27.208337"
         }
     ]
+
+Enable transcribe
+-----------------
+Voipbin provides two different methods to start the transcribe.
+
+Automatic Trigger in the Flow
++++++++++++++++++++++++++++++++
+Add the `transcribe_start` action in the action flow. This action automatically triggers transcribe when the flow reaches it. See detail :ref:`here <flow-struct-action-transribe_start>`.
+
+.. code::
+
+    {
+        "id": "95c7a67f-9643-4237-8b69-7320a70b382b",
+        "next_id": "44e1dabc-a8c1-4647-90ba-16d414231058",
+        "type": "transcribe_start",
+        "option": {
+            "language": "en-US"
+        }
+    }
+
+
+Interrupt Trigger(Manual API Request)
++++++++++++++++++++++++++++++++++++++
+The client can start the transcribe by API request sending. This allows you to start transcription manually in the middle of a call or conference. However, note that this method requires someone to initiate the API request.
+
+* POST /v1.0/transcribes: See detail `here <https://api.voipbin.net/swagger/index.html#/default/post_v1_0_transcribes>`_.
+
+.. code::
+
+    $ curl -X POST --location 'https://api.voipbin.net/v1.0/transcribes?token=token' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "reference_type": "call",
+            "reference_id": "8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5",
+            "language": "en-US",
+            "direction": "both"
+        }'
