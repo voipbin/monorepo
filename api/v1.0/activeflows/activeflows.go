@@ -12,14 +12,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
-// @Summary     Make and execute the activeflow
-// @Description Create and execute the activeflow
-// @Produce     json
+//	@Summary		Make and execute the activeflow
+//	@Description	Create and execute the activeflow
+//	@Produce		json
 // activeflowsPOST handles POST /activeflows request.
 // It creates an activeflow and executes the created activeflow.
-// @Param       activeflow body     request.BodyActiveflowsPOST true "The activeflow detail"
-// @Success     200  {object} activeflow.Activeflow
-// @Router      /v1.0/activeflows [post]
+//	@Param			activeflow	body		request.BodyActiveflowsPOST	true	"The activeflow detail"
+//	@Success		200			{object}	activeflow.Activeflow
+//	@Router			/v1.0/activeflows [post]
 func activeflowsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "activeflowsPOST",
@@ -61,13 +61,13 @@ func activeflowsPOST(c *gin.Context) {
 // activeflowsGET handles GET /activeflows request.
 // It returns list of activeflows of the given customer.
 
-// @Summary     Get list of activeflows
-// @Description get activeflows of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyActiveflowsGET
-// @Router      /v1.0/activeflows [get]
+//	@Summary		Get list of activeflows
+//	@Description	get activeflows of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyActiveflowsGET
+//	@Router			/v1.0/activeflows [get]
 func activeflowsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "activeflowsGET",
@@ -128,12 +128,12 @@ func activeflowsGET(c *gin.Context) {
 
 // activeflowsIDGET handles GET /activeflows/{id} request.
 // It returns detail activeflow info.
-// @Summary     Get detail activeflow info.
-// @Description Returns detail activeflow info of the given activeflow id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the activeflow"
-// @Success     200 {object} activeflow.Activeflow
-// @Router      /v1.0/activeflows/{id} [get]
+//	@Summary		Get detail activeflow info.
+//	@Description	Returns detail activeflow info of the given activeflow id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the activeflow"
+//	@Success		200	{object}	activeflow.Activeflow
+//	@Router			/v1.0/activeflows/{id} [get]
 func activeflowsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "activeflowsIDGET",
@@ -170,12 +170,12 @@ func activeflowsIDGET(c *gin.Context) {
 
 // activeflowsIDDELETE handles DELETE /activeflows/{id} request.
 // It deletes activeflow info.
-// @Summary     Deletes activeflow info.
-// @Description Deletes activeflow info of the given activeflow id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the activeflow"
-// @Success     200 {object} activeflow.Activeflow
-// @Router      /v1.0/activeflows/{id} [delete]
+//	@Summary		Deletes activeflow info.
+//	@Description	Deletes activeflow info of the given activeflow id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the activeflow"
+//	@Success		200	{object}	activeflow.Activeflow
+//	@Router			/v1.0/activeflows/{id} [delete]
 func activeflowsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "activeflowsIDDELETE",
@@ -212,12 +212,12 @@ func activeflowsIDDELETE(c *gin.Context) {
 
 // activeflowsIDStopPOST handles POST /activeflows/{id}/stop request.
 // It stops the activeflow info.
-// @Summary     Stops the given activeflow.
-// @Description Stops activeflow of the given activeflow id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the activeflow"
-// @Success     200 {object} activeflow.Activeflow
-// @Router      /v1.0/activeflows/{id}/stop [post]
+//	@Summary		Stops the given activeflow.
+//	@Description	Stops activeflow of the given activeflow id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the activeflow"
+//	@Success		200	{object}	activeflow.Activeflow
+//	@Router			/v1.0/activeflows/{id}/stop [post]
 func activeflowsIDStopPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "activeflowsIDStopPOST",

@@ -15,12 +15,12 @@ import (
 
 // chatmessagesPOST handles POST /chatmessages request.
 // It creates a new chatmessage with the given info and returns created chatmessage info.
-// @Summary     Create a new chatmessage and returns detail created chatmessage info.
-// @Description Create a new chatmessage and returns detail created chatmessage info.
-// @Produce     json
-// @Param       chatmessage body     request.BodyChatmessagesPOST true "chatmessage info."
-// @Success     200         {object} messagechat.WebhookMessage
-// @Router      /v1.0/chatmessages [post]
+//	@Summary		Create a new chatmessage and returns detail created chatmessage info.
+//	@Description	Create a new chatmessage and returns detail created chatmessage info.
+//	@Produce		json
+//	@Param			chatmessage	body		request.BodyChatmessagesPOST	true	"chatmessage info."
+//	@Success		200			{object}	messagechat.WebhookMessage
+//	@Router			/v1.0/chatmessages [post]
 func chatmessagesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatmessagesPOST",
@@ -60,13 +60,13 @@ func chatmessagesPOST(c *gin.Context) {
 
 // chatmessagesGET handles GET /chatmessages request.
 // It gets a list of chatmessages with the given info.
-// @Summary     Gets a list of chatmessages.
-// @Description Gets a list of chatmessages
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyChatmessagesGET
-// @Router      /v1.0/chatmessages [get]
+//	@Summary		Gets a list of chatmessages.
+//	@Description	Gets a list of chatmessages
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyChatmessagesGET
+//	@Router			/v1.0/chatmessages [get]
 func chatmessagesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatmessagesGET",
@@ -128,12 +128,12 @@ func chatmessagesGET(c *gin.Context) {
 
 // chatmessagesIDGET handles GET /chatmessages/{id} request.
 // It returns detail chatmessage info.
-// @Summary     Returns detail chatmessage info.
-// @Description Returns detail chatmessage info of the given chatmessage id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the chatmessage"
-// @Success     200 {object} messagechat.Messagechat
-// @Router      /v1.0/chatmessages/{id} [get]
+//	@Summary		Returns detail chatmessage info.
+//	@Description	Returns detail chatmessage info of the given chatmessage id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the chatmessage"
+//	@Success		200	{object}	messagechat.Messagechat
+//	@Router			/v1.0/chatmessages/{id} [get]
 func chatmessagesIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatmessagesIDGET",
@@ -169,12 +169,12 @@ func chatmessagesIDGET(c *gin.Context) {
 
 // chatmessagesIDDELETE handles DELETE /chatmessages/{id} request.
 // It deletes the chatmessage and returns deleted chatmessage info.
-// @Summary     Deletes a chatmessage and returns detail chatmessage info.
-// @Description Deletes a chatmessage and returns detail chatmessage info.
-// @Produce     json
-// @Param       id  path     string true "The ID of the chatroom"
-// @Success     200 {object} messagechat.Messagechat
-// @Router      /v1.0/chatmessages/{id} [delete]
+//	@Summary		Deletes a chatmessage and returns detail chatmessage info.
+//	@Description	Deletes a chatmessage and returns detail chatmessage info.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the chatroom"
+//	@Success		200	{object}	messagechat.Messagechat
+//	@Router			/v1.0/chatmessages/{id} [delete]
 func chatmessagesIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatmessagesIDDELETE",

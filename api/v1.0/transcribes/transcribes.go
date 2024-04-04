@@ -14,12 +14,12 @@ import (
 
 // transcribesPOST handles POST /transcribes request.
 // It creates a transcribe of the recording and returns the result.
-// @Summary     Create a transcribe
-// @Description transcribe a recording
-// @Produce     json
-// @Param       transcribe body     request.BodyTranscribesPOST true "Creating transcribe info."
-// @Success     200        {object} transcribe.Transcribe
-// @Router      /v1.0/transcribes [post]
+//	@Summary		Create a transcribe
+//	@Description	transcribe a recording
+//	@Produce		json
+//	@Param			transcribe	body		request.BodyTranscribesPOST	true	"Creating transcribe info."
+//	@Success		200			{object}	transcribe.Transcribe
+//	@Router			/v1.0/transcribes [post]
 func transcribesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transcribesPOST",
@@ -61,13 +61,13 @@ func transcribesPOST(c *gin.Context) {
 
 // transcribesGET handles GET /transcribes request.
 // It returns list of transcribes of the given customer.
-// @Summary     Get list of transcribes
-// @Description get transcribes of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyTranscribesGET
-// @Router      /v1.0/transcribes [get]
+//	@Summary		Get list of transcribes
+//	@Description	get transcribes of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyTranscribesGET
+//	@Router			/v1.0/transcribes [get]
 func transcribesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transcribesGET",
@@ -127,12 +127,12 @@ func transcribesGET(c *gin.Context) {
 
 // transcribesIDGET handles GET /transcribes/{id} request.
 // It returns detail transcribe info.
-// @Summary     Get detail transcribe info.
-// @Description Returns detail transcribe info of the given transcribe id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the transcribe"
-// @Success     200 {object} transcribe.Transcribe
-// @Router      /v1.0/transcribe/{id} [get]
+//	@Summary		Get detail transcribe info.
+//	@Description	Returns detail transcribe info of the given transcribe id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the transcribe"
+//	@Success		200	{object}	transcribe.Transcribe
+//	@Router			/v1.0/transcribe/{id} [get]
 func transcribesIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transcribesIDGET",
@@ -169,12 +169,12 @@ func transcribesIDGET(c *gin.Context) {
 // transcribesIDDelete handles DELETE /transcribes/<transcribe-id> request.
 // It deletes the transcribe.
 
-// @Summary     Delete the transcribe.
-// @Description Delete the transcribe of the given id
-// @Produce     json
-// @Param       id  path     string true "The ID of the transcribe"
-// @Success     200 {object} transcribe.Transcribe
-// @Router      /v1.0/transcribes/{id} [delete]
+//	@Summary		Delete the transcribe.
+//	@Description	Delete the transcribe of the given id
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the transcribe"
+//	@Success		200	{object}	transcribe.Transcribe
+//	@Router			/v1.0/transcribes/{id} [delete]
 func transcribesIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transcribesIDDelete",
@@ -212,12 +212,12 @@ func transcribesIDDelete(c *gin.Context) {
 
 // transcribesIDStopPOST handles POST /transcribes/<transcribe-id>/stop request.
 // It creates a transcribe of the recording and returns the result.
-// @Summary     Create a transcribe
-// @Description transcribe a recording
-// @Produce     json
-// @Param       transcribe body     request.BodyTranscribesPOST true "Creating transcribe info."
-// @Success     200        {object} transcribe.Transcribe
-// @Router      /v1.0/transcribes/{id}/stop [post]
+//	@Summary		Create a transcribe
+//	@Description	transcribe a recording
+//	@Produce		json
+//	@Param			transcribe	body		request.BodyTranscribesPOST	true	"Creating transcribe info."
+//	@Success		200			{object}	transcribe.Transcribe
+//	@Router			/v1.0/transcribes/{id}/stop [post]
 func transcribesIDStopPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transcribesIDStopPOST",

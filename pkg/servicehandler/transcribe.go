@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
@@ -98,7 +99,7 @@ func (h *serviceHandler) TranscribeGets(ctx context.Context, a *amagent.Agent, s
 // TranscribeStart sends a request to transcribe-manager
 // to start a transcribe.
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType tmtranscribe.ReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error) {
+func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "TranscribeStart",
 		"customer_id":    a.CustomerID,
@@ -112,42 +113,14 @@ func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, 
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	// check the ownership
-	var err error
-	var customerID uuid.UUID
-	switch referenceType {
-	case tmtranscribe.ReferenceTypeCall:
-		tmpResource, tmpErr := h.callGet(ctx, a, referenceID)
-		if tmpErr != nil {
-			err = tmpErr
-			break
-		} else {
-			customerID = tmpResource.CustomerID
-		}
-
-	case tmtranscribe.ReferenceTypeRecording:
-		tmpResource, tmpErr := h.recordingGet(ctx, a, referenceID)
-		if tmpErr != nil {
-			err = tmpErr
-			break
-		} else {
-			customerID = tmpResource.CustomerID
-		}
-
-	default:
-		err = fmt.Errorf("unsupported reference type")
-	}
+	// get transcribe resource info
+	tmpReferenceType, tmpReferenceID, err := h.transcribeGetResourceInfo(ctx, a, referenceType, referenceID)
 	if err != nil {
-		log.Errorf("Could not pass the reference validation. err: %v", err)
-		return nil, fmt.Errorf("could not pass the reference validation. err: %v", err)
+		log.Errorf("Could not get transcribe resource info. err: %v", err)
+		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
-	}
-
-	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, a.CustomerID, referenceType, referenceID, language, direction)
+	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, a.CustomerID, tmpReferenceType, tmpReferenceID, language, direction)
 	if err != nil {
 		log.Errorf("Could not start the transcribe. err: %v", err)
 		return nil, err
@@ -155,6 +128,69 @@ func (h *serviceHandler) TranscribeStart(ctx context.Context, a *amagent.Agent, 
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// transcribeGetResourceInfo returns corresponding transcribe resource info of the given reference.
+// returns error if the reference is not transcrib-able or has no perrmission
+func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amagent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID) (tmtranscribe.ReferenceType, uuid.UUID, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "transcribeGetResourceInfo",
+		"agent":          a,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+	})
+
+	var err error
+	var tmpCustomerID uuid.UUID
+	var resReferenceType tmtranscribe.ReferenceType
+	var resReferenceID uuid.UUID
+
+	// get reference resource
+	switch referenceType {
+	case request.TranscribeReferenceTypeCall:
+		tmpResource, tmpErr := h.callGet(ctx, a, referenceID)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+		tmpCustomerID = tmpResource.CustomerID
+		resReferenceType = tmtranscribe.ReferenceTypeCall
+		resReferenceID = tmpResource.ID
+
+	case request.TranscribeReferenceTypeConference:
+		tmpResource, tmpErr := h.conferenceGet(ctx, a, referenceID)
+		if tmpErr != nil {
+			err = tmpErr
+		}
+		tmpCustomerID = tmpResource.CustomerID
+		resReferenceType = tmtranscribe.ReferenceTypeConfbridge
+		resReferenceID = tmpResource.ConfbridgeID
+
+	case request.TranscribeReferenceTypeRecording:
+		tmpResource, tmpErr := h.recordingGet(ctx, a, referenceID)
+		if tmpErr != nil {
+			err = tmpErr
+		}
+		tmpCustomerID = tmpResource.CustomerID
+		resReferenceType = tmtranscribe.ReferenceTypeRecording
+		resReferenceID = tmpResource.ID
+
+	default:
+		err = fmt.Errorf("unsupported reference type")
+	}
+	if err != nil {
+		log.Errorf("Could not pass the reference validation. err: %v", err)
+		return "", uuid.Nil, fmt.Errorf("could not pass the reference validation. err: %v", err)
+	}
+
+	// check the ownership
+	if !h.hasPermission(ctx, a, tmpCustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return "", uuid.Nil, fmt.Errorf("agent has no permission")
+	}
+
+	return resReferenceType, resReferenceID, nil
+
 }
 
 // TranscribeStop sends a request to transcribe-manager

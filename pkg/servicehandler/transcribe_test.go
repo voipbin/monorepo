@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -161,7 +162,7 @@ func Test_TranscribeStart(t *testing.T) {
 		name string
 
 		agent         *amagent.Agent
-		referenceType tmtranscribe.ReferenceType
+		referenceType request.TranscribeReferenceType
 		referenceID   uuid.UUID
 		language      string
 		direction     tmtranscribe.Direction
@@ -170,7 +171,8 @@ func Test_TranscribeStart(t *testing.T) {
 		responseRecording  *cmrecording.Recording
 		responseTranscribe *tmtranscribe.Transcribe
 
-		expectRes *tmtranscribe.WebhookMessage
+		expectReferenceType tmtranscribe.ReferenceType
+		expectRes           *tmtranscribe.WebhookMessage
 	}
 
 	tests := []test{
@@ -182,7 +184,7 @@ func Test_TranscribeStart(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			referenceType: tmtranscribe.ReferenceTypeCall,
+			referenceType: request.TranscribeReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
 			language:      "en-US",
 			direction:     tmtranscribe.DirectionBoth,
@@ -198,6 +200,7 @@ func Test_TranscribeStart(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
+			expectReferenceType: tmtranscribe.ReferenceTypeCall,
 			expectRes: &tmtranscribe.WebhookMessage{
 				ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -220,13 +223,13 @@ func Test_TranscribeStart(t *testing.T) {
 			ctx := context.Background()
 
 			switch tt.referenceType {
-			case tmtranscribe.ReferenceTypeCall:
+			case request.TranscribeReferenceTypeCall:
 				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 
-			case tmtranscribe.ReferenceTypeRecording:
+			case request.TranscribeReferenceTypeRecording:
 				mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID).Return(tt.responseRecording, nil)
 			}
-			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.agent.CustomerID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.agent.CustomerID, tt.expectReferenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseTranscribe, nil)
 
 			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction)
 			if err != nil {

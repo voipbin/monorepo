@@ -52,6 +52,7 @@ import (
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
 )
@@ -551,7 +552,7 @@ type ServiceHandler interface {
 	// transcribe handlers
 	TranscribeGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error)
-	TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType tmtranscribe.ReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error)
+	TranscribeStart(ctx context.Context, a *amagent.Agent, referenceType request.TranscribeReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error)
 	TranscribeStop(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeDelete(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 

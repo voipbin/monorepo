@@ -14,13 +14,13 @@ import (
 
 // conferencecallsGET handles GET /conferencecalls request.
 // It returns list of conferencecalls of the given customer.
-// @Summary     Get list of conferencecalls
-// @Description get conferences of the customer
-// @Produce     json
-// @Param       page_size  query    int    false "The size of results. Max 100"
-// @Param       page_token query    string false "The token. tm_create"
-// @Success     200        {object} response.BodyCallsGET
-// @Router      /v1.0/conferencecalls [get]
+//	@Summary		Get list of conferencecalls
+//	@Description	get conferences of the customer
+//	@Produce		json
+//	@Param			page_size	query		int		false	"The size of results. Max 100"
+//	@Param			page_token	query		string	false	"The token. tm_create"
+//	@Success		200			{object}	response.BodyCallsGET
+//	@Router			/v1.0/conferencecalls [get]
 func conferencecallsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencecallsGET",
@@ -81,13 +81,13 @@ func conferencecallsGET(c *gin.Context) {
 
 // conferencecallsIDGET handles GET /conferencecalls/{id} request.
 // It returns detail conferencecall info.
-// @Summary     Returns detail conferencecall info.
-// @Description Returns detail conferencecall info of the given conferencecall id.
-// @Produce     json
-// @Param       id    path     string true "The ID of the conferencecall"
-// @Param       token query    string true "JWT token"
-// @Success     200   {object} conferencecall.Conferencecall
-// @Router      /v1.0/conferencecalls/{id} [get]
+//	@Summary		Returns detail conferencecall info.
+//	@Description	Returns detail conferencecall info of the given conferencecall id.
+//	@Produce		json
+//	@Param			id		path		string	true	"The ID of the conferencecall"
+//	@Param			token	query		string	true	"JWT token"
+//	@Success		200		{object}	conferencecall.Conferencecall
+//	@Router			/v1.0/conferencecalls/{id} [get]
 func conferencecallsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencecallsIDGET",
@@ -123,12 +123,12 @@ func conferencecallsIDGET(c *gin.Context) {
 
 // conferencecallsIDDELETE handles DELETE /conferencecalls/{id} request.
 // It kicks the conferencecall from the conference.
-// @Summary     Kicks the conferencecall from the conference.
-// @Description Kicks the conferencecall.
-// @Produce     json
-// @Param       id path string true "The ID of the conferencecall"
-// @Success     200
-// @Router      /v1.0/conferencecalls/{id} [delete]
+//	@Summary		Kicks the conferencecall from the conference.
+//	@Description	Kicks the conferencecall.
+//	@Produce		json
+//	@Param			id	path	string	true	"The ID of the conferencecall"
+//	@Success		200
+//	@Router			/v1.0/conferencecalls/{id} [delete]
 func conferencecallsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conferencecallsIDDELETE",

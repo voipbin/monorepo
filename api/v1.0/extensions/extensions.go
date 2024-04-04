@@ -14,12 +14,12 @@ import (
 
 // extensionsPOST handles POST /extension request.
 // It creates a new extension with the given info and returns created extension info.
-// @Summary     Create a new domain and returns detail created extension info.
-// @Description Create a new extension and returns detail created extension info.
-// @Produce     json
-// @Param       extension body     request.BodyExtensionsPOST true "extension info"
-// @Success     200       {object} extension.Extension
-// @Router      /v1.0/extensions [post]
+//	@Summary		Create a new domain and returns detail created extension info.
+//	@Description	Create a new extension and returns detail created extension info.
+//	@Produce		json
+//	@Param			extension	body		request.BodyExtensionsPOST	true	"extension info"
+//	@Success		200			{object}	extension.Extension
+//	@Router			/v1.0/extensions [post]
 func extensionsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "extensionsPOST",
@@ -58,14 +58,14 @@ func extensionsPOST(c *gin.Context) {
 
 // extensionsGET handles GET /extensions request.
 // It gets a list of extensions with the given info.
-// @Summary     Gets a list of extensions.
-// @Description Gets a list of extensions
-// @Produce     json
-// @Param       page_size  query   int    false "The size of results. Max 100"
-// @Param       page_token query   string false "The token. tm_create"
-// @Param       domain_id  query   string true  "The domain's id"
-// @Success     200        {array} extension.Extension
-// @Router      /v1.0/extensions [get]
+//	@Summary		Gets a list of extensions.
+//	@Description	Gets a list of extensions
+//	@Produce		json
+//	@Param			page_size	query	int		false	"The size of results. Max 100"
+//	@Param			page_token	query	string	false	"The token. tm_create"
+//	@Param			domain_id	query	string	true	"The domain's id"
+//	@Success		200			{array}	extension.Extension
+//	@Router			/v1.0/extensions [get]
 func extensionsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "extensionsGET",
@@ -125,12 +125,12 @@ func extensionsGET(c *gin.Context) {
 
 // extensionsIDGET handles GET /extensions/{id} request.
 // It returns detail extension info.
-// @Summary     Returns detail extension info.
-// @Description Returns detail extension info of the given extension id.
-// @Produce     json
-// @Param       id  path     string true "The ID of the extension"
-// @Success     200 {object} extension.Extension
-// @Router      /v1.0/extension/{id} [get]
+//	@Summary		Returns detail extension info.
+//	@Description	Returns detail extension info of the given extension id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the extension"
+//	@Success		200	{object}	extension.Extension
+//	@Router			/v1.0/extension/{id} [get]
 func extensionsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "extensionsIDGET",
@@ -167,13 +167,13 @@ func extensionsIDGET(c *gin.Context) {
 // extensionsIDPUT handles PUT /extensions/{id} request.
 // It updates a exist extension info with the given extension info.
 // And returns updated extension info if it succeed.
-// @Summary     Update a extension and reuturns updated extension info.
-// @Description Update a extension and returns detail updated extension info.
-// @Produce     json
-// @Param       id          path     string                      true "extension's id"
-// @Param       update_info body     request.BodyExtensionsIDPUT true "Update info"
-// @Success     200         {object} extension.Extension
-// @Router      /v1.0/extensions/{id} [put]
+//	@Summary		Update a extension and reuturns updated extension info.
+//	@Description	Update a extension and returns detail updated extension info.
+//	@Produce		json
+//	@Param			id			path		string						true	"extension's id"
+//	@Param			update_info	body		request.BodyExtensionsIDPUT	true	"Update info"
+//	@Success		200			{object}	extension.Extension
+//	@Router			/v1.0/extensions/{id} [put]
 func extensionsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "extensionsIDPUT",
@@ -217,12 +217,12 @@ func extensionsIDPUT(c *gin.Context) {
 
 // extensionsIDDELETE handles DELETE /extensions/{id} request.
 // It deletes a exist extensions info.
-// @Summary     Delete a existing extension.
-// @Description Delete a existing extension.
-// @Produce     json
-// @Success     200
-// @Param       id path string true "The extension's id"
-// @Router      /v1.0/extensions/{id} [delete]
+//	@Summary		Delete a existing extension.
+//	@Description	Delete a existing extension.
+//	@Produce		json
+//	@Success		200
+//	@Param			id	path	string	true	"The extension's id"
+//	@Router			/v1.0/extensions/{id} [delete]
 func extensionsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "extensionsIDDELETE",
