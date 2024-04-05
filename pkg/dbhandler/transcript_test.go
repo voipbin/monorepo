@@ -217,3 +217,70 @@ func Test_TranscriptGets(t *testing.T) {
 		})
 	}
 }
+
+func Test_TranscriptDelete(t *testing.T) {
+
+	type test struct {
+		name       string
+		transcript *transcript.Transcript
+
+		responseCurTime string
+		expectRes       *transcript.Transcript
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&transcript.Transcript{
+				ID: uuid.FromStringOrNil("15f2b1f4-f197-11ee-b786-7b9a797be96c"),
+			},
+
+			"2021-01-01 00:00:00.000",
+			&transcript.Transcript{
+				ID:       uuid.FromStringOrNil("15f2b1f4-f197-11ee-b786-7b9a797be96c"),
+				TMCreate: "2021-01-01 00:00:00.000",
+				TMDelete: "2021-01-01 00:00:00.000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
+			if err := h.TranscriptCreate(ctx, tt.transcript); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
+			if errDelete := h.TranscriptDelete(ctx, tt.transcript.ID); errDelete != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errDelete)
+			}
+
+			mockCache.EXPECT().TranscriptGet(gomock.Any(), tt.transcript.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscriptSet(gomock.Any(), gomock.Any())
+			res, err := h.TranscriptGet(context.Background(), tt.transcript.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

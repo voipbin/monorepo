@@ -226,3 +226,25 @@ func (h *handler) TranscriptGets(ctx context.Context, size uint64, token string,
 
 	return res, nil
 }
+
+// TranscriptDelete deletes the transcript.
+func (h *handler) TranscriptDelete(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		transcripts
+	set
+		tm_delete = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. TranscriptDelete. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.transcriptUpdateToCache(ctx, id)
+
+	return nil
+}

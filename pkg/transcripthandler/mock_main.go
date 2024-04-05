@@ -51,6 +51,21 @@ func (mr *MockTranscriptHandlerMockRecorder) Create(ctx, customerID, transcribeI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTranscriptHandler)(nil).Create), ctx, customerID, transcribeID, direction, message, tmTranscript)
 }
 
+// Delete mocks base method.
+func (m *MockTranscriptHandler) Delete(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*transcript.Transcript)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockTranscriptHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTranscriptHandler)(nil).Delete), ctx, id)
+}
+
 // Gets mocks base method.
 func (m *MockTranscriptHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error) {
 	m.ctrl.T.Helper()

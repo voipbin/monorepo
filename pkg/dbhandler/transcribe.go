@@ -227,7 +227,7 @@ func (h *handler) transcribeGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 	return res, nil
 }
 
-// CustomerDelete deletes the customer.
+// TranscribeDelete deletes the transcribe.
 func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
@@ -240,7 +240,7 @@ func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
 	`
 	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. CustomerDelete. err: %v", err)
+		return fmt.Errorf("could not execute. TranscribeDelete. err: %v", err)
 	}
 
 	// update the cache

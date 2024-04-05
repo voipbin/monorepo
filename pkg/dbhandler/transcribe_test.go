@@ -318,3 +318,72 @@ func Test_TranscribeSetStatus(t *testing.T) {
 		})
 	}
 }
+
+func Test_TranscribeDelete(t *testing.T) {
+
+	type test struct {
+		name       string
+		transcribe *transcribe.Transcribe
+
+		responseCurTime string
+		expectRes       *transcribe.Transcribe
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&transcribe.Transcribe{
+				ID: uuid.FromStringOrNil("6a51f5b2-f196-11ee-b98b-cfc1a7583b20"),
+			},
+
+			"2021-01-01 00:00:00.000",
+			&transcribe.Transcribe{
+				ID:           uuid.FromStringOrNil("6a51f5b2-f196-11ee-b98b-cfc1a7583b20"),
+				StreamingIDs: []uuid.UUID{},
+				TMCreate:     "2021-01-01 00:00:00.000",
+				TMUpdate:     DefaultTimeStamp,
+				TMDelete:     "2021-01-01 00:00:00.000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
+			if err := h.TranscribeCreate(ctx, tt.transcribe); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
+			if errDelete := h.TranscribeDelete(ctx, tt.transcribe.ID); errDelete != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errDelete)
+			}
+
+			mockCache.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscribeSet(gomock.Any(), gomock.Any())
+			res, err := h.TranscribeGet(context.Background(), tt.transcribe.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

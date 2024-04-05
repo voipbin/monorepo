@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"golang.org/x/text/language"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
@@ -36,6 +37,8 @@ type TranscribeHandler interface {
 		direction transcribe.Direction,
 	) (*transcribe.Transcribe, error)
 	Stop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
+
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // transcribeHandler structure for service handle

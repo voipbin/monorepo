@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
@@ -49,6 +50,20 @@ func (m *MockTranscribeHandler) Delete(ctx context.Context, id uuid.UUID) (*tran
 func (mr *MockTranscribeHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTranscribeHandler)(nil).Delete), ctx, id)
+}
+
+// EventCUCustomerDeleted mocks base method.
+func (m *MockTranscribeHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerDeleted indicates an expected call of EventCUCustomerDeleted.
+func (mr *MockTranscribeHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockTranscribeHandler)(nil).EventCUCustomerDeleted), ctx, cu)
 }
 
 // Get mocks base method.

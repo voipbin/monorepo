@@ -148,3 +148,59 @@ func Test_Gets(t *testing.T) {
 		})
 	}
 }
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseTranscript *transcript.Transcript
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("87cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
+
+			&transcript.Transcript{
+				ID:       uuid.FromStringOrNil("87cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &transcriptHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
+
+			// dbDelete
+			mockDB.EXPECT().TranscriptDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseTranscript, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseTranscript, res)
+			}
+		})
+	}
+}

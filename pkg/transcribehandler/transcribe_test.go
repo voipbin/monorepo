@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
@@ -260,21 +261,28 @@ func Test_Delete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id                 uuid.UUID
-		responseTranscribe *transcribe.Transcribe
+		id uuid.UUID
 
-		expectRes *transcribe.Transcribe
+		responseTranscribe *transcribe.Transcribe
+		expectRes          *transcribe.Transcribe
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				ID:            uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				Status:        transcribe.StatusDone,
+				ReferenceType: transcribe.ReferenceTypeCall,
+				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
 
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				ID:            uuid.FromStringOrNil("4452ca84-8781-11ec-a486-c77bd5b20dc8"),
+				Status:        transcribe.StatusDone,
+				ReferenceType: transcribe.ReferenceTypeCall,
+				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -287,17 +295,22 @@ func Test_Delete(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				reqHandler:        mockReq,
 				db:                mockDB,
 				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
+				transcriptHandler: mockTranscript,
 			}
-
 			ctx := context.Background()
 
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
+
+			// deleteTranscripts
+			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any()).Return([]*transcript.Transcript{}, nil)
+
+			// dbDelete
 			mockDB.EXPECT().TranscribeDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, gomock.Any())
@@ -309,6 +322,69 @@ func Test_Delete(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_deleteTranscripts(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseTranscripts []*transcript.Transcript
+
+		expectFilters map[string]string
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("98a1e9ea-f25e-11ee-b2b9-03b097a87225"),
+
+			[]*transcript.Transcript{
+				{
+					ID: uuid.FromStringOrNil("98e53588-f25e-11ee-9b2c-cb8f088fb4a0"),
+				},
+				{
+					ID: uuid.FromStringOrNil("99090b48-f25e-11ee-a595-47b42745925b"),
+				},
+			},
+
+			map[string]string{
+				"transcribe_id": "98a1e9ea-f25e-11ee-b2b9-03b097a87225",
+				"deleted":       "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+			h := &transcribeHandler{
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				transcriptHandler: mockTranscript,
+			}
+			ctx := context.Background()
+
+			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscripts, nil)
+			for _, tr := range tt.responseTranscripts {
+				mockTranscript.EXPECT().Delete(ctx, tr.ID).Return(&transcript.Transcript{}, nil)
+			}
+
+			if err := h.deleteTranscripts(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 		})
