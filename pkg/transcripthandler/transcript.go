@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new transcribe
@@ -18,13 +19,13 @@ func (h *transcriptHandler) Create(
 	message string,
 	tmTranscript string,
 ) (*transcript.Transcript, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Create",
-			"customer_id":   customerID,
-			"transcribe_id": transcribeID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Create",
+		"customer_id":   customerID,
+		"transcribe_id": transcribeID,
+		"direction":     direction,
+		"message":       message,
+	})
 
 	id := h.utilHandler.UUIDCreate()
 	tr := &transcript.Transcript{
@@ -65,6 +66,34 @@ func (h *transcriptHandler) Gets(ctx context.Context, size uint64, token string,
 	res, err := h.db.TranscriptGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get transcripts. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// Delete deletes the transcript
+func (h *transcriptHandler) Delete(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Delete",
+		"transcript_id": id,
+	})
+
+	// get transcript
+	tr, err := h.dbGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get transcript info. err: %v", err)
+		return nil, err
+	}
+
+	if tr.TMDelete != dbhandler.DefaultTimeStamp {
+		// already deleted
+		return tr, nil
+	}
+
+	res, err := h.dbDelete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete the transcript. err: %v", err)
 		return nil, err
 	}
 

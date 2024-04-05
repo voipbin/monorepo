@@ -24,9 +24,10 @@ func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe
 		return nil, err
 	}
 
-	if tr.Status != transcribe.StatusProgressing {
-		log.Errorf("Invalid status. old_status: %s, new_status: %s", tr.Status, transcribe.StatusDone)
-		return nil, fmt.Errorf("invalid status")
+	if tr.Status == transcribe.StatusDone {
+		// already stopped
+		log.WithField("transcribe", tr).Debugf("Already stopped. transcribe_id: %s", tr.ID)
+		return tr, nil
 	}
 
 	switch tr.ReferenceType {

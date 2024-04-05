@@ -37,6 +37,7 @@ type DBHandler interface {
 	TranscriptCreate(ctx context.Context, t *transcript.Transcript) error
 	TranscriptGet(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error)
 	TranscriptGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error)
+	TranscriptDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 )
 
 // Get returns transcribe
@@ -109,27 +110,81 @@ func (h *transcribeHandler) Create(
 	return res, nil
 }
 
-// TranscribeGet returns transcribe
+// Delete deletes the transcribe
 func (h *transcribeHandler) Delete(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "Delete",
+		"func":          "Delete",
+		"transcribe_id": id,
 	})
 
-	if errDelete := h.db.TranscribeDelete(ctx, id); errDelete != nil {
-		log.Errorf("Could not delete the transcribe info. err: %v", errDelete)
+	// get transcribe
+	tr, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get transcribe info. err: %v", err)
+		return nil, err
+	}
+
+	if tr.TMDelete != dbhandler.DefaultTimeStamp {
+		// already deleted
+		return tr, nil
+	}
+
+	if tr.Status != transcribe.StatusDone {
+		// transcribe is ongoing. need to stop the first.
+		tmp, err := h.Stop(ctx, tr.ID)
+		if err != nil {
+			log.Errorf("Could not stop the transcribing. err: %v", err)
+			return nil, err
+		}
+		log.WithField("transcribe", tmp).Debugf("Stopped transcribe. transcribe_id: %s", tr.ID)
+	}
+
+	// delete transcripts
+	if errDelete := h.deleteTranscripts(ctx, tr.ID); errDelete != nil {
+		log.Errorf("Could not delete transcripts. err: %v", errDelete)
 		return nil, errDelete
 	}
 
-	// get deleted item
-	res, err := h.db.TranscribeGet(ctx, id)
+	// delete
+	res, err := h.dbDelete(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get deleted transcribe. err: %v", err)
+		log.Errorf("Could not delete the transcribe. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, res)
 
 	return res, nil
+}
 
+// deleteTranscripts deletes all transcripts of the give transcribe
+func (h *transcribeHandler) deleteTranscripts(ctx context.Context, transcribeID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "deleteTranscripts",
+		"transcribe_id": transcribeID,
+	})
+
+	// delete all transcripts
+	filters := map[string]string{
+		"transcribe_id": transcribeID.String(),
+		"deleted":       "false",
+	}
+
+	ts, err := h.transcriptHandler.Gets(ctx, 1000, "", filters)
+	if err != nil {
+		log.Errorf("Could not get transcripts. err: %v", err)
+		return err
+	}
+
+	for _, t := range ts {
+		tmp, err := h.transcriptHandler.Delete(ctx, t.ID)
+		if err != nil {
+			log.Errorf("Could not delete transcript. err: %v", err)
+			// we couldn't delete the transript for some reason. but we just ignore the error and continue anyway
+			continue
+		}
+		log.WithField("transcript", tmp).Debugf("Deleted transcript info. transcript_id: %s", t.ID)
+	}
+
+	return nil
 }
 
 // UpdateStatus updates the transcribe's status

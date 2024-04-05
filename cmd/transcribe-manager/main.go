@@ -24,6 +24,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/streaminghandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/subscribehandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
@@ -127,41 +128,81 @@ func initProm(endpoint, listen string) {
 }
 
 // run runs the call-manager
-func run(db *sql.DB, cache cachehandler.CacheHandler) error {
-	if err := runListen(db, cache); err != nil {
+func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "run",
+	})
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	hostID := uuid.Must(uuid.NewV4())
+	log.Debugf("Generated host id. host_id: %s", hostID)
+
+	// create handlers
+	db := dbhandler.NewHandler(sqlDB, cache)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
+	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, *gcpCredential)
+	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, db, notifyHandler, transcriptHandler, *gcpCredential)
+	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
+
+	// run request listener
+	if err := runListen(rabbitSock, hostID, reqHandler, transcriptHandler, transcribeHandler); err != nil {
 		return err
+	}
+
+	// run subscribe listener
+	if errSubscribe := runSubscribe(rabbitSock, transcribeHandler); errSubscribe != nil {
+		return errSubscribe
 	}
 
 	return nil
 }
 
 // runListen runs the listen service
-func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+func runListen(
+	rabbitSock rabbitmqhandler.Rabbit,
+	hostID uuid.UUID,
+	reqHandler requesthandler.RequestHandler,
+	transcriptHandler transcripthandler.TranscriptHandler,
+	transcribeHandler transcribehandler.TranscribeHandler,
+) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	// request handler
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
-
-	hostID := uuid.Must(uuid.NewV4())
-	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, *gcpCredential)
-	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, db, notifyHandler, transcriptHandler, *gcpCredential)
-	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 	listenHandler := listenhandler.NewListenHandler(hostID, rabbitSock, reqHandler, transcribeHandler, transcriptHandler)
 
 	// run
-	listenVolatile := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
-	if err := listenHandler.Run(*rabbitQueueListen, listenVolatile, string(commonoutline.QueueNameDelay)); err != nil {
+	listenQueue := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
+	if err := listenHandler.Run(*rabbitQueueListen, listenQueue, string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	}
+
+	return nil
+}
+
+// runSubscribe runs the ARI event listen service
+func runSubscribe(
+	rabbitSock rabbitmqhandler.Rabbit,
+	transcribeHandler transcribehandler.TranscribeHandler,
+) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runSubscribe",
+	})
+
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCustomerEvent),
+	}
+	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
+
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(rabbitSock, commonoutline.QueueNameTranscribeSubscribe, subscribeTargets, transcribeHandler)
+
+	// run
+	if err := ariEventListenHandler.Run(); err != nil {
+		log.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
 	}
 
 	return nil

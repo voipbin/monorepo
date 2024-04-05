@@ -182,6 +182,20 @@ func (mr *MockDBHandlerMockRecorder) TranscriptCreate(ctx, t interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptCreate", reflect.TypeOf((*MockDBHandler)(nil).TranscriptCreate), ctx, t)
 }
 
+// TranscriptDelete mocks base method.
+func (m *MockDBHandler) TranscriptDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscriptDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TranscriptDelete indicates an expected call of TranscriptDelete.
+func (mr *MockDBHandlerMockRecorder) TranscriptDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptDelete", reflect.TypeOf((*MockDBHandler)(nil).TranscriptDelete), ctx, id)
+}
+
 // TranscriptGet mocks base method.
 func (m *MockDBHandler) TranscriptGet(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error) {
 	m.ctrl.T.Helper()
