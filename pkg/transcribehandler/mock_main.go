@@ -10,6 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
@@ -50,6 +52,34 @@ func (m *MockTranscribeHandler) Delete(ctx context.Context, id uuid.UUID) (*tran
 func (mr *MockTranscribeHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTranscribeHandler)(nil).Delete), ctx, id)
+}
+
+// EventCMCallHangup mocks base method.
+func (m *MockTranscribeHandler) EventCMCallHangup(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCMCallHangup", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCMCallHangup indicates an expected call of EventCMCallHangup.
+func (mr *MockTranscribeHandlerMockRecorder) EventCMCallHangup(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMCallHangup", reflect.TypeOf((*MockTranscribeHandler)(nil).EventCMCallHangup), ctx, c)
+}
+
+// EventCMConfbridgeTerminated mocks base method.
+func (m *MockTranscribeHandler) EventCMConfbridgeTerminated(ctx context.Context, c *confbridge.Confbridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCMConfbridgeTerminated", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCMConfbridgeTerminated indicates an expected call of EventCMConfbridgeTerminated.
+func (mr *MockTranscribeHandlerMockRecorder) EventCMConfbridgeTerminated(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMConfbridgeTerminated", reflect.TypeOf((*MockTranscribeHandler)(nil).EventCMConfbridgeTerminated), ctx, c)
 }
 
 // EventCUCustomerDeleted mocks base method.

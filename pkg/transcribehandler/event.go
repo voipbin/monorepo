@@ -3,6 +3,8 @@ package transcribehandler
 import (
 	"context"
 
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"github.com/pkg/errors"
@@ -37,6 +39,72 @@ func (h *transcribeHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucu
 			continue
 		}
 		log.WithField("transcribe", tmp).Debugf("Deleted transcribe info. transcribe_id: %s", tmp.ID)
+	}
+
+	return nil
+}
+
+// EventCMCallHangup handles the call-manager's call_hangup event
+func (h *transcribeHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Call) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "EventCMCallHangup",
+		"call": c,
+	})
+	log.Debugf("Stopping all transcribes of the call. call_id: %s", c.ID)
+
+	// get all transcribes of the call
+	filters := map[string]string{
+		"reference_id": c.ID.String(),
+		"deleted":      "false",
+	}
+	transcribes, err := h.Gets(ctx, 1000, "", filters)
+	if err != nil {
+		log.Errorf("Could not gets transcribes list. err: %v", err)
+		return errors.Wrap(err, "could not get transcribes list")
+	}
+
+	// stop all transcribes
+	for _, tr := range transcribes {
+		log.Debugf("Stop transcribe info. transcribe_id: %s", tr.ID)
+		tmp, err := h.Stop(ctx, tr.ID)
+		if err != nil {
+			log.Errorf("Could not stop transcribe info. err: %v", err)
+			continue
+		}
+		log.WithField("transcribe", tmp).Debugf("Stopped transcribe info. transcribe_id: %s", tmp.ID)
+	}
+
+	return nil
+}
+
+// EventCMConfbridgeTerminated handles the call-manager's confbridge_terminated event
+func (h *transcribeHandler) EventCMConfbridgeTerminated(ctx context.Context, c *cmconfbridge.Confbridge) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "EventCMConfbridgeTerminated",
+		"confbridge": c,
+	})
+	log.Debugf("Stopping all transcribes of the confbridge. confbridge_id: %s", c.ID)
+
+	// get all transcribes of the confbridge
+	filters := map[string]string{
+		"reference_id": c.ID.String(),
+		"deleted":      "false",
+	}
+	transcribes, err := h.Gets(ctx, 1000, "", filters)
+	if err != nil {
+		log.Errorf("Could not gets transcribes list. err: %v", err)
+		return errors.Wrap(err, "could not get transcribes list")
+	}
+
+	// stop all transcribes
+	for _, tr := range transcribes {
+		log.Debugf("Stop transcribe info. transcribe_id: %s", tr.ID)
+		tmp, err := h.Stop(ctx, tr.ID)
+		if err != nil {
+			log.Errorf("Could not stop transcribe info. err: %v", err)
+			continue
+		}
+		log.WithField("transcribe", tmp).Debugf("Stopped transcribe info. transcribe_id: %s", tmp.ID)
 	}
 
 	return nil

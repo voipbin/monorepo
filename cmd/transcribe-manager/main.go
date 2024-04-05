@@ -194,6 +194,7 @@ func runSubscribe(
 	})
 
 	subscribeTargets := []string{
+		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameCustomerEvent),
 	}
 	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")

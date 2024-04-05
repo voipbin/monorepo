@@ -10,7 +10,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -93,13 +95,12 @@ func NewSubscribeHandler(
 	return h
 }
 
-// Run starts to receive ARI event and process it.
+// Run starts to receive subscribed event and process it.
 func (h *subscribeHandler) Run() error {
-	// create queue for ari event receive
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Run",
 	})
-	log.Infof("Creating rabbitmq queue for ARI event receiving.")
+	log.Infof("Creating rabbitmq queue for subscribed event receiving.")
 
 	// declare the queue for subscribe
 	if err := h.rabbitSock.QueueDeclare(string(h.subscribeQueue), true, true, false, false); err != nil {
@@ -155,7 +156,17 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 	start := time.Now()
 
 	switch {
-	// customer-manager
+	//// call-manager
+	// call
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && m.Type == cmcall.EventTypeCallHangup:
+		err = h.processEventCMCallHangup(ctx, m)
+
+	// confbridge
+	case m.Publisher == string(commonoutline.ServiceNameCallManager) && m.Type == cmconfbridge.EventTypeConfbridgeTerminated:
+		err = h.processEventCMConfbridgeTerminated(ctx, m)
+
+	//// customer-manager
+	// customer
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type == cucustomer.EventTypeCustomerDeleted:
 		err = h.processEventCUCustomerDeleted(ctx, m)
 

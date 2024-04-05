@@ -88,7 +88,7 @@ func Test_TranscribingStop_call(t *testing.T) {
 	}
 }
 
-func Test_stopStreaming(t *testing.T) {
+func Test_stopLive(t *testing.T) {
 
 	tests := []struct {
 		name string
