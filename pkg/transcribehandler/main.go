@@ -7,6 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -39,6 +41,8 @@ type TranscribeHandler interface {
 	Stop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
+	EventCMCallHangup(ctx context.Context, c *cmcall.Call) error
+	EventCMConfbridgeTerminated(ctx context.Context, c *cmconfbridge.Confbridge) error
 }
 
 // transcribeHandler structure for service handle
