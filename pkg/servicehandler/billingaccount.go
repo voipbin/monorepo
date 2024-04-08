@@ -114,8 +114,14 @@ func (h *serviceHandler) BillingAccountGets(ctx context.Context, a *amagent.Agen
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	// filters
+	filters := map[string]string{
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false", // we don't need deleted items
+	}
+
 	// get billing accounts
-	tmps, err := h.reqHandler.BillingV1AccountGets(ctx, a.CustomerID, token, size)
+	tmps, err := h.reqHandler.BillingV1AccountGets(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
