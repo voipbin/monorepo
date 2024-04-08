@@ -170,15 +170,20 @@ const agents = {
   ]
 };
 
-const billing_accounts = {
+const billings = {
   component: CNavGroup,
-  name: 'BillingAccounts',
+  name: 'Billings',
   icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
   items: [
     {
       component: CNavItem,
-      name: 'BillingAccounts',
+      name: 'Billing Accounts',
       to: '/resources/billing_accounts/billing_accounts_list',
+    },
+    {
+      component: CNavItem,
+      name: 'Billings',
+      to: '/resources/billings/billings_list',
     },
   ]
 };
@@ -410,7 +415,7 @@ const groupAdmin = [
   },
 
   numbers,
-  billing_accounts,
+  billings,
 ];
 
 // groupManager defines menu groups for normal resource management.
