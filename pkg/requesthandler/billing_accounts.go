@@ -17,8 +17,11 @@ import (
 )
 
 // BillingV1AccountGets returns list of billing accounts.
-func (r *requestHandler) BillingV1AccountGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]bmaccount.Account, error) {
-	uri := fmt.Sprintf("/v1/accounts?customer_id=%s&page_token=%s&page_size=%d", customerID, url.QueryEscape(pageToken), pageSize)
+func (r *requestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	// parse filters
+	uri = parseFilters(uri, filters)
 
 	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {

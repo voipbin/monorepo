@@ -817,18 +817,18 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGet(ctx, accountID int
 }
 
 // BillingV1AccountGets mocks base method.
-func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]account.Account, error) {
+func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "BillingV1AccountGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BillingV1AccountGets indicates an expected call of BillingV1AccountGets.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGets), ctx, pageToken, pageSize, filters)
 }
 
 // BillingV1AccountIsValidBalance mocks base method.
@@ -889,6 +889,21 @@ func (m *MockRequestHandler) BillingV1AccountUpdatePaymentInfo(ctx context.Conte
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountUpdatePaymentInfo(ctx, accountID, paymentType, paymentMethod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountUpdatePaymentInfo", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountUpdatePaymentInfo), ctx, accountID, paymentType, paymentMethod)
+}
+
+// BillingV1BillingGets mocks base method.
+func (m *MockRequestHandler) BillingV1BillingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]billing.Billing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1BillingGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]billing.Billing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1BillingGets indicates an expected call of BillingV1BillingGets.
+func (mr *MockRequestHandlerMockRecorder) BillingV1BillingGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1BillingGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1BillingGets), ctx, pageToken, pageSize, filters)
 }
 
 // CallPublishEvent mocks base method.
