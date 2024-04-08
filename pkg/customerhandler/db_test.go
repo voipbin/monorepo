@@ -144,25 +144,19 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func Test_dbDelete(t *testing.T) {
 	tests := []struct {
-		name                    string
-		id                      uuid.UUID
-		responseBillingAccounts []bmaccount.Account
+		name string
+		id   uuid.UUID
+
+		responseCustomer *customer.Customer
 	}{
 		{
 			name: "normal1",
 			id:   uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
 
-			responseBillingAccounts: []bmaccount.Account{
-				{
-					ID:       uuid.FromStringOrNil("9f795cf8-0e89-11ee-91c9-4b1ab8ec02e8"),
-					TMDelete: dbhandler.DefaultTimeStamp,
-				},
-				{
-					ID:       uuid.FromStringOrNil("9fc63fa0-0e89-11ee-ab57-37a53b33df1c"),
-					TMDelete: dbhandler.DefaultTimeStamp,
-				},
+			responseCustomer: &customer.Customer{
+				ID: uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
 			},
 		},
 	}
@@ -183,16 +177,11 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.id, "", uint64(100)).Return(tt.responseBillingAccounts, nil)
-			for _, a := range tt.responseBillingAccounts {
-				mockReq.EXPECT().BillingV1AccountDelete(ctx, a.ID).Return(&a, nil)
-			}
-
 			mockDB.EXPECT().CustomerDelete(gomock.Any(), tt.id).Return(nil)
-			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, gomock.Any()).Return()
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomer, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, tt.responseCustomer).Return()
 
-			_, err := h.Delete(ctx, tt.id)
+			_, err := h.dbDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
