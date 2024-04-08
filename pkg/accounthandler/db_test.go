@@ -211,9 +211,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 	type test struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseAccounts []*account.Account
 	}
@@ -222,9 +222,11 @@ func Test_GetsByCustomerID(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("84fcc4f2-0e5a-11ee-8075-fb1ea789b671"),
-			size:       10,
-			token:      "2023-06-07 03:22:17.995000",
+			size:  10,
+			token: "2023-06-07 03:22:17.995000",
+			filters: map[string]string{
+				"customer_id": "480cd15e-f3d8-11ee-8212-bfff8eb203cc",
+			},
 
 			responseAccounts: []*account.Account{
 				{
@@ -253,9 +255,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGetsByCustomerID(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAccounts, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -425,82 +427,6 @@ func Test_Delete(t *testing.T) {
 
 			if reflect.DeepEqual(tt.responseAccount, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccount, res)
-			}
-		})
-	}
-}
-
-func Test_DeletesByCustomerID(t *testing.T) {
-
-	type test struct {
-		name string
-
-		customerID uuid.UUID
-
-		responseAccounts []*account.Account
-
-		expectRes []*account.Account
-	}
-
-	tests := []test{
-		{
-			name: "normal",
-
-			customerID: uuid.FromStringOrNil("92435eb0-0e68-11ee-b841-3fe2d10a7ab9"),
-
-			responseAccounts: []*account.Account{
-				{
-					ID:       uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
-					TMDelete: dbhandler.DefaultTimeStamp,
-				},
-				{
-					ID:       uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
-					TMDelete: dbhandler.DefaultTimeStamp,
-				},
-			},
-			expectRes: []*account.Account{
-				{
-					ID:       uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
-					TMDelete: dbhandler.DefaultTimeStamp,
-				},
-				{
-					ID:       uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
-					TMDelete: dbhandler.DefaultTimeStamp,
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := accountHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().AccountGetsByCustomerID(ctx, tt.customerID, uint64(100), "").Return(tt.responseAccounts, nil)
-
-			for _, a := range tt.responseAccounts {
-				mockDB.EXPECT().AccountDelete(ctx, a.ID).Return(nil)
-				mockDB.EXPECT().AccountGet(ctx, a.ID).Return(a, nil)
-			}
-
-			res, err := h.DeletesByCustomerID(ctx, tt.customerID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

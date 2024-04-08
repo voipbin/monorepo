@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
@@ -20,6 +21,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
+		responseFilters  map[string]string
 		responseAccounts []*account.Account
 
 		expectCustomerID uuid.UUID
@@ -32,10 +34,13 @@ func Test_processV1AccountsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &rabbitmqhandler.Request{
-				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000&customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
+				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000&filter_customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
+			responseFilters: map[string]string{
+				"customer_id": "bc8f9070-0e5a-11ee-b22e-97ef303987a3",
+			},
 			responseAccounts: []*account.Account{
 				{
 					ID: uuid.FromStringOrNil("dafc10d0-0b97-11ee-af30-2fb7811295dd"),
@@ -62,14 +67,17 @@ func Test_processV1AccountsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:     mockSock,
+				utilHandler:    mockUtil,
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectCustomerID, tt.expectSize, tt.expectToken).Return(tt.responseAccounts, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectSize, tt.expectToken, tt.responseFilters).Return(tt.responseAccounts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -211,64 +219,64 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 	}
 }
 
-func Test_processV1AccountsCustomerIDIDGet(t *testing.T) {
+// func Test_processV1AccountsCustomerIDIDGet(t *testing.T) {
 
-	type test struct {
-		name    string
-		request *rabbitmqhandler.Request
+// 	type test struct {
+// 		name    string
+// 		request *rabbitmqhandler.Request
 
-		responseAccount *account.Account
+// 		responseAccount *account.Account
 
-		expectCustomerID uuid.UUID
-		expectRes        *rabbitmqhandler.Response
-	}
+// 		expectCustomerID uuid.UUID
+// 		expectRes        *rabbitmqhandler.Response
+// 	}
 
-	tests := []test{
-		{
-			name: "normal",
-			request: &rabbitmqhandler.Request{
-				URI:    "/v1/accounts/customer_id/6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7",
-				Method: rabbitmqhandler.RequestMethodGet,
-			},
+// 	tests := []test{
+// 		{
+// 			name: "normal",
+// 			request: &rabbitmqhandler.Request{
+// 				URI:    "/v1/accounts/customer_id/6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7",
+// 				Method: rabbitmqhandler.RequestMethodGet,
+// 			},
 
-			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("6b76f5ac-09ff-11ee-b6ff-8790f56e5a46"),
-			},
+// 			responseAccount: &account.Account{
+// 				ID: uuid.FromStringOrNil("6b76f5ac-09ff-11ee-b6ff-8790f56e5a46"),
+// 			},
 
-			expectCustomerID: uuid.FromStringOrNil("6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7"),
-			expectRes: &rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"6b76f5ac-09ff-11ee-b6ff-8790f56e5a46","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
-			},
-		},
-	}
+// 			expectCustomerID: uuid.FromStringOrNil("6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7"),
+// 			expectRes: &rabbitmqhandler.Response{
+// 				StatusCode: 200,
+// 				DataType:   "application/json",
+// 				Data:       []byte(`{"id":"6b76f5ac-09ff-11ee-b6ff-8790f56e5a46","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockAccount := accounthandler.NewMockAccountHandler(mc)
+// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
-			h := &listenHandler{
-				rabbitSock:     mockSock,
-				accountHandler: mockAccount,
-			}
+// 			h := &listenHandler{
+// 				rabbitSock:     mockSock,
+// 				accountHandler: mockAccount,
+// 			}
 
-			mockAccount.EXPECT().GetByCustomerID(gomock.Any(), tt.expectCustomerID).Return(tt.responseAccount, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			mockAccount.EXPECT().GetByCustomerID(gomock.Any(), tt.expectCustomerID).Return(tt.responseAccount, nil)
+// 			res, err := h.processRequest(tt.request)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			if reflect.DeepEqual(res, tt.expectRes) != true {
+// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_processV1AccountsIDPut(t *testing.T) {
 

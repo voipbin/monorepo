@@ -33,10 +33,10 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhan
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// get filters
+	filters := h.utilHandler.URLParseFilters(u)
 
-	as, err := h.accountHandler.Gets(ctx, customerID, pageSize, pageToken)
+	as, err := h.accountHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get accounts info. err: %v", err)
 		return simpleResponse(404), nil
@@ -195,39 +195,39 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbit
 	return res, nil
 }
 
-// processV1AccountsCustomerIDIDGet handles GET /v1/accounts/customer_id/<cusotmer-id> request
-func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsCustomerIDIDGet",
-		"request": m,
-	})
+// // processV1AccountsCustomerIDIDGet handles GET /v1/accounts/customer_id/<cusotmer-id> request
+// func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":    "processV1AccountsCustomerIDIDGet",
+// 		"request": m,
+// 	})
 
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 4 {
-		return simpleResponse(400), nil
-	}
+// 	uriItems := strings.Split(m.URI, "/")
+// 	if len(uriItems) < 4 {
+// 		return simpleResponse(400), nil
+// 	}
 
-	customerID := uuid.FromStringOrNil(uriItems[4])
+// 	customerID := uuid.FromStringOrNil(uriItems[4])
 
-	c, err := h.accountHandler.GetByCustomerID(ctx, customerID)
-	if err != nil {
-		log.Errorf("Could not get account info. err: %v", err)
-		return simpleResponse(404), nil
-	}
+// 	c, err := h.accountHandler.GetByCustomerID(ctx, customerID)
+// 	if err != nil {
+// 		log.Errorf("Could not get account info. err: %v", err)
+// 		return simpleResponse(404), nil
+// 	}
 
-	data, err := json.Marshal(c)
-	if err != nil {
-		return simpleResponse(404), nil
-	}
+// 	data, err := json.Marshal(c)
+// 	if err != nil {
+// 		return simpleResponse(404), nil
+// 	}
 
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
+// 	res := &rabbitmqhandler.Response{
+// 		StatusCode: 200,
+// 		DataType:   "application/json",
+// 		Data:       data,
+// 	}
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // processV1AccountsIDBalanceAddForcePost handles POST /v1/accounts/<account-id>/balance_add_force request
 func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

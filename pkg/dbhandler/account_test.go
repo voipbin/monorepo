@@ -45,7 +45,7 @@ func Test_AccountCreate(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("6efc4a5e-0600-11ee-9aca-57553e6045e7"),
 				Name:          "test name",
 				Detail:        "test detail",
- 				Type:          account.TypeNormal,
+				Type:          account.TypeNormal,
 				Balance:       99.99,
 				PaymentType:   account.PaymentTypeNone,
 				PaymentMethod: account.PaymentMethodNone,
@@ -101,6 +101,89 @@ func Test_AccountCreate(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AccountGets(t *testing.T) {
+
+	type test struct {
+		name     string
+		accounts []*account.Account
+
+		filters map[string]string
+
+		responseCurTime string
+		expectRes       []*account.Account
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			accounts: []*account.Account{
+				{
+					ID:         uuid.FromStringOrNil("99a99eb2-f3d7-11ee-8c0a-f7457252a2f8"),
+					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("99ceaf40-f3d7-11ee-b8bb-97bb778dce9e"),
+					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+				},
+			},
+
+			filters: map[string]string{
+				"customer_id": "995d6060-f3d7-11ee-a179-2fd11cdd97a2",
+			},
+
+			responseCurTime: "2023-06-08 03:22:17.995000",
+			expectRes: []*account.Account{
+				{
+					ID:         uuid.FromStringOrNil("99a99eb2-f3d7-11ee-8c0a-f7457252a2f8"),
+					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					TMCreate:   "2023-06-08 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("99ceaf40-f3d7-11ee-b8bb-97bb778dce9e"),
+					CustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
+					TMCreate:   "2023-06-08 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			for _, c := range tt.accounts {
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+				_ = h.AccountCreate(ctx, c)
+			}
+
+			res, err := h.AccountGets(ctx, uint64(1000), utilhandler.TimeGetCurTime(), tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
 			}
 		})
 	}

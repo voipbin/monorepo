@@ -24,12 +24,10 @@ func (h *subscribeHandler) processEventCMCustomerDeleted(ctx context.Context, m 
 		return errors.Wrap(err, "could not unmarshal the data")
 	}
 
-	accounts, err := h.accountHandler.DeletesByCustomerID(ctx, c.ID)
-	if err != nil {
-		log.Errorf("Could not craete a new account. err: %v", err)
-		return errors.Wrap(err, "could not create a new aacount")
+	if errEvent := h.accountHandler.EventCUCustomerDeleted(ctx, &c); errEvent != nil {
+		log.Errorf("Could not handle the subscribed event. err: %v", errEvent)
+		return errEvent
 	}
-	log.WithField("accounts", accounts).WithField("account", accounts).Debugf("Deleted customer accounts. customer_id: %s", c.ID)
 
 	return nil
 }

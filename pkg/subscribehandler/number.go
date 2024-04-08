@@ -6,12 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 )
 
 // processEventNMNumberCreated handles the number-manager's number_created event
@@ -28,10 +24,15 @@ func (h *subscribeHandler) processEventNMNumberCreated(ctx context.Context, m *r
 		return errors.Wrap(err, "could not unmarshal the data")
 	}
 
-	if errBilling := h.billingHandler.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeNumber, c.ID, c.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
-		log.Errorf("Could not create a billing. number_id: %s", c.ID)
-		return errors.Wrap(errBilling, "could not create a billing")
+	if errEvent := h.billingHandler.EventNMNumberCreated(ctx, &c); errEvent != nil {
+		log.Errorf("Could not handle the event. err: %v", errEvent)
+		return errEvent
 	}
+
+	// if errBilling := h.billingHandler.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeNumber, c.ID, c.TMCreate, &commonaddress.Address{}, &commonaddress.Address{}); errBilling != nil {
+	// 	log.Errorf("Could not create a billing. number_id: %s", c.ID)
+	// 	return errors.Wrap(errBilling, "could not create a billing")
+	// }
 
 	return nil
 }
@@ -50,10 +51,15 @@ func (h *subscribeHandler) processEventNMNumberRenewed(ctx context.Context, m *r
 		return errors.Wrap(err, "could not unmarshal the data")
 	}
 
-	if errBilling := h.billingHandler.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeNumber, c.ID, c.TMCreate, &address.Address{}, &address.Address{}); errBilling != nil {
-		log.Errorf("Could not create a billing. number_id: %s", c.ID)
-		return errors.Wrap(errBilling, "could not create a billing")
+	if errEvent := h.billingHandler.EventNMNumberRenewed(ctx, &c); errEvent != nil {
+		log.Errorf("Could not handle the event. err: %v", errEvent)
+		return errEvent
 	}
+
+	// if errBilling := h.billingHandler.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeNumber, c.ID, c.TMCreate, &address.Address{}, &address.Address{}); errBilling != nil {
+	// 	log.Errorf("Could not create a billing. number_id: %s", c.ID)
+	// 	return errors.Wrap(errBilling, "could not create a billing")
+	// }
 
 	return nil
 }

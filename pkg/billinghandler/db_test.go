@@ -7,11 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
@@ -100,93 +98,6 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_CreateByCall(t *testing.T) {
-
-	type test struct {
-		name string
-
-		call *cmcall.Call
-
-		responseAccount *account.Account
-		responseUUID    uuid.UUID
-		responseBilling *billing.Billing
-
-		expectBilling *billing.Billing
-	}
-
-	tests := []test{
-		{
-			name: "normal",
-
-			call: &cmcall.Call{
-				ID:            uuid.FromStringOrNil("5b787828-08fc-11ee-b5ab-07dfe01818fe"),
-				CustomerID:    uuid.FromStringOrNil("5ba83c34-08fc-11ee-8e1e-9729f7119eab"),
-				TMProgressing: "2023-06-08 03:22:17.995000",
-			},
-
-			responseAccount: &account.Account{
-				ID: uuid.FromStringOrNil("966e525e-08fc-11ee-8179-2fa77e04bfb7"),
-			},
-			responseUUID: uuid.FromStringOrNil("96c2831a-08fc-11ee-9dc5-e733ac390d44"),
-			responseBilling: &billing.Billing{
-				ID: uuid.FromStringOrNil("02f04200-08ff-11ee-ae1f-273637a8a324"),
-			},
-
-			expectBilling: &billing.Billing{
-				ID:             uuid.FromStringOrNil("96c2831a-08fc-11ee-9dc5-e733ac390d44"),
-				CustomerID:     uuid.FromStringOrNil("5ba83c34-08fc-11ee-8e1e-9729f7119eab"),
-				AccountID:      uuid.FromStringOrNil("966e525e-08fc-11ee-8179-2fa77e04bfb7"),
-				Status:         billing.StatusProgressing,
-				ReferenceType:  billing.ReferenceTypeCall,
-				ReferenceID:    uuid.FromStringOrNil("5b787828-08fc-11ee-b5ab-07dfe01818fe"),
-				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
-				CostTotal:      0,
-				TMBillingStart: "2023-06-08 03:22:17.995000",
-				TMBillingEnd:   dbhandler.DefaultTimeStamp,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			mockAccount := accounthandler.NewMockAccountHandler(mc)
-
-			h := billingHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-
-				accountHandler: mockAccount,
-			}
-			ctx := context.Background()
-
-			mockAccount.EXPECT().GetByCustomerID(ctx, tt.call.CustomerID).Return(tt.responseAccount, nil)
-
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.responseBilling, nil)
-
-			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
-
-			res, err := h.CreateByCall(ctx, tt.call)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.responseBilling, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseBilling, res)
-			}
-		})
-	}
-}
-
 func Test_Get(t *testing.T) {
 
 	type test struct {
@@ -260,7 +171,8 @@ func Test_GetByReferenceID(t *testing.T) {
 			referenceID: uuid.FromStringOrNil("627a9144-08ff-11ee-ab4e-37938da304ad"),
 
 			responseBilling: &billing.Billing{
-				ID: uuid.FromStringOrNil("62a020a8-08ff-11ee-bbc8-47c7ce23b6bb"),
+				ID:            uuid.FromStringOrNil("62a020a8-08ff-11ee-bbc8-47c7ce23b6bb"),
+				ReferenceType: billing.ReferenceTypeCall,
 			},
 		},
 	}
@@ -304,9 +216,9 @@ func Test_Gets(t *testing.T) {
 	type test struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseBillings []*billing.Billing
 	}
@@ -315,9 +227,11 @@ func Test_Gets(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("bd5b3ae6-08ff-11ee-8101-1396e6f3622a"),
-			size:       10,
-			token:      "2023-06-08 03:22:17.995000",
+			size:  10,
+			token: "2023-06-08 03:22:17.995000",
+			filters: map[string]string{
+				"customer_id": "bd5b3ae6-08ff-11ee-8101-1396e6f3622a",
+			},
 
 			responseBillings: []*billing.Billing{
 				{
@@ -350,9 +264,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BillingGetsByCustomerID(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseBillings, nil)
+			mockDB.EXPECT().BillingGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseBillings, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
