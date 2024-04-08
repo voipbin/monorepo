@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -271,23 +272,48 @@ func (h *handler) BillingGetByReferenceID(ctx context.Context, referenceID uuid.
 	return res, nil
 }
 
-// BillingGetsByCustomerID returns a list of billings.
-func (h *handler) BillingGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*billing.Billing, error) {
+// BillingGets returns a list of billing.
+func (h *handler) BillingGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc
-		limit ?
-		`, billingSelect)
+	where
+		tm_create < ?
+	`, billingSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id", "account_id", "reference_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. BillingGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. BillingGets. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -295,7 +321,7 @@ func (h *handler) BillingGetsByCustomerID(ctx context.Context, customerID uuid.U
 	for rows.Next() {
 		u, err := h.billingGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. BillingGetsByCustomerID, err: %v", err)
+			return nil, fmt.Errorf("could not get data. BillingGets, err: %v", err)
 		}
 
 		res = append(res, u)

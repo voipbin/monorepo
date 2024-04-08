@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
 )
 
 // dbCreate creates a new account and return the created account.
@@ -84,14 +83,14 @@ func (h *accountHandler) GetByCustomerID(ctx context.Context, customerID uuid.UU
 }
 
 // Gets returns list of accounts.
-func (h *accountHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
+func (h *accountHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "Gets",
 		"size":  size,
 		"token": token,
 	})
 
-	res, err := h.db.AccountGetsByCustomerID(ctx, customerID, size, token)
+	res, err := h.db.AccountGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get accounts. err: %v", err)
 		return nil, errors.Wrap(err, "could not get accounts info")
@@ -160,36 +159,6 @@ func (h *accountHandler) Delete(ctx context.Context, id uuid.UUID) (*account.Acc
 	if err != nil {
 		log.Errorf("Could not get deleted account. err: %v", err)
 		return nil, errors.Wrap(err, "could not get deleted account")
-	}
-
-	return res, nil
-}
-
-// DeletesByCustomerID delete accounts by customer id
-func (h *accountHandler) DeletesByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*account.Account, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "DeletesByCustomerID",
-		"customer_id": customerID,
-	})
-
-	accounts, err := h.Gets(ctx, customerID, 100, "")
-	if err != nil {
-		log.Errorf("Could not get accounts. err: %v", err)
-		return nil, errors.Wrap(err, "could not get accounts")
-	}
-
-	res := []*account.Account{}
-	for _, a := range accounts {
-		if a.TMDelete < dbhandler.DefaultTimeStamp {
-			continue
-		}
-
-		tmp, err := h.Delete(ctx, a.ID)
-		if err != nil {
-			log.Errorf("Could not delete the account. err: %v", err)
-			continue
-		}
-		res = append(res, tmp)
 	}
 
 	return res, nil

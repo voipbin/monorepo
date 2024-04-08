@@ -19,7 +19,7 @@ import (
 type DBHandler interface {
 	AccountCreate(ctx context.Context, c *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error)
+	AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error)
 	AccountSet(ctx context.Context, id uuid.UUID, name string, detail string) error
 	AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) error
 	AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error
@@ -29,7 +29,7 @@ type DBHandler interface {
 	BillingCreate(ctx context.Context, c *billing.Billing) error
 	BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	BillingGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
-	BillingGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*billing.Billing, error)
+	BillingGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error)
 	BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp string) error
 	BillingSetStatus(ctx context.Context, id uuid.UUID, status billing.Status) error
 	BillingDelete(ctx context.Context, id uuid.UUID) error

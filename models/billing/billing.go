@@ -34,10 +34,11 @@ type ReferenceType string
 
 // list of reference types
 const (
-	ReferenceTypeNone   ReferenceType = ""
-	ReferenceTypeCall   ReferenceType = "call"
-	ReferenceTypeSMS    ReferenceType = "sms"
-	ReferenceTypeNumber ReferenceType = "number"
+	ReferenceTypeNone        ReferenceType = ""
+	ReferenceTypeCall        ReferenceType = "call"
+	ReferenceTypeSMS         ReferenceType = "sms"
+	ReferenceTypeNumber      ReferenceType = "number"
+	ReferenceTypeNumberRenew ReferenceType = "number_renew"
 )
 
 // Status define

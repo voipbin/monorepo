@@ -130,8 +130,7 @@ func Test_BillingGets(t *testing.T) {
 		name     string
 		billings []*billing.Billing
 
-		customerID uuid.UUID
-		size       uint64
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*billing.Billing
@@ -151,8 +150,9 @@ func Test_BillingGets(t *testing.T) {
 				},
 			},
 
-			customerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
-			size:       10,
+			filters: map[string]string{
+				"customer_id": "a9db1420-07ae-11ee-ab10-1ffa68fea7d8",
+			},
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: []*billing.Billing{
@@ -198,7 +198,7 @@ func Test_BillingGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.BillingGetsByCustomerID(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime())
+			res, err := h.BillingGets(ctx, 1000, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

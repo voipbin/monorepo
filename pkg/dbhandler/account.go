@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -195,6 +196,64 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 
 	// set to the cache
 	_ = h.accountSetToCache(ctx, res)
+
+	return res, nil
+}
+
+// AccountGets returns a list of account.
+func (h *handler) AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
+
+	// prepare
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
+	`, accountSelect)
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+		case "customer_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*account.Account{}
+	for rows.Next() {
+		u, err := h.accountGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. AccountGets, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
 
 	return res, nil
 }

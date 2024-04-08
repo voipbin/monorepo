@@ -50,7 +50,7 @@ func (h *billingHandler) BillingStart(
 		costPerUnit = billing.DefaultCostPerUnitReferenceTypeSMS
 		flagEnd = true
 
-	case billing.ReferenceTypeNumber:
+	case billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
 		costPerUnit = billing.DefaultCostPerUnitReferenceTypeNumber
 		flagEnd = true
 
@@ -71,39 +71,6 @@ func (h *billingHandler) BillingStart(
 		go func() {
 			_ = h.BillingEnd(context.Background(), tmp, tmBillingStart, source, destination)
 		}()
-	}
-
-	return nil
-}
-
-func (h *billingHandler) BillingEndByReferenceID(
-	ctx context.Context,
-	referenceID uuid.UUID,
-	tmBillingEnd string,
-	source *commonaddress.Address,
-	destination *commonaddress.Address,
-) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "BillingEndByReferenceID",
-		"reference_id":   referenceID,
-		"tm_billing_end": tmBillingEnd,
-	})
-
-	// sleep
-	log.Debugf("Sleeping before end the billing. reference_id: %s", referenceID)
-	time.Sleep(time.Second * 3)
-
-	// get billing
-	b, err := h.GetByReferenceID(ctx, referenceID)
-	if err != nil {
-		// could not get billing. nothing to do.
-		log.Errorf("Could not get billing. err: %v", err)
-		return errors.Wrap(err, "could not get billing")
-	}
-
-	if errEnd := h.BillingEnd(ctx, b, tmBillingEnd, source, destination); errEnd != nil {
-		log.Errorf("Could not end the billing. err: %v", errEnd)
-		return errors.Wrap(errEnd, "could not end the billing")
 	}
 
 	return nil
@@ -130,7 +97,7 @@ func (h *billingHandler) BillingEnd(
 		timeEnd := h.utilHandler.TimeParse(tmBillingEnd)
 		billingUnitCount = time.Duration(timeEnd.Sub(timeStart))
 
-	case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber:
+	case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
 		billingUnitCount = time.Duration(time.Second * 1)
 
 	default:

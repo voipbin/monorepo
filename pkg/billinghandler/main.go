@@ -7,10 +7,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
@@ -30,25 +32,14 @@ type BillingHandler interface {
 	) (*billing.Billing, error)
 	Get(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*billing.Billing, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error)
 	UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd string) (*billing.Billing, error)
 
-	BillingStart(
-		ctx context.Context,
-		customerID uuid.UUID,
-		referenceType billing.ReferenceType,
-		referenceID uuid.UUID,
-		tmBillingStart string,
-		source *commonaddress.Address,
-		destination *commonaddress.Address,
-	) error
-	BillingEndByReferenceID(
-		ctx context.Context,
-		referenceID uuid.UUID,
-		tmBillingEnd string,
-		source *commonaddress.Address,
-		destination *commonaddress.Address,
-	) error
+	EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error
+	EventCMCallHangup(ctx context.Context, c *cmcall.Call) error
+	EventMMMessageCreated(ctx context.Context, m *mmmessage.Message) error
+	EventNMNumberCreated(ctx context.Context, n *nmnumber.Number) error
+	EventNMNumberRenewed(ctx context.Context, n *nmnumber.Number) error
 }
 
 type billingHandler struct {
