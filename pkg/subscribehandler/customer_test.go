@@ -6,9 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
 )
@@ -19,19 +18,21 @@ func Test_processEventCMCustomerDeleted(t *testing.T) {
 		name  string
 		event *rabbitmqhandler.Event
 
-		expectCustomerID uuid.UUID
+		expectCustomer *cucustomer.Customer
 	}{
 		{
 			name: "normal",
 
 			event: &rabbitmqhandler.Event{
 				Publisher: "customer-manager",
-				Type:      cscustomer.EventTypeCustomerDeleted,
+				Type:      cucustomer.EventTypeCustomerDeleted,
 				DataType:  "application/json",
 				Data:      []byte(`{"id":"d5b4a056-0ad4-11ee-b813-bfb4ab48539d"}`),
 			},
 
-			expectCustomerID: uuid.FromStringOrNil("d5b4a056-0ad4-11ee-b813-bfb4ab48539d"),
+			expectCustomer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("d5b4a056-0ad4-11ee-b813-bfb4ab48539d"),
+			},
 		},
 	}
 
@@ -50,7 +51,7 @@ func Test_processEventCMCustomerDeleted(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockAccount.EXPECT().DeletesByCustomerID(gomock.Any(), tt.expectCustomerID).Return([]*account.Account{}, nil)
+			mockAccount.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

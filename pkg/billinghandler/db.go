@@ -2,11 +2,11 @@ package billinghandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
@@ -62,29 +62,6 @@ func (h *billingHandler) Create(
 	return res, nil
 }
 
-// CreateByCall creates a new billing of the given call and return the created billing.
-func (h *billingHandler) CreateByCall(ctx context.Context, c *cmcall.Call) (*billing.Billing, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "CreateByCall",
-		"call": c,
-	})
-
-	// get account
-	a, err := h.accountHandler.GetByCustomerID(ctx, c.CustomerID)
-	if err != nil {
-		log.Errorf("Could not get account info. err: %v", err)
-		return nil, errors.Wrap(err, "could not get account info")
-	}
-
-	res, err := h.Create(ctx, c.CustomerID, a.ID, billing.ReferenceTypeCall, c.ID, billing.DefaultCostPerUnitReferenceTypeCall, c.TMProgressing)
-	if err != nil {
-		log.Errorf("Could not create a billing. err: %v", err)
-		return nil, errors.Wrap(err, "could not create a billing")
-	}
-
-	return res, nil
-}
-
 // Get returns a billing.
 func (h *billingHandler) Get(ctx context.Context, id uuid.UUID) (*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -114,19 +91,27 @@ func (h *billingHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 		return nil, errors.Wrap(err, "could not get billing")
 	}
 
+	if res.ReferenceType != billing.ReferenceTypeCall {
+		// if the billing's reference type is not the call type,
+		// the result not valid.
+		// because it is possible to billing has more than 2 billings of that reference id.
+		// i.e. number type billing can have many of renewed billings.
+		return nil, fmt.Errorf("wrong reference type")
+	}
+
 	return res, nil
 }
 
 // Gets returns a list of billings.
-func (h *billingHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*billing.Billing, error) {
+func (h *billingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Gets",
-		"customer_id": customerID,
-		"size":        size,
-		"token":       token,
+		"func":    "Gets",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
 	})
 
-	res, err := h.db.BillingGetsByCustomerID(ctx, customerID, size, token)
+	res, err := h.db.BillingGets(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get billings. err: %v", err)
 		return nil, errors.Wrap(err, "could not get billings")

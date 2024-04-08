@@ -8,8 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 )
 
 // processEventCMCallProgressing handles the call-manager's call_created event
@@ -26,10 +24,15 @@ func (h *subscribeHandler) processEventCMCallProgressing(ctx context.Context, m 
 		return errors.Wrap(err, "could not unmarshal the data")
 	}
 
-	if errBilling := h.billingHandler.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeCall, c.ID, c.TMProgressing, &c.Source, &c.Destination); errBilling != nil {
-		log.Errorf("Could not create a billing. err: %v", errBilling)
-		return errors.Wrap(errBilling, "could not create a billing")
+	if errEvent := h.billingHandler.EventCMCallProgressing(ctx, &c); errEvent != nil {
+		log.Errorf("Could not handle the event. err: %v", errEvent)
+		return errEvent
 	}
+
+	// if errBilling := h.billingHandler.BillingStart(ctx, c.CustomerID, billing.ReferenceTypeCall, c.ID, c.TMProgressing, &c.Source, &c.Destination); errBilling != nil {
+	// 	log.Errorf("Could not create a billing. err: %v", errBilling)
+	// 	return errors.Wrap(errBilling, "could not create a billing")
+	// }
 
 	return nil
 }
@@ -48,16 +51,21 @@ func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *rabb
 		return errors.Wrap(err, "could not unmarshal the data")
 	}
 
-	_, err := h.billingHandler.GetByReferenceID(ctx, c.ID)
-	if err != nil {
-		// could not get billing. nothing to do.
-		return nil
+	if errEvent := h.billingHandler.EventCMCallHangup(ctx, &c); errEvent != nil {
+		log.Errorf("Could not handle the event. err: %v", errEvent)
+		return errEvent
 	}
 
-	if errBilling := h.billingHandler.BillingEndByReferenceID(ctx, c.ID, c.TMHangup, &c.Source, &c.Destination); errBilling != nil {
-		log.Errorf("Could not end the billing. err: %v", errBilling)
-		return errors.Wrap(errBilling, "could not end the billing")
-	}
+	// _, err := h.billingHandler.GetByReferenceID(ctx, c.ID)
+	// if err != nil {
+	// 	// could not get billing. nothing to do.
+	// 	return nil
+	// }
+
+	// if errBilling := h.billingHandler.BillingEndByReferenceID(ctx, c.ID, c.TMHangup, &c.Source, &c.Destination); errBilling != nil {
+	// 	log.Errorf("Could not end the billing. err: %v", errBilling)
+	// 	return errors.Wrap(errBilling, "could not end the billing")
+	// }
 
 	return nil
 }

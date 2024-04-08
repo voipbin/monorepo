@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
@@ -33,6 +34,7 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
+	utilHandler    utilhandler.UtilHandler
 	accountHandler accounthandler.AccountHandler
 	billingHandler billinghandler.BillingHandler
 }
@@ -50,7 +52,9 @@ var (
 	regV1AccountsIDBalanceSubtractForce = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_subtract_force$")
 	regV1AccountsIDIsValidBalance       = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_balance$")
 	regV1AccountsIDIsValidPaymentInfo   = regexp.MustCompile("/v1/accounts/" + regUUID + "/payment_info$")
-	regV1AccountsCustomerIDID           = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "$")
+
+	// billings
+	regV1BillingsGet = regexp.MustCompile(`/v1/billings\?`)
 )
 
 var (
@@ -90,6 +94,7 @@ func NewListenHandler(
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:     rabbitSock,
+		utilHandler:    utilhandler.NewUtilHandler(),
 		accountHandler: accountHandler,
 		billingHandler: billingHandler,
 	}
@@ -212,10 +217,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1AccountsIDPaymentInfoPut(ctx, m)
 		requestType = "/v1/accounts/<account-id>/payment_info"
 
-	// GET /accounts/customer_id/<customer-id>
-	case regV1AccountsCustomerIDID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1AccountsCustomerIDIDGet(ctx, m)
-		requestType = "/v1/accounts/customer_id/<customer-id>"
+	////////////////////
+	// billings
+	////////////////////
+	// GET /billings
+	case regV1BillingsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1BillingsGet(ctx, m)
+		requestType = "/v1/billings"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
