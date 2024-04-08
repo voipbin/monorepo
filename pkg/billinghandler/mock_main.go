@@ -11,7 +11,9 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // MockBillingHandler is a mock of BillingHandler interface.
@@ -37,34 +39,6 @@ func (m *MockBillingHandler) EXPECT() *MockBillingHandlerMockRecorder {
 	return m.recorder
 }
 
-// BillingEndByReferenceID mocks base method.
-func (m *MockBillingHandler) BillingEndByReferenceID(ctx context.Context, referenceID uuid.UUID, tmBillingEnd string, source, destination *address.Address) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingEndByReferenceID", ctx, referenceID, tmBillingEnd, source, destination)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// BillingEndByReferenceID indicates an expected call of BillingEndByReferenceID.
-func (mr *MockBillingHandlerMockRecorder) BillingEndByReferenceID(ctx, referenceID, tmBillingEnd, source, destination interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingEndByReferenceID", reflect.TypeOf((*MockBillingHandler)(nil).BillingEndByReferenceID), ctx, referenceID, tmBillingEnd, source, destination)
-}
-
-// BillingStart mocks base method.
-func (m *MockBillingHandler) BillingStart(ctx context.Context, customerID uuid.UUID, referenceType billing.ReferenceType, referenceID uuid.UUID, tmBillingStart string, source, destination *address.Address) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingStart", ctx, customerID, referenceType, referenceID, tmBillingStart, source, destination)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// BillingStart indicates an expected call of BillingStart.
-func (mr *MockBillingHandlerMockRecorder) BillingStart(ctx, customerID, referenceType, referenceID, tmBillingStart, source, destination interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingStart", reflect.TypeOf((*MockBillingHandler)(nil).BillingStart), ctx, customerID, referenceType, referenceID, tmBillingStart, source, destination)
-}
-
 // Create mocks base method.
 func (m *MockBillingHandler) Create(ctx context.Context, customerID, accountID uuid.UUID, referenceType billing.ReferenceType, referenceID uuid.UUID, costPerUnit float32, tmBillingStart string) (*billing.Billing, error) {
 	m.ctrl.T.Helper()
@@ -78,6 +52,76 @@ func (m *MockBillingHandler) Create(ctx context.Context, customerID, accountID u
 func (mr *MockBillingHandlerMockRecorder) Create(ctx, customerID, accountID, referenceType, referenceID, costPerUnit, tmBillingStart interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockBillingHandler)(nil).Create), ctx, customerID, accountID, referenceType, referenceID, costPerUnit, tmBillingStart)
+}
+
+// EventCMCallHangup mocks base method.
+func (m *MockBillingHandler) EventCMCallHangup(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCMCallHangup", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCMCallHangup indicates an expected call of EventCMCallHangup.
+func (mr *MockBillingHandlerMockRecorder) EventCMCallHangup(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMCallHangup", reflect.TypeOf((*MockBillingHandler)(nil).EventCMCallHangup), ctx, c)
+}
+
+// EventCMCallProgressing mocks base method.
+func (m *MockBillingHandler) EventCMCallProgressing(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCMCallProgressing", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCMCallProgressing indicates an expected call of EventCMCallProgressing.
+func (mr *MockBillingHandlerMockRecorder) EventCMCallProgressing(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMCallProgressing", reflect.TypeOf((*MockBillingHandler)(nil).EventCMCallProgressing), ctx, c)
+}
+
+// EventMMMessageCreated mocks base method.
+func (m_2 *MockBillingHandler) EventMMMessageCreated(ctx context.Context, m *message.Message) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "EventMMMessageCreated", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventMMMessageCreated indicates an expected call of EventMMMessageCreated.
+func (mr *MockBillingHandlerMockRecorder) EventMMMessageCreated(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventMMMessageCreated", reflect.TypeOf((*MockBillingHandler)(nil).EventMMMessageCreated), ctx, m)
+}
+
+// EventNMNumberCreated mocks base method.
+func (m *MockBillingHandler) EventNMNumberCreated(ctx context.Context, n *number.Number) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventNMNumberCreated", ctx, n)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventNMNumberCreated indicates an expected call of EventNMNumberCreated.
+func (mr *MockBillingHandlerMockRecorder) EventNMNumberCreated(ctx, n interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventNMNumberCreated", reflect.TypeOf((*MockBillingHandler)(nil).EventNMNumberCreated), ctx, n)
+}
+
+// EventNMNumberRenewed mocks base method.
+func (m *MockBillingHandler) EventNMNumberRenewed(ctx context.Context, n *number.Number) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventNMNumberRenewed", ctx, n)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventNMNumberRenewed indicates an expected call of EventNMNumberRenewed.
+func (mr *MockBillingHandlerMockRecorder) EventNMNumberRenewed(ctx, n interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventNMNumberRenewed", reflect.TypeOf((*MockBillingHandler)(nil).EventNMNumberRenewed), ctx, n)
 }
 
 // Get mocks base method.
@@ -111,18 +155,18 @@ func (mr *MockBillingHandlerMockRecorder) GetByReferenceID(ctx, referenceID inte
 }
 
 // Gets mocks base method.
-func (m *MockBillingHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*billing.Billing, error) {
+func (m *MockBillingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*billing.Billing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockBillingHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockBillingHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockBillingHandler)(nil).Gets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockBillingHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // UpdateStatusEnd mocks base method.

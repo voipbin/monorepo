@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
@@ -20,17 +21,18 @@ import (
 type AccountHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, name string, detail string, paymentType account.PaymentType, payemntMethod account.PaymentMethod) (*account.Account, error)
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error)
 	GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error)
 	SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
 	AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*account.Account, error)
 	UpdatePaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error)
 
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	DeletesByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*account.Account, error)
 
 	IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error)
+
+	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 
 // accountHandler define

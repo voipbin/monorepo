@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // MockAccountHandler is a mock of AccountHandler interface.
@@ -82,19 +83,18 @@ func (mr *MockAccountHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAccountHandler)(nil).Delete), ctx, id)
 }
 
-// DeletesByCustomerID mocks base method.
-func (m *MockAccountHandler) DeletesByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*account.Account, error) {
+// EventCUCustomerDeleted mocks base method.
+func (m *MockAccountHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletesByCustomerID", ctx, customerID)
-	ret0, _ := ret[0].([]*account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "EventCUCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// DeletesByCustomerID indicates an expected call of DeletesByCustomerID.
-func (mr *MockAccountHandlerMockRecorder) DeletesByCustomerID(ctx, customerID interface{}) *gomock.Call {
+// EventCUCustomerDeleted indicates an expected call of EventCUCustomerDeleted.
+func (mr *MockAccountHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletesByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).DeletesByCustomerID), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockAccountHandler)(nil).EventCUCustomerDeleted), ctx, cu)
 }
 
 // Get mocks base method.
@@ -128,18 +128,18 @@ func (mr *MockAccountHandlerMockRecorder) GetByCustomerID(ctx, customerID interf
 }
 
 // Gets mocks base method.
-func (m *MockAccountHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
+func (m *MockAccountHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockAccountHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockAccountHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, size, token, filters)
 }
 
 // IsValidBalance mocks base method.
