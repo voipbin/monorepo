@@ -5,11 +5,9 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
 // Gets returns list of customers
@@ -95,32 +93,13 @@ func (h *customerHandler) Create(
 	return res, nil
 }
 
-// Delete deletes the customer.
-func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
+// dbDelete deletes the customer.
+func (h *customerHandler) dbDelete(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Delete",
+		"func":        "dbDelete",
 		"customer_id": id,
 	})
 	log.Debug("Deleteing the customer.")
-
-	// get billing accounts
-	as, err := h.reqHandler.BillingV1AccountGets(ctx, id, "", 100)
-	if err != nil {
-		log.Errorf("Could not get customer's billing accounts. err: %v", err)
-		return nil, errors.Wrap(err, "could not get customer's billing accounts")
-	}
-
-	for _, ac := range as {
-		if ac.TMDelete < dbhandler.DefaultTimeStamp {
-			// already deleted
-			continue
-		}
-		_, err := h.reqHandler.BillingV1AccountDelete(ctx, ac.ID)
-		if err != nil {
-			log.Errorf("Could not delete the billing account. err: %v", err)
-			// we've got an error here, but keep moving.
-		}
-	}
 
 	if err := h.db.CustomerDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
