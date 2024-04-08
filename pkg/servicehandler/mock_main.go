@@ -14,6 +14,7 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	request "gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -452,6 +453,21 @@ func (m *MockServiceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context
 func (mr *MockServiceHandlerMockRecorder) BillingAccountUpdatePaymentInfo(ctx, a, billingAccountID, paymentType, paymentMethod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountUpdatePaymentInfo", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountUpdatePaymentInfo), ctx, a, billingAccountID, paymentType, paymentMethod)
+}
+
+// BillingGets mocks base method.
+func (m *MockServiceHandler) BillingGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*billing.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingGets", ctx, a, size, token)
+	ret0, _ := ret[0].([]*billing.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingGets indicates an expected call of BillingGets.
+func (mr *MockServiceHandlerMockRecorder) BillingGets(ctx, a, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGets", reflect.TypeOf((*MockServiceHandler)(nil).BillingGets), ctx, a, size, token)
 }
 
 // CallCreate mocks base method.
