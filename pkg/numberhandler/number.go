@@ -35,7 +35,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	}
 
 	// use telnyx as a default
-	tmp, err := h.numberHandlerTelnyx.PurchaseNumber(num)
+	tmp, err := h.numberHandlerTelnyx.NumberPurchase(num)
 	if err != nil {
 		log.Errorf("Could not create a number from the telnyx. err: %v", err)
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
@@ -60,6 +60,12 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 		return nil, errors.Wrap(err, "could not create the number record")
 	}
 
+	// generate and update purchased number's tags
+	tags := h.generateTags(ctx, res)
+	if errUpdate := h.numberHandlerTelnyx.NumberUpdateTags(ctx, res, tags); errUpdate != nil {
+		log.Errorf("Could not updated the number tags. err: %v", errUpdate)
+	}
+
 	return res, nil
 }
 
@@ -81,7 +87,7 @@ func (h *numberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Numbe
 	// send delete request by provider
 	switch num.ProviderName {
 	case number.ProviderNameTelnyx:
-		err = h.numberHandlerTelnyx.ReleaseNumber(ctx, num)
+		err = h.numberHandlerTelnyx.NumberRelease(ctx, num)
 
 	case number.ProviderNameTwilio:
 		err = h.numberHandlerTwilio.ReleaseNumber(ctx, num)

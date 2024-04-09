@@ -321,3 +321,59 @@ func (h *requestExternal) TelnyxPhoneNumbersGet(token string, size uint, tag, nu
 
 	return res, nil
 }
+
+// TelnyxPhoneNumbersIDUpdate updates the number info of the given id
+func (h *requestExternal) TelnyxPhoneNumbersIDUpdate(token, id string, data map[string]interface{}) (*telnyx.PhoneNumber, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "TelnyxPhoneNumbersIDUpdate",
+		"id":   id,
+		"data": data,
+	})
+
+	// create a request uri
+	uri := fmt.Sprintf("https://api.telnyx.com/v2/phone_numbers/%s", id)
+
+	// create data body
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	log.WithField("body", m).Debugf("Sending a request to the telnyx. id: %s", id)
+
+	// create a request
+	req, err := http.NewRequest("PATCH", uri, bytes.NewBuffer(m))
+	if err != nil {
+		return nil, fmt.Errorf("could not create a http request. err: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	authToken := fmt.Sprintf("Bearer %s", token)
+	req.Header.Add("Authorization", authToken)
+
+	// send a request go provider
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("could not get correct response. err: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read the response body. err: %v", err)
+	}
+	log.WithField("response", body).Debugf("Received response.")
+
+	// return body, nil
+	// parse
+	resParse := response.TelnyxV2ResponsePhoneNumbersIDPPatch{}
+	if err := json.Unmarshal(body, &resParse); err != nil {
+		return nil, err
+	}
+
+	return &resParse.Data, nil
+}

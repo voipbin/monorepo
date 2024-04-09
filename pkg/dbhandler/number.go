@@ -249,18 +249,8 @@ func (h *handler) numberGetsMergeFilters(query string, values []interface{}, fil
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id":
-			query = fmt.Sprintf("%s and customer_id = ?", query)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "message_flow_id":
-			query = fmt.Sprintf("%s and message_flow_id = ?", query)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "call_flow_id":
-			query = fmt.Sprintf("%s and call_flow_id = ?", query)
+		case "customer_id", "call_flow_id", "message_flow_id":
+			query = fmt.Sprintf("%s and %s = ?", query, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
 

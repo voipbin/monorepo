@@ -52,31 +52,45 @@ func (mr *MockNumberHandlerTelnyxMockRecorder) GetAvailableNumbers(countyCode, l
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).GetAvailableNumbers), countyCode, limit)
 }
 
-// PurchaseNumber mocks base method.
-func (m *MockNumberHandlerTelnyx) PurchaseNumber(num string) (*providernumber.ProviderNumber, error) {
+// NumberPurchase mocks base method.
+func (m *MockNumberHandlerTelnyx) NumberPurchase(num string) (*providernumber.ProviderNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PurchaseNumber", num)
+	ret := m.ctrl.Call(m, "NumberPurchase", num)
 	ret0, _ := ret[0].(*providernumber.ProviderNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// PurchaseNumber indicates an expected call of PurchaseNumber.
-func (mr *MockNumberHandlerTelnyxMockRecorder) PurchaseNumber(num interface{}) *gomock.Call {
+// NumberPurchase indicates an expected call of NumberPurchase.
+func (mr *MockNumberHandlerTelnyxMockRecorder) NumberPurchase(num interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PurchaseNumber", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).PurchaseNumber), num)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberPurchase", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).NumberPurchase), num)
 }
 
-// ReleaseNumber mocks base method.
-func (m *MockNumberHandlerTelnyx) ReleaseNumber(ctx context.Context, num *number.Number) error {
+// NumberRelease mocks base method.
+func (m *MockNumberHandlerTelnyx) NumberRelease(ctx context.Context, num *number.Number) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReleaseNumber", ctx, num)
+	ret := m.ctrl.Call(m, "NumberRelease", ctx, num)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReleaseNumber indicates an expected call of ReleaseNumber.
-func (mr *MockNumberHandlerTelnyxMockRecorder) ReleaseNumber(ctx, num interface{}) *gomock.Call {
+// NumberRelease indicates an expected call of NumberRelease.
+func (mr *MockNumberHandlerTelnyxMockRecorder) NumberRelease(ctx, num interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseNumber", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).ReleaseNumber), ctx, num)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberRelease", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).NumberRelease), ctx, num)
+}
+
+// NumberUpdateTags mocks base method.
+func (m *MockNumberHandlerTelnyx) NumberUpdateTags(ctx context.Context, number *number.Number, tags []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdateTags", ctx, number, tags)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberUpdateTags indicates an expected call of NumberUpdateTags.
+func (mr *MockNumberHandlerTelnyxMockRecorder) NumberUpdateTags(ctx, number, tags interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateTags", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).NumberUpdateTags), ctx, number, tags)
 }

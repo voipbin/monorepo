@@ -38,3 +38,8 @@ type TelnyxV2ResponseAvailableNumbersGet struct {
 type TelnyxV2ResponseNumberOrdersPost struct {
 	Data telnyx.OrderNumber `json:"data"`
 }
+
+// TelnyxV2ResponsePhoneNumbersIDPPatch struct
+type TelnyxV2ResponsePhoneNumbersIDPPatch struct {
+	Data telnyx.PhoneNumber `json:"data"`
+}

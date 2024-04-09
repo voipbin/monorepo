@@ -81,7 +81,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 
 				switch nb.ProviderName {
 				case number.ProviderNameTelnyx:
-					mockTelnyx.EXPECT().ReleaseNumber(ctx, nb).Return(nil)
+					mockTelnyx.EXPECT().NumberRelease(ctx, nb).Return(nil)
 				}
 
 				mockDB.EXPECT().NumberDelete(ctx, nb.ID).Return(nil)

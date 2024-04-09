@@ -35,6 +35,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 		responseNumber *number.Number
 
 		expectNumber *number.Number
+		expectTags   []string
 	}{
 		{
 			name: "normal us",
@@ -54,7 +55,8 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 				EmergencyEnabled: false,
 			},
 			responseNumber: &number.Number{
-				ID:           uuid.FromStringOrNil("61afc712-7b25-11eb-b31f-5357d050c809"),
+				ID:           uuid.FromStringOrNil("96c97670-7315-11ed-8501-739535181602"),
+				CustomerID:   uuid.FromStringOrNil("f8509f38-7ff3-11ec-ac84-e3401d882a9f"),
 				Number:       "+821021656521",
 				ProviderName: number.ProviderNameTelnyx,
 			},
@@ -72,6 +74,10 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
+			},
+			expectTags: []string{
+				"CustomerID_f8509f38-7ff3-11ec-ac84-e3401d882a9f",
+				"NumberID_96c97670-7315-11ed-8501-739535181602",
 			},
 		},
 	}
@@ -98,11 +104,13 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
-			mockTelnyx.EXPECT().PurchaseNumber(tt.number).Return(tt.responseTelnyx, nil)
+			mockTelnyx.EXPECT().NumberPurchase(tt.number).Return(tt.responseTelnyx, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
+
+			mockTelnyx.EXPECT().NumberUpdateTags(ctx, tt.responseNumber, tt.expectTags).Return(nil)
 
 			res, err := h.Create(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
@@ -373,7 +381,7 @@ func Test_Delete(t *testing.T) {
 
 			switch tt.responseNumber.ProviderName {
 			case number.ProviderNameTelnyx:
-				mockTelnyx.EXPECT().ReleaseNumber(ctx, tt.responseNumber).Return(nil)
+				mockTelnyx.EXPECT().NumberRelease(ctx, tt.responseNumber).Return(nil)
 			}
 
 			mockDB.EXPECT().NumberDelete(ctx, tt.id).Return(nil)

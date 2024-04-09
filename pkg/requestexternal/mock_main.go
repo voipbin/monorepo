@@ -123,3 +123,18 @@ func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersIDGet(token, id int
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersIDGet", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersIDGet), token, id)
 }
+
+// TelnyxPhoneNumbersIDUpdate mocks base method.
+func (m *MockRequestExternal) TelnyxPhoneNumbersIDUpdate(token, id string, data map[string]interface{}) (*telnyx.PhoneNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersIDUpdate", token, id, data)
+	ret0, _ := ret[0].(*telnyx.PhoneNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TelnyxPhoneNumbersIDUpdate indicates an expected call of TelnyxPhoneNumbersIDUpdate.
+func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersIDUpdate(token, id, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersIDUpdate", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersIDUpdate), token, id, data)
+}
