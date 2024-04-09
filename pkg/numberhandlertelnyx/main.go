@@ -25,8 +25,9 @@ const (
 // NumberHandlerTelnyx is interface for service handle
 type NumberHandlerTelnyx interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
-	PurchaseNumber(num string) (*providernumber.ProviderNumber, error)
-	ReleaseNumber(ctx context.Context, num *number.Number) error
+	NumberPurchase(num string) (*providernumber.ProviderNumber, error)
+	NumberRelease(ctx context.Context, num *number.Number) error
+	NumberUpdateTags(ctx context.Context, number *number.Number, tags []string) error
 }
 
 // numberHandlerTelnyx structure for service handle

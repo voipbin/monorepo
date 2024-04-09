@@ -15,6 +15,7 @@ type PhoneNumber struct {
 	Status                PhoneNumberStatus `json:"status"`
 	Tags                  []string          `json:"tags"`
 	ConnectionID          string            `json:"connection_id"`
+	ConnectionName        string            `json:"connection_name"`
 	CustomerReference     string            `json:"customer_reference"`
 	ExternalPin           string            `json:"external_pin"`
 	T38FaxGatewayEnabled  bool              `json:"t38_fax_gateway_enabled"`
@@ -22,40 +23,53 @@ type PhoneNumber struct {
 	BillingGroupID        string            `json:"billing_group_id"`
 	EmergencyEnabled      bool              `json:"emergency_enabled"`
 	EmergencyAddressID    string            `json:"emergency_address_id"`
+	EmergencyStatus       string            `json:"emergency_status"`
 	CallForwardingEnabled bool              `json:"call_forwarding_enabled"`
 	CNAMListingEnabled    bool              `json:"cnam_listing_enabled"`
 	CallRecordingEnabled  bool              `json:"call_recording_enabled"`
+	PhoneNumberType       string            `json:"phone_number_type"`
+	BundleID              string            `json:"bundle_id"`
 	MessagingProfileID    string            `json:"messaging_profile_id"`
 	MessagingProfileName  string            `json:"messaging_profile_name"`
 	NumberBlockID         string            `json:"number_block_id"`
 	CreatedAt             string            `json:"created_at"`
 	UpdatedAt             string            `json:"updated_at"`
+	NumberLevelRouting    string            `json:"number_level_routing"`
+	HDVoiceEnabled        bool              `json:"hd_voice_enabled"`
 
-	//
-	// 	{
-	// 	  "id": "1579827332531618841",
-	// 	  "record_type": "phone_number",
-	// 	  "phone_number": "+15078888932",
-	// 	  "status": "active",
-	// 	  "tags": [],
-	// 	  "connection_id": "",
-	// 	  "customer_reference": null,
-	// 	  "external_pin": null,
-	// 	  "t38_fax_gateway_enabled": true,
-	// 	  "purchased_at": "2021-02-25T17:54:53Z",
-	// 	  "billing_group_id": null,
-	// 	  "emergency_enabled": false,
-	// 	  "emergency_address_id": "",
-	// 	  "call_forwarding_enabled": true,
-	// 	  "cnam_listing_enabled": false,
-	// 	  "call_recording_enabled": false,
-	// 	  "messaging_profile_id": "",
-	// 	  "messaging_profile_name": "",
-	// 	  "number_block_id": null,
-	// 	  "created_at": "2021-02-25T17:54:53.965Z",
-	// 	  "updated_at": "2021-02-25T17:54:55.001Z"
-	// 	}
-
+	// 2024.04.09
+	//   {
+	// 	"id": "1748688147379652251",
+	// 	"record_type": "phone_number",
+	// 	"phone_number": "+14703298699",
+	// 	"status": "active",
+	// 	"tags": [
+	// 	  "tag1",
+	// 	  "tag2"
+	// 	],
+	// 	"connection_id": "2054833017033065613",
+	// 	"connection_name": "voipbin prod",
+	// 	"customer_reference": null,
+	// 	"external_pin": null,
+	// 	"t38_fax_gateway_enabled": true,
+	// 	"purchased_at": "2021-10-16T17:31:11Z",
+	// 	"billing_group_id": null,
+	// 	"emergency_enabled": false,
+	// 	"emergency_address_id": "",
+	// 	"emergency_status": "disabled",
+	// 	"call_forwarding_enabled": true,
+	// 	"cnam_listing_enabled": false,
+	// 	"call_recording_enabled": false,
+	// 	"phone_number_type": "local",
+	// 	"bundle_id": null,
+	// 	"messaging_profile_id": "40017f8e-49bd-4f16-9e3d-ef103f916228",
+	// 	"messaging_profile_name": "voipbin production",
+	// 	"number_block_id": null,
+	// 	"created_at": "2021-10-16T17:31:11.737Z",
+	// 	"updated_at": "2024-04-09T14:39:02.674Z",
+	// 	"number_level_routing": "disabled",
+	// 	"hd_voice_enabled": false
+	//   }
 }
 
 // PhoneNumberMetaData struct

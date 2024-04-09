@@ -10,8 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
 )
 
-// PurchaseNumber creates a new order numbers of given numbers from the telnyx
-func (h *numberHandlerTelnyx) PurchaseNumber(num string) (*providernumber.ProviderNumber, error) {
+// NumberPurchase creates a new order numbers of given numbers from the telnyx
+func (h *numberHandlerTelnyx) NumberPurchase(num string) (*providernumber.ProviderNumber, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "PurchaseNumber",
 		"number": num,
@@ -36,8 +36,8 @@ func (h *numberHandlerTelnyx) PurchaseNumber(num string) (*providernumber.Provid
 	return res, nil
 }
 
-// ReleaseNumber release an existed order number from the telnyx
-func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.Number) error {
+// NumberRelease release an existed order number from the telnyx
+func (h *numberHandlerTelnyx) NumberRelease(ctx context.Context, number *number.Number) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "ReleaseNumber",
 		"number": number,
@@ -50,6 +50,29 @@ func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.
 		return err
 	}
 	log.WithField("phone_number", phoneNumber).Debugf("Release the number from the telnyx correctly. number: %s", number.ID)
+
+	return nil
+}
+
+// NumberUpdateTags updates the given number's tags
+func (h *numberHandlerTelnyx) NumberUpdateTags(ctx context.Context, number *number.Number, tags []string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "NumberUpdateTags",
+		"number": number,
+		"tags":   tags,
+	})
+
+	data := map[string]interface{}{
+		"tags": tags,
+	}
+
+	// delete the number from the telnyx
+	tmp, err := h.requestExternal.TelnyxPhoneNumbersIDUpdate(defaultToken, number.ProviderReferenceID, data)
+	if err != nil {
+		log.Errorf("Could not update the number tag from the telnyx. number_id: %s, err: %v", number.ID, err)
+		return err
+	}
+	log.WithField("phone_number", tmp).Debugf("Updated   Release the number from the telnyx correctly. number: %s", number.ID)
 
 	return nil
 }

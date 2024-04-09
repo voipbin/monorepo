@@ -40,6 +40,7 @@ type RequestExternal interface {
 	TelnyxPhoneNumbersGetByNumber(token string, number string) (*telnyx.PhoneNumber, error)
 	TelnyxPhoneNumbersIDGet(token, id string) (*telnyx.PhoneNumber, error)
 	TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.PhoneNumber, error)
+	TelnyxPhoneNumbersIDUpdate(token, id string, data map[string]interface{}) (*telnyx.PhoneNumber, error)
 }
 
 type requestExternal struct{}
