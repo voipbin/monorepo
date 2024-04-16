@@ -1,0 +1,14 @@
+[[runners]]
+  url = "https://gitlab.com/"
+  token = TOKEN
+  executor = "docker"
+  [runners.docker]
+    tls_verify = false
+    image = "docker:26.0.1"
+    privileged = true
+    disable_cache = false
+    volumes = ["/certs/client", "/cache"]
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
+
