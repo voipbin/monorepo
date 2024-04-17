@@ -120,6 +120,11 @@ workflows:
       condition:
         - equal: [bin-agent-manager, << pipeline.parameters.source-directory >>]
     jobs:
+      # - ensure
+      # - test-lint:
+      #     requires:
+      #       - ensure
+      #     <<: *context_production
       - test-bin-agent-manager
       - build-bin-agent-manager:
           <<: *context_production
@@ -140,8 +145,6 @@ jobs:
       - image: cimg/go:1.22
     steps:
       - test:
-          to: bin-agent-manager
-      - build:
           to: bin-agent-manager
 
   build-bin-agent-manager:
@@ -169,11 +172,12 @@ jobs:
   #   steps:
   #     - attach_workspace:
   #         at: /home/circleci/project
-
+  #     - checkout
   #     - run:
   #         name: Install dependencies and vendor
   #         command: |
   #           ls -tlr
+  #           cd << pipeline.parameters.source-directory >>
   #           go mod download
   #           go mod vendor
   #           pwd
@@ -185,7 +189,7 @@ jobs:
   #           - ./*
   #           - ./.*
 
-  # test:
+  # test-lint:
   #   docker:
   #     - image: cimg/go:1.22
   #   steps:
@@ -200,12 +204,14 @@ jobs:
   #     - run:
   #         name: Linting and vet
   #         command: |
+  #           cd << pipeline.parameters.source-directory >>
   #           golangci-lint run -v --timeout 5m
   #           go vet $(go list ./...)
 
   #     - run:
   #         name: Testing
   #         command: |
+  #           cd << pipeline.parameters.source-directory >>
   #           go test -coverprofile cp.out -v $(go list ./...)
   #           go tool cover -html=cp.out -o cp.html
   #           go tool cover -func=cp.out
@@ -213,6 +219,7 @@ jobs:
   #     - run:
   #         name: Run gotestsum
   #         command: |
+  #           cd << pipeline.parameters.source-directory >>
   #           gotestsum --junitfile test-results.xml
 
   #     - store_test_results:
