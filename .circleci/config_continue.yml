@@ -1,0 +1,121 @@
+version: 2.1
+
+parameters:
+  run-bin-agent-manager:
+    type: boolean
+    default: false
+
+  run-bin-api-manager:
+    type: boolean
+    default: false
+
+  run-bin-billing-manager:
+      type: boolean
+      default: false
+
+  run-bin-call-manager:
+      type: boolean
+      default: false
+
+  run-bin-campaign-manager:
+    type: boolean
+    default: false
+
+  run-bin-chatbot-manager:
+    type: boolean
+    default: false
+
+  run-bin-chat-manager:
+    type: boolean
+    default: false
+
+  run-bin-common-handler:
+    type: boolean
+    default: false
+
+  run-bin-conference-manager:
+    type: boolean
+    default: false
+
+  run-bin-conversation-manager:
+    type: boolean
+    default: false
+
+  run-bin-customer-manager:
+    type: boolean
+    default: false
+
+  run-bin-dbscheme-bin-manager:
+    type: boolean
+    default: false
+
+  run-bin-flow-manager:
+    type: boolean
+    default: false
+
+  run-bin-hook-manager:
+    type: boolean
+    default: false
+
+  run-bin-message-manager:
+    type: boolean
+    default: false
+
+  run-bin-number-manager:
+    type: boolean
+    default: false
+
+  run-bin-outdial-manager:
+    type: boolean
+    default: false
+
+  run-bin-queue-manager:
+    type: boolean
+    default: false
+
+  run-bin-registrar-manager:
+    type: boolean
+    default: false
+
+  run-bin-route-manager:
+    type: boolean
+    default: false
+
+  run-bin-storage-manager:
+    type: boolean
+    default: false
+
+  run-bin-tag-manager:
+    type: boolean
+    default: false
+
+  run-bin-transcribe-manager:
+    type: boolean
+    default: false
+
+  run-bin-transfer-manager:
+    type: boolean
+    default: false
+
+  run-bin-tts-manager:
+    type: boolean
+    default: false
+
+  run-bin-webhook-manager:
+    type: boolean
+    default: false
+
+
+# the path-filtering orb is required to continue a pipeline based on
+# the path of an updated fileset
+orbs:
+  path-filtering: circleci/path-filtering@1.0.0
+
+workflows:
+
+  bin-agent-manager:
+    when: << pipeline.parameters.run-bin-agent-manager >>
+    jobs:
+      - path-filtering/filter:
+          base-revision: main
+          config-path: ./bin-agent-manager/.circleci/config.yml
