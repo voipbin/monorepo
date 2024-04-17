@@ -119,24 +119,43 @@ workflows:
   bin-agent-manager:
     when: << pipeline.parameters.run-bin-call-manager >>
     jobs:
+      - checkout-bin-agent-manager
       - ensure:
           <<: *context_production
+          requires:
+            - checkout-bin-agent-manager
       - test:
           <<: *context_production
           requires:
             - ensure
 
 jobs:
-  ensure:
+  checkout-bin-agent-manager:
     docker:
       - image: cimg/go:1.22
     steps:
       - checkout
       - run:
+        command: |
+          ls -tlr
+          cd bin-agent-manager
+      - persist_to_workspace:
+          root: /home/circleci/project
+          paths:
+            - ./*
+            - ./.*
+
+  ensure:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - attach_workspace:
+          at: /home/circleci/project
+
+      - run:
           name: Install dependencies and vendor
           command: |
             ls -tlr
-            cd << pipeline.parameters.source-directory >>
             go mod download
             go mod vendor
             pwd
