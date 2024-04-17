@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trunking &mdash; voipbin  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chatbot.html">Chatbot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Trunking</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/trunk_overview_trunking.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="trunking">
+<h1>Trunking<a class="headerlink" href="#trunking" title="Permalink to this heading"></a></h1>
+<p>SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.</p>
+<section id="server-address">
+<h2>Server address<a class="headerlink" href="#server-address" title="Permalink to this heading"></a></h2>
+<p>Once you created trunk, the voipbin generates the trunk server address for you.</p>
+<p><cite>sip:{your voipbin trunk domain name}.trunk.voipbin.net</cite></p>
+</section>
+<section id="authentication">
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this heading"></a></h2>
+<p>Currently, The VoIPBin’s trunking authentication supports only the Basic authentication.</p>
+<ul class="simple">
+<li><p>Basic authentication</p></li>
+<li><p>IP base authentication(WIP)</p></li>
+</ul>
+<section id="basic-authentication">
+<h3>Basic authentication<a class="headerlink" href="#basic-authentication" title="Permalink to this heading"></a></h3>
+<p>To make a SIP outgoing call through a VoIPBin using basic authentication, you need to follow a few steps:</p>
+<ol class="arabic simple">
+<li><p>Choose a SIP client: You can use a software-based SIP client, such as Zoiper or X-Lite, or a hardware-based SIP phone, such as a Cisco or Grandstream phone.</p></li>
+<li><p>Configure your SIP client: You need to configure your SIP client with VoIPBin credentials, such as your name, extension, password, domain info.</p></li>
+<li><p>Set up your outgoing call settings: In your SIP client, you need to specify the destination address(phone number or extension) you want to call and set any additional options, such as the call type, call quality, or call duration.</p></li>
+<li><p>Initiate the call: Once you have configured your SIP client and set up your outgoing call settings, you can initiate the call by clicking on the call button or using a keypad command.</p></li>
+<li><p>Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBin, using the basic authentication method. The VoIPBin then verifies your credentials and authorizes the call.</p></li>
+<li><p>Make the call: Once your credentials are verified, the VoIPBin establishes the call and connects you with the destination address.</p></li>
+</ol>
+<p>By following these steps, you can make a SIP outgoing call through VoIPBin using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|----------------</span> <span class="n">INVITE</span> <span class="o">---------------&gt;|</span>                                        <span class="o">|</span>
+<span class="o">|&lt;--</span> <span class="mi">407</span> <span class="n">Proxy</span> <span class="n">Authentication</span> <span class="n">Required</span> <span class="o">--|</span>                                        <span class="o">|</span>
+<span class="o">|----------------</span> <span class="n">ACK</span> <span class="o">------------------&gt;|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|-----</span> <span class="n">INVITE</span> <span class="k">with</span> <span class="n">Authorization</span> <span class="o">-------&gt;|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|----------------</span> <span class="n">INVITE</span> <span class="o">---------------&gt;|</span>
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;---------------</span> <span class="mi">100</span> <span class="n">Trying</span> <span class="o">------------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">100</span> <span class="n">Trying</span> <span class="o">--------------|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;---------------</span> <span class="mi">180</span> <span class="n">Ringing</span> <span class="o">-----------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">180</span> <span class="n">Ringing</span> <span class="o">-------------|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;----------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">---------------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">------------------|</span>                                        <span class="o">|</span>
+<span class="o">|--------------</span> <span class="n">ACK</span> <span class="o">--------------------&gt;|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|-----------------</span> <span class="n">ACK</span> <span class="o">-----------------&gt;|</span>
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|--------------</span> <span class="n">BYE</span> <span class="o">--------------------&gt;|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|-----------------</span> <span class="n">BYE</span> <span class="o">-----------------&gt;|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;----------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">---------------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">------------------|</span>                                        <span class="o">|</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="call-handle">
+<h2>Call handle<a class="headerlink" href="#call-handle" title="Permalink to this heading"></a></h2>
+<p>Unlike the normal VoIPBin’s normal call handle, the VoIPBin handles trunking outbound call in a different way. The VoIPBin executes special flow for the trunking call.
+It executes the follow features:</p>
+<ul class="simple">
+<li><p>Enable the early media.</p></li>
+<li><p>Relay the hangup cause.</p></li>
+</ul>
+<section id="early-media-handle">
+<h3>Early media handle<a class="headerlink" href="#early-media-handle" title="Permalink to this heading"></a></h3>
+<p>The VoIPBin enables the the early-media feature for the trunking outbound call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">===================================================================================</span>
+<span class="o">|-----</span> <span class="n">INVITE</span> <span class="k">with</span> <span class="n">Authorization</span> <span class="o">-------&gt;|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|----------------</span> <span class="n">INVITE</span> <span class="o">---------------&gt;|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;---------------</span> <span class="mi">100</span> <span class="n">Trying</span> <span class="o">------------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">100</span> <span class="n">Trying</span> <span class="o">--------------|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;---------------</span> <span class="mi">183</span> <span class="n">Ringing</span> <span class="o">-----------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">183</span> <span class="n">Ringing</span> <span class="o">-------------|</span>                                        <span class="o">|</span>
+<span class="o">|&lt;-------------</span> <span class="n">RTP</span> <span class="n">Media</span> <span class="o">---------------|&lt;----------------</span> <span class="n">RTP</span> <span class="n">Media</span> <span class="o">------------|</span>
+</pre></div>
+</div>
+</section>
+<section id="realy-hangup-cause">
+<h3>Realy hangup cause<a class="headerlink" href="#realy-hangup-cause" title="Permalink to this heading"></a></h3>
+<p>The VoIPBin delivers the hangup cause code from the outgoing call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+
+<span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">===================================================================================</span>
+<span class="o">|-----</span> <span class="n">INVITE</span> <span class="k">with</span> <span class="n">Authorization</span> <span class="o">-------&gt;|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|----------------</span> <span class="n">INVITE</span> <span class="o">---------------&gt;|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;---------------</span> <span class="mi">100</span> <span class="n">Trying</span> <span class="o">------------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">100</span> <span class="n">Trying</span> <span class="o">--------------|</span>                                        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|&lt;---------------</span> <span class="mi">404</span> <span class="n">NOT</span> <span class="n">FOUND</span> <span class="o">---------|</span>
+<span class="o">|&lt;-------------</span> <span class="mi">404</span> <span class="n">NOT</span> <span class="n">FOUND</span> <span class="o">-----------|</span>                                        <span class="o">|</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Sungtae Kim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
