@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: number-manager
+  labels:
+    app: number-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: number-manager
+  template:
+    metadata:
+      labels:
+        app: number-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: number-manager
+          image: number-manager-image
+          command:
+            - '/app/number-manager'
+          args:
+            - '-prom_listen_addr'
+            - ':2112'
+            - '-dbDSN'
+            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
+            - '-rabbit_addr'
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - '-redis_addr'
+            - '10.164.15.220:6379'
+            - '-redis_db'
+            - '1'
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "30m"
+              memory: "20M"
