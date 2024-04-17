@@ -116,7 +116,7 @@ workflows:
   bin-agent-manager:
     when: << pipeline.parameters.run-bin-agent-manager >>
     environment:
-      TARGET: bin-agent-manager
+      WORK_TARGET: bin-agent-manager
     jobs:
       - ensure
       - test
@@ -148,7 +148,7 @@ jobs:
       - run:
           name: Install dependencies and vendor
           command: |
-            cd $TARGET
+            cd $WORK_TARGET
             go mod download
             go mod vendor
             pwd
