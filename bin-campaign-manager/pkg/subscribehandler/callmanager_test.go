@@ -1,0 +1,64 @@
+package subscribehandler
+
+import (
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
+)
+
+func Test_processEventCMCallHangup(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		event *rabbitmqhandler.Event
+
+		callID uuid.UUID
+
+		responseCampaigncall *campaigncall.Campaigncall
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Event{
+				Publisher: "call-manager",
+				Type:      cmcall.EventTypeCallHangup,
+				DataType:  "application/json",
+				Data:      []byte(`{"id":"62a54c96-c46c-11ec-aff0-ebddfa5d9bc4"}`),
+			},
+
+			uuid.FromStringOrNil("62a54c96-c46c-11ec-aff0-ebddfa5d9bc4"),
+
+			&campaigncall.Campaigncall{
+				ID:         uuid.FromStringOrNil("e6cca6a4-c46c-11ec-8175-3fd04df5a0dc"),
+				CampaignID: uuid.FromStringOrNil("f4f81330-c46c-11ec-845b-634ec638de76"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := subscribeHandler{
+				campaignHandler:     mockCampaign,
+				campaigncallHandler: mockCampaigncall,
+			}
+
+			mockCampaigncall.EXPECT().GetByReferenceID(gomock.Any(), tt.callID).Return(tt.responseCampaigncall, nil)
+			mockCampaigncall.EXPECT().EventHandleReferenceCallHungup(gomock.Any(), gomock.Any(), tt.responseCampaigncall).Return(tt.responseCampaigncall, nil)
+			mockCampaign.EXPECT().EventHandleReferenceCallHungup(gomock.Any(), tt.responseCampaigncall.CampaignID).Return(nil)
+
+			h.processEvent(tt.event)
+		})
+	}
+}
