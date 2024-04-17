@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: bin-manager
+commonLabels:
+  app: api-manager
+
+resources:
+  - deployment.yml
+  - service.yml
+
+images:
+- name: api-manager-image
+  newName: api-manager
+  newTag: latest

@@ -1,0 +1,315 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-manager
+  labels:
+    app: api-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-manager
+  template:
+    metadata:
+      labels:
+        app: api-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: api-manager
+          image: api-manager-image
+          command:
+            - '/app/api-manager'
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          args:
+            # - '-prom_endpoint'
+            # - '/metrics'
+            # - '-prom_listen_addr'
+            # - ':2112'
+            - '-dsn'
+            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
+            - '-rabbit_addr'
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - '-redis_addr'
+            - '10.164.15.220:6379'
+            - '-redis_db'
+            - '1'
+            - '-jwt_key'
+            - 'voipbin'
+            - '-ssl_private'
+            - './etc/ssl/privkey.pem'
+            - '-ssl_cert'
+            - './etc/ssl/cert.pem'
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 443
+              scheme: HTTPS
+          resources:
+            limits:
+              cpu: "10m"
+              memory: "40M"
+          ports:
+            - containerPort: 2112
+              name: metrics
+              protocol: TCP
+            - containerPort: 443
+              name: service
+              protocol: TCP
+            - containerPort: 10000
+              name: media-udp-10000
+              protocol: UDP
+            - containerPort: 10000
+              name: media-tcp-10000
+              protocol: TCP
+            - containerPort: 10001
+              name: media-udp-10001
+              protocol: UDP
+            - containerPort: 10001
+              name: media-tcp-10001
+              protocol: TCP
+            - containerPort: 10002
+              name: media-udp-10002
+              protocol: UDP
+            - containerPort: 10002
+              name: media-tcp-10002
+              protocol: TCP
+            - containerPort: 10003
+              name: media-udp-10003
+              protocol: UDP
+            - containerPort: 10003
+              name: media-tcp-10003
+              protocol: TCP
+            - containerPort: 10004
+              name: media-udp-10004
+              protocol: UDP
+            - containerPort: 10004
+              name: media-tcp-10004
+              protocol: TCP
+            - containerPort: 10005
+              name: media-udp-10005
+              protocol: UDP
+            - containerPort: 10005
+              name: media-tcp-10005
+              protocol: TCP
+            - containerPort: 10006
+              name: media-udp-10006
+              protocol: UDP
+            - containerPort: 10006
+              name: media-tcp-10006
+              protocol: TCP
+            - containerPort: 10007
+              name: media-udp-10007
+              protocol: UDP
+            - containerPort: 10007
+              name: media-tcp-10007
+              protocol: TCP
+            - containerPort: 10008
+              name: media-udp-10008
+              protocol: UDP
+            - containerPort: 10008
+              name: media-tcp-10008
+              protocol: TCP
+            - containerPort: 10009
+              name: media-udp-10009
+              protocol: UDP
+            - containerPort: 10009
+              name: media-tcp-10009
+              protocol: TCP
+            - containerPort: 10010
+              name: media-udp-10010
+              protocol: UDP
+            - containerPort: 10010
+              name: media-tcp-10010
+              protocol: TCP
+            - containerPort: 10011
+              name: media-udp-10011
+              protocol: UDP
+            - containerPort: 10011
+              name: media-tcp-10011
+              protocol: TCP
+            - containerPort: 10012
+              name: media-udp-10012
+              protocol: UDP
+            - containerPort: 10012
+              name: media-tcp-10012
+              protocol: TCP
+            - containerPort: 10013
+              name: media-udp-10013
+              protocol: UDP
+            - containerPort: 10013
+              name: media-tcp-10013
+              protocol: TCP
+            - containerPort: 10014
+              name: media-udp-10014
+              protocol: UDP
+            - containerPort: 10014
+              name: media-tcp-10014
+              protocol: TCP
+            - containerPort: 10015
+              name: media-udp-10015
+              protocol: UDP
+            - containerPort: 10015
+              name: media-tcp-10015
+              protocol: TCP
+            - containerPort: 10016
+              name: media-udp-10016
+              protocol: UDP
+            - containerPort: 10016
+              name: media-tcp-10016
+              protocol: TCP
+            - containerPort: 10017
+              name: media-udp-10017
+              protocol: UDP
+            - containerPort: 10017
+              name: media-tcp-10017
+              protocol: TCP
+            - containerPort: 10018
+              name: media-udp-10018
+              protocol: UDP
+            - containerPort: 10018
+              name: media-tcp-10018
+              protocol: TCP
+            - containerPort: 10019
+              name: media-udp-10019
+              protocol: UDP
+            - containerPort: 10019
+              name: media-tcp-10019
+              protocol: TCP
+            - containerPort: 10020
+              name: media-udp-10020
+              protocol: UDP
+            - containerPort: 10020
+              name: media-tcp-10020
+              protocol: TCP
+            - containerPort: 10021
+              name: media-udp-10021
+              protocol: UDP
+            - containerPort: 10021
+              name: media-tcp-10021
+              protocol: TCP
+            - containerPort: 10022
+              name: media-udp-10022
+              protocol: UDP
+            - containerPort: 10022
+              name: media-tcp-10022
+              protocol: TCP
+            - containerPort: 10023
+              name: media-udp-10023
+              protocol: UDP
+            - containerPort: 10023
+              name: media-tcp-10023
+              protocol: TCP
+            - containerPort: 10024
+              name: media-udp-10024
+              protocol: UDP
+            - containerPort: 10024
+              name: media-tcp-10024
+              protocol: TCP
+            - containerPort: 10025
+              name: media-udp-10025
+              protocol: UDP
+            - containerPort: 10025
+              name: media-tcp-10025
+              protocol: TCP
+            - containerPort: 10026
+              name: media-udp-10026
+              protocol: UDP
+            - containerPort: 10026
+              name: media-tcp-10026
+              protocol: TCP
+            - containerPort: 10027
+              name: media-udp-10027
+              protocol: UDP
+            - containerPort: 10027
+              name: media-tcp-10027
+              protocol: TCP
+            - containerPort: 10028
+              name: media-udp-10028
+              protocol: UDP
+            - containerPort: 10028
+              name: media-tcp-10028
+              protocol: TCP
+            - containerPort: 10029
+              name: media-udp-10029
+              protocol: UDP
+            - containerPort: 10029
+              name: media-tcp-10029
+              protocol: TCP
+            - containerPort: 10030
+              name: media-udp-10030
+              protocol: UDP
+            - containerPort: 10030
+              name: media-tcp-10030
+              protocol: TCP
+            - containerPort: 10031
+              name: media-udp-10031
+              protocol: UDP
+            - containerPort: 10031
+              name: media-tcp-10031
+              protocol: TCP
+            - containerPort: 10032
+              name: media-udp-10032
+              protocol: UDP
+            - containerPort: 10032
+              name: media-tcp-10032
+              protocol: TCP
+            - containerPort: 10033
+              name: media-udp-10033
+              protocol: UDP
+            - containerPort: 10033
+              name: media-tcp-10033
+              protocol: TCP
+            - containerPort: 10034
+              name: media-udp-10034
+              protocol: UDP
+            - containerPort: 10034
+              name: media-tcp-10034
+              protocol: TCP
+            - containerPort: 10035
+              name: media-udp-10035
+              protocol: UDP
+            - containerPort: 10035
+              name: media-tcp-10035
+              protocol: TCP
+            - containerPort: 10036
+              name: media-udp-10036
+              protocol: UDP
+            - containerPort: 10036
+              name: media-tcp-10036
+              protocol: TCP
+            - containerPort: 10037
+              name: media-udp-10037
+              protocol: UDP
+            - containerPort: 10037
+              name: media-tcp-10037
+              protocol: TCP
+            - containerPort: 10038
+              name: media-udp-10038
+              protocol: UDP
+            - containerPort: 10038
+              name: media-tcp-10038
+              protocol: TCP
+            - containerPort: 10039
+              name: media-udp-10039
+              protocol: UDP
+            - containerPort: 10039
+              name: media-tcp-10039
+              protocol: TCP

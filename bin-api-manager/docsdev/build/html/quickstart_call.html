@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Call &mdash; voipbin  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chatbot.html">Chatbot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Call</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quickstart_call.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="call">
+<span id="quickstart-call"></span><h1>Call<a class="headerlink" href="#call" title="Permalink to this heading"></a></h1>
+<p>In this Quickstart, you’ll learn how to make an outbound voice call.</p>
+<section id="make-your-first-voice-call-with-manual-actions">
+<h2>Make your first voice call with manual actions<a class="headerlink" href="#make-your-first-voice-call-with-manual-actions" title="Permalink to this heading"></a></h2>
+<p>Use the Voipbin API to initiate an outbound telephone call from your Voipbin account.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+82XXXXXXXX&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+82XXXXXXXX&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Hello. This is voipbin test. The voipbin provides ready to go CPaaS service. Thank you, bye.&quot;,
+                    &quot;gender&quot;: &quot;female&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+
+[
+    {
+        &quot;id&quot;: &quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+        &quot;flow_id&quot;: &quot;6cbaa351-b112-452d-84c2-01488671013d&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;action&quot;: {
+            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;&quot;
+        },
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_create&quot;: &quot;2023-03-28 12:00:05.248732&quot;,
+        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    }
+]
+</pre></div>
+</div>
+</section>
+<section id="make-your-first-voice-call-with-existed-flow">
+<h2>Make your first voice call with existed flow<a class="headerlink" href="#make-your-first-voice-call-with-existed-flow" title="Permalink to this heading"></a></h2>
+<p>Use the Voipbin API to initiate an outbound telephone call with existed flow.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;&lt;your source number&gt;&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;&lt;your destination number&gt;&quot;
+            }
+        ],
+        &quot;flow_id&quot;: &quot;ed95a3c4-22d4-11ee-add7-8742a741581e&quot;,
+    }&#39;
+
+[
+    {
+        &quot;id&quot;: &quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+        &quot;flow_id&quot;: &quot;ed95a3c4-22d4-11ee-add7-8742a741581e&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;action&quot;: {
+            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;&quot;
+        },
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_create&quot;: &quot;2023-03-28 12:00:05.248732&quot;,
+        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    }
+]
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Sungtae Kim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

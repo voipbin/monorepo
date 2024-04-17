@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Variable &mdash; voipbin  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Websocket" href="websocket.html" />
+    <link rel="prev" title="Route" href="route.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            voipbin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chatbot.html">Chatbot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Variable</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#variable-use">Variable use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#capturing-dynamic-values">Capturing Dynamic Values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integration-with-applications">Integration with Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#variable-variable">Variable</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#call">Call</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#source-address">Source address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#destination-address">Destination address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#others">Others</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#message">Message</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Source address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#target-destination-address">Target destination address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Message</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#queue">Queue</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#queue-info">Queue info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#queuecall-info">Queuecall info</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">voipbin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Variable</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/variable.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="variable">
+<span id="variable-main"></span><h1>Variable<a class="headerlink" href="#variable" title="Permalink to this heading"></a></h1>
+<section id="overview">
+<span id="variable-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
+<p>VoIPBIN introduces a robust feature known as “Variables,” providing users with the capability to define and employ dynamic values seamlessly throughout the execution of a flow. These variables, set by various applications, serve as adaptable elements that can be harnessed across different actions within the flow. By incorporating variables, users gain the ability to construct flows that are not only dynamic but also context-aware, allowing them to adapt to specific situations in real-time during execution.</p>
+<section id="variable-use">
+<span id="variable-overview-variable-use"></span><h3>Variable use<a class="headerlink" href="#variable-use" title="Permalink to this heading"></a></h3>
+<p>Incorporating variables into a flow is a straightforward process for users. To use a variable within a specific action, simply include the variable using the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>${voipbin.call.source.name}
+</pre></div>
+</div>
+<p>During the execution of the action, VoIPBIN dynamically evaluates the variable, replacing the placeholder with the actual value. This real-time evaluation empowers the flow to make informed decisions and execute actions based on the most up-to-date information, enhancing flexibility and adaptability in response to changing conditions.</p>
+</section>
+<section id="capturing-dynamic-values">
+<span id="variable-overview-dynamic-values"></span><h3>Capturing Dynamic Values<a class="headerlink" href="#capturing-dynamic-values" title="Permalink to this heading"></a></h3>
+<p>Variables play a pivotal role in capturing and storing a diverse range of dynamic values throughout the flow execution. For instance, the active flow responsible for executing the call flow can set variables like the call’s source address and destination address. Subsequently, these captured values become valuable assets that can be leveraged in various follow-up actions, such as sending messages, updating records, or making informed routing decisions. This strategic use of variables enhances the flow’s adaptability and empowers users to tailor subsequent actions based on the specifics of each call scenario.</p>
+</section>
+<section id="integration-with-applications">
+<span id="variable-overview-integration-with-applications"></span><h3>Integration with Applications<a class="headerlink" href="#integration-with-applications" title="Permalink to this heading"></a></h3>
+<p>In the VoIPBIN ecosystem, seamless integration with applications is pivotal for the effective utilization of variables. Each application assumes a crucial role in managing and providing access to specific variables pertinent to its functionality. For instance, the call application is responsible for setting variables related to the ongoing call, while other applications may establish variables based on user interactions, external data sources, or business logic.</p>
+<p>By strategically integrating with diverse applications and harnessing the power of variables, users gain the capability to construct more intelligent and responsive flows. These flows are designed to adapt dynamically to changing conditions and user interactions.</p>
+<p>In essence, the Variable feature in VoIPBIN injects a layer of dynamism and interactivity into the flow execution process. This capability empowers users to craft sophisticated communication workflows capable of leveraging real-time data and context, delivering a seamless and personalized experience for both callers and users.</p>
+</section>
+</section>
+<section id="variable-variable">
+<span id="id1"></span><h2>Variable<a class="headerlink" href="#variable-variable" title="Permalink to this heading"></a></h2>
+<section id="call">
+<h3>Call<a class="headerlink" href="#call" title="Permalink to this heading"></a></h3>
+<section id="source-address">
+<h4>Source address<a class="headerlink" href="#source-address" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.call.source.name: Source address’s name.</p></li>
+<li><p>voipbin.call.source.detail: Source address’s detail.</p></li>
+<li><p>voipbin.call.source.target: Source address’s target.</p></li>
+<li><p>voipbin.call.source.target_name: Source address’s target name.</p></li>
+<li><p>voipbin.call.source.type: Source address’s type.</p></li>
+</ul>
+</section>
+<section id="destination-address">
+<h4>Destination address<a class="headerlink" href="#destination-address" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.call.destination.name: Destination address’s name.</p></li>
+<li><p>voipbin.call.destination.detail: Destination address’s detail.</p></li>
+<li><p>voipbin.call.destination.target: Destination address’s target.</p></li>
+<li><p>voipbin.call.destination.target_name: Destination address’s target name.</p></li>
+<li><p>voipbin.call.destination.type: Destination address’s type.</p></li>
+</ul>
+</section>
+<section id="others">
+<h4>Others<a class="headerlink" href="#others" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.call.direction: Call’s direction.</p></li>
+<li><p>voipbin.call.master_call_id: Call’s master call id.</p></li>
+<li><p>voipbin.call.digits: Call;s received digits.</p></li>
+</ul>
+</section>
+</section>
+<section id="message">
+<h3>Message<a class="headerlink" href="#message" title="Permalink to this heading"></a></h3>
+<section id="id2">
+<h4>Source address<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.message.source.name: Source address’s name.</p></li>
+<li><p>voipbin.message.source.detail: Source address’s detail.</p></li>
+<li><p>voipbin.message.source.target: Source address’s target.</p></li>
+<li><p>voipbin.message.source.target_name: Source address’s target name.</p></li>
+<li><p>voipbin.message.source.type: Source address’s type.</p></li>
+</ul>
+</section>
+<section id="target-destination-address">
+<h4>Target destination address<a class="headerlink" href="#target-destination-address" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.message.target.destination.name: Destination address’s name.</p></li>
+<li><p>voipbin.message.target.destination.detail: Destination address’s detail.</p></li>
+<li><p>voipbin.message.target.destination.target: Destination address’s target.</p></li>
+<li><p>voipbin.message.target.destination.target_name: Destination address’s target name.</p></li>
+<li><p>voipbin.message.target.destination.type: Destination address’s type.</p></li>
+</ul>
+</section>
+<section id="id3">
+<h4>Message<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.message.id: Message’s id.</p></li>
+<li><p>voipbin.message.text: Message’s text.</p></li>
+<li><p>voipbin.message.direction: Message’s direction.</p></li>
+</ul>
+</section>
+</section>
+<section id="queue">
+<h3>Queue<a class="headerlink" href="#queue" title="Permalink to this heading"></a></h3>
+<section id="queue-info">
+<h4>Queue info<a class="headerlink" href="#queue-info" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.queue.id: Entered Queue’s ID.</p></li>
+<li><p>voipbin.queue.name: Entered Queue’s name.</p></li>
+<li><p>voipbin.queue.detail: Entered Queue’s detail.</p></li>
+</ul>
+</section>
+<section id="queuecall-info">
+<h4>Queuecall info<a class="headerlink" href="#queuecall-info" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.queuecall.id: Created Queuecall’s ID.</p></li>
+<li><p>voipbin.queuecall.timeout_wait: Created Queuecall’s wait timeout</p></li>
+<li><p>voipbin.queuecall.timeout_service: Created Queuecall’s service timeout.</p></li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="route.html" class="btn btn-neutral float-left" title="Route" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="websocket.html" class="btn btn-neutral float-right" title="Websocket" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Sungtae Kim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
