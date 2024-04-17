@@ -5,7 +5,6 @@ LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 WORKDIR /app
 RUN go version
 
-COPY go.mod go.sum ./
-COPY . .
+COPY ../ .
 
 RUN cd bin-agent-manager && go build ./cmd/...
