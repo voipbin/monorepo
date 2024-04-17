@@ -1,0 +1,41 @@
+image: voipbin/gitlab-runner:latest
+
+variables:
+
+stages:
+  - build
+  - release
+
+.gcp_init: &gcp_init |-
+  echo $LOCAL_CREDENTIAL > ./google_service_account.json
+  gcloud auth activate-service-account --key-file=./google_service_account.json
+  gcloud config set project $LOCAL_PROJECTID
+  gcloud container clusters get-credentials $LOCAL_CLUSTER_NAME --zone $LOCAL_ZONE --project $LOCAL_PROJECTID
+
+build:
+  stage: build
+  image: gitlab/dind:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+release:
+  stage: release
+  # only:
+  #   - master
+  when: manual
+  dependencies:
+    - build
+  script:
+    - *gcp_init
+    - cd k8s
+    - kubectl delete -n voip jobs/dbscheme-bin-manager > /dev/null 2>&1 || FAILED=true
+    - kustomize edit set image dbscheme-bin-manager-image=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - kubectl apply -k ./ -v6
+  variables:
+    LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
+    LOCAL_PROJECTID: voipbin-production
+    LOCAL_CLUSTER_NAME: k8s-cluster-production
+    LOCAL_ZONE: europe-west4-a
