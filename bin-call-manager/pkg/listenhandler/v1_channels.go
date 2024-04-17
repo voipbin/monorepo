@@ -1,0 +1,38 @@
+package listenhandler
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+)
+
+// processV1ChannelsIDHealthPost handles /v1/channels/<id>/health-check request
+func (h *listenHandler) processV1ChannelsIDHealthPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ChannelsIDHealthPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), fmt.Errorf("wrong uri")
+	}
+
+	channelID := uriItems[3]
+
+	var req request.V1DataChannelsIDHealth
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not marshal the request. err: %v", err)
+		return nil, err
+	}
+
+	h.channelHandler.HealthCheck(ctx, channelID, req.RetryCount)
+
+	return nil, nil
+}
