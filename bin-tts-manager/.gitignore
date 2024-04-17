@@ -1,0 +1,4 @@
+vendor
+tts-manager
+.vscode
+!cmd/*
