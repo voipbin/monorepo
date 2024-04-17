@@ -153,10 +153,13 @@ jobs:
     docker:
       - image: cimg/go:1.22
     steps:
+      - checkout
       - run:
           name: Install dependencies and vendor
           command: |
             ls -tlr
+            go mod download
+            go mod vendor
             pwd
             ls -tlr
 
