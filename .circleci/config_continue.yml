@@ -1,5 +1,9 @@
 version: 2.1
 
+context_production: &context_production
+  context: 
+    - production
+
 parameters:
   run-bin-agent-manager:
     type: boolean
@@ -118,8 +122,12 @@ workflows:
     # environment:
     #   WORK_TARGET: bin-agent-manager
     jobs:
-      - ensure
-      - test
+      - ensure:
+          <<: *context_production
+      - test:
+          <<: *context_production
+          requires:
+            - ensure
       # - run:
       #     name: set target project
       #     command: |
@@ -148,7 +156,7 @@ jobs:
       - run:
           name: Install dependencies and vendor
           command: |
-            cd $bin-agent-manager
+            cd bin-agent-manager
             go mod download
             go mod vendor
             pwd
