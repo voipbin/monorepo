@@ -53,12 +53,12 @@ workflows:
           # # configuration itself.
           config-path: .circleci/config_continue.yml
 
-  bin-agent-manager:
-    when: << pipeline.parameters.run-bin-agent-manager >>
-    jobs:
-      - path-filtering/filter:
-          base-revision: main
-          config-path: ./bin-agent-manager/.circleci/config.yml
+  # bin-agent-manager:
+  #   when: << pipeline.parameters.run-bin-agent-manager >>
+  #   jobs:
+  #     - path-filtering/filter:
+  #         base-revision: main
+  #         config-path: ./bin-agent-manager/.circleci/config.yml
 
 
 
