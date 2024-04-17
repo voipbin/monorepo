@@ -20,8 +20,7 @@ workflows:
           # <regex path-to-test> <parameter-to-set> <value-of-pipeline-parameter>
           mapping: |
             bin-agent-manager/*        run-bin-agent-manager true
-            bin-agent-manager/*        source-directory bin-agent-manager
-
+            bin-agent-manager/*        source-directory "bin-agent-manager"
             bin-agent-manager/.*       run-bin-agent-manager true            
             bin-api-manager/*          run-bin-api-manager true
             bin-billing-manager/*      run-bin-billing-manager true
