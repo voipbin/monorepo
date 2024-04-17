@@ -115,7 +115,7 @@ parameters:
 
 workflows:
   bin-agent-manager:
-    when: << pipeline.parameters.run-bin-call-manager >>
+    when: << pipeline.parameters.run-bin-agent-manager >>
     jobs:
       - checkout-bin-agent-manager
       - ensure:
