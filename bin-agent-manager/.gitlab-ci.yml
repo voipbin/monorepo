@@ -1,0 +1,88 @@
+image: voipbin/gitlab-runner:latest
+
+variables:
+  LOCAL_PACKAGE_NAME: user-manager
+  GOOS: linux
+  GOARCH: amd64
+
+stages:
+  - ensure
+  - test
+  - build
+  - release
+
+.gcp_init: &gcp_init |-
+  echo $LOCAL_CREDENTIAL > ./google_service_account.json
+  gcloud auth activate-service-account --key-file=./google_service_account.json
+  gcloud config set project $LOCAL_PROJECTID
+  gcloud container clusters get-credentials $LOCAL_CLUSTER_NAME --zone $LOCAL_ZONE --project $LOCAL_PROJECTID
+
+ensure:
+  stage: ensure
+  artifacts:
+    name: $CI_COMMIT_REF_NAME"
+    expire_in: 8 hours
+    paths:
+      - vendor/
+  script:
+    - git config --global url."https://$GL_DEPLOY_USER:$GL_DEPLOY_TOKEN@gitlab.com".insteadOf "https://gitlab.com"
+    - export GOPRIVATE="gitlab.com/voipbin"
+    - go version
+    - go mod download
+    - go mod vendor
+
+lint:
+  stage: test
+  script:
+    - golint -set_exit_status $(go list ./...)
+
+golangci-lint:
+  image: golangci/golangci-lint:latest
+  stage: test
+  script:
+    - golangci-lint version
+    - golangci-lint run -v --timeout 5m
+
+vet:
+  stage: test
+  script:
+    - go vet $(go list ./...)
+
+test:
+  stage: test
+  artifacts:
+    name: $CI_COMMIT_REF_NAME"
+    expire_in: 8 hours
+    paths:
+      - cp.html
+  script:
+    - go test -coverprofile cp.out -v $(go list ./...)
+    - go tool cover -html=cp.out -o cp.html
+    - go tool cover -func=cp.out
+
+build:
+  stage: build
+  image: gitlab/dind:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+release:
+  stage: release
+  # only:
+  #   - master
+  when: manual
+  dependencies:
+    - build
+  script:
+    - *gcp_init
+    - cd k8s
+    - kustomize edit set image agent-manager-image=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - kubectl apply -k ./ -v6
+  variables:
+    LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
+    LOCAL_PROJECTID: voipbin-production
+    LOCAL_CLUSTER_NAME: k8s-cluster-production
+    LOCAL_ZONE: europe-west4-a

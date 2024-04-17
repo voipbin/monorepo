@@ -1,0 +1,202 @@
+package agenthandler
+
+import (
+	"context"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
+)
+
+func Test_EventGroupcallCreated(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		groupcall *cmgroupcall.Groupcall
+
+		responseAgent *agent.Agent
+	}{
+		{
+			name: "normal",
+
+			groupcall: &cmgroupcall.Groupcall{
+				ID: uuid.FromStringOrNil("8a7bb5d0-f84f-4568-917c-14961a8a7141"),
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeAgent,
+						Target: "0de675c4-d1e4-498c-81f7-01bd8ee9e656",
+					},
+				},
+			},
+
+			responseAgent: &agent.Agent{
+				ID:     uuid.FromStringOrNil("0de675c4-d1e4-498c-81f7-01bd8ee9e656"),
+				Status: agent.StatusAvailable,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			for _, destination := range tt.groupcall.Destinations {
+				agentID := uuid.FromStringOrNil(destination.Target)
+				mockDB.EXPECT().AgentGet(ctx, agentID).Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusRinging).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
+			}
+
+			if err := h.EventGroupcallCreated(ctx, tt.groupcall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventGroupcallAnswered(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		groupcall     *cmgroupcall.Groupcall
+		responseAgent *agent.Agent
+	}{
+		{
+			name: "normal",
+
+			groupcall: &cmgroupcall.Groupcall{
+				ID: uuid.FromStringOrNil("59e5b918-ac3e-4381-9894-f611cadeab93"),
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeAgent,
+						Target: "e3eae3d0-8e4f-46a1-b6bd-5d36feae4749",
+					},
+				},
+			},
+			responseAgent: &agent.Agent{
+				ID:     uuid.FromStringOrNil("e3eae3d0-8e4f-46a1-b6bd-5d36feae4749"),
+				Status: agent.StatusAvailable,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			for _, destination := range tt.groupcall.Destinations {
+				agentID := uuid.FromStringOrNil(destination.Target)
+				mockDB.EXPECT().AgentGet(ctx, agentID).Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusBusy).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
+			}
+
+			if err := h.EventGroupcallProgressing(ctx, tt.groupcall); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventCustomerDeleted(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer       *cmcustomer.Customer
+		responseAgents []*agent.Agent
+
+		expectFilter map[string]string
+	}{
+		{
+			name: "normal",
+
+			customer: &cmcustomer.Customer{
+				ID: uuid.FromStringOrNil("82ed53fa-ccca-11ee-be19-17f582a54cf4"),
+			},
+			responseAgents: []*agent.Agent{
+				{
+					ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e39bfb34-ccca-11ee-9c3e-2fba9dd3bf35"),
+				},
+			},
+
+			expectFilter: map[string]string{
+				"customer_id": "82ed53fa-ccca-11ee-be19-17f582a54cf4",
+				"deleted":     "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().AgentGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseAgents, nil)
+
+			for _, ag := range tt.responseAgents {
+				mockDB.EXPECT().AgentDelete(ctx, ag.ID).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, ag.ID).Return(ag, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, ag.CustomerID, agent.EventTypeAgentDeleted, ag)
+			}
+
+			if err := h.EventCustomerDeleted(ctx, tt.customer); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
