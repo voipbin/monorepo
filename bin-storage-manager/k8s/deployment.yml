@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage-manager
+  labels:
+    app: storage-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: storage-manager
+  template:
+    metadata:
+      labels:
+        app: storage-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: storage-manager
+          image: storage-manager-image
+          command:
+            - '/app/storage-manager'
+          args:
+            - '-prom_endpoint'
+            - '/metrics'
+            - '-prom_listen_addr'
+            - ':2112'
+            - '-rabbit_addr'
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - '-gcp_credential'
+            - './google_service_account.json'
+            - '-gcp_project_id'
+            - 'voipbin-production'
+            - '-gcp_bucket_media'
+            - 'voipbin-voip-media-bucket-europe-west4'
+            - '-gcp_bucket_tmp'
+            - 'voipbin-tmp-bucket-europe-west4'
+
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "10m"
+              memory: "30M"
