@@ -1,0 +1,244 @@
+package campaigncallhandler
+
+import (
+	"context"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+)
+
+func Test_EventHandleActiveflowDeleted(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		campaigncall *campaigncall.Campaigncall
+		response     *campaigncall.Campaigncall
+	}{
+		{
+			"normal",
+
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("3fe521fa-1c8e-412d-a57f-24f9a7d255be"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("3fe521fa-1c8e-412d-a57f-24f9a7d255be"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaigncallHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, campaigncall.StatusDone, campaigncall.ResultSuccess).Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.response.OutdialTargetID, omoutdialtarget.StatusDone).Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.response)
+
+			_, err := h.EventHandleActiveflowDeleted(ctx, tt.campaigncall)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventHandleReferenceCallHungup(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call         *cmcall.Call
+		campaigncall *campaigncall.Campaigncall
+		response     *campaigncall.Campaigncall
+
+		expectResult campaigncall.Result
+		expectStatus omoutdialtarget.Status
+	}{
+		{
+			"hangup reason normal",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonNormal,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultSuccess,
+			omoutdialtarget.StatusDone,
+		},
+		{
+			"hangup reason amd",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonAMD,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultFail,
+			omoutdialtarget.StatusIdle,
+		},
+		{
+			"hangup reason busy",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonBusy,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultFail,
+			omoutdialtarget.StatusIdle,
+		},
+		{
+			"hangup reason canceled",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonCanceled,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultFail,
+			omoutdialtarget.StatusIdle,
+		},
+		{
+			"hangup reason dialout",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonDialout,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultFail,
+			omoutdialtarget.StatusIdle,
+		},
+		{
+			"hangup reason failed",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonFailed,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultFail,
+			omoutdialtarget.StatusIdle,
+		},
+		{
+			"hangup reason noanswer",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonNoanswer,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultFail,
+			omoutdialtarget.StatusIdle,
+		},
+		{
+			"hangup reason timeout",
+
+			&cmcall.Call{
+				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				HangupReason: cmcall.HangupReasonTimeout,
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+			&campaigncall.Campaigncall{
+				ID: uuid.FromStringOrNil("bdbed625-6203-4ab5-9c1f-4854089552e1"),
+			},
+
+			campaigncall.ResultFail,
+			omoutdialtarget.StatusIdle,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaigncallHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, campaigncall.StatusDone, tt.expectResult).Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.response.OutdialTargetID, tt.expectStatus).Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.response)
+
+			_, err := h.EventHandleReferenceCallHungup(ctx, tt.call, tt.campaigncall)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
