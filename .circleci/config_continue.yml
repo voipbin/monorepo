@@ -125,6 +125,9 @@ workflows:
       # parameters to update.
       - path-filtering/filter:
           name: check-updated-files
+          mapping: |
+            bin-agent-manager/*        run-bin-agent-manager true
+
           # # this is the path of the configuration we should trigger once
           # # path filtering and pipeline parameter value updates are
           # # complete. In this case, we are using the parent dynamic
@@ -134,7 +137,7 @@ workflows:
 
 
   bin-agent-manager:
-    when: << pipeline.parameters.run-bin-agent-manager >>
+    when: << pipeline.parameters.run-bin-call-manager >>
     # environment:
     #   WORK_TARGET: bin-agent-manager
     jobs:
