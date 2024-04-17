@@ -20,11 +20,15 @@ jobs:
           name: Install dependencies and vendor
           command: |
             ls -tlr
-            cd bin-agent-manager
-            go mod download
-            go mod vendor
             pwd
             ls -tlr
+          # command: |
+          #   ls -tlr
+          #   cd bin-agent-manager
+          #   go mod download
+          #   go mod vendor
+          #   pwd
+          #   ls -tlr
 
       - persist_to_workspace:
           root: /home/circleci/project
