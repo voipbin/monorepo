@@ -115,20 +115,27 @@ parameters:
 
 workflows:
   bin-agent-manager:
-    when: << pipeline.parameters.run-bin-agent-manager >>
+    # when: << pipeline.parameters.run-bin-agent-manager >>
+    when: 
+      condition:
+        - equal: [bin-agent-manager, << pipeline.parameters.source-directory >>]
     jobs:
-      - build-bin-agent-manager
+      - test-bin-agent-manager
+      - build-bin-agent-manager:
+          <<: *context_production
+          requires:
+            - test-bin-agent-manager
       # - ensure:
       #     <<: *context_production
       #     requires:
-      #       - build-bin-agent-manager
+      #       - test-bin-agent-manager
       # - test:
       #     <<: *context_production
       #     requires:
       #       - ensure
 
 jobs:
-  build-bin-agent-manager:
+  test-bin-agent-manager:
     docker:
       - image: cimg/go:1.22
     steps:
@@ -137,6 +144,12 @@ jobs:
       - build:
           to: bin-agent-manager
 
+  build-bin-agent-manager:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - build:
+          to: bin-agent-manager
 
 
       # - checkout
