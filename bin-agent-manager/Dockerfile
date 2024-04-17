@@ -7,4 +7,6 @@ RUN go version
 
 COPY ../ .
 
-RUN ls -tlr && ls -tlr ../ && cd bin-agent-manager && go build ./cmd/...
+RUN ls -tlr
+RUN ls -tlr ../
+RUN cd bin-agent-manager && go build ./cmd/...
