@@ -6,11 +6,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/common"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"monorepo/bin-registrar-manager/models/astaor"
+	"monorepo/bin-registrar-manager/models/astauth"
+	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/common"
+	"monorepo/bin-registrar-manager/models/extension"
 )
 
 // Create creates a new extension

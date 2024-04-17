@@ -7,11 +7,14 @@ import (
 	"net/http"
 	"time"
 
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
 const (

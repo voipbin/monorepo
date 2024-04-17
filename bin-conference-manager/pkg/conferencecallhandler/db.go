@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	"monorepo/bin-conference-manager/models/conferencecall"
 )
 
 // Create is handy function for creating a conference.

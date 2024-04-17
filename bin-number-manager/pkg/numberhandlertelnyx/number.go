@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/models/providernumber"
 )
 
 // NumberPurchase creates a new order numbers of given numbers from the telnyx

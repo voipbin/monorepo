@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"github.com/pebbe/zmq4"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmq"
+	"monorepo/bin-api-manager/pkg/zmq"
 )
 
 func Test_recevieMessage(t *testing.T) {

@@ -6,16 +6,18 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cmrecording "monorepo/bin-call-manager/models/recording"
+	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
+	cmresponse "monorepo/bin-call-manager/pkg/listenhandler/models/response"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CallV1CallHealth sends the request for call health-check

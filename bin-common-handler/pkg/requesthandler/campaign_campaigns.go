@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	carequest "gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler/models/request"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	cacampaign "monorepo/bin-campaign-manager/models/campaign"
+	carequest "monorepo/bin-campaign-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CampaignV1CampaignCreate creates a new campaign.

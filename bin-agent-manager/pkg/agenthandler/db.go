@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	"monorepo/bin-agent-manager/models/agent"
 )
 
 // dbGets returns agents

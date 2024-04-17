@@ -9,11 +9,11 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	address "monorepo/bin-common-handler/models/address"
+	account "monorepo/bin-conversation-manager/models/account"
+	conversation "monorepo/bin-conversation-manager/models/conversation"
+	media "monorepo/bin-conversation-manager/models/media"
+	message "monorepo/bin-conversation-manager/models/message"
 )
 
 // MockLineHandler is a mock of LineHandler interface.

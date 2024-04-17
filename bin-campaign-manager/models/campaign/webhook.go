@@ -3,8 +3,9 @@ package campaign
 import (
 	"encoding/json"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // WebhookMessage defines

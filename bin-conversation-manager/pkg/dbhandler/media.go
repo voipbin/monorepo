@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	"monorepo/bin-conversation-manager/models/media"
 )
 
 const (

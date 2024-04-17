@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	"monorepo/bin-conversation-manager/models/account"
 )
 
 // Setup sets up the given customer's line webhook

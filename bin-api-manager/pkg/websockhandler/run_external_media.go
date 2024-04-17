@@ -7,13 +7,14 @@ import (
 	"net"
 	"net/http"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 )
 
 // RunExternalMedia creates a new websocket and starts socket message listen.

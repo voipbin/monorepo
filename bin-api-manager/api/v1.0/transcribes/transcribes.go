@@ -1,19 +1,21 @@
 package transcribes
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // transcribesPOST handles POST /transcribes request.
 // It creates a transcribe of the recording and returns the result.
+//
 //	@Summary		Create a transcribe
 //	@Description	transcribe a recording
 //	@Produce		json
@@ -61,6 +63,7 @@ func transcribesPOST(c *gin.Context) {
 
 // transcribesGET handles GET /transcribes request.
 // It returns list of transcribes of the given customer.
+//
 //	@Summary		Get list of transcribes
 //	@Description	get transcribes of the customer
 //	@Produce		json
@@ -127,6 +130,7 @@ func transcribesGET(c *gin.Context) {
 
 // transcribesIDGET handles GET /transcribes/{id} request.
 // It returns detail transcribe info.
+//
 //	@Summary		Get detail transcribe info.
 //	@Description	Returns detail transcribe info of the given transcribe id.
 //	@Produce		json
@@ -169,12 +173,12 @@ func transcribesIDGET(c *gin.Context) {
 // transcribesIDDelete handles DELETE /transcribes/<transcribe-id> request.
 // It deletes the transcribe.
 
-//	@Summary		Delete the transcribe.
-//	@Description	Delete the transcribe of the given id
-//	@Produce		json
-//	@Param			id	path		string	true	"The ID of the transcribe"
-//	@Success		200	{object}	transcribe.Transcribe
-//	@Router			/v1.0/transcribes/{id} [delete]
+// @Summary		Delete the transcribe.
+// @Description	Delete the transcribe of the given id
+// @Produce		json
+// @Param			id	path		string	true	"The ID of the transcribe"
+// @Success		200	{object}	transcribe.Transcribe
+// @Router			/v1.0/transcribes/{id} [delete]
 func transcribesIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "transcribesIDDelete",
@@ -212,6 +216,7 @@ func transcribesIDDelete(c *gin.Context) {
 
 // transcribesIDStopPOST handles POST /transcribes/<transcribe-id>/stop request.
 // It creates a transcribe of the recording and returns the result.
+//
 //	@Summary		Create a transcribe
 //	@Description	transcribe a recording
 //	@Produce		json

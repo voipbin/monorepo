@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/stack"
 )
 
 func Test_ConvertWebhookMessage(t *testing.T) {

@@ -9,14 +9,15 @@ import (
 	"regexp"
 	"time"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
+	"monorepo/bin-agent-manager/pkg/agenthandler"
 )
 
 // pagination parameters

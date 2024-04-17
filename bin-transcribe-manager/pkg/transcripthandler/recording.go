@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
 // Recording transcribe the recoring

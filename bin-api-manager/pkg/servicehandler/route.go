@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	rmroute "monorepo/bin-route-manager/models/route"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 )
 
 // routeGet validates the route's ownership and returns the route info.

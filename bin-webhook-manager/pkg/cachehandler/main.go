@@ -5,9 +5,10 @@ package cachehandler
 import (
 	"context"
 
+	"monorepo/bin-webhook-manager/models/account"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 )
 
 type handler struct {

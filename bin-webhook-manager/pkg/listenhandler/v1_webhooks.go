@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler/models/request"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-webhook-manager/pkg/listenhandler/models/request"
 )
 
 // processV1WebhooksPost handles POST /v1/webhooks request

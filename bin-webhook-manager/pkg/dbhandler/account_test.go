@@ -8,8 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
+	"monorepo/bin-webhook-manager/models/account"
+	"monorepo/bin-webhook-manager/pkg/cachehandler"
 )
 
 func Test_AccountSet(t *testing.T) {

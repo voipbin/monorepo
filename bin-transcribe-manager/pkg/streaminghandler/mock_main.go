@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	streaming "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	streaming "monorepo/bin-transcribe-manager/models/streaming"
+	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
+	transcript "monorepo/bin-transcribe-manager/models/transcript"
 )
 
 // MockStreamingHandler is a mock of StreamingHandler interface.

@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
+	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 )
 
 // MockContactHandler is a mock of ContactHandler interface.

@@ -3,14 +3,15 @@ package messagehandlermessagebird
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package messagehandlermessagebird -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/requestexternal"
+	"monorepo/bin-message-manager/models/target"
+	"monorepo/bin-message-manager/pkg/dbhandler"
+	"monorepo/bin-message-manager/pkg/requestexternal"
 )
 
 // MessageHandlerMessagebird is interface for service handle

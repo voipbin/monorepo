@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 )
 
 // processV1Login handles Post /v1/login request

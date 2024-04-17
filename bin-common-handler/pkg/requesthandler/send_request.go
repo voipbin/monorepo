@@ -8,8 +8,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // SendRequest sends a request to the given destination.

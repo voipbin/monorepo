@@ -6,13 +6,14 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
+	"monorepo/bin-campaign-manager/models/outplan"
+	"monorepo/bin-campaign-manager/pkg/cachehandler"
 )
 
 func Test_OutplanCreate(t *testing.T) {

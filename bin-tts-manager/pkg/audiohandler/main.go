@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
+	"monorepo/bin-tts-manager/models/tts"
 )
 
 // AudioHandler intreface for audio handler

@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	mmmessage "monorepo/bin-message-manager/models/message"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 )
 
 // messageGet validates the tag's ownership and returns the message info.

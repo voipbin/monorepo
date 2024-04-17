@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 )
 
 // TransferStart sends a request to transfer-manager

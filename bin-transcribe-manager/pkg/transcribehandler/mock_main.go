@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	call "monorepo/bin-call-manager/models/call"
+	confbridge "monorepo/bin-call-manager/models/confbridge"
+	customer "monorepo/bin-customer-manager/models/customer"
+	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 )
 
 // MockTranscribeHandler is a mock of TranscribeHandler interface.

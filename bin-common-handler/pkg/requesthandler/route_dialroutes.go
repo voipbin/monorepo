@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	rmroute "monorepo/bin-route-manager/models/route"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RouteV1DialrouteGets sends a request to route-manager

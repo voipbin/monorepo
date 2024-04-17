@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	transcript "monorepo/bin-transcribe-manager/models/transcript"
 )
 
 // MockTranscriptHandler is a mock of TranscriptHandler interface.

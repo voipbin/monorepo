@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	groupcall "monorepo/bin-call-manager/models/groupcall"
+	address "monorepo/bin-common-handler/models/address"
+	customer "monorepo/bin-customer-manager/models/customer"
 )
 
 // MockGroupcallHandler is a mock of GroupcallHandler interface.

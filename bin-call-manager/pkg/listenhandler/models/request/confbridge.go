@@ -3,8 +3,8 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/models/recording"
 )
 
 // V1DataConfbridgesPost is

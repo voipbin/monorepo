@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	"monorepo/bin-conversation-manager/models/account"
 )
 
 // setup sets up the account

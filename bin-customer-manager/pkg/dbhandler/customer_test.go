@@ -6,12 +6,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/cachehandler"
+	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/cachehandler"
 )
 
 func Test_CustomerCreate(t *testing.T) {

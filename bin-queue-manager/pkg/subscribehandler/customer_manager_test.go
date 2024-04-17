@@ -3,12 +3,14 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-queue-manager/pkg/queuecallhandler"
+	"monorepo/bin-queue-manager/pkg/queuehandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
 func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {

@@ -1,6 +1,6 @@
 package response
 
-import fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+import fmflow "monorepo/bin-flow-manager/models/flow"
 
 // BodyFlowsGET is rquest body define for
 // GET /v1.0/flows

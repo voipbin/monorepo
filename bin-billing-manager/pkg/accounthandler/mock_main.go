@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	account "monorepo/bin-billing-manager/models/account"
+	billing "monorepo/bin-billing-manager/models/billing"
+	customer "monorepo/bin-customer-manager/models/customer"
 )
 
 // MockAccountHandler is a mock of AccountHandler interface.

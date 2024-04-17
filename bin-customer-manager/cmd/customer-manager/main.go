@@ -9,20 +9,21 @@ import (
 	"syscall"
 	"time"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/customerhandler"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler"
+	"monorepo/bin-customer-manager/pkg/cachehandler"
+	"monorepo/bin-customer-manager/pkg/customerhandler"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
+	"monorepo/bin-customer-manager/pkg/listenhandler"
 )
 
 const serviceName = commonoutline.ServiceNameCustomerManager

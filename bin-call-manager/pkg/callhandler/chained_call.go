@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"monorepo/bin-call-manager/models/call"
 )
 
 // ChainedCallIDAdd adds the chained call id to the call and set the added chained call's master call id.

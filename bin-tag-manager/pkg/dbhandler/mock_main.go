@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	tag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
+	tag "monorepo/bin-tag-manager/models/tag"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

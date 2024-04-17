@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"monorepo/bin-message-manager/models/message"
 )
 
 // setVariables sets the variables

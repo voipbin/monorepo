@@ -7,20 +7,22 @@ import (
 	"database/sql"
 	"errors"
 
-	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	uuid "github.com/gofrs/uuid"
+
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/models/call"
+	callapplication "monorepo/bin-call-manager/models/callapplication"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/groupcall"
+	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for call_manager database handle

@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_TranscribeV1TranscriptGets(t *testing.T) {

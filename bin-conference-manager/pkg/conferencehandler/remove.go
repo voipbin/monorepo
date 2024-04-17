@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"monorepo/bin-conference-manager/models/conference"
 )
 
 // Leaved handles event the referencecall has left from the confbridge

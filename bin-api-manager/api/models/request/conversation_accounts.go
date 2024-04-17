@@ -1,7 +1,7 @@
 package request
 
 import (
-	cvaccount "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	cvaccount "monorepo/bin-conversation-manager/models/account"
 )
 
 // ParamConversationAccountsGET is request param define for

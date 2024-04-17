@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"monorepo/bin-call-manager/models/call"
 )
 
 // setVariablesCall sets the variables

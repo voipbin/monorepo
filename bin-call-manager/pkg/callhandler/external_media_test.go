@@ -6,15 +6,16 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/externalmediahandler"
 )
 
 func Test_ExternalMediaStart(t *testing.T) {

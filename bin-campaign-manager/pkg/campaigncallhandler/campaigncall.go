@@ -3,11 +3,12 @@ package campaigncallhandler
 import (
 	"context"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 // Create creates a new campaigncall

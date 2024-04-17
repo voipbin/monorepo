@@ -3,13 +3,15 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/models/account"
+	"monorepo/bin-webhook-manager/pkg/accounthandler"
 )
 
 func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {

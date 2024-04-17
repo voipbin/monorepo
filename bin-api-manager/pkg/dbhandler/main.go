@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
+	"monorepo/bin-api-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for call_manager database handle

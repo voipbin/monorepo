@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 // AvailableNumberGets sends a handles available number get

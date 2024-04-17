@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
+	rmextension "monorepo/bin-registrar-manager/models/extension"
+	rmrequest "monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RegistrarV1ExtensionCreate sends a request to registrar-manager

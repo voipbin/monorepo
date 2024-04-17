@@ -3,12 +3,14 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-flow-manager/pkg/activeflowhandler"
+	"monorepo/bin-flow-manager/pkg/flowhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 )
 
 func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {

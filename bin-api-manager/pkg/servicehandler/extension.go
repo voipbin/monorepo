@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	rmextension "monorepo/bin-registrar-manager/models/extension"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
 // extensionGet validates the extension's ownership and returns the extension info.

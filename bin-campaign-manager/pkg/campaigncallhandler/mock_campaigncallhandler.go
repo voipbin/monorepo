@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	call "monorepo/bin-call-manager/models/call"
+	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockCampaigncallHandler is a mock of CampaigncallHandler interface.

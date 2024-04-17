@@ -6,16 +6,18 @@ import (
 	"context"
 	"regexp"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/models/trunk"
+	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
 // TrunkHandler is interface for service handle

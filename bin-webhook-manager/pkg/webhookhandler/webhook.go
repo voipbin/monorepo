@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	"monorepo/bin-webhook-manager/models/webhook"
 )
 
 // SendWebhookToCustomer sends the webhook to the given customerID with the given method and data.

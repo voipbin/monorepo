@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	tag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
+	customer "monorepo/bin-customer-manager/models/customer"
+	tag "monorepo/bin-tag-manager/models/tag"
 )
 
 // MockTagHandler is a mock of TagHandler interface.

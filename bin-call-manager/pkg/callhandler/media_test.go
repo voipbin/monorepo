@@ -4,16 +4,19 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	tmtts "monorepo/bin-tts-manager/models/tts"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/pkg/channelhandler"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 func Test_Talk(t *testing.T) {

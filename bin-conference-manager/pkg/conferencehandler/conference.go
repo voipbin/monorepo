@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"monorepo/bin-conference-manager/models/conference"
 )
 
 const defaultConferenceTimeout = 86400

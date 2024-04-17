@@ -6,8 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"monorepo/bin-transcribe-manager/models/streaming"
+	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
 func (h *streamingHandler) Create(ctx context.Context, customerID uuid.UUID, treanscribeID uuid.UUID, externalMediaID uuid.UUID, language string, direction transcript.Direction) (*streaming.Streaming, error) {

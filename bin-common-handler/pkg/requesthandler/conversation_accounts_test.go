@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	cvaccount "monorepo/bin-conversation-manager/models/account"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cvaccount "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ConversationV1AccountGet(t *testing.T) {

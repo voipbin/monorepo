@@ -10,12 +10,13 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbotcallhandler"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
+	"monorepo/bin-chatbot-manager/pkg/chatbotcallhandler"
+	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 )
 
 // pagination parameters

@@ -5,7 +5,7 @@ package requestexternal
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
 
 var (

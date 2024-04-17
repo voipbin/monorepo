@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1ContactsGet handles /v1/contacts GET request

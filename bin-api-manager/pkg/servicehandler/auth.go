@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
+	"monorepo/bin-api-manager/lib/middleware"
 )
 
 // AuthLogin generate jwt token of an customer

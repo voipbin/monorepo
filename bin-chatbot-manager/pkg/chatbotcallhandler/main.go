@@ -5,17 +5,18 @@ package chatbotcallhandler
 import (
 	"context"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatgpthandler"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/dbhandler"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/service"
+	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
+	"monorepo/bin-chatbot-manager/pkg/chatgpthandler"
+	"monorepo/bin-chatbot-manager/pkg/dbhandler"
 )
 
 // ChatbotcallHandler define

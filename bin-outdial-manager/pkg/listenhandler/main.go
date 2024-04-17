@@ -6,12 +6,13 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/outdialhandler"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/outdialtargethandler"
+	"monorepo/bin-outdial-manager/pkg/outdialhandler"
+	"monorepo/bin-outdial-manager/pkg/outdialtargethandler"
 )
 
 // pagination parameters

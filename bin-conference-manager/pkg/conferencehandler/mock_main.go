@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	conference "monorepo/bin-conference-manager/models/conference"
+	action "monorepo/bin-flow-manager/models/action"
 )
 
 // MockConferenceHandler is a mock of ConferenceHandler interface.

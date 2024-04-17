@@ -1,7 +1,7 @@
 package response
 
 import (
-	cmcampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	cmcampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 // BodyCampaigncallsGET is response body define for

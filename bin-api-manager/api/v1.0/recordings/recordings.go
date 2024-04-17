@@ -1,19 +1,21 @@
 package recordings
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // recordingsGET handles GET /recordings request.
 // It returns list of calls of the given customer.
+//
 //	@Summary		List recordings
 //	@Description	get recordings of the customer
 //	@Produce		json
@@ -80,6 +82,7 @@ func recordingsGET(c *gin.Context) {
 
 // recordingsIDGET handles GET /recordings/<id> request.
 // It returns a detail recording info.
+//
 //	@Summary		Returns a detail recording information.
 //	@Description	Returns a detial recording information of the given recording id.
 //	@Produce		json
@@ -121,6 +124,7 @@ func recordingsIDGET(c *gin.Context) {
 
 // recordingsIDDELETE handles DELETE /recordings/<id> request.
 // It deletes a recording info.
+//
 //	@Summary		Deletes a recording and returns a deleted recording information.
 //	@Description	Deletes a recording and returns a deleted recording information of the given recording id.
 //	@Produce		json

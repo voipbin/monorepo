@@ -1,7 +1,7 @@
 package response
 
 import (
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	nmnumber "monorepo/bin-number-manager/models/number"
 )
 
 // BodyNumbersGET is rquest body define for

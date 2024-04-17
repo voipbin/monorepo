@@ -1,20 +1,23 @@
 package outplans
 
 import (
+	_ "monorepo/bin-campaign-manager/models/outplan" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // outplansPOST handles POST /outplans request.
 // It creates a new outplan with the given info and returns created outplan info.
+//
 //	@Summary		Create a new outplan and returns detail created outplan info.
 //	@Description	Create a new outplan and returns detail created outplan info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func outplansPOST(c *gin.Context) {
 
 // outplansGET handles GET /outplans request.
 // It gets a list of outplans with the given info.
+//
 //	@Summary		Gets a list of outplans.
 //	@Description	Gets a list of outplans
 //	@Produce		json
@@ -126,6 +130,7 @@ func outplansGET(c *gin.Context) {
 
 // outplansIDGET handles GET /outplans/{id} request.
 // It returns detail outplans info.
+//
 //	@Summary		Returns detail outplans info.
 //	@Description	Returns detail outplans info of the given outplans id.
 //	@Produce		json
@@ -167,6 +172,7 @@ func outplansIDGET(c *gin.Context) {
 
 // outplansIDDELETE handles DELETE /outplans/{id} request.
 // It deletes a exist outplan info.
+//
 //	@Summary		Delete a existing outplan.
 //	@Description	Delete a existing outplan.
 //	@Produce		json
@@ -210,6 +216,7 @@ func outplansIDDELETE(c *gin.Context) {
 // outplansIDPUT handles PUT /outplans/{id} request.
 // It updates a exist outplan info with the given outplan info.
 // And returns updated outplan info if it succeed.
+//
 //	@Summary		Update a outplan and reuturns updated outplan info.
 //	@Description	Update a outplan and returns detail updated outplan info.
 //	@Produce		json
@@ -261,6 +268,7 @@ func outplansIDPUT(c *gin.Context) {
 // outplansIDDialInfoPUT handles PUT /outplans/{id}/dialinfo request.
 // It updates a exist outplan info with the given outplan info.
 // And returns updated outplan info if it succeed.
+//
 //	@Summary		Update a outplan and reuturns updated outplan info.
 //	@Description	Update a outplan and returns detail updated outplan info.
 //	@Produce		json

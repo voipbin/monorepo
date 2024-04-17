@@ -6,10 +6,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 // bridgeLeftJoin handles the case which join channel left from the call bridge

@@ -7,11 +7,12 @@ import (
 	reflect "reflect"
 	"testing"
 
+	rmextension "monorepo/bin-registrar-manager/models/extension"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_RegistrarExtensionCreate(t *testing.T) {

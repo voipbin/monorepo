@@ -1,6 +1,6 @@
 package response
 
-import tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
+import tmtag "monorepo/bin-tag-manager/models/tag"
 
 // BodyTagsGET is response body define for
 // GET /v1.0/tags

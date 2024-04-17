@@ -1,19 +1,21 @@
 package agents
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // agentsPOST handles POST /agents request.
 // It creates a new agent.
+//
 //	@Summary		Create a new agent.
 //	@Description	create a new agent
 //	@Produce		json
@@ -60,6 +62,7 @@ func agentsPOST(c *gin.Context) {
 
 // agentIDDelete handles DELETE /agents/<agent-id> request.
 // It deletes the agent.
+//
 //	@Summary		Delete the agent
 //	@Description	Delete the agent of the given id
 //	@Produce		json
@@ -108,6 +111,7 @@ func agentsIDDelete(c *gin.Context) {
 
 // agentIDGet handles GET /agents/<agent-id> request.
 // It gets the agent.
+//
 //	@Summary		Get the agent
 //	@Description	Get the agent of the given id
 //	@Produce		json
@@ -151,6 +155,7 @@ func agentsIDGet(c *gin.Context) {
 
 // agentsGET handles GET /agents request.
 // It returns list of agents of the given user.
+//
 //	@Summary		List agents
 //	@Description	get agents of the user
 //	@Produce		json
@@ -237,6 +242,7 @@ func agentsGET(c *gin.Context) {
 // agentsIDPUT handles PUT /agents/{id} request.
 // It updates a agent basic info with the given info.
 // And returns updated agent info if it succeed.
+//
 //	@Summary		Update an agent and reuturns updated agent info.
 //	@Description	Update an agent and returns detail updated agent info.
 //	@Produce		json
@@ -287,6 +293,7 @@ func agentsIDPUT(c *gin.Context) {
 // agentsIDAddressesPUT handles PUT /agents/{id}/Addresses request.
 // It updates a agent's addresses info with the given info.
 // And returns updated agent info if it succeed.
+//
 //	@Summary		Update an agent info.
 //	@Description	Update an agent addresses info.
 //	@Produce		json
@@ -336,6 +343,7 @@ func agentsIDAddressesPUT(c *gin.Context) {
 
 // agentsIDTagIDsPUT handles PUT /agents/{id}/tag_ids request.
 // It updates a agent's tag_ids info with the given info.
+//
 //	@Summary		Update an agent's tag_id info.
 //	@Description	Update an agent tag_ids info.
 //	@Produce		json
@@ -385,6 +393,7 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 
 // agentsIDStatusPUT handles PUT /agents/{id}/status request.
 // It updates a agent's status info with the given info.
+//
 //	@Summary		Update an agent's status info.
 //	@Description	Update an agent status info.
 //	@Produce		json
@@ -436,6 +445,7 @@ func agentsIDStatusPUT(c *gin.Context) {
 
 // agentsIDPermissionPUT handles PUT /agents/{id}/permission request.
 // It updates a agent's permission info with the given info.
+//
 //	@Summary		Update an agent's permission info.
 //	@Description	Update an agent permission info.
 //	@Produce		json
@@ -487,6 +497,7 @@ func agentsIDPermissionPUT(c *gin.Context) {
 
 // agentsIDPasswordPUT handles PUT /agents/{id}/password request.
 // It updates a agent's password info with the given info.
+//
 //	@Summary		Update an agent's password info.
 //	@Description	Update an agent password info.
 //	@Produce		json

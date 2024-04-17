@@ -1,20 +1,23 @@
 package chatroommessages
 
 import (
+	_ "monorepo/bin-chat-manager/models/messagechatroom" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // chatroommessagesPOST handles POST /chatroommessages request.
 // It creates a new chatroommessage with the given info and returns created chatroommessage info.
+//
 //	@Summary		Create a new chatroommessage and returns detail created chatroommessage info.
 //	@Description	Create a new chatroommessage and returns detail created chatroommessage info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func chatroommessagesPOST(c *gin.Context) {
 
 // chatroommessagesGET handles GET /chatroommessages request.
 // It gets a list of chatroommessages with the given info.
+//
 //	@Summary		Gets a list of chatroommessages.
 //	@Description	Gets a list of chatroommessages
 //	@Produce		json
@@ -129,6 +133,7 @@ func chatroommessagesGET(c *gin.Context) {
 
 // chatroommessagesIDGET handles GET /chatroommessages/{id} request.
 // It returns detail chatroommessage info.
+//
 //	@Summary		Returns detail chatroommessage info.
 //	@Description	Returns detail chatroommessage info of the given chatroommessage id.
 //	@Produce		json
@@ -170,6 +175,7 @@ func chatroommessagesIDGET(c *gin.Context) {
 
 // chatroommessagesIDDELETE handles DELETE /chatroommessages/{id} request.
 // It deletes the chatroommessage and returns deleted chatroommessage info.
+//
 //	@Summary		Deletes a chatroommessage and returns detail chatroommessage info.
 //	@Description	Deletes a chatroommessage and returns detail chatroommessage info.
 //	@Produce		json

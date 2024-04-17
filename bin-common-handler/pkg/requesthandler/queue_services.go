@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	qmservice "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
-	qmrequest "gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
+	qmservice "monorepo/bin-queue-manager/models/service"
+	qmrequest "monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // QueueV1ServiceTypeQueuecallStart sends a request to queue-manager

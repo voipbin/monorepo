@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	ari "monorepo/bin-call-manager/models/ari"
+	channel "monorepo/bin-call-manager/models/channel"
+	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockChannelHandler is a mock of ChannelHandler interface.

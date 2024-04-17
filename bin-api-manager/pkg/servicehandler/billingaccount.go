@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 )
 
 // billingAccountGet validates the billing account's ownership and returns the billing account info.

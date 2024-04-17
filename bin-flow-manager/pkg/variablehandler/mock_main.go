@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	variable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	variable "monorepo/bin-flow-manager/models/variable"
 )
 
 // MockVariableHandler is a mock of VariableHandler interface.

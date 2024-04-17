@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-campaign-manager/models/campaigncall"
+
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 )
 
 // EventHandleActiveflowDeleted handles activeflow's deleted event.

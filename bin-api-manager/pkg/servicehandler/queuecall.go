@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
 // queuecallGet validates the queuecall's ownership and returns the queuecall info.

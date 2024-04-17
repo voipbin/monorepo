@@ -5,19 +5,20 @@ import (
 	"flag"
 	"time"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/api"
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/pkg/servicehandler"
+	"monorepo/bin-hook-manager/api"
+	"monorepo/bin-hook-manager/api/models/common"
+	"monorepo/bin-hook-manager/pkg/servicehandler"
 )
 
 const serviceName = commonoutline.ServiceNameHookManager

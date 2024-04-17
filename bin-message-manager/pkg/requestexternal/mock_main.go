@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	messagebird "gitlab.com/voipbin/bin-manager/message-manager.git/models/messagebird"
+	messagebird "monorepo/bin-message-manager/models/messagebird"
 )
 
 // MockRequestExternal is a mock of RequestExternal interface.

@@ -3,9 +3,9 @@ package activeflowhandler
 import (
 	"context"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	"monorepo/bin-flow-manager/models/variable"
 )
 
 // variableSubstitueAddress substitue the address with variables

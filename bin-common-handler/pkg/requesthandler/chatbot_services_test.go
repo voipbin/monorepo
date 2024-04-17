@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbservice "monorepo/bin-chatbot-manager/models/service"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {

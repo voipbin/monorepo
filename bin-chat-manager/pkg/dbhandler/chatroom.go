@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
+	"monorepo/bin-chat-manager/models/chatroom"
 )
 
 const (

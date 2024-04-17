@@ -6,8 +6,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 // ARIStasisStart handles StasisStart ARI event for conference types.

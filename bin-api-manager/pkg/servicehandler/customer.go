@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // customerGet validates the customer's ownership and returns the customer info.

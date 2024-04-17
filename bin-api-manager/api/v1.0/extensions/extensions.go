@@ -1,19 +1,21 @@
 package extensions
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // extensionsPOST handles POST /extension request.
 // It creates a new extension with the given info and returns created extension info.
+//
 //	@Summary		Create a new domain and returns detail created extension info.
 //	@Description	Create a new extension and returns detail created extension info.
 //	@Produce		json
@@ -58,6 +60,7 @@ func extensionsPOST(c *gin.Context) {
 
 // extensionsGET handles GET /extensions request.
 // It gets a list of extensions with the given info.
+//
 //	@Summary		Gets a list of extensions.
 //	@Description	Gets a list of extensions
 //	@Produce		json
@@ -125,6 +128,7 @@ func extensionsGET(c *gin.Context) {
 
 // extensionsIDGET handles GET /extensions/{id} request.
 // It returns detail extension info.
+//
 //	@Summary		Returns detail extension info.
 //	@Description	Returns detail extension info of the given extension id.
 //	@Produce		json
@@ -167,6 +171,7 @@ func extensionsIDGET(c *gin.Context) {
 // extensionsIDPUT handles PUT /extensions/{id} request.
 // It updates a exist extension info with the given extension info.
 // And returns updated extension info if it succeed.
+//
 //	@Summary		Update a extension and reuturns updated extension info.
 //	@Description	Update a extension and returns detail updated extension info.
 //	@Produce		json
@@ -217,6 +222,7 @@ func extensionsIDPUT(c *gin.Context) {
 
 // extensionsIDDELETE handles DELETE /extensions/{id} request.
 // It deletes a exist extensions info.
+//
 //	@Summary		Delete a existing extension.
 //	@Description	Delete a existing extension.
 //	@Produce		json

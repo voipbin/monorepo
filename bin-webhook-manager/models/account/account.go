@@ -1,10 +1,11 @@
 package account
 
 import (
-	"github.com/gofrs/uuid"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-webhook-manager/models/webhook"
 )
 
 // Account defines

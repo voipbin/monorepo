@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"net/url"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+	bmrequest "monorepo/bin-billing-manager/pkg/listenhandler/models/request"
+	bmresponse "monorepo/bin-billing-manager/pkg/listenhandler/models/response"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	bmrequest "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/request"
-	bmresponse "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // BillingV1AccountGets returns list of billing accounts.

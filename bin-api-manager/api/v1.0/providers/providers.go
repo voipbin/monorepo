@@ -1,19 +1,21 @@
 package providers
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // providersGET handles GET /providers request.
 // It returns list of providers of the given customer.
+//
 //	@Summary		List providers
 //	@Description	get providers of the customer
 //	@Produce		json
@@ -82,6 +84,7 @@ func providersGET(c *gin.Context) {
 
 // providersPOST handles POST /providers request.
 // It creates a new provider.
+//
 //	@Summary		Create a new provider.
 //	@Description	create a new provider
 //	@Produce		json
@@ -138,6 +141,7 @@ func providersPOST(c *gin.Context) {
 
 // providersIDDelete handles DELETE /providers/<provider-id> request.
 // It deletes the provider.
+//
 //	@Summary		Delete the provider
 //	@Description	Delete the provider of the given id
 //	@Produce		json
@@ -185,6 +189,7 @@ func providersIDDelete(c *gin.Context) {
 
 // providersIDGet handles GET /providers/<provider-id> request.
 // It gets the provider.
+//
 //	@Summary		Get the provider
 //	@Description	Get the provider of the given id
 //	@Produce		json
@@ -228,6 +233,7 @@ func providersIDGet(c *gin.Context) {
 // providersIDPUT handles PUT /providers/{id} request.
 // It updates a provider basic info with the given info.
 // And returns updated provider info if it succeed.
+//
 //	@Summary		Update an provider and reuturns updated provider info.
 //	@Description	Update an provider and returns detail updated provider info.
 //	@Produce		json

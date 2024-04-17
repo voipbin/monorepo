@@ -4,14 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
+	"monorepo/bin-conference-manager/models/conferencecall"
+	"monorepo/bin-conference-manager/models/service"
+	"monorepo/bin-conference-manager/pkg/conferencecallhandler"
+	"monorepo/bin-conference-manager/pkg/conferencehandler"
 )
 
 func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {

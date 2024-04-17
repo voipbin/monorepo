@@ -7,12 +7,15 @@ import (
 	"fmt"
 	"strconv"
 
-	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	"monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	rmroute "monorepo/bin-route-manager/models/route"
+
+	uuid "github.com/gofrs/uuid"
+
+	"monorepo/bin-call-manager/models/call"
 )
 
 const (

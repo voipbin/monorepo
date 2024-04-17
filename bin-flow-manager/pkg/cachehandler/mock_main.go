@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	variable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	activeflow "monorepo/bin-flow-manager/models/activeflow"
+	flow "monorepo/bin-flow-manager/models/flow"
+	variable "monorepo/bin-flow-manager/models/variable"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

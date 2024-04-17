@@ -7,18 +7,21 @@ import (
 	"fmt"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+	mmmessage "monorepo/bin-message-manager/models/message"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
+	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/billinghandler"
 )
 
 // SubscribeHandler interface

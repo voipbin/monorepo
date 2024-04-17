@@ -5,14 +5,16 @@ package taghandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/tag-manager.git/pkg/dbhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-tag-manager/models/tag"
+	"monorepo/bin-tag-manager/pkg/dbhandler"
 )
 
 // TagHandler interfaces

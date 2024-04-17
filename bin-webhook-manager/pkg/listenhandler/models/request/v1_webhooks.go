@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	"monorepo/bin-webhook-manager/models/webhook"
 )
 
 // V1DataWebhooksPost is

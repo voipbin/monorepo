@@ -7,11 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	omoutdial "monorepo/bin-outdial-manager/models/outdial"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_OutdialV1OutdialCreate(t *testing.T) {

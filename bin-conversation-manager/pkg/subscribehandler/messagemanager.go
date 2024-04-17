@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	mmmessage "monorepo/bin-message-manager/models/message"
+
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-conversation-manager/models/conversation"
 )
 
 // processEventMessageMessageCreated handles the message-manager's message_created event.

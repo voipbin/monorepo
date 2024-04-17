@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
+	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
 )
 
 // MockStorageHandler is a mock of StorageHandler interface.

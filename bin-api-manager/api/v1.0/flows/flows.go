@@ -1,20 +1,23 @@
 package flows
 
 import (
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // flowsPOST handles POST /flows request.
 // It creates a new flow with the given info and returns created flow info.
+//
 //	@Summary		Create a new flow and returns detail created flow info.
 //	@Description	Create a new flow and returns detail created flow info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func flowsPOST(c *gin.Context) {
 
 // flowsGET handles GET /flows request.
 // It gets a list of flows with the given info.
+//
 //	@Summary		Gets a list of flows.
 //	@Description	Gets a list of flows
 //	@Produce		json
@@ -127,6 +131,7 @@ func flowsGET(c *gin.Context) {
 
 // flowsIDGET handles GET /flows/{id} request.
 // It returns detail flow info.
+//
 //	@Summary		Returns detail flow info.
 //	@Description	Returns detail flow info of the given flow id.
 //	@Produce		json
@@ -169,6 +174,7 @@ func flowsIDGET(c *gin.Context) {
 // flowsIDPUT handles PUT /flows/{id} request.
 // It updates a exist flow info with the given flow info.
 // And returns updated flow info if it succeed.
+//
 //	@Summary		Update a flow and reuturns updated flow info.
 //	@Description	Update a flow and returns detail updated flow info.
 //	@Produce		json
@@ -226,6 +232,7 @@ func flowsIDPUT(c *gin.Context) {
 
 // flowsIDDELETE handles DELETE /flows/{id} request.
 // It deletes a exist flow info.
+//
 //	@Summary		Delete a existing flow.
 //	@Description	Delete a existing flow.
 //	@Produce		json

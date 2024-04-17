@@ -7,10 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	rmprovider "monorepo/bin-route-manager/models/provider"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 )
 
 func Test_RouteV1ProviderCreate(t *testing.T) {

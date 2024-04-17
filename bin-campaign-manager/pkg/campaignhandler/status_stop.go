@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	"monorepo/bin-campaign-manager/models/campaign"
 )
 
 // UpdateStatusStopping updates the campaign's status to the stopping.

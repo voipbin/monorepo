@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	ari "monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 // EventHandlerStasisStart handles StasisStart ARI event

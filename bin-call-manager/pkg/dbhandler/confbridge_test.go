@@ -6,12 +6,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 )
 
 func Test_ConfbridgeCreateAndGet(t *testing.T) {

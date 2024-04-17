@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	chat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
+	chat "monorepo/bin-chat-manager/models/chat"
 )
 
 // MockChatHandler is a mock of ChatHandler interface.

@@ -8,8 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"monorepo/bin-flow-manager/models/variable"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 func Test_SubstituteString(t *testing.T) {

@@ -1,20 +1,23 @@
 package queues
 
 import (
+	qmqueue "monorepo/bin-queue-manager/models/queue"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // queuesGET handles GET /queues request.
 // It returns list of queues of the given customer.
+//
 //	@Summary		List qeueus
 //	@Description	get queues of the customer
 //	@Produce		json
@@ -83,6 +86,7 @@ func queuesGET(c *gin.Context) {
 
 // queuesPOST handles POST /queues request.
 // It creates a new queue.
+//
 //	@Summary		Create a new queue.
 //	@Description	create a new queue
 //	@Produce		json
@@ -139,6 +143,7 @@ func queuesPOST(c *gin.Context) {
 
 // queuesIDDelete handles DELETE /queues/<queue-id> request.
 // It deletes the queue.
+//
 //	@Summary		Delete the queue
 //	@Description	Delete the queue of the given id
 //	@Produce		json
@@ -186,6 +191,7 @@ func queuesIDDelete(c *gin.Context) {
 
 // queuesIDGet handles GET /queues/<queue-id> request.
 // It gets the queue.
+//
 //	@Summary		Get the queue
 //	@Description	Get the queue of the given id
 //	@Produce		json
@@ -229,6 +235,7 @@ func queuesIDGet(c *gin.Context) {
 // queuesIDPUT handles PUT /queues/{id} request.
 // It updates a queue basic info with the given info.
 // And returns updated queue info if it succeed.
+//
 //	@Summary		Update an queue and reuturns updated queue info.
 //	@Description	Update an queue and returns detail updated queue info.
 //	@Produce		json
@@ -280,6 +287,7 @@ func queuesIDPUT(c *gin.Context) {
 // queuesIDTagIDsPUT handles PUT /queues/{id}/tag_ids request.
 // It updates a queue's tag_ids info with the given info.
 // And returns error if it failed.
+//
 //	@Summary		Update an queue's tag_ids info.
 //	@Description	Update the queue's tag_ids.
 //	@Produce		json
@@ -330,6 +338,7 @@ func queuesIDTagIDsPUT(c *gin.Context) {
 
 // queuesIDRoutingMethodPUT handles PUT /queues/{id}/routing_method request.
 // It updates a queue's routing_method info with the given info.
+//
 //	@Summary		Update an queue's tag_id info.
 //	@Description	Update an queue routing_method info.
 //	@Produce		json
@@ -380,6 +389,7 @@ func queuesIDRoutingMethodPUT(c *gin.Context) {
 
 // queuesIDActionsPUT handles PUT /queues/{id}/actions request.
 // It updates a queue's action hadnle with the given info.
+//
 //	@Summary		Update an queue's action handle info.
 //	@Description	Update the queue's action handle info.
 //	@Produce		json

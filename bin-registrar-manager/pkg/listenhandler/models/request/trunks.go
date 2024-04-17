@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
+	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
 // V1DataTrunksPost is

@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	chatbotchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 )
 
 // chatbotcallGet validates the chatbotcall's ownership and returns the chatbotcall info.

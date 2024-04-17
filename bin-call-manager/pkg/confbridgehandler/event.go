@@ -3,7 +3,7 @@ package confbridgehandler
 import (
 	"context"
 
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

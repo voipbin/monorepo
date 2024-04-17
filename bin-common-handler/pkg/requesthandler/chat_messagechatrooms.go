@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ChatV1MessagechatroomGets sends a request to chat-manager

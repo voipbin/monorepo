@@ -7,13 +7,14 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
+	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-billing-manager/pkg/listenhandler/models/response"
 )
 
 // processV1AccountsGet handles GET /v1/accounts request

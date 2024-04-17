@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
+	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
 // trunkGet validates the trunk's ownership and returns the trunk info.

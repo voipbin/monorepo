@@ -5,11 +5,12 @@ import (
 	reflect "reflect"
 	"testing"
 
+	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_NumberV1AvailableNumberGets(t *testing.T) {

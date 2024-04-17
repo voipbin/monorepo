@@ -6,14 +6,15 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/cachehandler"
+	"monorepo/bin-chat-manager/models/media"
+	"monorepo/bin-chat-manager/models/messagechat"
+	"monorepo/bin-chat-manager/pkg/cachehandler"
 )
 
 func Test_MessagechatCreate(t *testing.T) {
@@ -159,7 +160,6 @@ func Test_MessagechatGets(t *testing.T) {
 		})
 	}
 }
-
 
 func Test_MessagechatDelete(t *testing.T) {
 

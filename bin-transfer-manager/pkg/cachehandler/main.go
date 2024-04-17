@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	"monorepo/bin-transfer-manager/models/transfer"
 )
 
 type handler struct {

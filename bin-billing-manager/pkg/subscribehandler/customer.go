@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // processEventCMCustomerDeleted handles the customer-manager's customer_deleted event

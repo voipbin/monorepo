@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	chatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	service "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
+	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	service "monorepo/bin-chatbot-manager/models/service"
 )
 
 // MockChatbotcallHandler is a mock of ChatbotcallHandler interface.

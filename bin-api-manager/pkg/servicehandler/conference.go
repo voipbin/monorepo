@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"net/http"
 
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+
+	cfconference "monorepo/bin-conference-manager/models/conference"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // conferenceGet vaildates the customer's ownership and returns the conference info.

@@ -1,7 +1,7 @@
 package response
 
 import (
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 )
 
 // BodyCustomersGET is rquest body define for

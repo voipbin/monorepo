@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	"monorepo/bin-conference-manager/models/conferencecall"
 )
 
 // V1DataServicesTypeConferencecallPost is

@@ -4,13 +4,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
+	"github.com/golang/mock/gomock"
+
+	"monorepo/bin-number-manager/models/availablenumber"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/dbhandler"
+	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
 )
 
 func TestGetAvailableNumbersTelnyx(t *testing.T) {

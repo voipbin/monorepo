@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/pkg/errors"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/pkg/errors"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // BillingV1BillingGets returns list of billings.

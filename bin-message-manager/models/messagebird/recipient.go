@@ -3,9 +3,9 @@ package messagebird
 import (
 	"strconv"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	"monorepo/bin-message-manager/models/target"
 )
 
 // Recipient defines

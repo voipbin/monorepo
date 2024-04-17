@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	agent "monorepo/bin-agent-manager/models/agent"
+	customer "monorepo/bin-customer-manager/models/customer"
+	action "monorepo/bin-flow-manager/models/action"
+	queue "monorepo/bin-queue-manager/models/queue"
 )
 
 // MockQueueHandler is a mock of QueueHandler interface.

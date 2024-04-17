@@ -7,10 +7,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // recordingReferenceTypeCall creates a new reocording for call type

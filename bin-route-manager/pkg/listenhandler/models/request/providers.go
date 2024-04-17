@@ -1,7 +1,7 @@
 package request
 
 import (
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	"monorepo/bin-route-manager/models/provider"
 )
 
 // V1DataProvidersPost is

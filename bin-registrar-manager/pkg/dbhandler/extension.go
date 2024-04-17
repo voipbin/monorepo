@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"monorepo/bin-registrar-manager/models/extension"
 )
 
 const (

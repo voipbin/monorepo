@@ -7,13 +7,15 @@ import (
 	"database/sql"
 	"errors"
 
-	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	uuid "github.com/gofrs/uuid"
+
+	"monorepo/bin-conference-manager/models/conference"
+	"monorepo/bin-conference-manager/models/conferencecall"
+	"monorepo/bin-conference-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for database handle

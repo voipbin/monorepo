@@ -1,7 +1,7 @@
 package response
 
 import (
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	rmroute "monorepo/bin-route-manager/models/route"
 )
 
 // BodyRoutesGET is rquest body define for

@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
+	hmhook "monorepo/bin-hook-manager/models/hook"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/golang/mock/gomock"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ConversationV1Hook(t *testing.T) {

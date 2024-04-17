@@ -1,21 +1,24 @@
 package conversations
 
 import (
+	cvmedia "monorepo/bin-conversation-manager/models/media"
+	_ "monorepo/bin-conversation-manager/models/message" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	_ "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // conversationsGet handles GET /conversations request.
 // It gets a list of conversations with the given info.
+//
 //	@Summary		Gets a list of conversations.
 //	@Description	Gets a list of conversations
 //	@Produce		json
@@ -82,6 +85,7 @@ func conversationsGet(c *gin.Context) {
 
 // conversationsIDGet handles GET /conversations/{id} request.
 // It returns detail conversation info.
+//
 //	@Summary		Returns detail conversation info.
 //	@Description	Returns detail conversation info of the given conversation id.
 //	@Produce		json
@@ -123,6 +127,7 @@ func conversationsIDGet(c *gin.Context) {
 
 // conversationsIDPut handles PUT /conversations/{id} request.
 // It updates the  conversation info.
+//
 //	@Summary		Update the conversation info.
 //	@Description	Update the conversation info of the given conversation id.
 //	@Produce		json
@@ -170,6 +175,7 @@ func conversationsIDPut(c *gin.Context) {
 
 // conversationsIDMessagesGet handles GET /conversations/{id}/messages request.
 // It gets a list of conversation messages with the given info.
+//
 //	@Summary		Gets a list of conversation messages.
 //	@Description	Gets a list of conversation messages
 //	@Produce		json
@@ -239,6 +245,7 @@ func conversationsIDMessagesGet(c *gin.Context) {
 
 // conversationsIDMessagesPost handles POST /conversations/<conversation-id>/messages request.
 // It sends a message with the given info and returns sent message info.
+//
 //	@Summary		Send a message and returns detail sent message info.
 //	@Description	Send a message and returns a sent message info.
 //	@Produce		json

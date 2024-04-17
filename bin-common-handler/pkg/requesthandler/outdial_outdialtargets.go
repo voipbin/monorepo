@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
-	omrequest "gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/listenhandler/models/request"
+	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+	omrequest "monorepo/bin-outdial-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // OutdialV1OutdialtargetCreate creates a outdial target and returns created outdial target

@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // processEventNMNumberCreated handles the number-manager's number_created event

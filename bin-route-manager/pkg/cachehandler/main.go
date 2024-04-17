@@ -8,8 +8,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	"monorepo/bin-route-manager/models/provider"
+	"monorepo/bin-route-manager/models/route"
 )
 
 type handler struct {

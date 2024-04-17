@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-campaign-manager/models/outplan"
 )
 
 const (

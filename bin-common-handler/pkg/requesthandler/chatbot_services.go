@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
-	cbrequest "gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbservice "monorepo/bin-chatbot-manager/models/service"
+	cbrequest "monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ChatbotV1ServiceTypeChabotcallStart sends a request to chat-manager

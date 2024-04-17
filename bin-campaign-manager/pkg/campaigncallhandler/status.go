@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 // Done updates the campaigncall status to done and update the outdialtarget's status depends on the result.

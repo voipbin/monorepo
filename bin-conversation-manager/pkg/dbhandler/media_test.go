@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/cachehandler"
+	"monorepo/bin-conversation-manager/models/media"
+	"monorepo/bin-conversation-manager/pkg/cachehandler"
 )
 
 func Test_MediaCreate(t *testing.T) {

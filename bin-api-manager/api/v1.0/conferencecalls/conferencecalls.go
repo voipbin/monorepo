@@ -1,19 +1,21 @@
 package conferencecalls
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // conferencecallsGET handles GET /conferencecalls request.
 // It returns list of conferencecalls of the given customer.
+//
 //	@Summary		Get list of conferencecalls
 //	@Description	get conferences of the customer
 //	@Produce		json
@@ -81,6 +83,7 @@ func conferencecallsGET(c *gin.Context) {
 
 // conferencecallsIDGET handles GET /conferencecalls/{id} request.
 // It returns detail conferencecall info.
+//
 //	@Summary		Returns detail conferencecall info.
 //	@Description	Returns detail conferencecall info of the given conferencecall id.
 //	@Produce		json
@@ -123,6 +126,7 @@ func conferencecallsIDGET(c *gin.Context) {
 
 // conferencecallsIDDELETE handles DELETE /conferencecalls/{id} request.
 // It kicks the conferencecall from the conference.
+//
 //	@Summary		Kicks the conferencecall from the conference.
 //	@Description	Kicks the conferencecall.
 //	@Produce		json

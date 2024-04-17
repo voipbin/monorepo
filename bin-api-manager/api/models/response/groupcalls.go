@@ -1,7 +1,7 @@
 package response
 
 import (
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 )
 
 // BodyGroupcallsGET is rquest body define for

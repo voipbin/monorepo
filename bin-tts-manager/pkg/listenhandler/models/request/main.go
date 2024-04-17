@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
+	"monorepo/bin-tts-manager/models/tts"
 )
 
 // V1DataSpeechesPost is

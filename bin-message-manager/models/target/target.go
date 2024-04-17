@@ -1,7 +1,7 @@
 package target
 
 import (
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 // Target defines

@@ -3,8 +3,9 @@ package conference
 import (
 	"encoding/json"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	uuid "github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // WebhookMessage defines conference webhook event

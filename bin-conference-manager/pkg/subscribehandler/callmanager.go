@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/sirupsen/logrus"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processEventCMConfbridgeJoined handles the call-manager's call related event

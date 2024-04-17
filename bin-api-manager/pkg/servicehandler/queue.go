@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	qmqueue "monorepo/bin-queue-manager/models/queue"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
 
 // queueGet validates the queue's ownership and returns the queue info.

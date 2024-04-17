@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	"monorepo/bin-billing-manager/models/account"
 )
 
 const (

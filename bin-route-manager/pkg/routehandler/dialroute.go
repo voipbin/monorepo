@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	"monorepo/bin-route-manager/models/route"
 )
 
 // DialrouteGets returns routes for dialing

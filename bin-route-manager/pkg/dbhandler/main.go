@@ -7,12 +7,13 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/cachehandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-route-manager/models/provider"
+	"monorepo/bin-route-manager/models/route"
+	"monorepo/bin-route-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for call_manager database handle

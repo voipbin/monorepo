@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	"monorepo/bin-conversation-manager/models/account"
 )
 
 // note: this test changes the actual test account's webhook address on line.

@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	cfrequest "gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler/models/request"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	cfconference "monorepo/bin-conference-manager/models/conference"
+	cfrequest "monorepo/bin-conference-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ConferenceV1ConferenceGet gets the conference.

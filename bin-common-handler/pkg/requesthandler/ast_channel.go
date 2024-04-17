@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/gofrs/uuid"
-	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	cmari "monorepo/bin-call-manager/models/ari"
+	cmchannel "monorepo/bin-call-manager/models/channel"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // AstChannelAnswer sends the channel answer request

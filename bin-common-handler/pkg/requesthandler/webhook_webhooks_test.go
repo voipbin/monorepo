@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_WebhookV1WebhookSend(t *testing.T) {

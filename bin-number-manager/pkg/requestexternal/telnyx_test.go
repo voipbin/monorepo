@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
 
 const (

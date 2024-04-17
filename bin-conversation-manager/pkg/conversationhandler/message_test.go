@@ -5,16 +5,17 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
+	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/media"
+	"monorepo/bin-conversation-manager/models/message"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
+	"monorepo/bin-conversation-manager/pkg/linehandler"
+	"monorepo/bin-conversation-manager/pkg/messagehandler"
 )
 
 func Test_MessageSend(t *testing.T) {

@@ -1,7 +1,7 @@
 package arieventhandler
 
 import (
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 func (h *eventHandler) getChannelContextType(cn *channel.Channel) channel.ContextType {

@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	transfer "monorepo/bin-transfer-manager/models/transfer"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

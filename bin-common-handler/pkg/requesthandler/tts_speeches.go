@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/request"
+	tmtts "monorepo/bin-tts-manager/models/tts"
+	"monorepo/bin-tts-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TTSV1SpeecheCreate create speech-to-text.

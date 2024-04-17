@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
+	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
 func Test_ConvertWebhookMessage(t *testing.T) {

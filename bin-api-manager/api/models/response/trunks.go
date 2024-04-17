@@ -1,6 +1,6 @@
 package response
 
-import rmtrunks "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
+import rmtrunks "monorepo/bin-registrar-manager/models/trunk"
 
 // BodyTrunksGET is rquest body define for
 // GET /v1.0/trunks

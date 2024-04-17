@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"strings"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 // AddressGetSource gets the source address from the given channel

@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
+	"monorepo/bin-registrar-manager/models/astcontact"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RegistrarV1ContactGets sends the /v1/contacts GET request to registrar-manager

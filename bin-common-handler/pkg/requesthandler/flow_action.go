@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"monorepo/bin-flow-manager/models/action"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	uuid "github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // FlowV1ActionGet gets the action of the flow.

@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	outdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
-	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
-	outdialtargetcall "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtargetcall"
+	outdial "monorepo/bin-outdial-manager/models/outdial"
+	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+	outdialtargetcall "monorepo/bin-outdial-manager/models/outdialtargetcall"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

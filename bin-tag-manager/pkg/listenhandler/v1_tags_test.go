@@ -4,12 +4,13 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
-	"gitlab.com/voipbin/bin-manager/tag-manager.git/pkg/taghandler"
+	"monorepo/bin-tag-manager/models/tag"
+	"monorepo/bin-tag-manager/pkg/taghandler"
 )
 
 func TestProcessV1TagsGet(t *testing.T) {

@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"strconv"
 
-	uuid "github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	uuid "github.com/gofrs/uuid"
+
+	"monorepo/bin-conference-manager/models/conference"
 )
 
 const (

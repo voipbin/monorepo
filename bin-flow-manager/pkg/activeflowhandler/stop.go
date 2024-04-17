@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"monorepo/bin-flow-manager/models/activeflow"
 )
 
 // Stop stops activeflow

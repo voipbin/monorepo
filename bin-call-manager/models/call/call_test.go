@@ -3,7 +3,7 @@ package call
 import (
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"monorepo/bin-call-manager/models/ari"
 )
 
 func TestIsUpdatableStatus(t *testing.T) {

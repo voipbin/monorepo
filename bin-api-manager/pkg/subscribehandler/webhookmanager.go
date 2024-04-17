@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
 
 type commonWebhookData struct {

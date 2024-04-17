@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/pkg/servicehandler"
+	"monorepo/bin-hook-manager/api/models/common"
+	"monorepo/bin-hook-manager/pkg/servicehandler"
 )
 
 func setupServer(app *gin.Engine) {

@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
-	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	provider "monorepo/bin-route-manager/models/provider"
+	route "monorepo/bin-route-manager/models/route"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

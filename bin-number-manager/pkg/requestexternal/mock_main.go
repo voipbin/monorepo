@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	telnyx "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
+	telnyx "monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
 
 // MockRequestExternal is a mock of RequestExternal interface.

@@ -1,9 +1,11 @@
 package action
 
 import (
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+
 	"github.com/gofrs/uuid"
-	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // OptionAgentCall defines action agent_call's option.

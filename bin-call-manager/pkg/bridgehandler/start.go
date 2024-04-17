@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"monorepo/bin-call-manager/models/bridge"
 )
 
 func (h *bridgeHandler) Start(ctx context.Context, asteriskID string, bridgeID string, bridgeName string, bridgeType []bridge.Type) (*bridge.Bridge, error) {

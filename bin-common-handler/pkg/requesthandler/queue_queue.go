@@ -6,14 +6,17 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	qmrequest "gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	qmqueue "monorepo/bin-queue-manager/models/queue"
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
+	qmrequest "monorepo/bin-queue-manager/pkg/listenhandler/models/request"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // QueueV1QueueGets sends a request to queue-manager

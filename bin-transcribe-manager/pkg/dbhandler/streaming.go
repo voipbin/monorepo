@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
+	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
 // StreamingCreate creates a new streaming

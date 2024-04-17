@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	"monorepo/bin-billing-manager/models/account"
 )
 
 // Create creates a new account and return the created account.

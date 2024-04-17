@@ -3,12 +3,14 @@ package subscribehandler
 import (
 	"testing"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
+	"monorepo/bin-billing-manager/pkg/billinghandler"
 )
 
 func Test_processEventCMCallProgressing(t *testing.T) {

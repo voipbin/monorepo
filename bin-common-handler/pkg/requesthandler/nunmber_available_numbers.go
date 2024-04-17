@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // NumberV1AvailableNumberGets sends a request to number-manager

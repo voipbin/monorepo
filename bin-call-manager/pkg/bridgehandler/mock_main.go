@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	bridge "monorepo/bin-call-manager/models/bridge"
 )
 
 // MockBridgeHandler is a mock of BridgeHandler interface.

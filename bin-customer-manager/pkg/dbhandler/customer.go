@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"monorepo/bin-customer-manager/models/customer"
 )
 
 const (

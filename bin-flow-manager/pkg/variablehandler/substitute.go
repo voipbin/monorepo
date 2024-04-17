@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	"monorepo/bin-flow-manager/models/variable"
 )
 
 // SubstituteString substitutes the given data string with variables

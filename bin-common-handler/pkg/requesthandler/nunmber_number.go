@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	nmrequest "gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
+	nmnumber "monorepo/bin-number-manager/models/number"
+	nmrequest "monorepo/bin-number-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // NumberV1NumberGet sends a request to number-manager

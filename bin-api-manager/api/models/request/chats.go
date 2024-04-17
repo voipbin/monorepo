@@ -1,8 +1,9 @@
 package request
 
 import (
+	chatchat "monorepo/bin-chat-manager/models/chat"
+
 	"github.com/gofrs/uuid"
-	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 )
 
 // BodyChatsPOST is rquest body define for

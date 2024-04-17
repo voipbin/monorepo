@@ -3,9 +3,10 @@ package queuehandler
 import (
 	"context"
 
+	"monorepo/bin-queue-manager/models/queue"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
 
 // Delete updates the queue's basic info.

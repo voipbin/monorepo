@@ -3,12 +3,13 @@ package conferencecallhandler
 import (
 	"context"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	"monorepo/bin-conference-manager/models/conference"
+	"monorepo/bin-conference-manager/models/conferencecall"
 )
 
 // HealthCheck checks the given conferencecall's status.

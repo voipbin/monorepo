@@ -3,9 +3,10 @@ package transcribehandler
 import (
 	"context"
 
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

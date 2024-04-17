@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_QueueV1QueuecallGets(t *testing.T) {

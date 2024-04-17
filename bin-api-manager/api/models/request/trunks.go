@@ -1,7 +1,7 @@
 package request
 
 import (
-	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
+	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 )
 
 // BodyTrunksPOST is rquest body define for

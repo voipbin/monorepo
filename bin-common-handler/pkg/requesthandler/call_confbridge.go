@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmrecording "monorepo/bin-call-manager/models/recording"
+	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CallV1ConfbridgeCreate sends the request for confbridge create.

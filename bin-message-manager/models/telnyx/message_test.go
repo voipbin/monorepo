@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"testing"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	"monorepo/bin-message-manager/models/target"
 )
 
 func Test_messageUnmarshal(t *testing.T) {

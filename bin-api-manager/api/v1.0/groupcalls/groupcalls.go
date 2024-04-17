@@ -1,19 +1,21 @@
 package groupcalls
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // groupcallsPOST handles POST /groupcalls request.
 // It creates a new groupcall with the given info and returns created groupcall info.
+//
 //	@Summary		Create a new groupcall and returns detail created groupcall info.
 //	@Description	Create a new groupcall and returns detail created groupcall info.
 //	@Produce		json
@@ -58,6 +60,7 @@ func groupcallsPOST(c *gin.Context) {
 
 // groupcallsGET handles GET /groupcalls request.
 // It gets a list of groupcalls with the given info.
+//
 //	@Summary		Gets a list of groupcalls.
 //	@Description	Gets a list of groupcalls
 //	@Produce		json
@@ -125,6 +128,7 @@ func groupcallsGET(c *gin.Context) {
 
 // groupcallsIDGET handles GET /groupcalls/{id} request.
 // It returns detail groupcall info.
+//
 //	@Summary		Returns detail groupcall info.
 //	@Description	Returns detail groupcall info of the given groupcall id.
 //	@Produce		json
@@ -165,6 +169,7 @@ func groupcallsIDGET(c *gin.Context) {
 
 // groupcallsIDHangupPOST handles POST /groupcalls/{id}/hangup request.
 // It hangup the groupcall.
+//
 //	@Summary		Hangup the groupcall.
 //	@Description	Hangup the groupcall of the given groupcall id.
 //	@Produce		json
@@ -205,6 +210,7 @@ func groupcallsIDHangupPOST(c *gin.Context) {
 
 // groupcallsIDDELETE handles DELETE /groupcalls/{id} request.
 // It deletes the groupcall.
+//
 //	@Summary		Delete the groupcall.
 //	@Description	Delete the groupcall of the given groupcall id.
 //	@Produce		json

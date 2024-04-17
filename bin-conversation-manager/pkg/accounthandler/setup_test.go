@@ -4,14 +4,15 @@ import (
 	"context"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
+	gomock "github.com/golang/mock/gomock"
+
+	"monorepo/bin-conversation-manager/models/account"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
+	"monorepo/bin-conversation-manager/pkg/linehandler"
 )
 
 func Test_setup(t *testing.T) {

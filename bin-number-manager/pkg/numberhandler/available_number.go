@@ -1,6 +1,6 @@
 package numberhandler
 
-import "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+import "monorepo/bin-number-manager/models/availablenumber"
 
 // GetAvailableNumbers gets the numbers from the number providers
 func (h *numberHandler) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {

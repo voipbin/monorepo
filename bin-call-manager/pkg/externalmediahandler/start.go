@@ -8,9 +8,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/externalmedia"
 )
 
 // Start starts the external media processing

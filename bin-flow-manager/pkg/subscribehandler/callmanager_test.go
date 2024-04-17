@@ -3,11 +3,14 @@ package subscribehandler
 import (
 	"testing"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	"monorepo/bin-flow-manager/pkg/activeflowhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 )
 
 func Test_processEvent_processEventCMCallHangup(t *testing.T) {

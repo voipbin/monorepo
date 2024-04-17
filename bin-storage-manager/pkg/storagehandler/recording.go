@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
+	"monorepo/bin-storage-manager/models/bucketfile"
 )
 
 // RecordingGet returns given recording's bucketfile info.

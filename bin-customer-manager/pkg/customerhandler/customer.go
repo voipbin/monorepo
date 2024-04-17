@@ -3,10 +3,11 @@ package customerhandler
 import (
 	"context"
 
+	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
 // Delete deletes the customer.

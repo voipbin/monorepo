@@ -6,36 +6,45 @@ import (
 	"testing"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	cbservice "monorepo/bin-chatbot-manager/models/service"
+
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
+	cfservice "monorepo/bin-conference-manager/models/service"
+
+	conversationmedia "monorepo/bin-conversation-manager/models/media"
+	conversationmessage "monorepo/bin-conversation-manager/models/message"
+
+	mmmessage "monorepo/bin-message-manager/models/message"
+
+	"monorepo/bin-queue-manager/models/queuecall"
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
+	qmservice "monorepo/bin-queue-manager/models/service"
+
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	cfservice "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
-	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	conversationmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	qmservice "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/stackhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/activeflow"
+	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/models/stack"
+	"monorepo/bin-flow-manager/models/variable"
+	"monorepo/bin-flow-manager/pkg/actionhandler"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
+	"monorepo/bin-flow-manager/pkg/stackhandler"
+	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
 func Test_actionHandleConnect(t *testing.T) {

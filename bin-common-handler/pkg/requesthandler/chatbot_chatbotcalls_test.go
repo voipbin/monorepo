@@ -7,11 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {

@@ -1,10 +1,12 @@
 package request
 
 import (
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	chatmedia "monorepo/bin-chat-manager/models/media"
+	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
+
 	"github.com/gofrs/uuid"
-	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // BodyChatmessagesPOST is rquest body define for

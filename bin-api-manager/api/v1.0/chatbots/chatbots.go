@@ -1,20 +1,23 @@
 package chatbots
 
 import (
+	_ "monorepo/bin-chatbot-manager/models/chatbot" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // chatbotsPOST handles POST /chatbots request.
 // It creates a new chatbot with the given info and returns created chatbot info.
+//
 //	@Summary		Create a new chatbot and returns detail created chatbot info.
 //	@Description	Create a new chatbot and returns detail created chatbot info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func chatbotsPOST(c *gin.Context) {
 
 // chatbotsGET handles GET /chatbots request.
 // It gets a list of chatbot with the given info.
+//
 //	@Summary		Gets a list of chatbots.
 //	@Description	Gets a list of chatbots
 //	@Produce		json
@@ -126,6 +130,7 @@ func chatbotsGET(c *gin.Context) {
 
 // chatbotsIDGET handles GET /chatbots/{id} request.
 // It returns detail chatbot info.
+//
 //	@Summary		Returns detail chatbot info.
 //	@Description	Returns detail chatbot info of the given chatbot id.
 //	@Produce		json
@@ -167,6 +172,7 @@ func chatbotsIDGET(c *gin.Context) {
 
 // chatbotsIDDELETE handles DELETE /chatbots/{id} request.
 // It deletes a exist chatbot info.
+//
 //	@Summary		Delete a existing chatbot.
 //	@Description	Delete a existing chatbot.
 //	@Produce		json
@@ -209,6 +215,7 @@ func chatbotsIDDELETE(c *gin.Context) {
 
 // chatbotsIDPUT handles PUT /chatbots/<chatbot-id> request.
 // It updates the existed chatbot with the given info and returns updated chatbot info.
+//
 //	@Summary		Update the chatbot and returns updated chatbot info.
 //	@Description	Update the chatbot and returns updated chatbot info.
 //	@Produce		json

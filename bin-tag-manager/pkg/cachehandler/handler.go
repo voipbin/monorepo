@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
+	"monorepo/bin-tag-manager/models/tag"
 )
 
 // getSerialize returns cached serialized info.

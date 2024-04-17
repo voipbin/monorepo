@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_CallV1ExternalMediaGets(t *testing.T) {

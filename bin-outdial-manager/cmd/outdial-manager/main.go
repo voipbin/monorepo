@@ -10,21 +10,22 @@ import (
 	"syscall"
 	"time"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/outdialhandler"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/outdialtargethandler"
+	"monorepo/bin-outdial-manager/pkg/cachehandler"
+	"monorepo/bin-outdial-manager/pkg/dbhandler"
+	"monorepo/bin-outdial-manager/pkg/listenhandler"
+	"monorepo/bin-outdial-manager/pkg/outdialhandler"
+	"monorepo/bin-outdial-manager/pkg/outdialtargethandler"
 )
 
 const serviceName = commonoutline.ServiceNameOutdialManager
