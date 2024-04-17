@@ -201,8 +201,6 @@ commands:
       - run:
           name: Config service account
           command: |
-            cd << parameters.to >>
-            ls -tlr
             echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
             gcloud auth activate-service-account --key-file=./google_service_account.json
             gcloud config set project $CC_GCP_PROJECT_ID
@@ -211,7 +209,6 @@ commands:
       - run:
           name: Config registry
           command: |
-            cd << parameters.to >>
             cat google_service_account.json | docker login -u _json_key_base64 --password-stdin pkg.dev
             gcloud auth activate-service-account --key-file=google_service_account.json
             gcloud auth configure-docker $CC_REGISTRY_LOCATION
@@ -219,6 +216,5 @@ commands:
       - run:
           name: Building Docker image and push
           command: |
-            cd << parameters.to >>
-            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:latest .
+            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:latest -f << parameters.to >>/Dockerfile .
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1
