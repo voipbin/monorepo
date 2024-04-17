@@ -1,8 +1,8 @@
 version: 2.1
 
-context_production: &context_production
+gitlab_context: &gitlab_context
   context: 
-    - production
+    - gitlab
 
 jobs:
   ensure:
@@ -10,25 +10,19 @@ jobs:
       - image: cimg/go:1.22
     steps:
       - checkout
-      # - run:
-      #     name: config the gitconfig
-      #     command: |
-      #       echo "" > ~/.gitconfig
-      #       git config --global url."https://$CC_GITLAB_USERNAME:$CC_GITLAB_TOKEN@gitlab.com".insteadOf "https://gitlab.com"
+      - run:
+          name: config the gitconfig
+          command: |
+            echo "" > ~/.gitconfig
+            git config --global url."https://$CC_GITLAB_USERNAME:$CC_GITLAB_TOKEN@gitlab.com".insteadOf "https://gitlab.com"
 
       - run:
           name: Install dependencies and vendor
           command: |
-            ls -tlr
+            go mod download
+            go mod vendor
             pwd
             ls -tlr
-          # command: |
-          #   ls -tlr
-          #   cd bin-agent-manager
-          #   go mod download
-          #   go mod vendor
-          #   pwd
-          #   ls -tlr
 
       - persist_to_workspace:
           root: /home/circleci/project
@@ -96,6 +90,8 @@ jobs:
       - run:
           name: Building Docker image and push
           command: |
+            sed -i -e "s/GL_DEPLOY_USER/$CC_GITLAB_USERNAME/g" Dockerfile
+            sed -i -e "s/GL_DEPLOY_TOKEN/$CC_GITLAB_TOKEN/g" Dockerfile
             docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:latest .
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1
 
@@ -130,13 +126,13 @@ workflows:
   build_and_release:
     jobs:
       - ensure:
-          <<: *context_production
+          <<: *gitlab_context
       - test:
-          <<: *context_production
+          <<: *gitlab_context
           requires:
             - ensure
       - build:
-          <<: *context_production
+          <<: *gitlab_context
           requires:
             - test
       - release-approval:
@@ -144,7 +140,7 @@ workflows:
           requires:
             - build
       - release:
-          <<: *context_production
+          <<: *gitlab_context
           requires:
             - build
             - release-approval
