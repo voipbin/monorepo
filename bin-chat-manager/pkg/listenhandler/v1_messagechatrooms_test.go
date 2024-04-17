@@ -1,0 +1,287 @@
+package listenhandler
+
+import (
+	reflect "reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chathandler"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/messagechatroomhandler"
+)
+
+func Test_v1MessagechatroomsGet(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		chatroomID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+		filters    map[string]string
+
+		responseMessagechatrooms []*messagechatroom.Messagechatroom
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"gets by chatroom id return 1 item",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=d260ac86-3507-11ed-9594-cfe9c21b2ca3&filter_deleted=false",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("d260ac86-3507-11ed-9594-cfe9c21b2ca3"),
+			"2020-10-10T03:30:17.000000",
+			10,
+			map[string]string{
+				"deleted":     "false",
+				"chatroom_id": "d260ac86-3507-11ed-9594-cfe9c21b2ca3",
+			},
+
+			[]*messagechatroom.Messagechatroom{
+				{
+					ID: uuid.FromStringOrNil("d3162c64-3507-11ed-afa2-cbb3e904a7b3"),
+				},
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"d3162c64-3507-11ed-afa2-cbb3e904a7b3","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"gets by chatroom id return 2 item",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=3b683b7c-3508-11ed-97bb-9be24437edc2&filter_deleted=false",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("3b683b7c-3508-11ed-97bb-9be24437edc2"),
+			"2020-10-10T03:30:17.000000",
+			10,
+			map[string]string{
+				"deleted":     "false",
+				"chatroom_id": "3b683b7c-3508-11ed-97bb-9be24437edc2",
+			},
+
+			[]*messagechatroom.Messagechatroom{
+				{
+					ID: uuid.FromStringOrNil("3bacdc46-3508-11ed-8422-1766fe775e1a"),
+				},
+				{
+					ID: uuid.FromStringOrNil("3c985216-3508-11ed-b760-5bd81cf30313"),
+				},
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"3bacdc46-3508-11ed-8422-1766fe775e1a","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"3c985216-3508-11ed-b760-5bd81cf30313","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"gets by chat id return 0 item",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=4829801e-3503-11ed-aecf-4f1b13ce1b9f&filter_deleted=false",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("4829801e-3503-11ed-aecf-4f1b13ce1b9f"),
+			"2020-10-10T03:30:17.000000",
+			10,
+			map[string]string{
+				"deleted":     "false",
+				"chatroom_id": "4829801e-3503-11ed-aecf-4f1b13ce1b9f",
+			},
+
+			[]*messagechatroom.Messagechatroom{},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockChat := chathandler.NewMockChatHandler(mc)
+			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
+
+			mockMessagechatroom := messagechatroomhandler.NewMockMessagechatroomHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				chatHandler:     mockChat,
+				chatroomHandler: mockChatroom,
+
+				messagechatroomHandler: mockMessagechatroom,
+			}
+
+			mockMessagechatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseMessagechatrooms, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1MessagechatroomsIDGet(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		messagechatroomID uuid.UUID
+
+		responseMessagechatroom *messagechatroom.Messagechatroom
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messagechatrooms/92c89948-3508-11ed-9b4f-77544678aa39",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+				Data:     nil,
+			},
+
+			uuid.FromStringOrNil("92c89948-3508-11ed-9b4f-77544678aa39"),
+
+			&messagechatroom.Messagechatroom{
+				ID: uuid.FromStringOrNil("92c89948-3508-11ed-9b4f-77544678aa39"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"92c89948-3508-11ed-9b4f-77544678aa39","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockChat := chathandler.NewMockChatHandler(mc)
+			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
+
+			mockMessagechatroom := messagechatroomhandler.NewMockMessagechatroomHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				chatHandler:     mockChat,
+				chatroomHandler: mockChatroom,
+
+				messagechatroomHandler: mockMessagechatroom,
+			}
+
+			mockMessagechatroom.EXPECT().Get(gomock.Any(), tt.messagechatroomID).Return(tt.responseMessagechatroom, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1MessagechatroomsIDDelete(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		messagechatroomID uuid.UUID
+
+		responseMessagechatroom *messagechatroom.Messagechatroom
+		expectRes               *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messagechatrooms/ce2b7f32-3508-11ed-8a20-a32e4374af3f",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: "application/json",
+				Data:     nil,
+			},
+
+			uuid.FromStringOrNil("ce2b7f32-3508-11ed-8a20-a32e4374af3f"),
+
+			&messagechatroom.Messagechatroom{
+				ID: uuid.FromStringOrNil("ce2b7f32-3508-11ed-8a20-a32e4374af3f"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"ce2b7f32-3508-11ed-8a20-a32e4374af3f","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockChat := chathandler.NewMockChatHandler(mc)
+			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
+
+			mockMessagechatroom := messagechatroomhandler.NewMockMessagechatroomHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				chatHandler:     mockChat,
+				chatroomHandler: mockChatroom,
+
+				messagechatroomHandler: mockMessagechatroom,
+			}
+
+			mockMessagechatroom.EXPECT().Delete(gomock.Any(), tt.messagechatroomID).Return(tt.responseMessagechatroom, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
