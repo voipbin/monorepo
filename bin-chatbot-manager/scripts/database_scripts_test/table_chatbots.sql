@@ -1,0 +1,22 @@
+create table chatbots(
+  -- identity
+  id            binary(16),   -- id
+  customer_id   binary(16),   -- customer id
+
+  -- info
+  name        varchar(255),   -- name
+  detail      text,           -- detail description
+
+  engine_type varchar(255),   --
+  init_prompt text,           -- initial prompt
+
+  -- timestamps
+  tm_create datetime(6),  --
+  tm_update datetime(6),  --
+  tm_delete datetime(6),  --
+
+  primary key(id)
+);
+
+create index idx_chatbots_create on chatbots(tm_create);
+create index idx_chatbots_customer_id on chatbots(customer_id);
