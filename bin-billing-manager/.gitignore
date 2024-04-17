@@ -1,0 +1,4 @@
+vendor
+billing-manager
+.vscode
+!cmd/*
