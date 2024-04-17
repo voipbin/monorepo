@@ -1,0 +1,52 @@
+package request
+
+import (
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+)
+
+// V1DataConfbridgesPost is
+// v1 data type request struct for
+// /v1/confbridges POST
+type V1DataConfbridgesPost struct {
+	CustomerID uuid.UUID       `json:"customer_id,omitempty"`
+	Type       confbridge.Type `json:"type,omitempty"`
+}
+
+// V1DataConfbridgesIDExternalMediaPost is
+// v1 data type for
+// /v1/confbridges/<confbridge-id>/external-media POST
+type V1DataConfbridgesIDExternalMediaPost struct {
+	ExternalHost   string `json:"external_host,omitempty"`
+	Encapsulation  string `json:"encapsulation,omitempty"`
+	Transport      string `json:"transport,omitempty"`
+	ConnectionType string `json:"connection_type,omitempty"`
+	Format         string `json:"format,omitempty"`
+	Direction      string `json:"direction,omitempty"`
+}
+
+// V1DataConfbridgesIDRecordingStartPost is
+// v1 data type for
+// /v1/confbridges/<confbridge-id>/recording_start POST
+type V1DataConfbridgesIDRecordingStartPost struct {
+	Format       recording.Format `json:"format,omitempty"`         // Format to encode audio in. wav, mp3, ogg
+	EndOfSilence int              `json:"end_of_silence,omitempty"` // Maximum duration of silence, in seconds. 0 for no limit.
+	EndOfKey     string           `json:"end_of_key,omitempty"`     // DTMF input to terminate recording. none, any, *, #
+	Duration     int              `json:"duration,omitempty"`       // Maximum duration of the recording, in seconds. 0 for no limit.
+}
+
+// V1DataConfbridgesIDFlagsPost is
+// v1 data type for
+// /v1/confbridges/<confbridge-id>/flags POST
+type V1DataConfbridgesIDFlagsPost struct {
+	Flag confbridge.Flag `json:"flag,omitempty"` //
+}
+
+// V1DataConfbridgesIDFlagsDelete is
+// v1 data type for
+// /v1/confbridges/<confbridge-id>/flags DELETE
+type V1DataConfbridgesIDFlagsDelete struct {
+	Flag confbridge.Flag `json:"flag,omitempty"` //
+}

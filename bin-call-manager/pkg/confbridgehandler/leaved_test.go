@@ -1,0 +1,146 @@
+package confbridgehandler
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+)
+
+func Test_Leaved(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		channel *channel.Channel
+		bridge  *bridge.Bridge
+
+		responseConfbridge *confbridge.Confbridge
+
+		expectConfbridgeID uuid.UUID
+		expectCallID       uuid.UUID
+	}{
+		{
+			"normal",
+			&channel.Channel{
+				AsteriskID: "00:11:22:33:44:55",
+				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
+				StasisData: map[channel.StasisDataType]string{
+					"confbridge_id": "eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2",
+					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
+				},
+			},
+			&bridge.Bridge{
+				AsteriskID:    "00:11:22:33:44:55",
+				ID:            "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ReferenceID:   uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+			},
+
+			&confbridge.Confbridge{
+				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+				BridgeID: "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				Type:     confbridge.TypeConference,
+				ChannelCallIDs: map[string]uuid.UUID{
+					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
+					"82d7c562-d6d6-11ec-b40a-8b93a18cec7e": uuid.FromStringOrNil("82ff0e4c-d6d6-11ec-9b01-aba6fd69e457"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+
+			uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
+			uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
+		},
+		{
+			"confbridge connect type has 1 channel",
+			&channel.Channel{
+				AsteriskID: "00:11:22:33:44:55",
+				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
+				StasisData: map[channel.StasisDataType]string{
+					"confbridge_id": "72c6f936-d6d6-11ec-ae21-2f89b16a3e4b",
+					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
+				},
+			},
+			&bridge.Bridge{
+				AsteriskID:    "00:11:22:33:44:55",
+				ID:            "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ReferenceID:   uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
+			},
+
+			&confbridge.Confbridge{
+				ID:       uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
+				BridgeID: "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				Type:     confbridge.TypeConnect,
+				ChannelCallIDs: map[string]uuid.UUID{
+					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+
+			uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
+			uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := confbridgeHandler{
+				reqHandler:     mockReq,
+				db:             mockDB,
+				cache:          mockCache,
+				notifyHandler:  mockNotify,
+				bridgeHandler:  mockBridge,
+				channelHandler: mockChannel,
+			}
+			ctx := context.Background()
+
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(tt.channel, nil)
+
+			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, gomock.Any())
+
+			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, uuid.Nil).Return(&call.Call{}, nil)
+
+			if tt.responseConfbridge.Type == confbridge.TypeConnect && len(tt.responseConfbridge.ChannelCallIDs) == 1 && !h.flagExist(ctx, tt.responseConfbridge.Flags, confbridge.FlagNoAutoLeave) {
+				// Terminating
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
+				mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminating).Return(nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminating, gomock.Any())
+
+				mockBridge.EXPECT().Destroy(ctx, tt.responseConfbridge.BridgeID).Return(nil)
+			}
+
+			if err := h.Leaved(ctx, tt.channel, tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
