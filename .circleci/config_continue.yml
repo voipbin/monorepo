@@ -196,6 +196,7 @@ commands:
         default: "World"
     steps:
       - run: echo Hello << parameters.to >>
+      - setup_remote_docker
       - checkout
       - run:
           name: Config service account
