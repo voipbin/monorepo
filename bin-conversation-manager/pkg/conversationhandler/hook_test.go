@@ -1,0 +1,248 @@
+package conversationhandler
+
+import (
+	"context"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
+)
+
+func Test_Hook(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		uri  string
+		data []byte
+
+		expectAccountID uuid.UUID
+
+		responseAccount       *account.Account
+		responseConversations []*conversation.Conversation
+		responseUUIDs         []uuid.UUID
+		responseMessages      []*message.Message
+	}{
+		{
+			name: "normal",
+
+			uri: "https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-e6eb-11ec-bb81-c3cec34bd99c",
+			data: []byte(`{
+				"destination": "U11298214116e3afbad432b5794a6d3a0",
+				"events": [
+					{
+						"type": "message",
+						"message": {
+							"type": "text",
+							"id": "16173792131295",
+							"text": "Hello"
+						},
+						"webhookEventId": "01G49KHTWA1D2WF05D0VHEMGZE",
+						"deliveryContext": {
+							"isRedelivery": false
+						},
+						"timestamp": 1653884906096,
+						"source": {
+							"type": "user",
+							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+						},
+						"replyToken": "4bdd674a22cc479b8e9e429465396b76",
+						"mode": "active"
+					}
+				]
+			}`),
+
+			expectAccountID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+
+			responseAccount: &account.Account{
+				ID:   uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+				Type: account.TypeLine,
+			},
+			responseConversations: []*conversation.Conversation{
+				{
+					CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+				},
+			},
+			responseUUIDs: []uuid.UUID{
+				uuid.FromStringOrNil("cb285f42-0075-11ee-ad73-0fae8c027ffc"),
+			},
+			responseMessages: []*message.Message{
+				{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mocKUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &conversationHandler{
+				utilHandler:    mocKUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
+				messageHandler: mockMessage,
+				lineHandler:    mockLine,
+			}
+			ctx := context.Background()
+
+			mockAccount.EXPECT().Get(ctx, tt.expectAccountID).Return(tt.responseAccount, nil)
+
+			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+
+			// conversations
+			for i := 0; i < len(tt.responseConversations); i++ {
+				mocKUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
+				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())
+			}
+
+			// messages
+			for _, tmp := range tt.responseMessages {
+				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(&conversation.Conversation{}, nil)
+				mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), message.DirectionIncoming, message.StatusReceived, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&message.Message{}, nil)
+			}
+
+			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_hookLine(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		account *account.Account
+		data    []byte
+
+		responseConversation *conversation.Conversation
+
+		responseUUIDs         []uuid.UUID
+		responseConversations []*conversation.Conversation
+		responseMessages      []*message.Message
+	}{
+		{
+			name: "normal",
+
+			account: &account.Account{
+				ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+			},
+			data: []byte(`{
+				"destination": "U11298214116e3afbad432b5794a6d3a0",
+				"events": [
+					{
+						"type": "message",
+						"message": {
+							"type": "text",
+							"id": "16173792131295",
+							"text": "Hello"
+						},
+						"webhookEventId": "01G49KHTWA1D2WF05D0VHEMGZE",
+						"deliveryContext": {
+							"isRedelivery": false
+						},
+						"timestamp": 1653884906096,
+						"source": {
+							"type": "user",
+							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+						},
+						"replyToken": "4bdd674a22cc479b8e9e429465396b76",
+						"mode": "active"
+					}
+				]
+			}`),
+
+			responseConversation: &conversation.Conversation{
+				ID:            uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
+				ReferenceType: conversation.ReferenceTypeLine,
+			},
+
+			responseUUIDs: []uuid.UUID{
+				uuid.FromStringOrNil("4d94b5ca-0076-11ee-8c59-6fff2eb90055"),
+			},
+			responseConversations: []*conversation.Conversation{
+				{
+					CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+				},
+			},
+			responseMessages: []*message.Message{
+				{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &conversationHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				messageHandler: mockMessage,
+				lineHandler:    mockLine,
+			}
+
+			ctx := context.Background()
+
+			mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+
+			// conversations
+			for i := range tt.responseConversations {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
+				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())
+			}
+
+			// messages
+			for _, tmp := range tt.responseMessages {
+				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(tt.responseConversation, nil)
+				mockMessage.EXPECT().Create(
+					ctx,
+					tt.responseConversation.CustomerID,
+					tt.responseConversation.ID,
+					message.DirectionIncoming,
+					message.StatusReceived,
+					tt.responseConversation.ReferenceType,
+					tt.responseConversation.ReferenceID,
+					"",
+					tmp.Source,
+					tmp.Text,
+					tmp.Medias,
+				).Return(&message.Message{}, nil)
+			}
+
+			if err := h.hookLine(ctx, tt.account, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

@@ -1,0 +1,104 @@
+package conversationhandler
+
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+)
+
+// Get returns conversation
+func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
+	return h.db.ConversationGet(ctx, id)
+}
+
+// GetByReferenceInfo returns conversation
+func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
+	return h.db.ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID)
+}
+
+// GetsByCustomerID returns list of conversations
+func (h *conversationHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*conversation.Conversation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+	})
+	log.Debugf("Getting a list of conversations. customer_id: %s", customerID)
+
+	res, err := h.db.ConversationGetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	if err != nil {
+		log.Errorf("Could not get conversations. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// Create creates a new conversation and return a created conversation.
+func (h *conversationHandler) Create(
+	ctx context.Context,
+	customerID uuid.UUID,
+	name string,
+	detail string,
+	referenceType conversation.ReferenceType,
+	referenceID string,
+	source *commonaddress.Address,
+	participants []commonaddress.Address,
+) (*conversation.Conversation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Create",
+	})
+
+	id := h.utilHandler.UUIDCreate()
+	tmp := &conversation.Conversation{
+		ID:            id,
+		CustomerID:    customerID,
+		Name:          name,
+		Detail:        detail,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Source:        source,
+		Participants:  participants,
+	}
+
+	if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {
+		log.Errorf("Could not create conversation. err: %v", errCreate)
+		return nil, errCreate
+	}
+
+	res, err := h.db.ConversationGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get created conversation. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationCreated, res)
+
+	return res, nil
+}
+
+// Update updates conversation and return a updated conversation.
+func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string) (*conversation.Conversation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "Update",
+		"id":     id,
+		"name":   name,
+		"detail": detail,
+	})
+
+	if errSet := h.db.ConversationSet(ctx, id, name, detail); errSet != nil {
+		log.Errorf("Could not set conversation. err: %v", errSet)
+		return nil, errSet
+	}
+
+	res, err := h.db.ConversationGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated conversation. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationUpdated, res)
+
+	return res, nil
+}
