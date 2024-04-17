@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tts-manager
+  labels:
+    app: tts-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tts-manager
+  template:
+    metadata:
+      labels:
+        app: tts-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+      containers:
+        - name: tts-manager
+          image: tts-manager-image
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
+          command:
+            - '/app/tts-manager'
+          args:
+            - '-prom_endpoint'
+            - '/metrics'
+            - '-prom_listen_addr'
+            - ':2112'
+            - '-rabbit_addr'
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - '-gcp_credential'
+            - './google_service_account.json'
+            - '-gcp_project_id'
+            - 'voipbin-production'
+            - '-gcp_bucket_name'
+            - 'voipbin-tmp-bucket-europe-west4'
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "20m"
+              memory: "60M"
+        - name: http-server
+          image: python:3.9-bookworm
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
+          command:
+            - 'python3'
+          args:
+            - '-m'
+            - 'http.server'
+            - '80'
+            - '-d'
+            - '/shared-data'
+          ports:
+            - name: http
+              protocol: "TCP"
+              containerPort: 80
+          resources:
+            limits:
+              cpu: "20m"
+              memory: "30M"
