@@ -1,0 +1,72 @@
+package dbhandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+)
+
+// DBHandler interface for call_manager database handle
+type DBHandler interface {
+
+	// activeflow
+	ActiveflowCreate(ctx context.Context, af *activeflow.Activeflow) error
+	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error
+	ActiveflowDelete(ctx context.Context, id uuid.UUID) error
+	ActiveflowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*activeflow.Activeflow, error)
+	ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
+	ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error
+
+	// flow
+	FlowCreate(ctx context.Context, f *flow.Flow) error
+	FlowDelete(ctx context.Context, id uuid.UUID) error
+	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
+	FlowGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*flow.Flow, error)
+	FlowSetToCache(ctx context.Context, f *flow.Flow) error
+	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error
+	FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error
+
+	VariableCreate(ctx context.Context, t *variable.Variable) error
+	VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error)
+	VariableUpdate(ctx context.Context, t *variable.Variable) error
+}
+
+// handler database handler
+type handler struct {
+	util  utilhandler.UtilHandler
+	db    *sql.DB
+	cache cachehandler.CacheHandler
+}
+
+// handler errors
+var (
+	ErrNotFound = errors.New("record not found")
+)
+
+// list of default values
+const (
+	DefaultTimeStamp = "9999-01-01 00:00:000"
+)
+
+// NewHandler creates DBHandler
+func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
+	h := &handler{
+		util:  utilhandler.NewUtilHandler(),
+		db:    db,
+		cache: cache,
+	}
+	return h
+}
