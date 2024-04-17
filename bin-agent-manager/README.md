@@ -1,5 +1,5 @@
 # agent-manager
-The agnet-manager manages the agents and tags.
+The agnet-manager manages the agents.
 
 # Usage
 ```
