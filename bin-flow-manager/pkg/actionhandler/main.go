@@ -1,0 +1,26 @@
+package actionhandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package actionhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+)
+
+// actionHandler defines
+type actionHandler struct{}
+
+// ActionHandler fefines
+type ActionHandler interface {
+	ValidateActions(actions []action.Action) error
+	ActionFetchGet(act *action.Action, activeflowID uuid.UUID, referenceID uuid.UUID) ([]action.Action, error)
+	GenerateFlowActions(ctx context.Context, actions []action.Action) ([]action.Action, error)
+}
+
+// NewActionHandler returns ActionHandler
+func NewActionHandler() ActionHandler {
+	return &actionHandler{}
+}
