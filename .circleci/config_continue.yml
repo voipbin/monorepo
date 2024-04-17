@@ -1,7 +1,5 @@
 version: 2.1
 
-setup: true
-
 context_production: &context_production
   context: 
     - production
