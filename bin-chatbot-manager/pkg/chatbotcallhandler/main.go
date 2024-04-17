@@ -1,0 +1,117 @@
+package chatbotcallhandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package chatbotcallhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatgpthandler"
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/dbhandler"
+)
+
+// ChatbotcallHandler define
+type ChatbotcallHandler interface {
+	Delete(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
+	Get(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
+	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
+	GetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error)
+	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[string]string) ([]*chatbotcall.Chatbotcall, error)
+
+	ProcessStart(ctx context.Context, cb *chatbotcall.Chatbotcall) (*chatbotcall.Chatbotcall, error)
+	ProcessEnd(ctx context.Context, cb *chatbotcall.Chatbotcall) (*chatbotcall.Chatbotcall, error)
+
+	ServiceStart(
+		ctx context.Context,
+		customerID uuid.UUID,
+		chatbotID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType chatbotcall.ReferenceType,
+		referenceID uuid.UUID,
+		gender chatbotcall.Gender,
+		language string,
+	) (*service.Service, error)
+
+	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, message string) error
+}
+
+// chatbotcallHandler define
+type chatbotcallHandler struct {
+	utilHandler   utilhandler.UtilHandler
+	reqHandler    requesthandler.RequestHandler
+	notifyHandler notifyhandler.NotifyHandler
+	db            dbhandler.DBHandler
+
+	chatbotHandler chatbothandler.ChatbotHandler
+	chatgptHandler chatgpthandler.ChatgptHandler
+}
+
+var (
+	metricsNamespace = "chatbot_manager"
+
+	promChatbotcallCreateTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "chatbotcall_create_total",
+			Help:      "Total number of created chatbotcall with reference type.",
+		},
+		[]string{"reference_type"},
+	)
+	promChatInitProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "chatbotcall_chat_init_process_time",
+			Help:      "Process time of chat initialization.",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000, 6000,
+			},
+		},
+		[]string{"engine_type"},
+	)
+	promChatMessageProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "chatbotcall_chat_message_process_time",
+			Help:      "Process time of chat message.",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000, 6000,
+			},
+		},
+		[]string{"engine_type"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promChatbotcallCreateTotal,
+		promChatInitProcessTime,
+		promChatMessageProcessTime,
+	)
+}
+
+// NewChatbotcallHandler creates a new ChatbotHandler
+func NewChatbotcallHandler(
+	req requesthandler.RequestHandler,
+	notify notifyhandler.NotifyHandler,
+	db dbhandler.DBHandler,
+	chatbotHandler chatbothandler.ChatbotHandler,
+	chatgptHandler chatgpthandler.ChatgptHandler,
+) ChatbotcallHandler {
+	return &chatbotcallHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    req,
+		notifyHandler: notify,
+		db:            db,
+
+		chatbotHandler: chatbotHandler,
+		chatgptHandler: chatgptHandler,
+	}
+}

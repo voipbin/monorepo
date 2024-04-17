@@ -1,0 +1,4 @@
+vendor
+chatbot-manager
+.vscode
+!cmd/*
