@@ -132,16 +132,22 @@ jobs:
     docker:
       - image: cimg/go:1.22
     steps:
-      - checkout
-      - run:
-          command: |
-            ls -tlr
-            cd bin-agent-manager
-      - persist_to_workspace:
-          root: /home/circleci/project
-          paths:
-            - ./*
-            - ./.*
+      - sayhello: # invoke command "sayhello"
+          to: "bin-agent-manager"
+
+
+
+
+      # - checkout
+      # - run:
+      #     command: |
+      #       ls -tlr
+      #       cd bin-agent-manager
+      # - persist_to_workspace:
+      #     root: /home/circleci/project
+      #     paths:
+      #       - ./*
+      #       - ./.*
 
   ensure:
     docker:
@@ -254,3 +260,51 @@ jobs:
   #           cd k8s
   #           kustomize edit set image api-manager-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1
   #           kubectl apply -k ./ -v6
+
+
+commands:
+  sayhello:
+    description: "A very simple command for demonstration purposes"
+    parameters:
+      to:
+        type: string
+        default: "World"
+    steps:
+      - run: echo Hello << parameters.to >>
+      - checkout
+      - run:
+          name: Install dependencies and vendor
+          command: |
+            ls -tlr
+            cd << parameters.to >>
+            go mod download
+            go mod vendor
+            pwd
+            ls -tlr
+
+      - run:
+          name: Install extra dependencies
+          command: |
+            sudo apt-get update && sudo apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
+
+      - run:
+          name: Linting and vet
+          command: |
+            golangci-lint run -v --timeout 5m
+            go vet $(go list ./...)
+
+      - run:
+          name: Testing
+          command: |
+            go test -coverprofile cp.out -v $(go list ./...)
+            go tool cover -html=cp.out -o cp.html
+            go tool cover -func=cp.out
+
+      - run:
+          name: Run gotestsum
+          command: |
+            gotestsum --junitfile test-results.xml
+
+      - store_test_results:
+          path: test-results.xml
+
