@@ -5,12 +5,13 @@ package outdialhandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/dbhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-outdial-manager/models/outdial"
+	"monorepo/bin-outdial-manager/pkg/dbhandler"
 )
 
 // outdialHandler defines

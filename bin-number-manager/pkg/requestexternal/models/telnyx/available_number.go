@@ -1,8 +1,8 @@
 package telnyx
 
 import (
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"monorepo/bin-number-manager/models/availablenumber"
+	"monorepo/bin-number-manager/models/number"
 )
 
 // AvailableNumber type

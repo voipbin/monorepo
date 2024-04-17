@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
+	"monorepo/bin-webhook-manager/models/account"
 )
 
 // getSerialize returns cached serialized info.

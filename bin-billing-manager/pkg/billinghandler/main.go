@@ -5,18 +5,21 @@ package billinghandler
 import (
 	"context"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	mmmessage "monorepo/bin-message-manager/models/message"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
+	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
 // BillingHandler define

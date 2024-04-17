@@ -11,12 +11,13 @@ import (
 
 	"github.com/pion/rtp"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 )
 
 // mediaStreamRun starts the media stream forwarding

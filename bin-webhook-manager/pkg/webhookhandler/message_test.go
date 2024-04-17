@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
+	"monorepo/bin-webhook-manager/pkg/dbhandler"
 )
 
 func Test_sendMessage(t *testing.T) {

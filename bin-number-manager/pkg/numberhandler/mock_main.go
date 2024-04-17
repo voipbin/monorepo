@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
-	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	customer "monorepo/bin-customer-manager/models/customer"
+	flow "monorepo/bin-flow-manager/models/flow"
+	availablenumber "monorepo/bin-number-manager/models/availablenumber"
+	number "monorepo/bin-number-manager/models/number"
 )
 
 // MockNumberHandler is a mock of NumberHandler interface.

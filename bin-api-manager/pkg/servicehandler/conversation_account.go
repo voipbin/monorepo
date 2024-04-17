@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	cvaccount "monorepo/bin-conversation-manager/models/account"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cvaccount "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 )
 
 // conversationAccountGet validates the conversation account's ownership and returns the conversation account info.

@@ -9,19 +9,21 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-call-manager/models/common"
+
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
+	"monorepo/bin-call-manager/pkg/callhandler"
+	"monorepo/bin-call-manager/pkg/channelhandler"
+	"monorepo/bin-call-manager/pkg/confbridgehandler"
+	"monorepo/bin-call-manager/pkg/externalmediahandler"
+	"monorepo/bin-call-manager/pkg/groupcallhandler"
+	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
 // pagination parameters

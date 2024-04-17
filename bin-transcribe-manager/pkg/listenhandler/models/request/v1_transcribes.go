@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcribe"
 )
 
 // V1DataTranscribesPost is

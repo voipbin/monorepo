@@ -3,7 +3,7 @@ package numberhandlertelnyx
 import (
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
+	"monorepo/bin-number-manager/models/availablenumber"
 )
 
 // GetAvailableNumbers gets the numbers from the number providers

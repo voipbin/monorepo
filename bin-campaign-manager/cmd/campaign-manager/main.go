@@ -10,22 +10,23 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/subscribehandler"
+	"monorepo/bin-campaign-manager/pkg/cachehandler"
+	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
+	"monorepo/bin-campaign-manager/pkg/campaignhandler"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
+	"monorepo/bin-campaign-manager/pkg/listenhandler"
+	"monorepo/bin-campaign-manager/pkg/outplanhandler"
+	"monorepo/bin-campaign-manager/pkg/subscribehandler"
 )
 
 const serviceName = commonoutline.ServiceNameCampaignManager

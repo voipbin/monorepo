@@ -6,17 +6,19 @@ import (
 	"testing"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	agagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	agagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/groupcall"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 func Test_Start_ringall(t *testing.T) {

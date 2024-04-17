@@ -1,6 +1,6 @@
 package providernumber
 
-import "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+import "monorepo/bin-number-manager/models/number"
 
 // ProviderNumber defines
 type ProviderNumber struct {

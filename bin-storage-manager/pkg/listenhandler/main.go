@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
+	"monorepo/bin-storage-manager/pkg/storagehandler"
 )
 
 // pagination parameters

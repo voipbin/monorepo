@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+	"monorepo/bin-campaign-manager/models/campaign"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // Create creates a new campaign

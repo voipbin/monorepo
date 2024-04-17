@@ -5,14 +5,18 @@ import (
 	"fmt"
 	"net/http"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // callGet validates the call's ownership and returns the call info.

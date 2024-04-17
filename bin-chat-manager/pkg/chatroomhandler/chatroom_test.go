@@ -5,14 +5,15 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
+	"monorepo/bin-chat-manager/models/chatroom"
+	"monorepo/bin-chat-manager/pkg/dbhandler"
 )
 
 func Test_Get(t *testing.T) {

@@ -7,13 +7,15 @@ import (
 	"database/sql"
 	"errors"
 
-	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/cachehandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	uuid "github.com/gofrs/uuid"
+
+	queue "monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/pkg/cachehandler"
 )
 
 // default variables

@@ -1,7 +1,7 @@
 package availablenumber
 
 import (
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"monorepo/bin-number-manager/models/number"
 )
 
 // AvailableNumber struct represent number information

@@ -3,17 +3,19 @@ package recordingfiles
 import (
 	"net/http"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // recordingfilesIDGET handles GET /recordingfiles/<id> request.
 // It returns recording file.
+//
 //	@Summary		Download the recording file
 //	@Description	Download the recording file
 //	@Produce		json

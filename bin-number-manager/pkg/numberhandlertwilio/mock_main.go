@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
-	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	availablenumber "monorepo/bin-number-manager/models/availablenumber"
+	number "monorepo/bin-number-manager/models/number"
 )
 
 // MockNumberHandlerTwilio is a mock of NumberHandlerTwilio interface.

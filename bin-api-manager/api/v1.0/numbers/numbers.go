@@ -1,20 +1,23 @@
 package numbers
 
 import (
+	_ "monorepo/bin-number-manager/models/number" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/number-manager.git/models/number" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // numbersGET handles GET /numbers request.
 // It returns list of order numbers of the given customer.
+//
 //	@Summary		List order numbers
 //	@Description	get order numbers of the country
 //	@Produce		json
@@ -81,6 +84,7 @@ func numbersGET(c *gin.Context) {
 
 // numbersIDGET handles GET /numbers/<id> request.
 // It returns order numbers of the given id.
+//
 //	@Summary		Get order number
 //	@Description	get order number of the given id
 //	@Produce		json
@@ -123,6 +127,7 @@ func numbersIDGET(c *gin.Context) {
 
 // numbersPOST handles POST /numbers request.
 // It creates a new order number with the given info and returns created order number.
+//
 //	@Summary		Create a new number and returns detail created number info.
 //	@Description	Create a new number and returns detail created number info.
 //	@Produce		json
@@ -167,6 +172,7 @@ func numbersPOST(c *gin.Context) {
 
 // numbersIDDELETE handles DELETE /numbers/<id> request.
 // It deletes the given id of order number and returns the deleted order number.
+//
 //	@Summary		Delete order number
 //	@Description	delete order number of the given id and returns deleted item.
 //	@Produce		json
@@ -209,6 +215,7 @@ func numbersIDDELETE(c *gin.Context) {
 
 // numbersIDPUT handles PUT /numbers/<id> request.
 // It creates a new order number with the given info and returns created order number.
+//
 //	@Summary		Update the number's basic information.
 //	@Description	Update the number's basic information.
 //	@Produce		json
@@ -258,6 +265,7 @@ func numbersIDPUT(c *gin.Context) {
 
 // numbersIDFlowIDPUT handles PUT /numbers/<id>/flow_id request.
 // It updates the number's flow_id.
+//
 //	@Summary		Update the number's flow_id.
 //	@Description	Update the number's flow_id.
 //	@Produce		json
@@ -307,6 +315,7 @@ func numbersIDFlowIDPUT(c *gin.Context) {
 
 // numbersRenewPOST handles POST /numbers/renew request.
 // It renews the number's.
+//
 //	@Summary		Renew the numbers.
 //	@Description	Renew the numbers.
 //	@Produce		json

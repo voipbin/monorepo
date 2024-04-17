@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"monorepo/bin-message-manager/models/message"
 )
 
 // getSerialize returns cached serialized info.
@@ -38,6 +38,7 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 }
 
 // delSerialize deletes cached serialized info.
+//
 //nolint:unused // this is ok.
 func (h *handler) delSerialize(ctx context.Context, key string) error {
 	_, err := h.Cache.Del(ctx, key).Result()

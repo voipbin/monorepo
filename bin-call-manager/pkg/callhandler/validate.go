@@ -4,13 +4,14 @@ import (
 	"context"
 	"strings"
 
+	"monorepo/bin-billing-manager/models/billing"
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/dongri/phonenumber"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"monorepo/bin-call-manager/models/call"
 )
 
 // ValidateCustomerBalance returns true if the given customer has enough balance

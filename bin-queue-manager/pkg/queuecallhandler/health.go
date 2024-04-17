@@ -3,10 +3,12 @@ package queuecallhandler
 import (
 	"context"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-queue-manager/models/queuecall"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
 // HealthCheck checks the given call is still vaild

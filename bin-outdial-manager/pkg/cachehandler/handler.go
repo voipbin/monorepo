@@ -8,9 +8,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtargetcall"
+	"monorepo/bin-outdial-manager/models/outdial"
+	"monorepo/bin-outdial-manager/models/outdialtarget"
+	"monorepo/bin-outdial-manager/models/outdialtargetcall"
 )
 
 // getSerialize returns cached serialized info.

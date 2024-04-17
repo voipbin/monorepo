@@ -5,11 +5,12 @@ import (
 	reflect "reflect"
 	"testing"
 
+	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_StorageV1RecordingGet(t *testing.T) {

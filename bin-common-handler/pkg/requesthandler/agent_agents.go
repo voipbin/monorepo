@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	amrequest "gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
+	amagent "monorepo/bin-agent-manager/models/agent"
+	amrequest "monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // AgentV1AgentCreate sends a request to agent-manager

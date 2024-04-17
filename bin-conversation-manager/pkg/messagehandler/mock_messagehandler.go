@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	address "monorepo/bin-common-handler/models/address"
+	conversation "monorepo/bin-conversation-manager/models/conversation"
+	media "monorepo/bin-conversation-manager/models/media"
+	message "monorepo/bin-conversation-manager/models/message"
 )
 
 // MockMessageHandler is a mock of MessageHandler interface.

@@ -4,13 +4,14 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/billinghandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func Test_processV1BillingsGet(t *testing.T) {

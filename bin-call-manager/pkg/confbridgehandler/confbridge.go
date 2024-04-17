@@ -3,10 +3,11 @@ package confbridgehandler
 import (
 	"context"
 
+	"monorepo/bin-call-manager/models/confbridge"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
 
 // Delete deletes the confbridge

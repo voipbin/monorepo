@@ -3,10 +3,11 @@ package groupcallhandler
 import (
 	"context"
 
+	"monorepo/bin-call-manager/models/groupcall"
+	"monorepo/bin-call-manager/pkg/dbhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Delete deletes the groupcall.

@@ -6,12 +6,13 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/cachehandler"
+	"monorepo/bin-route-manager/models/route"
+	"monorepo/bin-route-manager/pkg/cachehandler"
 )
 
 func Test_RouteCreate(t *testing.T) {

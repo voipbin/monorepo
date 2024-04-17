@@ -4,14 +4,16 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
 func Test_EventCustomerDeleted(t *testing.T) {

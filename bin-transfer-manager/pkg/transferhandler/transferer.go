@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	"monorepo/bin-transfer-manager/models/transfer"
 )
 
 // TransfererHangup handles hungup transferer

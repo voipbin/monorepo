@@ -1,19 +1,21 @@
 package customers
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // customersPost handles POST /customers request.
 // It creates a new customer with the given info and returns created customer info.
+//
 //	@Summary		Create a new customer and returns detail created customer info.
 //	@Description	Create a new customer and returns detail created customer info.
 //	@Produce		json
@@ -71,6 +73,7 @@ func customersPost(c *gin.Context) {
 
 // customersGet handles GET /customers request.
 // It gets a list of customers with the given info.
+//
 //	@Summary		Gets a list of customers.
 //	@Description	Gets a list of customers
 //	@Produce		json
@@ -142,6 +145,7 @@ func customersGet(c *gin.Context) {
 
 // customersIDGet handles GET /customers/{id} request.
 // It returns detail customer info.
+//
 //	@Summary		Returns detail customer info.
 //	@Description	Returns detail customer info of the given customer id.
 //	@Produce		json
@@ -184,6 +188,7 @@ func customersIDGet(c *gin.Context) {
 // customersIDPut handles PUT /customers/{id} request.
 // It updates a exist customer info with the given customer info.
 // And returns updated customer info if it succeed.
+//
 //	@Summary		Update a customer.
 //	@Description	Update a customer and returns detail updated customer info.
 //	@Produce		json
@@ -231,6 +236,7 @@ func customersIDPut(c *gin.Context) {
 
 // customersIDDelete handles DELETE /customers/{id} request.
 // It deletes a exist customer info.
+//
 //	@Summary		Delete a existing customer.
 //	@Description	Delete a existing customer.
 //	@Produce		json
@@ -272,6 +278,7 @@ func customersIDDelete(c *gin.Context) {
 
 // customersIDBillingAccountIDPut handles PUT /customers/{id}/billing_account_id request.
 // It updates a customer's billing account id.
+//
 //	@Summary		Update a customer's billing account id.
 //	@Description	Update a customer's billing account id.
 //	@Produce		json

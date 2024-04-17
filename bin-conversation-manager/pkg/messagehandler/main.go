@@ -5,18 +5,19 @@ package messagehandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/smshandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/media"
+	"monorepo/bin-conversation-manager/models/message"
+	"monorepo/bin-conversation-manager/pkg/accounthandler"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
+	"monorepo/bin-conversation-manager/pkg/linehandler"
+	"monorepo/bin-conversation-manager/pkg/smshandler"
 )
 
 // MessageHandler defiens

@@ -5,15 +5,18 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-call-manager/models/confbridge"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
+	"monorepo/bin-conference-manager/models/conference"
+	"monorepo/bin-conference-manager/pkg/dbhandler"
 )
 
 func Test_RemoveConferencecallID(t *testing.T) {

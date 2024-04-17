@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"monorepo/bin-call-manager/models/ari"
 )
 
 // Kick kicks out the call from the conference

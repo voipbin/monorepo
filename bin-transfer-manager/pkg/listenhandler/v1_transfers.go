@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/listenhandler/models/request"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-transfer-manager/pkg/listenhandler/models/request"
 )
 
 // processV1TransfersPost handles POST /v1/transfers request

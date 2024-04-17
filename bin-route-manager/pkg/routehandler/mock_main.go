@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	route "monorepo/bin-route-manager/models/route"
 )
 
 // MockRouteHandler is a mock of RouteHandler interface.

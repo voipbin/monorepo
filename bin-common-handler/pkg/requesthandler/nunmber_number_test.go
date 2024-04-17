@@ -7,11 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_NumberV1NumberCreate(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // HoldOn holds the given channel

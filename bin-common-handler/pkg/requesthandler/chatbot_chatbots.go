@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cbchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	cbrequest "gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
+	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
+	cbrequest "monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ChatbotV1ChatbotGetsByCustomerID sends a request to chatbot-manager

@@ -8,8 +8,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/models/queuecall"
 )
 
 // getSerialize returns cached serialized info.

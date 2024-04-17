@@ -6,12 +6,13 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/cachehandler"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/pkg/cachehandler"
 )
 
 func Test_ChatbotcallCreate(t *testing.T) {

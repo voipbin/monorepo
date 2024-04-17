@@ -7,17 +7,18 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-registrar-manager/models/astaor"
+	"monorepo/bin-registrar-manager/models/astauth"
+	"monorepo/bin-registrar-manager/models/astcontact"
+	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/models/trunk"
+	"monorepo/bin-registrar-manager/pkg/cachehandler"
 )
 
 // list of const variables

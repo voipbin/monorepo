@@ -1,8 +1,8 @@
 package response
 
 import (
-	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+	omoutdial "monorepo/bin-outdial-manager/models/outdial"
+	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 )
 
 // BodyOutdialsGET is rquest body define for

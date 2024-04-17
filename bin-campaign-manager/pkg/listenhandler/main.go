@@ -6,13 +6,14 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
+	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
+	"monorepo/bin-campaign-manager/pkg/campaignhandler"
+	"monorepo/bin-campaign-manager/pkg/outplanhandler"
 )
 
 // pagination parameters

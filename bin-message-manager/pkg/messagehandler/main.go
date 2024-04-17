@@ -5,15 +5,16 @@ package messagehandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/messagehandlermessagebird"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/pkg/dbhandler"
+	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 )
 
 // list of hook suffix types

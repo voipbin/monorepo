@@ -1,20 +1,23 @@
 package billingaccounts
 
 import (
+	_ "monorepo/bin-billing-manager/models/account" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // billingAccountsPOST handles POST /billing_accounts request.
 // It creates a new billing account and returns created billing account.
+//
 //	@Summary		Create a new billing account
 //	@Description	create a new billing account
 //	@Produce		json
@@ -62,13 +65,13 @@ func billingAccountsPOST(c *gin.Context) {
 // billingaccountsGET handles GET /billingaccounts request.
 // It returns list of billing accounts of the given customer.
 
-//	@Summary		Get list of billing accounts
-//	@Description	get list of the customer's billing accounts
-//	@Produce		json
-//	@Param			page_size	query		int		false	"The size of results. Max 100"
-//	@Param			page_token	query		string	false	"The token. tm_create"
-//	@Success		200			{object}	response.BodyBillingAccountsGET
-//	@Router			/v1.0/billing_accounts [get]
+// @Summary		Get list of billing accounts
+// @Description	get list of the customer's billing accounts
+// @Produce		json
+// @Param			page_size	query		int		false	"The size of results. Max 100"
+// @Param			page_token	query		string	false	"The token. tm_create"
+// @Success		200			{object}	response.BodyBillingAccountsGET
+// @Router			/v1.0/billing_accounts [get]
 func billingaccountsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "billingaccountsGET",
@@ -127,6 +130,7 @@ func billingaccountsGET(c *gin.Context) {
 
 // billingAccountsIDDelete handles DELETE /billing_accounts/<billing_account-id> request.
 // It deletes the billing_account.
+//
 //	@Summary		delete billing account
 //	@Description	Delete billing account of the given id
 //	@Produce		json
@@ -169,6 +173,7 @@ func billingAccountsIDDelete(c *gin.Context) {
 
 // billingAccountsIDGET handles GET /billing_accounts/{id} request.
 // It returns detail billing account info.
+//
 //	@Summary		Get detail billing account info.
 //	@Description	Returns detail billing account info of the given call id.
 //	@Produce		json
@@ -210,6 +215,7 @@ func billingAccountsIDGET(c *gin.Context) {
 
 // billingAccountsIDPut handles PUT /billing_accounts/<billing_account-id> request.
 // It updates the billing_account.
+//
 //	@Summary		Update billing account
 //	@Description	Update billing account of the given id
 //	@Produce		json
@@ -258,6 +264,7 @@ func billingAccountsIDPut(c *gin.Context) {
 
 // billingAccountsIDPaymentInfoPut handles PUT /billing_accounts/<billing_account-id>/payment_info request.
 // It updates the billing_account.
+//
 //	@Summary		Update billing account's payment info
 //	@Description	Update billing account's payment info of the given id
 //	@Produce		json
@@ -307,6 +314,7 @@ func billingAccountsIDPaymentInfoPut(c *gin.Context) {
 
 // billingAccountsIDGET handles POST /billing_accounts/{id}/balance_add_force request.
 // Adds the given balance to the billing account.
+//
 //	@Summary		Adds the given balance to the billing account.
 //	@Description	Adds the given balance to the billing account.
 //	@Produce		json
@@ -355,6 +363,7 @@ func billingAccountsIDBalanceAddForcePOST(c *gin.Context) {
 
 // billingAccountsIDGET handles POST /billing_accounts/{id}/balance_add_force request.
 // Adds the given balance to the billing account.
+//
 //	@Summary		Adds the given balance to the billing account.
 //	@Description	Adds the given balance to the billing account.
 //	@Produce		json

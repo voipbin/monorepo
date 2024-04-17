@@ -7,16 +7,18 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-call-manager/pkg/listenhandler/models/response"
 )
 
 // processV1CallsGet handles GET /v1/calls request

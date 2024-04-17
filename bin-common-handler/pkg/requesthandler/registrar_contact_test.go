@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	astcontact "monorepo/bin-registrar-manager/models/astcontact"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_RegistrarV1ContactGets(t *testing.T) {

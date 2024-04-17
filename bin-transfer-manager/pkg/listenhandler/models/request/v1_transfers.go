@@ -1,10 +1,11 @@
 package request
 
 import (
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-transfer-manager/models/transfer"
 )
 
 // V1DataTransfersPost is

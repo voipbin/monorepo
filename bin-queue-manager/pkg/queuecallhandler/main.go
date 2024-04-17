@@ -7,19 +7,21 @@ import (
 	"fmt"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
+	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/models/service"
+	"monorepo/bin-queue-manager/pkg/dbhandler"
+	"monorepo/bin-queue-manager/pkg/queuehandler"
 )
 
 const (

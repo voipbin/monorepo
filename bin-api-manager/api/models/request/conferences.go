@@ -1,8 +1,9 @@
 package request
 
 import (
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	cfconference "monorepo/bin-conference-manager/models/conference"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
 )
 
 // ParamConferencesGET is rquest param define for

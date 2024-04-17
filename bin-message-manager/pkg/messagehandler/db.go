@@ -6,8 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/models/target"
 )
 
 // dbGets returns list of messges info of the given customer_id

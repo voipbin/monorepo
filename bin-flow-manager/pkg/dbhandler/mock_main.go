@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	variable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	action "monorepo/bin-flow-manager/models/action"
+	activeflow "monorepo/bin-flow-manager/models/activeflow"
+	flow "monorepo/bin-flow-manager/models/flow"
+	variable "monorepo/bin-flow-manager/models/variable"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

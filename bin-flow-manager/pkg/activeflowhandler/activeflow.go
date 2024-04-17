@@ -3,10 +3,11 @@ package activeflowhandler
 import (
 	"context"
 
+	"monorepo/bin-flow-manager/models/activeflow"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
 // Delete deletes activeflow

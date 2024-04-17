@@ -9,9 +9,10 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/pkg/cachehandler"
+
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_BridgeCreate(t *testing.T) {

@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/dbhandler"
+	"monorepo/bin-route-manager/models/provider"
+	"monorepo/bin-route-manager/pkg/dbhandler"
 )
 
 func Test_Get(t *testing.T) {

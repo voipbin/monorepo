@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 // v1CampaigncallsGet handles /v1/campaigncalls GET request

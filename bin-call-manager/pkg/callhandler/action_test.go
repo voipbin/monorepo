@@ -4,26 +4,29 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/variable"
+
+	tmtts "monorepo/bin-tts-manager/models/tts"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
-	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/call"
+	callapplication "monorepo/bin-call-manager/models/callapplication"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/channelhandler"
+	"monorepo/bin-call-manager/pkg/confbridgehandler"
+	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/externalmediahandler"
+	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
 func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {

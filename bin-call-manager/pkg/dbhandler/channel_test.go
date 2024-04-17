@@ -6,13 +6,14 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 )
 
 func Test_ChannelCreate(t *testing.T) {

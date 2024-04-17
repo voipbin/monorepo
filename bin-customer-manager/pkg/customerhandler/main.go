@@ -5,14 +5,15 @@ package customerhandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
 // CustomerHandler interface

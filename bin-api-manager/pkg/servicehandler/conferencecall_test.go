@@ -5,13 +5,16 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
 func Test_ConferencecallGet(t *testing.T) {

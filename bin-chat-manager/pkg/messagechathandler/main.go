@@ -5,17 +5,18 @@ package messagechathandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/messagechatroomhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-chat-manager/models/media"
+	"monorepo/bin-chat-manager/models/messagechat"
+	"monorepo/bin-chat-manager/pkg/chatroomhandler"
+	"monorepo/bin-chat-manager/pkg/dbhandler"
+	"monorepo/bin-chat-manager/pkg/messagechatroomhandler"
 )
 
 // messagechatHandler defines

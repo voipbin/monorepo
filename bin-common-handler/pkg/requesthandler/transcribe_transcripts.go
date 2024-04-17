@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/url"
 
-	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TranscribeV1TranscriptGets sends a request to transcribe-manager

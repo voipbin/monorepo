@@ -5,13 +5,16 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	rmroute "monorepo/bin-route-manager/models/route"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
 func Test_RouteGet(t *testing.T) {

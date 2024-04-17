@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	cmari "monorepo/bin-call-manager/models/ari"
+	cmchannel "monorepo/bin-call-manager/models/channel"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_AstChannelAnswer(t *testing.T) {

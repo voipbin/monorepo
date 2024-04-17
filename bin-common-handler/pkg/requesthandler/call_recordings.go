@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+	cmrecording "monorepo/bin-call-manager/models/recording"
+	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CallV1RecordingGets sends a request to call-manager

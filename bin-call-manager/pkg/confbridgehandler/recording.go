@@ -7,9 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // confbridgeHandler starts the confbridge recording

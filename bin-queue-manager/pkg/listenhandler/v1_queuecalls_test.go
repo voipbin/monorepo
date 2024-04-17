@@ -5,13 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
+	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/pkg/queuecallhandler"
 )
 
 func Test_processV1QueuecallsGet(t *testing.T) {

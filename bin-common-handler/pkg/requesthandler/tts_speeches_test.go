@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	tmtts "monorepo/bin-tts-manager/models/tts"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_TTSV1SpeecheCreate(t *testing.T) {

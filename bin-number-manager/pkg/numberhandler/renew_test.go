@@ -6,16 +6,17 @@ import (
 	"testing"
 	"time"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/dbhandler"
+	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
 )
 
 func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {

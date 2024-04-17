@@ -9,9 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/audiohandler"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/buckethandler"
+	"monorepo/bin-tts-manager/models/tts"
+	"monorepo/bin-tts-manager/pkg/audiohandler"
+	"monorepo/bin-tts-manager/pkg/buckethandler"
 )
 
 // TTSHandler intreface for tts handler

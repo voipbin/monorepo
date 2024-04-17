@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
-	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	gomock "github.com/golang/mock/gomock"
+
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 func Test_ARIStasisStart(t *testing.T) {

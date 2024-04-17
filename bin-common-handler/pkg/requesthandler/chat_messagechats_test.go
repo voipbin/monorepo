@@ -7,13 +7,14 @@ import (
 	"reflect"
 	"testing"
 
+	chatmedia "monorepo/bin-chat-manager/models/media"
+	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ChatV1MessagechatCreate(t *testing.T) {

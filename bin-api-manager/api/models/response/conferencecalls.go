@@ -1,7 +1,7 @@
 package response
 
 import (
-	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 )
 
 // BodyConferencecallsGET is rquest body define for

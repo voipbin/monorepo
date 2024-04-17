@@ -6,8 +6,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	ari "monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // EventHandlerPlaybackStarted handles PlaybackStarted ARI event

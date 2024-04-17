@@ -3,9 +3,10 @@ package transcribehandler
 import (
 	"context"
 
+	"monorepo/bin-transcribe-manager/models/transcribe"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // dbDelete deletes the transcribe

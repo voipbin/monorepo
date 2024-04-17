@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 )
 
 // activeflowGet validates the activeflow's ownership and returns the activeflow info.

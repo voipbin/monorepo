@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"monorepo/bin-number-manager/models/number"
 )
 
 // CreateNumber creates a new order numbers of given numbers from the telnyx

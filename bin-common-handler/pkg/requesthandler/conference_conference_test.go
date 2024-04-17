@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	cfconference "monorepo/bin-conference-manager/models/conference"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ConferenceV1ConferenceGet(t *testing.T) {

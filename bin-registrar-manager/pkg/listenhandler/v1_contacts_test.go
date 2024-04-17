@@ -4,13 +4,14 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
+	"monorepo/bin-registrar-manager/models/astcontact"
+	"monorepo/bin-registrar-manager/pkg/contacthandler"
 )
 
 func Test_processV1ContactsGet(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/models/queuecall"
 )
 
 // setVariables sets the queue's variables

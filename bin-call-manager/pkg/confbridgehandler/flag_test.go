@@ -5,14 +5,15 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/pkg/bridgehandler"
+	"monorepo/bin-call-manager/pkg/cachehandler"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 func Test_FlagExist(t *testing.T) {

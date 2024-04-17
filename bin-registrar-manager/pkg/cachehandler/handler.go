@@ -8,12 +8,12 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
+	"monorepo/bin-registrar-manager/models/astaor"
+	"monorepo/bin-registrar-manager/models/astauth"
+	"monorepo/bin-registrar-manager/models/astcontact"
+	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/trunk"
 )
 
 // getSerialize returns cached serialized info.

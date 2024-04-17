@@ -5,15 +5,16 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/models/providernumber"
+	"monorepo/bin-number-manager/pkg/dbhandler"
+	"monorepo/bin-number-manager/pkg/requestexternal"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
 
 func Test_CreateNumber(t *testing.T) {

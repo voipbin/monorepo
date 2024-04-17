@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	tmrequest "gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+	tmrequest "monorepo/bin-transcribe-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TranscribeV1TranscribeGet sends a request to transcribe-manager

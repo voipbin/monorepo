@@ -3,13 +3,15 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"monorepo/bin-call-manager/pkg/arieventhandler"
+	"monorepo/bin-call-manager/pkg/callhandler"
 )
 
 func Test_processEvent_processEventActiveflowStop(t *testing.T) {

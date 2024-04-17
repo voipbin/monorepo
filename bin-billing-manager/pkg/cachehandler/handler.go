@@ -8,8 +8,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/models/billing"
 )
 
 // getSerialize returns cached serialized info.

@@ -5,13 +5,14 @@ import (
 	"reflect"
 	"testing"
 
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
+	cvmedia "monorepo/bin-conversation-manager/models/media"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ConversationV1ConversationsGet(t *testing.T) {

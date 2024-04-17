@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	address "monorepo/bin-common-handler/models/address"
+	conversation "monorepo/bin-conversation-manager/models/conversation"
+	message "monorepo/bin-conversation-manager/models/message"
 )
 
 // MockSMSHandler is a mock of SMSHandler interface.

@@ -9,7 +9,7 @@ import (
 	"github.com/pion/rtp"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
+	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
 // gcpStart starts the stt process using the gcp

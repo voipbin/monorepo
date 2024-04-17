@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	"monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	"monorepo/bin-call-manager/models/groupcall"
 )
 
 // dialNextDestination dials the next destination of the given groupcall.

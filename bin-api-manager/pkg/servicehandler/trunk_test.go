@@ -5,14 +5,17 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
+	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
 func Test_TrunkCreate(t *testing.T) {

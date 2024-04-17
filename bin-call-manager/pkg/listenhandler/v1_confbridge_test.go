@@ -4,15 +4,16 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
+	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/callhandler"
+	"monorepo/bin-call-manager/pkg/confbridgehandler"
 )
 
 func Test_processV1ConfbridgePost(t *testing.T) {

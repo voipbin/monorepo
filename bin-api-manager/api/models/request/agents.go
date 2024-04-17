@@ -1,9 +1,11 @@
 package request
 
 import (
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // ParamAgentsGET is rquest param define for

@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
 // Start starts a transcribe

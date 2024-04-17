@@ -3,8 +3,9 @@ package activeflowhandler
 import (
 	"testing"
 
+	"monorepo/bin-flow-manager/models/action"
+
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 func Test_compareCondition_string(t *testing.T) {

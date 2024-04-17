@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_CallV1RecordingGets(t *testing.T) {

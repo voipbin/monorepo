@@ -5,17 +5,18 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/streaminghandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
+	"monorepo/bin-transcribe-manager/models/streaming"
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
+	"monorepo/bin-transcribe-manager/pkg/streaminghandler"
+	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 )
 
 func Test_TranscribingStop_call(t *testing.T) {

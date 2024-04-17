@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
+	cvmedia "monorepo/bin-conversation-manager/models/media"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
 // conversationGet validates the conversation's ownership and returns the conversation info.

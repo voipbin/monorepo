@@ -8,8 +8,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
+	"monorepo/bin-registrar-manager/models/astauth"
+	"monorepo/bin-registrar-manager/pkg/cachehandler"
 )
 
 func TestAstAuthCreate(t *testing.T) {

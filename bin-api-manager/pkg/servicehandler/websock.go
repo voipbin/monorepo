@@ -4,8 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // WebsockCreate validates the tag's ownership and returns the message info.

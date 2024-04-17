@@ -7,12 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/accounthandler"
 )
 
 // list of publishers

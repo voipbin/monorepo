@@ -5,15 +5,18 @@ import (
 	"reflect"
 	"testing"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/dbhandler"
+	"monorepo/bin-transfer-manager/pkg/dbhandler"
 )
 
 func Test_serviceInit(t *testing.T) {

@@ -3,8 +3,8 @@ package apiv1
 import (
 	"github.com/gin-gonic/gin"
 
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/api/v1.0/conversation"
-	"gitlab.com/voipbin/bin-manager/hook-manager.git/api/v1.0/messages"
+	"monorepo/bin-hook-manager/api/v1.0/conversation"
+	"monorepo/bin-hook-manager/api/v1.0/messages"
 )
 
 // ApplyRoutes applies router to the gin Engine

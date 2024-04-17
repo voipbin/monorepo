@@ -1,9 +1,11 @@
 package request
 
 import (
+	cacampaign "monorepo/bin-campaign-manager/models/campaign"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
-	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // BodyCampaignsPOST is rquest body define for

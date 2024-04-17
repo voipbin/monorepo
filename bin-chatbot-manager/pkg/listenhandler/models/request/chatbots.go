@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	"monorepo/bin-chatbot-manager/models/chatbot"
 )
 
 // V1DataChatbotsPost is

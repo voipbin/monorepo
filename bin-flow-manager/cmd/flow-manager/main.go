@@ -10,23 +10,24 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/subscribehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
+	"monorepo/bin-flow-manager/pkg/actionhandler"
+	"monorepo/bin-flow-manager/pkg/activeflowhandler"
+	"monorepo/bin-flow-manager/pkg/cachehandler"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
+	"monorepo/bin-flow-manager/pkg/flowhandler"
+	"monorepo/bin-flow-manager/pkg/listenhandler"
+	"monorepo/bin-flow-manager/pkg/subscribehandler"
+	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
 const serviceName = commonoutline.ServiceNameFlowManager

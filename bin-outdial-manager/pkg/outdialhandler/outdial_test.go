@@ -4,13 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/dbhandler"
+	"monorepo/bin-outdial-manager/models/outdial"
+	"monorepo/bin-outdial-manager/pkg/dbhandler"
 )
 
 func Test_Create(t *testing.T) {

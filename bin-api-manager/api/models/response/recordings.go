@@ -1,7 +1,7 @@
 package response
 
 import (
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	cmrecording "monorepo/bin-call-manager/models/recording"
 )
 
 // BodyRecordingsGET is rquest body define for

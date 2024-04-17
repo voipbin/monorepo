@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	"monorepo/bin-chatbot-manager/models/chatbot"
 )
 
 // Create creates a new chatbot record.

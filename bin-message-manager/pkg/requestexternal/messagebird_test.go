@@ -6,7 +6,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/messagebird"
+	"monorepo/bin-message-manager/models/messagebird"
 )
 
 func Test_MessagebirdSendMessage(t *testing.T) {

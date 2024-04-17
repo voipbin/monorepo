@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	"monorepo/bin-conference-manager/models/conferencecall"
 )
 
 // Joined handles joined conferencecall

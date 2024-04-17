@@ -5,14 +5,15 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
+	"monorepo/bin-transcribe-manager/models/transcript"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
 func Test_Create(t *testing.T) {

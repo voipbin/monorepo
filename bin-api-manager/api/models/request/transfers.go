@@ -1,9 +1,11 @@
 package request
 
 import (
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
+
 	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 )
 
 // BodyTransfersPOST defines request body for

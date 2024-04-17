@@ -7,11 +7,12 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for database handle

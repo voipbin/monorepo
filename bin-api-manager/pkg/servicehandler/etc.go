@@ -3,8 +3,9 @@ package servicehandler
 import (
 	"context"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // hasPermission returns true if the given agent has correct permission
@@ -13,7 +14,7 @@ func (h *serviceHandler) hasPermission(ctx context.Context, a *amagent.Agent, cu
 		return true
 	}
 
-	if a.CustomerID != customerID { 
+	if a.CustomerID != customerID {
 		return false
 	}
 

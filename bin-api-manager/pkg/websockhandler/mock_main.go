@@ -11,8 +11,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	agent "monorepo/bin-agent-manager/models/agent"
+	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 )
 
 // MockWebsockHandler is a mock of WebsockHandler interface.

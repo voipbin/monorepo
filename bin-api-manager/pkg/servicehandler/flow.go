@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 // flowGet validates the flow's ownership and returns the flow info.

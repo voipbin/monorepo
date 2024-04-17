@@ -4,13 +4,14 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/numberhandler"
 )
 
 func Test_processV1NumbersPost(t *testing.T) {

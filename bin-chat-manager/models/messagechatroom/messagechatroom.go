@@ -1,11 +1,12 @@
 package messagechatroom
 
 import (
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-chat-manager/models/media"
+	"monorepo/bin-chat-manager/models/messagechat"
 )
 
 // Messagechatroom defines the message for the chatroom

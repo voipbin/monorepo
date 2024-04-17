@@ -1,10 +1,11 @@
 package request
 
 import (
-	"github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-queue-manager/models/queue"
 )
 
 // V1DataQueuesPost is

@@ -4,14 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // loginPost handles POST /loginPost request.
 // It generates and return the JWT token for api use.
+//
 //	@Summary		Generate the JWT token and return it.
 //	@Description	Generate the JWT token and return it.
 //	@Produce		json

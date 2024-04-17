@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	amrequest "gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
+	amagent "monorepo/bin-agent-manager/models/agent"
+	amrequest "monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // AgentV1Login sends a request to agent-manager

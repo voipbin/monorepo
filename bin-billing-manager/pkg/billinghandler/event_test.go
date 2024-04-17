@@ -5,19 +5,22 @@ import (
 	"testing"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/accounthandler"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	mmmessage "monorepo/bin-message-manager/models/message"
+	mmtarget "monorepo/bin-message-manager/models/target"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	mmtarget "gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 func Test_EventCMCallProgressing(t *testing.T) {

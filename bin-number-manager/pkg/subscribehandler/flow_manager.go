@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 )
 
 // processEventFMFlowDeleted handles the flow-manager's flow_deleted event.

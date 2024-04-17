@@ -3,11 +3,12 @@ package outplanhandler
 import (
 	"context"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	"monorepo/bin-campaign-manager/models/outplan"
 )
 
 // Create creates a new outplan

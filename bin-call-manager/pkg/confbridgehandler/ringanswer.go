@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"monorepo/bin-call-manager/models/confbridge"
 )
 
 // Ring rings all channels in the confbridge

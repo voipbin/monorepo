@@ -7,14 +7,17 @@ import (
 	"fmt"
 	"time"
 
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
+	"monorepo/bin-agent-manager/pkg/agenthandler"
 )
 
 // SubscribeHandler interface

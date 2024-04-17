@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	"monorepo/bin-route-manager/models/provider"
 )
 
 // Get returns provider

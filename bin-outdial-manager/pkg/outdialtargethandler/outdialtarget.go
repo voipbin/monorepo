@@ -3,12 +3,13 @@ package outdialtargethandler
 import (
 	"context"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/dbhandler"
+	"monorepo/bin-outdial-manager/models/outdialtarget"
+	"monorepo/bin-outdial-manager/pkg/dbhandler"
 )
 
 // Create creates a new outdial

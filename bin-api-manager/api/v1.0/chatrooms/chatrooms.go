@@ -1,20 +1,23 @@
 package chatrooms
 
 import (
+	_ "monorepo/bin-chat-manager/models/chatroom" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // chatroomsPOST handles POST /chatrooms request.
 // It creates a new chatroom with the given info and returns created chatroom info.
+//
 //	@Summary		Create a new chatroom and returns detail created chatroom info.
 //	@Description	Create a new chatroom and returns detail created chatroom info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func chatroomsPOST(c *gin.Context) {
 
 // chatroomsGET handles GET /chatrooms request.
 // It gets a list of chatrooms with the given info.
+//
 //	@Summary		Gets a list of chatrooms.
 //	@Description	Gets a list of chatrooms
 //	@Produce		json
@@ -133,6 +137,7 @@ func chatroomsGET(c *gin.Context) {
 
 // chatroomsIDGET handles GET /chatrooms/{id} request.
 // It returns detail chatroom info.
+//
 //	@Summary		Returns detail chatroom info.
 //	@Description	Returns detail chatroom info of the given chatroom id.
 //	@Produce		json
@@ -174,6 +179,7 @@ func chatroomsIDGET(c *gin.Context) {
 
 // chatroomsIDDELETE handles DELETE /chatrooms/{id} request.
 // It deletes the chatroom and returns deleted chatroom info.
+//
 //	@Summary		Deletes a chatroom and returns detail chatroom info.
 //	@Description	Deletes a chatroom and returns detail chatroom info.
 //	@Produce		json
@@ -216,6 +222,7 @@ func chatroomsIDDELETE(c *gin.Context) {
 // chatroomsIDPUT handles PUT /chatrooms/{id} request.
 // It updates a exist chat info with the given info.
 // And returns updated chat info if it succeed.
+//
 //	@Summary		Update a chat and reuturns updated info.
 //	@Description	Update a chat and returns detail updated info.
 //	@Produce		json

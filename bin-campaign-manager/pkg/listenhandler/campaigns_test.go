@@ -4,13 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
+	"monorepo/bin-campaign-manager/models/campaign"
+	"monorepo/bin-campaign-manager/pkg/campaignhandler"
 )
 
 func Test_v1CampaignsPost(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	chatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 // MockChatgptHandler is a mock of ChatgptHandler interface.

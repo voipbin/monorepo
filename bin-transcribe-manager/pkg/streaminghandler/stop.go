@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
+	"monorepo/bin-transcribe-manager/models/streaming"
 )
 
 // Start starts the live streaming transcribe of the given transcribe

@@ -1,6 +1,6 @@
 package request
 
-import "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+import "monorepo/bin-conversation-manager/models/media"
 
 // V1DataConversationsIDMessagesPost is
 // v1 data type request struct for

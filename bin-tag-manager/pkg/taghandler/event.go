@@ -3,8 +3,9 @@ package taghandler
 import (
 	"context"
 
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/sirupsen/logrus"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // EventCustomerDeleted handles the customer-manager's customer_deleted event

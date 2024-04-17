@@ -7,12 +7,13 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-chat-manager/models/media"
+	"monorepo/bin-chat-manager/pkg/listenhandler/models/request"
 )
 
 // v1MessagechatsPost handles /v1/messagechats POST request

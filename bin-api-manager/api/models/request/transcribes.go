@@ -1,8 +1,9 @@
 package request
 
 import (
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+
 	"github.com/gofrs/uuid"
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // BodyTranscribesPOST defines request body for

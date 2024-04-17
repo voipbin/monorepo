@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	chat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
-	chatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
-	messagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	messagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	chat "monorepo/bin-chat-manager/models/chat"
+	chatroom "monorepo/bin-chat-manager/models/chatroom"
+	messagechat "monorepo/bin-chat-manager/models/messagechat"
+	messagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

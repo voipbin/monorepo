@@ -5,15 +5,18 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	chatchat "monorepo/bin-chat-manager/models/chat"
+	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
-	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
 func Test_ChatroomGetsByOwnerID(t *testing.T) {

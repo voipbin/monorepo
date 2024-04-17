@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_TransferV1TransferStart(t *testing.T) {

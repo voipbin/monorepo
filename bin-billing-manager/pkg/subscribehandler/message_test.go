@@ -3,12 +3,13 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	mmmessage "monorepo/bin-message-manager/models/message"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
+	"monorepo/bin-billing-manager/pkg/billinghandler"
 )
 
 func Test_processEventMMMessageCreated(t *testing.T) {

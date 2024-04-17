@@ -7,13 +7,15 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 )
 
 // processV1QueuesPost handles Post /v1/queues request

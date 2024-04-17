@@ -5,11 +5,12 @@ package storagehandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/filehandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-storage-manager/models/bucketfile"
+	"monorepo/bin-storage-manager/pkg/filehandler"
 )
 
 // StorageHandler intreface for storage handler

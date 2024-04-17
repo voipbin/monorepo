@@ -6,13 +6,14 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/cachehandler"
 )
 
 func Test_FlowCreate(t *testing.T) {

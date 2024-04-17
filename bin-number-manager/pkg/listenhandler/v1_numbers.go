@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-number-manager/pkg/listenhandler/models/request"
 )
 
 // processV1NumbersPost handles POST /v1/numbers request

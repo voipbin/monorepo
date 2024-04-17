@@ -5,17 +5,18 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/stackhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/actionhandler"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
+	"monorepo/bin-flow-manager/pkg/stackhandler"
+	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
 func Test_getActionsFromFlow(t *testing.T) {

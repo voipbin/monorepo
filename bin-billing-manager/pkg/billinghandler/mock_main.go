@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	billing "monorepo/bin-billing-manager/models/billing"
+	call "monorepo/bin-call-manager/models/call"
+	message "monorepo/bin-message-manager/models/message"
+	number "monorepo/bin-number-manager/models/number"
 )
 
 // MockBillingHandler is a mock of BillingHandler interface.

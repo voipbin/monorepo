@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-flow-manager/models/variable"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_FlowV1VariableGet(t *testing.T) {

@@ -1,7 +1,7 @@
 package response
 
 import (
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 )
 
 // BodyBillingsGET is response body define for

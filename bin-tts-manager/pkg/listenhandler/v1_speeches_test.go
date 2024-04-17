@@ -4,12 +4,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/ttshandler"
+	"monorepo/bin-tts-manager/models/tts"
+	"monorepo/bin-tts-manager/pkg/ttshandler"
 )
 
 func Test_v1SpeechesPost(t *testing.T) {

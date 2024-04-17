@@ -3,12 +3,13 @@ package subscribehandler
 import (
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
+	gomock "github.com/golang/mock/gomock"
+
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/common"
+	"monorepo/bin-call-manager/pkg/arieventhandler"
 )
 
 func Test_processEvent_AsteriskProxy_BridgeCreated(t *testing.T) {

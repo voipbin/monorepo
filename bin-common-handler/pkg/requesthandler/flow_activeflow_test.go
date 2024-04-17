@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_FlowV1ActiveflowCreate(t *testing.T) {

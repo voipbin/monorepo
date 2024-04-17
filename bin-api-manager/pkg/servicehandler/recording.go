@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 // recordingGet validates the recording's ownership and returns the recording info.

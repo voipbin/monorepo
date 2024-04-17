@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"monorepo/bin-call-manager/models/bridge"
 )
 
 const (

@@ -9,9 +9,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/request"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/response"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/request"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/response"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
 
 func (h *requestExternal) TelnyxAvailableNumberGets(token, countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error) {

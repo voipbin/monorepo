@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	campaign "monorepo/bin-campaign-manager/models/campaign"
+	action "monorepo/bin-flow-manager/models/action"
 )
 
 // MockCampaignHandler is a mock of CampaignHandler interface.

@@ -1,8 +1,8 @@
 package response
 
 import (
-	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	cacampaign "monorepo/bin-campaign-manager/models/campaign"
+	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 // BodyCampaignsGET is rquest body define for

@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	chatmedia "monorepo/bin-chat-manager/models/media"
+	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // chatmessageGet validates the chatmessage's ownership and returns the chat info.

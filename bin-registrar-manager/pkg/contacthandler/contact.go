@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/common"
+	"monorepo/bin-registrar-manager/models/astcontact"
+	"monorepo/bin-registrar-manager/models/common"
 )
 
 // ContactGetsByExtension returns list of contacts

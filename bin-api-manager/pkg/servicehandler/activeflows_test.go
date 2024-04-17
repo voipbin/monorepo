@@ -5,16 +5,19 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
 func Test_activeflowGet(t *testing.T) {

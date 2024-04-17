@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/cachehandler"
+	"monorepo/bin-outdial-manager/models/outdial"
+	"monorepo/bin-outdial-manager/pkg/cachehandler"
 )
 
 func Test_OutdialCreate(t *testing.T) {

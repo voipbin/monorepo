@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 // list of service dialplan context

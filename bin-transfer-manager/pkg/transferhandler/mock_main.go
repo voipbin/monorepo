@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	call "monorepo/bin-call-manager/models/call"
+	groupcall "monorepo/bin-call-manager/models/groupcall"
+	address "monorepo/bin-common-handler/models/address"
+	transfer "monorepo/bin-transfer-manager/models/transfer"
 )
 
 // MockTransferHandler is a mock of TransferHandler interface.

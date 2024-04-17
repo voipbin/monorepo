@@ -10,9 +10,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/redis/go-redis/v9"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	"monorepo/bin-flow-manager/models/activeflow"
+	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/models/variable"
 )
 
 type handler struct {

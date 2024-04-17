@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+	address "monorepo/bin-common-handler/models/address"
+	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 )
 
 // MockOutdialTargetHandler is a mock of OutdialTargetHandler interface.

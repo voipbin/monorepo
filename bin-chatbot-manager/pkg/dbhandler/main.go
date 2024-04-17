@@ -7,12 +7,13 @@ import (
 	"database/sql"
 	"errors"
 
-	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/cachehandler"
+	uuid "github.com/gofrs/uuid"
+
+	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for call_manager database handle

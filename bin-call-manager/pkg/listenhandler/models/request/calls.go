@@ -1,12 +1,14 @@
 package request
 
 import (
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/recording"
 )
 
 // V1DataCallsPost is

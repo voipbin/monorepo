@@ -5,16 +5,19 @@ package queuehandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
 // List of default values

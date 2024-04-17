@@ -1,19 +1,21 @@
 package trunks
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // trunksPOST handles POST /trunks request.
 // It creates a new trunk with the given info and returns created trunk info.
+//
 //	@Summary		Create a new trunk and returns detail created trunk info.
 //	@Description	Create a new trunk and returns detail created trunk info.
 //	@Produce		json
@@ -57,6 +59,7 @@ func trunksPOST(c *gin.Context) {
 
 // trunksPOST handles GET /trunks request.
 // It gets a list of trunks with the given info.
+//
 //	@Summary		Gets a list of trunks.
 //	@Description	Gets a list of trunks
 //	@Produce		json
@@ -123,6 +126,7 @@ func trunksGET(c *gin.Context) {
 
 // trunksIDGET handles GET /trunks/{id} request.
 // It returns detail trunk info.
+//
 //	@Summary		Returns detail trunk info.
 //	@Description	Returns detail trunk info of the given trunk id.
 //	@Produce		json
@@ -165,6 +169,7 @@ func trunksIDGET(c *gin.Context) {
 // trunksIDPUT handles PUT /trunks/{id} request.
 // It updates a exist trunk info with the given trunk info.
 // And returns updated trunk info if it succeed.
+//
 //	@Summary		Update a trunk and reuturns updated trunk info.
 //	@Description	Update a trunk and returns detail updated trunk info.
 //	@Produce		json
@@ -212,6 +217,7 @@ func trunksIDPUT(c *gin.Context) {
 
 // trunksIDDELETE handles DELETE /trunks/{id} request.
 // It deletes a exist trunk info.
+//
 //	@Summary		Delete a existing trunk.
 //	@Description	Delete a existing trunk.
 //	@Produce		json

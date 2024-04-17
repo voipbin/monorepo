@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
+	"monorepo/bin-tag-manager/models/tag"
 )
 
 // dbGets returns tags
@@ -102,7 +102,6 @@ func (h *tagHandler) dbCreate(ctx context.Context, customerID uuid.UUID, name st
 
 	return res, nil
 }
-
 
 // dbDelete deletes the tag info.
 func (h *tagHandler) dbDelete(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {

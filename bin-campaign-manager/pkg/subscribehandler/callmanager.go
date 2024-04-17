@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processEventCMCallHungup handles the call-manager's confbridge_leaved event.

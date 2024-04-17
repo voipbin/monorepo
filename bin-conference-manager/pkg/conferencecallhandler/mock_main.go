@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	service "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
+	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
+	service "monorepo/bin-conference-manager/models/service"
 )
 
 // MockConferencecallHandler is a mock of ConferencecallHandler interface.

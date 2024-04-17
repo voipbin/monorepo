@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
-	wmrequest "gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler/models/request"
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+	wmrequest "monorepo/bin-webhook-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // WebhookV1WebhookSend sends the webhook.

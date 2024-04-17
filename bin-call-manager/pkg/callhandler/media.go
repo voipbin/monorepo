@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	tmtts "monorepo/bin-tts-manager/models/tts"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"monorepo/bin-call-manager/models/call"
 )
 
 // Talk plays the tts to the given call id.

@@ -5,14 +5,15 @@ package numberhandlertelnyx
 import (
 	"context"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
+	"github.com/prometheus/client_golang/prometheus"
+
+	"monorepo/bin-number-manager/models/availablenumber"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/models/providernumber"
+	"monorepo/bin-number-manager/pkg/dbhandler"
+	"monorepo/bin-number-manager/pkg/requestexternal"
 )
 
 // telnyx

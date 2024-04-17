@@ -3,11 +3,12 @@ package conversationhandler
 import (
 	"context"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"monorepo/bin-conversation-manager/models/conversation"
 )
 
 // Get returns conversation

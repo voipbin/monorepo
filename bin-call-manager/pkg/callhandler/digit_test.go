@@ -4,15 +4,17 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/variable"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {

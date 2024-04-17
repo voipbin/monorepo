@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 // StartContextIncoming handles the call which has context=conf-in in the StasisStart argument.

@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
-	tmrequest "gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/listenhandler/models/request"
+	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
+	tmrequest "monorepo/bin-transfer-manager/pkg/listenhandler/models/request"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TransferV1TransferStart sends a request to transfer-manager

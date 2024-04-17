@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 func Test_validateTopics(t *testing.T) {

@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	chatchat "monorepo/bin-chat-manager/models/chat"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 )
 
 // chatGet validates the chat's ownership and returns the chat info.

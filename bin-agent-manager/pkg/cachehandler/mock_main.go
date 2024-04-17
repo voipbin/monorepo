@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	agent "monorepo/bin-agent-manager/models/agent"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

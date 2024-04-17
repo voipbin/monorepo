@@ -1,7 +1,7 @@
 package response
 
 import (
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 )
 
 // BodyActiveflowsGET is response body define for

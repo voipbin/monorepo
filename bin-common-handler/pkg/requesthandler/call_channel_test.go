@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func Test_CallV1ChannelHealth(t *testing.T) {

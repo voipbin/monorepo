@@ -3,7 +3,7 @@ package chatroom
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
+	"monorepo/bin-chat-manager/models/chat"
 )
 
 // Chatroom defines chatroom

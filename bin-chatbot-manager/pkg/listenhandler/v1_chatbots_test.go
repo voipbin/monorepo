@@ -4,12 +4,13 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
+	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
 )
 
 func Test_processV1ChatbotsGet(t *testing.T) {

@@ -6,8 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 // Create is creating a new chatbotcall.

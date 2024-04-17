@@ -3,12 +3,13 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
+	"monorepo/bin-billing-manager/pkg/billinghandler"
 )
 
 func Test_processEventNMNumberCreated(t *testing.T) {

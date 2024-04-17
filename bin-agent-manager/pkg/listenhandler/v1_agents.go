@@ -7,12 +7,13 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 )
 
 // processV1AgentsGet handles GET /v1/agents request

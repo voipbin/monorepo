@@ -5,14 +5,15 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
+	"monorepo/bin-conference-manager/models/conference"
+	"monorepo/bin-conference-manager/models/conferencecall"
+	"monorepo/bin-conference-manager/pkg/dbhandler"
 )
 
 func Test_Terminating(t *testing.T) {

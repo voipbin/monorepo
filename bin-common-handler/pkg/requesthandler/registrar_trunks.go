@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	rmsipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
-	rmrequest "gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
+	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
+	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
+	rmrequest "monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RegistrarV1TrunkCreate sends a request to registrar-manager

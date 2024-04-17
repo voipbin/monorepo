@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	rmroute "monorepo/bin-route-manager/models/route"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"monorepo/bin-call-manager/models/call"
 )
 
 // Create creates a call record.

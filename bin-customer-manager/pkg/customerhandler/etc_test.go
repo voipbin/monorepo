@@ -4,14 +4,15 @@ import (
 	"context"
 	"testing"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
+	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
 func Test_IsValidBalance(t *testing.T) {

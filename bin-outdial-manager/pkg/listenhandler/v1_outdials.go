@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-outdial-manager/pkg/listenhandler/models/request"
 )
 
 // v1OutdialsPost handles /v1/outdials POST request

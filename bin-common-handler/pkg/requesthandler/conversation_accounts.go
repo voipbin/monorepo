@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cvaccount "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	cvrequest "gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/listenhandler/models/request"
+	cvaccount "monorepo/bin-conversation-manager/models/account"
+	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ConversationV1AccountGet sends a request to conversation-manager

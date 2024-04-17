@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
+	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/models/trunk"
 )
 
 const (

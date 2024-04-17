@@ -1,28 +1,30 @@
 package campaigncalls
 
 import (
+	_ "monorepo/bin-campaign-manager/models/campaigncall" // for sweg use.
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall" // for sweg use.
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // campaigncallsGET handles GET /campaigncalls request.
 // It returns list of campaigncalls of the given customer.
 
-//	@Summary		Get list of calls
-//	@Description	get calls of the customer
-//	@Produce		json
-//	@Param			page_size	query		int		false	"The size of results. Max 100"
-//	@Param			page_token	query		string	false	"The token. tm_create"
-//	@Success		200			{object}	response.BodyCallsGET
-//	@Router			/v1.0/campaigncalls [get]
+// @Summary		Get list of calls
+// @Description	get calls of the customer
+// @Produce		json
+// @Param			page_size	query		int		false	"The size of results. Max 100"
+// @Param			page_token	query		string	false	"The token. tm_create"
+// @Success		200			{object}	response.BodyCallsGET
+// @Router			/v1.0/campaigncalls [get]
 func campaigncallsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaigncallsGET",
@@ -82,6 +84,7 @@ func campaigncallsGET(c *gin.Context) {
 
 // campaigncallsIDGET handles GET /campaigncalls/{id} request.
 // It returns detail campaigncall info.
+//
 //	@Summary		Returns detail campaigncall info.
 //	@Description	Returns detail campaigns info of the given campaigncall id.
 //	@Produce		json
@@ -123,6 +126,7 @@ func campaigncallsIDGET(c *gin.Context) {
 
 // campaigncallsIDDELETE handles DELETE /campaigncalls/{id} request.
 // It finishs a campaigncall.
+//
 //	@Summary		Finish a existing campaign.
 //	@Description	Delete a existing campaign.
 //	@Produce		json

@@ -5,14 +5,15 @@ package numberhandlertwilio
 import (
 	"context"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
+	"monorepo/bin-number-manager/models/availablenumber"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/dbhandler"
+	"monorepo/bin-number-manager/pkg/requestexternal"
 )
 
 //nolint:unused,varcheck,deadcode	// reserved

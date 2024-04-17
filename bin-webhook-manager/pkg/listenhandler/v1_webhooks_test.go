@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
+	"monorepo/bin-webhook-manager/models/webhook"
+	"monorepo/bin-webhook-manager/pkg/webhookhandler"
 )
 
 func Test_processV1WebhooksPost(t *testing.T) {

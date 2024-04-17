@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CampaignV1CampaigncallGets sends a request to campaign-manager

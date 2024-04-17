@@ -10,16 +10,16 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	bridge "monorepo/bin-call-manager/models/bridge"
+	call "monorepo/bin-call-manager/models/call"
+	channel "monorepo/bin-call-manager/models/channel"
+	externalmedia "monorepo/bin-call-manager/models/externalmedia"
+	groupcall "monorepo/bin-call-manager/models/groupcall"
+	recording "monorepo/bin-call-manager/models/recording"
+	address "monorepo/bin-common-handler/models/address"
+	customer "monorepo/bin-customer-manager/models/customer"
+	action "monorepo/bin-flow-manager/models/action"
+	activeflow "monorepo/bin-flow-manager/models/activeflow"
 )
 
 // MockCallHandler is a mock of CallHandler interface.

@@ -10,11 +10,11 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	campaign "monorepo/bin-campaign-manager/models/campaign"
+	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	outplan "monorepo/bin-campaign-manager/models/outplan"
+	address "monorepo/bin-common-handler/models/address"
+	action "monorepo/bin-flow-manager/models/action"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

@@ -7,16 +7,19 @@ import (
 	"fmt"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
+	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
+	"monorepo/bin-campaign-manager/pkg/campaignhandler"
+	"monorepo/bin-campaign-manager/pkg/outplanhandler"
 )
 
 // list of publishers

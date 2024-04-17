@@ -5,15 +5,18 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
+	cvmedia "monorepo/bin-conversation-manager/models/media"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
 func Test_ConversationGetsByCustomerID(t *testing.T) {

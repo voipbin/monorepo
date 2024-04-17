@@ -5,19 +5,22 @@ import (
 	reflect "reflect"
 	"testing"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
+	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
 func Test_Execute(t *testing.T) {

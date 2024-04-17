@@ -3,10 +3,11 @@ package message
 import (
 	"encoding/json"
 
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-message-manager/models/target"
 )
 
 // WebhookMessage defines

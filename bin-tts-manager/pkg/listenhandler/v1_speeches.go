@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/request"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-tts-manager/pkg/listenhandler/models/request"
 )
 
 // v1SpeechesPost handles /v1/speeches POST request

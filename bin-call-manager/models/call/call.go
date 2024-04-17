@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"reflect"
 
-	uuid "github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	rmroute "monorepo/bin-route-manager/models/route"
+
+	uuid "github.com/gofrs/uuid"
+
+	"monorepo/bin-call-manager/models/ari"
 )
 
 // Call struct represent asterisk's channel information

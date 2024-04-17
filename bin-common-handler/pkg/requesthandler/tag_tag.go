@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
-	tmrequest "gitlab.com/voipbin/bin-manager/tag-manager.git/pkg/listenhandler/models/request"
+	tmtag "monorepo/bin-tag-manager/models/tag"
+	tmrequest "monorepo/bin-tag-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TagV1TagCreate sends a request to tag-manager

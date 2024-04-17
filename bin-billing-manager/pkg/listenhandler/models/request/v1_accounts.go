@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	"monorepo/bin-billing-manager/models/account"
 )
 
 // V1DataAccountsPOST is rquest param define for POST /accounts

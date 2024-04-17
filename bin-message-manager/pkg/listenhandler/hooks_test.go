@@ -4,12 +4,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/messagehandler"
+	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/pkg/messagehandler"
 )
 
 func Test_processV1HooksPost(t *testing.T) {

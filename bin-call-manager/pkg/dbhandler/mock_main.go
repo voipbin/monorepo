@@ -11,16 +11,16 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	ari "monorepo/bin-call-manager/models/ari"
+	bridge "monorepo/bin-call-manager/models/bridge"
+	call "monorepo/bin-call-manager/models/call"
+	callapplication "monorepo/bin-call-manager/models/callapplication"
+	channel "monorepo/bin-call-manager/models/channel"
+	confbridge "monorepo/bin-call-manager/models/confbridge"
+	externalmedia "monorepo/bin-call-manager/models/externalmedia"
+	groupcall "monorepo/bin-call-manager/models/groupcall"
+	recording "monorepo/bin-call-manager/models/recording"
+	action "monorepo/bin-flow-manager/models/action"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

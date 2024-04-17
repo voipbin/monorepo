@@ -9,19 +9,20 @@ import (
 	"syscall"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/subscribehandler"
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/transferhandler"
+	"monorepo/bin-transfer-manager/pkg/cachehandler"
+	"monorepo/bin-transfer-manager/pkg/dbhandler"
+	"monorepo/bin-transfer-manager/pkg/listenhandler"
+	"monorepo/bin-transfer-manager/pkg/subscribehandler"
+	"monorepo/bin-transfer-manager/pkg/transferhandler"
 )
 
 // channels

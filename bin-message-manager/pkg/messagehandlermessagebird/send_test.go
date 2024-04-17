@@ -4,15 +4,16 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/messagebird"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/requestexternal"
+	"monorepo/bin-message-manager/models/messagebird"
+	"monorepo/bin-message-manager/models/target"
+	"monorepo/bin-message-manager/pkg/dbhandler"
+	"monorepo/bin-message-manager/pkg/requestexternal"
 )
 
 func Test_marshal(t *testing.T) {

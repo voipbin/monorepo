@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"monorepo/bin-flow-manager/models/activeflow"
 )
 
 const (

@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 )

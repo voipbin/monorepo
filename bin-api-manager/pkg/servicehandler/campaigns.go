@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	cacampaign "monorepo/bin-campaign-manager/models/campaign"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // campaignGet validates the campaign's ownership and returns the campaign info.

@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/common"
+	"monorepo/bin-call-manager/models/confbridge"
 )
 
 // Join handles call's join request.

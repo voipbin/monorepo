@@ -5,17 +5,18 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/models/astaor"
+	"monorepo/bin-registrar-manager/models/astauth"
+	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
 func Test_Create(t *testing.T) {

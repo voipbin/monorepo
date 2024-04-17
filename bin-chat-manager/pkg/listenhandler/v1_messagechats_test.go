@@ -4,16 +4,17 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chathandler"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/messagechathandler"
+	"monorepo/bin-chat-manager/models/media"
+	"monorepo/bin-chat-manager/models/messagechat"
+	"monorepo/bin-chat-manager/pkg/chathandler"
+	"monorepo/bin-chat-manager/pkg/chatroomhandler"
+	"monorepo/bin-chat-manager/pkg/messagechathandler"
 )
 
 func Test_v1MessagechatsPost(t *testing.T) {

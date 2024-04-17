@@ -5,17 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
+	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/models/service"
 )
 
 func (h *queuecallHandler) ServiceStart(

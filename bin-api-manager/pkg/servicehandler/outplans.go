@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	caoutplan "monorepo/bin-campaign-manager/models/outplan"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // outplanGet gets the outplan of the given id.

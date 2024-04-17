@@ -1,10 +1,13 @@
 package request
 
 import (
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // BodyGroupcallsPOST is rquest body define for

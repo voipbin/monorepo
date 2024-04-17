@@ -4,13 +4,14 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chathandler"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
+	"monorepo/bin-chat-manager/models/chat"
+	"monorepo/bin-chat-manager/pkg/chathandler"
+	"monorepo/bin-chat-manager/pkg/chatroomhandler"
 )
 
 func Test_v1ChatsPost(t *testing.T) {

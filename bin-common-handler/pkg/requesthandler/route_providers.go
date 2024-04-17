@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	rmprovider "monorepo/bin-route-manager/models/provider"
+	rmrequest "monorepo/bin-route-manager/pkg/listenhandler/models/request"
+
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
-	rmrequest "gitlab.com/voipbin/bin-manager/route-manager.git/pkg/listenhandler/models/request"
 )
 
 // RouteV1ProviderCreate sends a request to route-manager

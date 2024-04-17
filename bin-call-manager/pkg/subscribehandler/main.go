@@ -7,19 +7,22 @@ import (
 	"fmt"
 	"time"
 
+	"monorepo/bin-call-manager/models/common"
+
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
+	"monorepo/bin-call-manager/pkg/arieventhandler"
+	"monorepo/bin-call-manager/pkg/callhandler"
+	"monorepo/bin-call-manager/pkg/confbridgehandler"
+	"monorepo/bin-call-manager/pkg/groupcallhandler"
 )
 
 // SubscribeHandler intreface for subscribed event listen handler

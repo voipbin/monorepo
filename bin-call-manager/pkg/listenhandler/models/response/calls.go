@@ -1,8 +1,8 @@
 package response
 
 import (
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/groupcall"
 )
 
 // V1ResponseCallsPost is

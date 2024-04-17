@@ -6,12 +6,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"monorepo/bin-conference-manager/models/conferencecall"
+	"monorepo/bin-conference-manager/pkg/cachehandler"
 )
 
 func Test_ConferencecallCreate(t *testing.T) {

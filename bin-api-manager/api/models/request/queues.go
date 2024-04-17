@@ -1,9 +1,11 @@
 package request
 
 import (
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	qmqueue "monorepo/bin-queue-manager/models/queue"
+
 	"github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
 
 // ParamQueuesGET is request param define for

@@ -10,12 +10,12 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	bridge "monorepo/bin-call-manager/models/bridge"
+	channel "monorepo/bin-call-manager/models/channel"
+	confbridge "monorepo/bin-call-manager/models/confbridge"
+	externalmedia "monorepo/bin-call-manager/models/externalmedia"
+	recording "monorepo/bin-call-manager/models/recording"
+	customer "monorepo/bin-customer-manager/models/customer"
 )
 
 // MockConfbridgeHandler is a mock of ConfbridgeHandler interface.

@@ -5,14 +5,16 @@ import (
 	"reflect"
 	"testing"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
+	"monorepo/bin-conference-manager/models/conference"
+	"monorepo/bin-conference-manager/pkg/dbhandler"
 )
 
 func Test_RecordingStart(t *testing.T) {

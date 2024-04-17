@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	"monorepo/bin-conference-manager/models/conferencecall"
 )
 
 // Terminate terminates the conferencecall.

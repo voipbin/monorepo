@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	tmtag "monorepo/bin-tag-manager/models/tag"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_TagV1TagCreate(t *testing.T) {

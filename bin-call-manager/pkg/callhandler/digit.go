@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"strings"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/channel"
 )
 
 // digitsReceived handles DTMF Recevied event

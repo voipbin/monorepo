@@ -3,16 +3,19 @@ package transferhandler
 import (
 	"context"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	"monorepo/bin-transfer-manager/models/transfer"
 )
 
 // BlindTransfer

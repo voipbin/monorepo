@@ -6,8 +6,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/common"
 )
 
 // EventHandlerContactStatusChange handles ContactStatusChange ARI event

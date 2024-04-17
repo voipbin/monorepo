@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	sipauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
+	customer "monorepo/bin-customer-manager/models/customer"
+	sipauth "monorepo/bin-registrar-manager/models/sipauth"
+	trunk "monorepo/bin-registrar-manager/models/trunk"
 )
 
 // MockTrunkHandler is a mock of TrunkHandler interface.

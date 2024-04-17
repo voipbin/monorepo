@@ -1,20 +1,23 @@
 package chats
 
 import (
+	_ "monorepo/bin-chat-manager/models/chat" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // chatsPOST handles POST /chats request.
 // It creates a new chat with the given info and returns created chat info.
+//
 //	@Summary		Create a new chat and returns detail created chat info.
 //	@Description	Create a new chat and returns detail created chat info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func chatsPOST(c *gin.Context) {
 
 // chatsGET handles GET /chats request.
 // It gets a list of chats with the given info.
+//
 //	@Summary		Gets a list of chats.
 //	@Description	Gets a list of chats
 //	@Produce		json
@@ -126,6 +130,7 @@ func chatsGET(c *gin.Context) {
 
 // chatsIDGET handles GET /chats/{id} request.
 // It returns detail chat info.
+//
 //	@Summary		Returns detail chat info.
 //	@Description	Returns detail chat info of the given chat id.
 //	@Produce		json
@@ -167,6 +172,7 @@ func chatsIDGET(c *gin.Context) {
 
 // chatsIDDELETE handles DELETE /chats/{id} request.
 // It deletes a exist chat info.
+//
 //	@Summary		Delete a existing chat.
 //	@Description	Delete a existing chat.
 //	@Produce		json
@@ -210,6 +216,7 @@ func chatsIDDELETE(c *gin.Context) {
 // chatsIDPUT handles PUT /chats/{id} request.
 // It updates a exist chat info with the given info.
 // And returns updated chat info if it succeed.
+//
 //	@Summary		Update a chat and reuturns updated info.
 //	@Description	Update a chat and returns detail updated info.
 //	@Produce		json
@@ -261,6 +268,7 @@ func chatsIDPUT(c *gin.Context) {
 // chatsIDOwnerIDPUT handles PUT /chats/{id}/owner_id request.
 // It updates a exist chat info with the given chat info.
 // And returns updated chat info if it succeed.
+//
 //	@Summary		Update a chat and reuturns updated info.
 //	@Description	Update a chat and returns detail updated info.
 //	@Produce		json
@@ -311,6 +319,7 @@ func chatsIDOwnerIDPUT(c *gin.Context) {
 
 // chatsIDParticipantIDsPOST handles POST /chats/{id}/participant_ids request.
 // It adds a given participant id to the chat and returns updated chat info.
+//
 //	@Summary		Add a new participant id to the chat and returns detail updated chat info.
 //	@Description	Add a new participant id to the cat and returns detail updated chat info.
 //	@Produce		json
@@ -360,6 +369,7 @@ func chatsIDParticipantIDsPOST(c *gin.Context) {
 
 // chatsIDParticipantIDsIDDELETE handles DELETE /chats/{id}/participant_ids/{participant_id} request.
 // It removes a gieven participant id from the chat.
+//
 //	@Summary		Remove participant id.
 //	@Description	Remove participant id.
 //	@Produce		json

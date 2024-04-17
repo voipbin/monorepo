@@ -1,20 +1,23 @@
 package messages
 
 import (
+	_ "monorepo/bin-message-manager/models/message" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/message-manager.git/models/message" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // messagesGET handles GET /messages request.
 // It returns list of messages of the given customer.
+//
 //	@Summary		List order messages
 //	@Description	get messages
 //	@Produce		json
@@ -81,6 +84,7 @@ func messagesGET(c *gin.Context) {
 
 // messagesPOST handles POST /messages request.
 // It sends a message with the given info and returns message.
+//
 //	@Summary		Send a message and returns a sent message.
 //	@Description	Send a message and returns a sent message.
 //	@Produce		json
@@ -125,6 +129,7 @@ func messagesPOST(c *gin.Context) {
 
 // messagesIDDELETE handles DELETE /messages/<id> request.
 // It deletes the given id of message and returns the deleted message.
+//
 //	@Summary		Delete message
 //	@Description	delete message of the given id and returns deleted item.
 //	@Produce		json
@@ -167,6 +172,7 @@ func messagesIDDELETE(c *gin.Context) {
 
 // messagesIDGET handles GET /messages/<id> request.
 // It returns message of the given id.
+//
 //	@Summary		Get message
 //	@Description	get message of the given id
 //	@Produce		json

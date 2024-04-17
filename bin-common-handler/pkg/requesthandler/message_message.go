@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	mmrequest "gitlab.com/voipbin/bin-manager/message-manager.git/pkg/listenhandler/models/request"
+	mmmessage "monorepo/bin-message-manager/models/message"
+	mmrequest "monorepo/bin-message-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // MessageV1MessageSend sends a message

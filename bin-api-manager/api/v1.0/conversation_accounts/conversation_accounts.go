@@ -1,20 +1,23 @@
 package conversationaccounts
 
 import (
+	_ "monorepo/bin-conversation-manager/models/account" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // conversationAccountsGet handles GET /conversation_accounts request.
 // It gets a list of conversation accounts with the given info.
+//
 //	@Summary		Gets a list of conversation accounts.
 //	@Description	Gets a list of conversation accounts
 //	@Produce		json
@@ -81,6 +84,7 @@ func conversationAccountsGet(c *gin.Context) {
 
 // conversationAccountsPost handles POST /conversation_accounts request.
 // It creates a new conversation account with the given info and returns created conversation account info.
+//
 //	@Summary		Create a new conversation account and returns detail created conversation account info.
 //	@Description	Create a new conversation account and returns detail created conversation account info.
 //	@Produce		json
@@ -134,6 +138,7 @@ func conversationAccountsPost(c *gin.Context) {
 
 // conversationAccountsIDGet handles GET /conversation_accounts/{id} request.
 // It returns detail conversation account info.
+//
 //	@Summary		Returns detail conversation account info.
 //	@Description	Returns detail conversation account info of the given conversation account id.
 //	@Produce		json
@@ -175,6 +180,7 @@ func conversationAccountsIDGet(c *gin.Context) {
 
 // conversationAccountsIDPut handles PUT /conversation_accounts/{id} request.
 // It returns detail conversation account info.
+//
 //	@Summary		Returns detail conversation account info.
 //	@Description	Returns detail conversation account info of the given conversation account id.
 //	@Produce		json
@@ -225,6 +231,7 @@ func conversationAccountsIDPut(c *gin.Context) {
 
 // conversationAccountsIDDelete handles DELETE /conversation_accounts/{id} request.
 // It returns detail conversation account info.
+//
 //	@Summary		Returns detail conversation account info.
 //	@Description	Returns detail conversation account info of the given conversation account id.
 //	@Produce		json

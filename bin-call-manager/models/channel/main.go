@@ -3,7 +3,7 @@ package channel
 import (
 	"strings"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"monorepo/bin-call-manager/models/ari"
 )
 
 // Channel struct represent asterisk's channel information

@@ -7,7 +7,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 // ChatNew starts a new chat

@@ -1,20 +1,23 @@
 package tags
 
 import (
+	_ "monorepo/bin-tag-manager/models/tag" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // tagsPOST handles POST /tag request.
 // It creates a new tag.
+//
 //	@Summary		Create a new tag.
 //	@Description	create a new tag.
 //	@Produce		json
@@ -61,6 +64,7 @@ func tagsPOST(c *gin.Context) {
 
 // tagsIDDelete handles DELETE /tags/<tag-id> request.
 // It deletes the tag.
+//
 //	@Summary		Delete the tag
 //	@Description	Delete the tag of the given id
 //	@Produce		json
@@ -108,6 +112,7 @@ func tagsIDDelete(c *gin.Context) {
 
 // tagsIDGet handles GET /tags/<tag-id> request.
 // It gets the tag.
+//
 //	@Summary		Get the tag
 //	@Description	Get the tag of the given id
 //	@Produce		json
@@ -155,6 +160,7 @@ func tagsIDGet(c *gin.Context) {
 
 // tagsGET handles GET /tags request.
 // It returns list of tags of the given customer.
+//
 //	@Summary		List tags
 //	@Description	get tags of the customer
 //	@Produce		json
@@ -224,6 +230,7 @@ func tagsGET(c *gin.Context) {
 
 // tagsIDPUT handles PUT /tags/{id} request.
 // It updates a tag's basic info with the given info.
+//
 //	@Summary		Update the tag info.
 //	@Description	Update the tag info.
 //	@Produce		json

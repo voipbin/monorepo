@@ -4,13 +4,14 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/transferhandler"
+	"monorepo/bin-transfer-manager/models/transfer"
+	"monorepo/bin-transfer-manager/pkg/transferhandler"
 )
 
 func Test_processV1TransfersPost(t *testing.T) {

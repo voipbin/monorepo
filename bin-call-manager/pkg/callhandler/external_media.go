@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/externalmedia"
 )
 
 // list of channel variables

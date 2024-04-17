@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"monorepo/bin-conference-manager/models/conference"
 )
 
 // RecordingStart starts the conference recording

@@ -1,7 +1,7 @@
 package request
 
 import (
-	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
+	hmhook "monorepo/bin-hook-manager/models/hook"
 )
 
 // V1DataHooksPost is
