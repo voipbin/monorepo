@@ -11,7 +11,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	webhook "monorepo/bin-webhook-manager/models/webhook"
 )
 
 // MockWebhookHandler is a mock of WebhookHandler interface.

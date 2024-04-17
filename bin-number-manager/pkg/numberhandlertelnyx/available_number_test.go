@@ -6,10 +6,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
+	"monorepo/bin-number-manager/models/availablenumber"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/requestexternal"
+	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
 
 func TestGetAvailableNumbers(t *testing.T) {

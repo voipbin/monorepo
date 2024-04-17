@@ -5,17 +5,19 @@ package flowhandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/actionhandler"
+	"monorepo/bin-flow-manager/pkg/activeflowhandler"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 type flowHandler struct {

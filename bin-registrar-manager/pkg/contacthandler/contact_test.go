@@ -8,8 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/models/astcontact"
+	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
 func Test_ContactGetsByDomainID(t *testing.T) {

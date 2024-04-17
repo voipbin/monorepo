@@ -9,8 +9,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
+	"monorepo/bin-webhook-manager/models/account"
+	"monorepo/bin-webhook-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for webhook_manager database handle

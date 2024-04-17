@@ -1,20 +1,23 @@
 package chatmessages
 
 import (
+	_ "monorepo/bin-chat-manager/models/messagechat" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // chatmessagesPOST handles POST /chatmessages request.
 // It creates a new chatmessage with the given info and returns created chatmessage info.
+//
 //	@Summary		Create a new chatmessage and returns detail created chatmessage info.
 //	@Description	Create a new chatmessage and returns detail created chatmessage info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func chatmessagesPOST(c *gin.Context) {
 
 // chatmessagesGET handles GET /chatmessages request.
 // It gets a list of chatmessages with the given info.
+//
 //	@Summary		Gets a list of chatmessages.
 //	@Description	Gets a list of chatmessages
 //	@Produce		json
@@ -128,6 +132,7 @@ func chatmessagesGET(c *gin.Context) {
 
 // chatmessagesIDGET handles GET /chatmessages/{id} request.
 // It returns detail chatmessage info.
+//
 //	@Summary		Returns detail chatmessage info.
 //	@Description	Returns detail chatmessage info of the given chatmessage id.
 //	@Produce		json
@@ -169,6 +174,7 @@ func chatmessagesIDGET(c *gin.Context) {
 
 // chatmessagesIDDELETE handles DELETE /chatmessages/{id} request.
 // It deletes the chatmessage and returns deleted chatmessage info.
+//
 //	@Summary		Deletes a chatmessage and returns detail chatmessage info.
 //	@Description	Deletes a chatmessage and returns detail chatmessage info.
 //	@Produce		json

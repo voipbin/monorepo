@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
 // conferencecallGet vaildates the customer's ownership and returns the conferencecall info.

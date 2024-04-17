@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"monorepo/bin-queue-manager/models/queuecall"
 )
 
 const (

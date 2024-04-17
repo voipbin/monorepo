@@ -15,7 +15,7 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.com/voipbin/bin-manager/customer-manager.git
+git remote add origin https://monorepo/bin-customer-manager
 git branch -M main
 git push -uf origin main
 ```

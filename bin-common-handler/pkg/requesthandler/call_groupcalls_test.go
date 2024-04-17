@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_CallV1GroupcallGets(t *testing.T) {

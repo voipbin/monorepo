@@ -8,14 +8,14 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/models/call"
+	callapplication "monorepo/bin-call-manager/models/callapplication"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/models/groupcall"
+	"monorepo/bin-call-manager/models/recording"
 )
 
 // getSerialize returns cached serialized info.

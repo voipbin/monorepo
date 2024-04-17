@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 // processEventFMActiveflowDeleted handles the flow-manager's activeflow_deleted event.

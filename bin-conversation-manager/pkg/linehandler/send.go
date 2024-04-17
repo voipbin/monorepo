@@ -8,9 +8,9 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	"monorepo/bin-conversation-manager/models/account"
+	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/media"
 )
 
 // Send sends the message to the destination

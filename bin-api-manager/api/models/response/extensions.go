@@ -1,6 +1,6 @@
 package response
 
-import rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+import rmextension "monorepo/bin-registrar-manager/models/extension"
 
 // BodyExtensionsGET is rquest body define for
 // GET /v1.0/extensions

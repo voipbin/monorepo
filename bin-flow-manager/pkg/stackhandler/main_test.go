@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
+	"monorepo/bin-flow-manager/models/stack"
 )
 
 func getItemByIndex(stackMap map[uuid.UUID]*stack.Stack, idx int) *stack.Stack {

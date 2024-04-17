@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
+	gomock "github.com/golang/mock/gomock"
+
+	hmhook "monorepo/bin-hook-manager/models/hook"
 )
 
 func Test_Message(t *testing.T) {

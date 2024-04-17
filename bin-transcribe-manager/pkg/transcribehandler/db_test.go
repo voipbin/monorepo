@@ -5,13 +5,15 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
+	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 func Test_dbDelete(t *testing.T) {

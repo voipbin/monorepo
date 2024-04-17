@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"monorepo/bin-call-manager/models/ari"
 )
 
 // EventHandlerRecordingStarted handles RecordingStarted ARI event

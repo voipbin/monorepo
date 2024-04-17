@@ -1,8 +1,9 @@
 package request
 
 import (
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // ParamCustomersGET is request param define for

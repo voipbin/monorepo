@@ -3,8 +3,9 @@ package activeflowhandler
 import (
 	"context"
 
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

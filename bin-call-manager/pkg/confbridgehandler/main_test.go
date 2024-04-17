@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"monorepo/bin-call-manager/models/bridge"
 )
 
 func TestGenerateBridgeName(t *testing.T) {

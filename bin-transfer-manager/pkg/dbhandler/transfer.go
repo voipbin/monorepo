@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	"monorepo/bin-transfer-manager/models/transfer"
 )
 
 // ConferenceCreate creates a new conference record.

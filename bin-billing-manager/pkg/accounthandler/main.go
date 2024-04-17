@@ -5,16 +5,17 @@ package accounthandler
 import (
 	"context"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
+	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
 // AccountHandler define

@@ -3,10 +3,11 @@ package customerhandler
 import (
 	"context"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 )
 
 // IsValidBalance returns true if the customer's billing account has enough balance

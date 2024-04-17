@@ -8,8 +8,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 type handler struct {

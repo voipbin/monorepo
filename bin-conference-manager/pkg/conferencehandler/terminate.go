@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"monorepo/bin-conference-manager/models/conference"
 )
 
 // Terminating is terminating the conference

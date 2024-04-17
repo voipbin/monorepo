@@ -8,9 +8,9 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"monorepo/bin-transcribe-manager/models/streaming"
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
 type handler struct {

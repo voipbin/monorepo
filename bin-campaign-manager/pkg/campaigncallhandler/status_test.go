@@ -5,13 +5,16 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	"monorepo/bin-campaign-manager/models/campaigncall"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
+
+	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 )
 
 func Test_Done(t *testing.T) {

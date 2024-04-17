@@ -3,12 +3,13 @@ package messagehandler
 import (
 	"context"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/models/target"
 )
 
 // Create creates a new message.

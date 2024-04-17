@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
+	"monorepo/bin-webhook-manager/models/account"
+	"monorepo/bin-webhook-manager/models/webhook"
+	"monorepo/bin-webhook-manager/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/dbhandler"
 )
 
 func Test_SendWebhookToCustomer(t *testing.T) {

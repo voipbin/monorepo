@@ -5,14 +5,16 @@ package conferencehandler
 import (
 	"context"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	"monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
+	"monorepo/bin-conference-manager/models/conference"
+	"monorepo/bin-conference-manager/pkg/dbhandler"
 )
 
 // ConferenceHandler is interface for conference handle

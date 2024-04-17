@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // PublishWebhookEvent publishs the given event type of notification to the webhook and event queue.

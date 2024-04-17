@@ -6,8 +6,9 @@ import (
 	"net/url"
 	"strconv"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1BillingsGet handles GET /v1/billings request

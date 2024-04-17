@@ -7,9 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	"monorepo/bin-conversation-manager/models/account"
+	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/media"
 )
 
 func Test_getClient(t *testing.T) {

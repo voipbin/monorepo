@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	customer "monorepo/bin-customer-manager/models/customer"
+	extension "monorepo/bin-registrar-manager/models/extension"
 )
 
 // MockExtensionHandler is a mock of ExtensionHandler interface.

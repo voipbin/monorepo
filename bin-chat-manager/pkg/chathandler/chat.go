@@ -8,9 +8,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
+	"monorepo/bin-chat-manager/models/chat"
+	"monorepo/bin-chat-manager/models/chatroom"
+	"monorepo/bin-chat-manager/pkg/dbhandler"
 )
 
 // Get returns the chat

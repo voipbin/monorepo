@@ -1,7 +1,7 @@
 package response
 
 import (
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 )
 
 // BodyQueuecallsGET is rquest body define for

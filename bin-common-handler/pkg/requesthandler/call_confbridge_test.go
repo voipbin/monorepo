@@ -5,13 +5,14 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-call-manager/models/confbridge"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmrecording "monorepo/bin-call-manager/models/recording"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_CallV1ConfbridgeCreate(t *testing.T) {

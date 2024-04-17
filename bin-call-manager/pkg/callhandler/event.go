@@ -3,9 +3,10 @@ package callhandler
 import (
 	"context"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"monorepo/bin-call-manager/models/call"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

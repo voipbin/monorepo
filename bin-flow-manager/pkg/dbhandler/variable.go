@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	"monorepo/bin-flow-manager/models/variable"
 )
 
 // VariableCreate creates a new variable.

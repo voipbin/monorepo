@@ -8,9 +8,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/media"
+	"monorepo/bin-conversation-manager/models/message"
 )
 
 // Send sends the message to the given conversation

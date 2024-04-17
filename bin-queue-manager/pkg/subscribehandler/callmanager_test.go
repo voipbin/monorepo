@@ -3,12 +3,14 @@ package subscribehandler
 import (
 	"testing"
 
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
+	"monorepo/bin-queue-manager/pkg/queuecallhandler"
 )
 
 func Test_processEventCMConfbridgeJoined(t *testing.T) {

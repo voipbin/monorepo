@@ -4,19 +4,22 @@ import (
 	"context"
 	"testing"
 
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
+	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 func Test_EventCUCustomerDeleted(t *testing.T) {

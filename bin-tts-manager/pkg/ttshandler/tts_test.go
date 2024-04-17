@@ -8,9 +8,9 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/audiohandler"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/buckethandler"
+	"monorepo/bin-tts-manager/models/tts"
+	"monorepo/bin-tts-manager/pkg/audiohandler"
+	"monorepo/bin-tts-manager/pkg/buckethandler"
 )
 
 func Test_Create(t *testing.T) {

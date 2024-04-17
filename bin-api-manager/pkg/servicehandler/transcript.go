@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // TranscriptGets sends a request to transcribe-manager

@@ -4,16 +4,18 @@ import (
 	"context"
 	"testing"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/dbhandler"
+	"monorepo/bin-transfer-manager/models/transfer"
+	"monorepo/bin-transfer-manager/pkg/dbhandler"
 )
 
 func Test_transfererHangupTypeAttended(t *testing.T) {

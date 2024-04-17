@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"monorepo/bin-call-manager/models/ari"
 )
 
 func TestGetTech(t *testing.T) {

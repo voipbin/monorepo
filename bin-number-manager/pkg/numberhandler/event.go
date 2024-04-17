@@ -3,12 +3,13 @@ package numberhandler
 import (
 	"context"
 
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 )
 
 // EventCustomerDeleted handles the customer-manager's customer_deleted event

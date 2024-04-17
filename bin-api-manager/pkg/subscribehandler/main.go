@@ -7,13 +7,15 @@ import (
 	"fmt"
 	"time"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmqpubhandler"
+	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 )
 
 // SubscribeHandler interface

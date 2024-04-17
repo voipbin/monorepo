@@ -7,9 +7,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 // Get returns flow

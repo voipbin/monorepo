@@ -1,7 +1,7 @@
 package response
 
 import (
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 )
 
 // BodyTranscribesGET is response body define for

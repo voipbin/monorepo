@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	media "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	messagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	media "monorepo/bin-chat-manager/models/media"
+	messagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
+	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockMessagechatroomHandler is a mock of MessagechatroomHandler interface.

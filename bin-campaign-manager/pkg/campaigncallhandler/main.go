@@ -5,15 +5,17 @@ package campaigncallhandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmcall "monorepo/bin-call-manager/models/call"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-campaign-manager/models/campaigncall"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // campaigncallHandler defines

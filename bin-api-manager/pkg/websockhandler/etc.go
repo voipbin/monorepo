@@ -4,8 +4,9 @@ import (
 	"context"
 	"strings"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // validateTopics returns true if the given topics are valid all for the given agent.

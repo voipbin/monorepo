@@ -6,18 +6,20 @@ import (
 	"context"
 	"time"
 
+	"monorepo/bin-call-manager/models/common"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // ChannelHandler is interface for service handle

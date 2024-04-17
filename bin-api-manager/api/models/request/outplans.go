@@ -1,6 +1,6 @@
 package request
 
-import commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+import commonaddress "monorepo/bin-common-handler/models/address"
 
 // BodyOutplansPOST is rquest body define for
 // POST /v1.0/outplans

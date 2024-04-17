@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"monorepo/bin-call-manager/models/externalmedia"
 )
 
 // ExternalMediaGet returns external media

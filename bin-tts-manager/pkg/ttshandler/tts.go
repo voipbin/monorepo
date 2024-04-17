@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
+	"monorepo/bin-tts-manager/models/tts"
 )
 
 // Create creates audio and upload it to the bucket.

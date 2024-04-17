@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"monorepo/bin-number-manager/models/number"
 )
 
 // Create creates a new order numbers of given numbers

@@ -3,11 +3,12 @@ package accounthandler
 import (
 	"context"
 
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
+	"monorepo/bin-webhook-manager/models/account"
 )
 
 // Get returns given customer id's account.

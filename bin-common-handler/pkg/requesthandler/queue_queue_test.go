@@ -5,14 +5,17 @@ import (
 	"reflect"
 	"testing"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	qmqueue "monorepo/bin-queue-manager/models/queue"
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_QueueV1QueueGets(t *testing.T) {

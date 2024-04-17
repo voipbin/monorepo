@@ -9,8 +9,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	target "gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	address "monorepo/bin-common-handler/models/address"
+	target "monorepo/bin-message-manager/models/target"
 )
 
 // MockMessageHandlerMessagebird is a mock of MessageHandlerMessagebird interface.

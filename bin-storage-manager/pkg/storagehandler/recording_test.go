@@ -7,13 +7,15 @@ import (
 	"testing"
 	"time"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
+
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/filehandler"
+	"monorepo/bin-storage-manager/models/bucketfile"
+	"monorepo/bin-storage-manager/pkg/filehandler"
 )
 
 func Test_RecordingGet(t *testing.T) {

@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
+	"monorepo/bin-conference-manager/models/conferencecall"
+	"monorepo/bin-conference-manager/models/service"
 )
 
 // ServiceStart is starting a new service conferencecall.

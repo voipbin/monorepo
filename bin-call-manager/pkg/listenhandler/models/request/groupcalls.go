@@ -1,10 +1,11 @@
 package request
 
 import (
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-call-manager/models/groupcall"
 )
 
 // V1DataGroupcallsPost is

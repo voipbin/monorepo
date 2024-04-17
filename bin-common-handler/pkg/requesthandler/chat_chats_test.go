@@ -7,11 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	chatchat "monorepo/bin-chat-manager/models/chat"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ChatV1ChatCreate(t *testing.T) {

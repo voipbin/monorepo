@@ -4,13 +4,14 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
+	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/models/service"
+	"monorepo/bin-queue-manager/pkg/queuecallhandler"
 )
 
 func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {

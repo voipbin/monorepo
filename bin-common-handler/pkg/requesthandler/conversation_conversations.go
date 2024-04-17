@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	cvrequest "gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/listenhandler/models/request"
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
+	cvmedia "monorepo/bin-conversation-manager/models/media"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
+	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ConversationV1ConversationGet gets the conversation

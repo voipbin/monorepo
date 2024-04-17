@@ -5,12 +5,13 @@ package routehandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/dbhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-route-manager/models/route"
+	"monorepo/bin-route-manager/pkg/dbhandler"
 )
 
 // routeHandler

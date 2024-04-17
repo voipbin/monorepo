@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	nmnumber "monorepo/bin-number-manager/models/number"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // numberGet validates the number's ownership and returns the number info.

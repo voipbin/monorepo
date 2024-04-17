@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	account "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
+	customer "monorepo/bin-customer-manager/models/customer"
+	account "monorepo/bin-webhook-manager/models/account"
 )
 
 // MockAccountHandler is a mock of AccountHandler interface.

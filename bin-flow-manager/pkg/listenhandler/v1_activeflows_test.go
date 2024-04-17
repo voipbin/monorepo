@@ -5,15 +5,16 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/activeflow"
+	"monorepo/bin-flow-manager/pkg/activeflowhandler"
+	"monorepo/bin-flow-manager/pkg/flowhandler"
 )
 
 func Test_v1ActiveflowsPost(t *testing.T) {

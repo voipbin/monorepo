@@ -7,13 +7,14 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-transcribe-manager/models/streaming"
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
+	"monorepo/bin-transcribe-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for database handle

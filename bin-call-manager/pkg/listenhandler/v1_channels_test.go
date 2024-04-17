@@ -3,11 +3,12 @@ package listenhandler
 import (
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
+	"github.com/golang/mock/gomock"
+
+	"monorepo/bin-call-manager/pkg/callhandler"
+	"monorepo/bin-call-manager/pkg/channelhandler"
 )
 
 func Test_processV1ChannelsIDHealthPost(t *testing.T) {

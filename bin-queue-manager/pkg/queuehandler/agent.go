@@ -4,9 +4,10 @@ import (
 	"context"
 	"strings"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // GetAgents retruns list of agents of the given queue and status

@@ -7,12 +7,14 @@ import (
 	"reflect"
 	"testing"
 
+	cacampaign "monorepo/bin-campaign-manager/models/campaign"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_CampaignV1CampaignCreate(t *testing.T) {

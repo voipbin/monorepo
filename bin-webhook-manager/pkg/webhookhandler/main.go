@@ -6,12 +6,13 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-webhook-manager/models/webhook"
+	"monorepo/bin-webhook-manager/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/dbhandler"
 )
 
 // WebhookHandler is interface for webhook handle

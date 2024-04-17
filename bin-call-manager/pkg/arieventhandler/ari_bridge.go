@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/bridge"
 )
 
 // EventHandlerBridgeCreated handles BridgeCreated ari event.

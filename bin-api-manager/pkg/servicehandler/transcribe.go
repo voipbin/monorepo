@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"monorepo/bin-api-manager/api/models/request"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
 // transcribeGet validates the transcribe's ownership and returns the transcribe info.

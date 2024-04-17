@@ -1,7 +1,7 @@
 package request
 
 import (
-	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	chatbotchatbot "monorepo/bin-chatbot-manager/models/chatbot"
 )
 
 // BodyChatbotsPOST is rquest body define for

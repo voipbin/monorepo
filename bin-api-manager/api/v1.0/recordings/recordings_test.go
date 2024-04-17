@@ -6,15 +6,17 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	cmrecording "monorepo/bin-call-manager/models/recording"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 func setupServer(app *gin.Engine) {

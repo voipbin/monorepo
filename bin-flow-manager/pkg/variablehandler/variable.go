@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	"monorepo/bin-flow-manager/models/variable"
 )
 
 func (h *variableHandler) Create(ctx context.Context, activeflowID uuid.UUID, variables map[string]string) (*variable.Variable, error) {

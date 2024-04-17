@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"net/http"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/hook"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmqsubhandler"
+	"monorepo/bin-api-manager/models/hook"
+	"monorepo/bin-api-manager/pkg/zmqsubhandler"
 )
 
 // subscriptionRun creates a new websocket and starts socket message listen.

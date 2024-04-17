@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	conversation "monorepo/bin-conversation-manager/models/conversation"
+	media "monorepo/bin-conversation-manager/models/media"
+	message "monorepo/bin-conversation-manager/models/message"
 )
 
 // MockConversationHandler is a mock of ConversationHandler interface.

@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // processEventCSCustomerCreatedUpdated handles the customer-manager's customer_created and customer_updated event.

@@ -6,16 +6,19 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	rmroute "monorepo/bin-route-manager/models/route"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 )
 
 func Test_CallCreate(t *testing.T) {

@@ -1,10 +1,11 @@
 package request
 
 import (
-	"github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-campaign-manager/models/campaign"
 )
 
 // V1DataCampaignsPost is

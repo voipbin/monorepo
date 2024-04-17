@@ -8,7 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"github.com/sashabaranov/go-openai"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 func Test_Create(t *testing.T) {

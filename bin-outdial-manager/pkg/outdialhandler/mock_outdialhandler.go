@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	outdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
+	outdial "monorepo/bin-outdial-manager/models/outdial"
 )
 
 // MockOutdialHandler is a mock of OutdialHandler interface.

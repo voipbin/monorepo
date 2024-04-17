@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/common"
+	"monorepo/bin-api-manager/lib/common"
 )
 
 var secretKey []byte

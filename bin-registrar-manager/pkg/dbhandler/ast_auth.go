@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
+	"monorepo/bin-registrar-manager/models/astauth"
 )
 
 const (

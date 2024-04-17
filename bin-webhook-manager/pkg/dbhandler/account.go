@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
+	"monorepo/bin-webhook-manager/models/account"
 )
 
 // accountGetFromCache returns account from the cache.

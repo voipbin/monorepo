@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 )
 
 // processV1QueuecallsGet handles Get /v1/queuecalls request

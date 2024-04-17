@@ -4,20 +4,23 @@ import (
 	"context"
 	"testing"
 
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatgpthandler"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/dbhandler"
+	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/pkg/chatbothandler"
+	"monorepo/bin-chatbot-manager/pkg/chatgpthandler"
+	"monorepo/bin-chatbot-manager/pkg/dbhandler"
 )
 
 func Test_ChatMessage(t *testing.T) {

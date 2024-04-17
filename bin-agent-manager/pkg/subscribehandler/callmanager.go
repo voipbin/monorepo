@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processEventCMGroupcallCreated handles the call-manager's groupcall_created event.

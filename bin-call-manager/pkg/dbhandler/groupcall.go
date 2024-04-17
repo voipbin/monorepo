@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"strconv"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	"monorepo/bin-call-manager/models/groupcall"
 )
 
 const (

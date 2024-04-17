@@ -4,14 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
+	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 )
 
 func Test_processV1ExtensionsPost(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/messagebird"
+	"monorepo/bin-message-manager/models/messagebird"
 )
 
 // MessagebirdSendMessage sends request to the messagebird to send the message.

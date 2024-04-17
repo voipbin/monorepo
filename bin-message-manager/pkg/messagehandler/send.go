@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/models/target"
 )
 
 // Send sends the message.

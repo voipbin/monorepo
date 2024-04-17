@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"monorepo/bin-call-manager/models/ari"
 )
 
 // processEventAsteriskProxy handles the events from the asterisk-proxy.

@@ -1,20 +1,23 @@
 package routes
 
 import (
+	"monorepo/bin-route-manager/models/route"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // routesGET handles GET /routes request.
 // It returns list of routes of the given customer.
+//
 //	@Summary		List routes
 //	@Description	get routes of the customer
 //	@Produce		json
@@ -91,6 +94,7 @@ func routesGET(c *gin.Context) {
 
 // routesPOST handles POST /routes request.
 // It creates a new route.
+//
 //	@Summary		Create a new route.
 //	@Description	create a new route
 //	@Produce		json
@@ -146,6 +150,7 @@ func routesPOST(c *gin.Context) {
 
 // routesIDDelete handles DELETE /routes/<route-id> request.
 // It deletes the route.
+//
 //	@Summary		Delete the route
 //	@Description	Delete the route of the given id
 //	@Produce		json
@@ -193,6 +198,7 @@ func routesIDDelete(c *gin.Context) {
 
 // routesIDGet handles GET /routes/<route-id> request.
 // It gets the route.
+//
 //	@Summary		Get the route
 //	@Description	Get the route of the given id
 //	@Produce		json
@@ -236,6 +242,7 @@ func routesIDGet(c *gin.Context) {
 // routesIDPUT handles PUT /routes/{id} request.
 // It updates a route basic info with the given info.
 // And returns updated route info if it succeed.
+//
 //	@Summary		Update an route and reuturns updated route info.
 //	@Description	Update an route and returns detail updated route info.
 //	@Produce		json

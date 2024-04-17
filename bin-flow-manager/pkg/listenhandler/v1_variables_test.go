@@ -4,12 +4,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
+	"monorepo/bin-flow-manager/models/variable"
+	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
 func Test_v1VariablesIDGet(t *testing.T) {

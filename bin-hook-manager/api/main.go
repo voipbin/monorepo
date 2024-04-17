@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 
-	apiv1 "gitlab.com/voipbin/bin-manager/hook-manager.git/api/v1.0"
+	apiv1 "monorepo/bin-hook-manager/api/v1.0"
 )
 
 // ApplyRoutes applies router to gin Router

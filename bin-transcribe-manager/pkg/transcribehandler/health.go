@@ -3,11 +3,13 @@ package transcribehandler
 import (
 	"context"
 
+	"monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 )
 
 // HealthCheck checks the given transcribe is still vaild

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"net"
 
+	"monorepo/bin-call-manager/models/externalmedia"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"monorepo/bin-transcribe-manager/models/streaming"
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
 // Start starts the live streaming transcribe of the given transcribe

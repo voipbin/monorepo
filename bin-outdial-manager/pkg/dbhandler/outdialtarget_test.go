@@ -6,12 +6,13 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/cachehandler"
+	"monorepo/bin-outdial-manager/models/outdialtarget"
+	"monorepo/bin-outdial-manager/pkg/cachehandler"
 )
 
 func Test_OutdialTargetCreate(t *testing.T) {

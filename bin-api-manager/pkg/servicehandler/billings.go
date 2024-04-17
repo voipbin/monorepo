@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 )
 
 // BillingGets sends a request to billing-manager

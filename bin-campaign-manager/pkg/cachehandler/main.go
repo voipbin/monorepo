@@ -8,9 +8,9 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	"monorepo/bin-campaign-manager/models/campaign"
+	"monorepo/bin-campaign-manager/models/campaigncall"
+	"monorepo/bin-campaign-manager/models/outplan"
 )
 
 type handler struct {

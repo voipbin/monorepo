@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"monorepo/bin-call-manager/models/externalmedia"
 )
 
 // V1DataExternalMediasPost is

@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	mmmessage "monorepo/bin-message-manager/models/message"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_MessageV1MessageGets(t *testing.T) {

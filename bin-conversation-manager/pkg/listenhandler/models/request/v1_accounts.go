@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	"monorepo/bin-conversation-manager/models/account"
 )
 
 // V1DataAccountsPost is

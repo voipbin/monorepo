@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processEventCMCallProgressing handles the call-manager's call_created event

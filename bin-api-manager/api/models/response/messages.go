@@ -1,7 +1,7 @@
 package response
 
 import (
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	mmmessage "monorepo/bin-message-manager/models/message"
 )
 
 // BodyMessagesGET is rquest body define for

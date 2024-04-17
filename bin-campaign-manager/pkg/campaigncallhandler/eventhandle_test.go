@@ -4,15 +4,18 @@ import (
 	"context"
 	"testing"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+	"monorepo/bin-campaign-manager/models/campaigncall"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 func Test_EventHandleActiveflowDeleted(t *testing.T) {

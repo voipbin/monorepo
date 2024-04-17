@@ -6,7 +6,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
+	"monorepo/bin-tts-manager/models/tts"
 )
 
 func Test_getVoiceName(t *testing.T) {

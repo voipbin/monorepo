@@ -5,11 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	cmbridge "monorepo/bin-call-manager/models/bridge"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_AstBridgeCreate(t *testing.T) {

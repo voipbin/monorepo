@@ -1,7 +1,7 @@
 package request
 
 import (
-	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	rmprovider "monorepo/bin-route-manager/models/provider"
 )
 
 // ParamProvidersGET is request param define for

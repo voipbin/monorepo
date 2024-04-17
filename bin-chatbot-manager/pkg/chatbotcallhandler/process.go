@@ -3,11 +3,12 @@ package chatbotcallhandler
 import (
 	"context"
 
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 // ProcessStart starts a chatbotcall process

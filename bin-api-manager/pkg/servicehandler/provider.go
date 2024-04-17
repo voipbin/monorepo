@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	rmprovider "monorepo/bin-route-manager/models/provider"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 )
 
 // providerGet validates the provider's ownership and returns the provider info.

@@ -8,10 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gofrs/uuid"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-agent-manager/models/agent"
 )
 
 const (

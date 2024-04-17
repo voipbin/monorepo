@@ -5,15 +5,16 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/messagehandlermessagebird"
+	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/models/target"
+	"monorepo/bin-message-manager/pkg/dbhandler"
+	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 )
 
 func Test_dbCreate(t *testing.T) {

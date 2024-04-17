@@ -5,16 +5,18 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 )
 
 func setupServer(app *gin.Engine) {

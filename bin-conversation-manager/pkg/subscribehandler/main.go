@@ -8,13 +8,15 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	mmmessage "monorepo/bin-message-manager/models/message"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/conversationhandler"
+	"monorepo/bin-conversation-manager/pkg/accounthandler"
+	"monorepo/bin-conversation-manager/pkg/conversationhandler"
 )
 
 // list of publishers

@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
+	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // StorageV1RecordingGet sends a request to storage-manager

@@ -4,13 +4,14 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/providerhandler"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/routehandler"
+	"monorepo/bin-route-manager/models/route"
+	"monorepo/bin-route-manager/pkg/providerhandler"
+	"monorepo/bin-route-manager/pkg/routehandler"
 )
 
 func Test_v1DialroutesGet(t *testing.T) {

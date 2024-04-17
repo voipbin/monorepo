@@ -8,20 +8,27 @@ import (
 	"strings"
 	"time"
 
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
+
+	conversationmedia "monorepo/bin-conversation-manager/models/media"
+
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
+
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+
+	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"monorepo/bin-flow-manager/models/action"
+	"monorepo/bin-flow-manager/models/activeflow"
+	"monorepo/bin-flow-manager/models/flow"
 )
 
 // actionHandleGotoLoop handles goto action's loop condition.

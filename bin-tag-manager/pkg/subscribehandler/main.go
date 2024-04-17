@@ -7,14 +7,16 @@ import (
 	"fmt"
 	"time"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/tag-manager.git/pkg/taghandler"
+	"monorepo/bin-tag-manager/pkg/taghandler"
 )
 
 // list of publishers

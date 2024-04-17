@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"monorepo/bin-call-manager/models/bridge"
 )
 
 // Create creates a new bridge.

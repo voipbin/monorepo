@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"strings"
 
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/telnyx"
+	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/models/telnyx"
 )
 
 // Hook handles hook message

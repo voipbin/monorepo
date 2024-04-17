@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtargetcall"
+	"monorepo/bin-outdial-manager/models/outdialtargetcall"
 )
 
 const (

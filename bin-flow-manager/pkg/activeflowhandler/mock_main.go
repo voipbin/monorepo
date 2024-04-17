@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	call "monorepo/bin-call-manager/models/call"
+	customer "monorepo/bin-customer-manager/models/customer"
+	action "monorepo/bin-flow-manager/models/action"
+	activeflow "monorepo/bin-flow-manager/models/activeflow"
 )
 
 // MockActiveflowHandler is a mock of ActiveflowHandler interface.

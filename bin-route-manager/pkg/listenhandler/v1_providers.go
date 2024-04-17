@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-route-manager/pkg/listenhandler/models/request"
 )
 
 // v1ProvidersPost handles /v1/providers POST request

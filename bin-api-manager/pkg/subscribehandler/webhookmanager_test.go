@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmqpubhandler"
+	gomock "github.com/golang/mock/gomock"
+
+	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 )
 
 func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {

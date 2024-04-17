@@ -4,17 +4,21 @@ import (
 	"context"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	"monorepo/bin-flow-manager/models/activeflow"
+
+	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+	"monorepo/bin-campaign-manager/models/campaign"
+	"monorepo/bin-campaign-manager/models/campaigncall"
+	"monorepo/bin-campaign-manager/models/outplan"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // Execute executes the campaign.

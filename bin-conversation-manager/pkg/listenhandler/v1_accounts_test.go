@@ -4,12 +4,13 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
+	"monorepo/bin-conversation-manager/models/account"
+	"monorepo/bin-conversation-manager/pkg/accounthandler"
 )
 
 func Test_processV1AccountsGet(t *testing.T) {

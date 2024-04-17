@@ -1,11 +1,12 @@
 package messagehandlermessagebird
 
 import (
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
+	"monorepo/bin-message-manager/models/target"
 )
 
 // SendMessage sends the message.

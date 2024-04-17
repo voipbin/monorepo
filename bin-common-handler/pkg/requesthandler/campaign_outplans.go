@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	carequest "gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler/models/request"
+	caoutplan "monorepo/bin-campaign-manager/models/outplan"
+	carequest "monorepo/bin-campaign-manager/pkg/listenhandler/models/request"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CampaignV1OutplanCreate creates a new outplan.

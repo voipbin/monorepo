@@ -5,7 +5,7 @@ package servicehandler
 import (
 	"context"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
 // ServiceHandler is interface for service handle

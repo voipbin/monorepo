@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	csrequest "gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/request"
-	csresponse "gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/response"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+	csrequest "monorepo/bin-customer-manager/pkg/listenhandler/models/request"
+	csresponse "monorepo/bin-customer-manager/pkg/listenhandler/models/response"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CustomerV1CustomerGet sends a request to customer-manager

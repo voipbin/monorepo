@@ -5,17 +5,20 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
+	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
-	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
 func Test_ChatroommessageGet(t *testing.T) {

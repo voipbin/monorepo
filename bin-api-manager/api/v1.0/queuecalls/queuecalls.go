@@ -1,19 +1,21 @@
 package queuecalls
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // queuecallsGET handles GET /queuecalls request.
 // It returns list of queuecalls of the given customer.
+//
 //	@Summary		List qeueucalls
 //	@Description	get queuecalls of the customer
 //	@Produce		json
@@ -82,6 +84,7 @@ func queuecallsGET(c *gin.Context) {
 
 // queuecallsIDGET handles GET /queuecalls/{id} request.
 // It returns detail queuecall info.
+//
 //	@Summary		Returns detail queuecall info.
 //	@Description	Returns detail conferencecall info of the given queuecall id.
 //	@Produce		json
@@ -123,6 +126,7 @@ func queuecallsIDGET(c *gin.Context) {
 
 // queuecallsIDDELETE handles DELETE /queuecalls/{id} request.
 // It deletes the queuecall.
+//
 //	@Summary		Deletes the queuecall.
 //	@Description	Deletes the queuecall.
 //	@Produce		json
@@ -162,6 +166,7 @@ func queuecallsIDDELETE(c *gin.Context) {
 
 // queuecallsIDKickPOST handles POST /queuecalls/{id}/kick request.
 // It kicks the queuecall from the queue.
+//
 //	@Summary		Kicks the queuecall from the queue.
 //	@Description	Kicks the queuecall.
 //	@Produce		json
@@ -201,6 +206,7 @@ func queuecallsIDKickPOST(c *gin.Context) {
 
 // queuecallsReferenceIDIDKickPOST handles POST /queuecalls/reference_id/{id}/kick request.
 // It kicks the queuecall of the given reference id from the queue.
+//
 //	@Summary		Kicks the queuecall of the given reference id from the queue.
 //	@Description	Kicks the queuecall of the given reference id.
 //	@Produce		json

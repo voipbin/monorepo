@@ -7,12 +7,13 @@ import (
 	"reflect"
 	"testing"
 
+	caoutplan "monorepo/bin-campaign-manager/models/outplan"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_CampaignV1OutplanCreate(t *testing.T) {

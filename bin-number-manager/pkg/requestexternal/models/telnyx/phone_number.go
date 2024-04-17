@@ -3,8 +3,8 @@ package telnyx
 import (
 	"strings"
 
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/models/providernumber"
 )
 
 // PhoneNumber struct struct

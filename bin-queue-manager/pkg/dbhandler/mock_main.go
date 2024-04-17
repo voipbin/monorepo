@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	action "monorepo/bin-flow-manager/models/action"
+	queue "monorepo/bin-queue-manager/models/queue"
+	queuecall "monorepo/bin-queue-manager/models/queuecall"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

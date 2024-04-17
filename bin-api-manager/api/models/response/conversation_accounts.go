@@ -1,7 +1,7 @@
 package response
 
 import (
-	cvaccount "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	cvaccount "monorepo/bin-conversation-manager/models/account"
 )
 
 // BodyConversationAccountsGET is rquest body define for

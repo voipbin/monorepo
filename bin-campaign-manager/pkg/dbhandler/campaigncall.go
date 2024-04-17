@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"monorepo/bin-campaign-manager/models/campaigncall"
 )
 
 const (

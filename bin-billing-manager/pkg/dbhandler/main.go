@@ -7,12 +7,13 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/cachehandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for webhook_manager database handle

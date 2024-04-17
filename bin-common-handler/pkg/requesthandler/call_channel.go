@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CallV1ChannelHealth sends the request to the call-manager for channel health-check

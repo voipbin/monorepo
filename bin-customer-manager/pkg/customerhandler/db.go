@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"monorepo/bin-customer-manager/models/customer"
 )
 
 // Gets returns list of customers

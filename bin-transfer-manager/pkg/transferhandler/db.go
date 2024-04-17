@@ -3,12 +3,13 @@ package transferhandler
 import (
 	"context"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	"monorepo/bin-transfer-manager/models/transfer"
 )
 
 // Create is handy function for creating a transfer.

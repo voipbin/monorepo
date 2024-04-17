@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"monorepo/bin-call-manager/models/externalmedia"
 )
 
 // Create creates a new external media

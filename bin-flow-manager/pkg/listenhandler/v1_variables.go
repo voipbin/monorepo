@@ -6,11 +6,12 @@ import (
 	"net/url"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-flow-manager/pkg/listenhandler/models/request"
 )
 
 // v1VariablesIDGet handles /v1/variables/{id} GET request

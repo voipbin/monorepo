@@ -5,16 +5,18 @@ package campaignhandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-campaign-manager/models/campaign"
+	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
+	"monorepo/bin-campaign-manager/pkg/outplanhandler"
 )
 
 // campaignHandler defines

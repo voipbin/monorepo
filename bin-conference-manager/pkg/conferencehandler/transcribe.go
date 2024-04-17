@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"monorepo/bin-conference-manager/models/conference"
 )
 
 // TranscribeStart starts the conference transcribe.

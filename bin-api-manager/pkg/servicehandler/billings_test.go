@@ -5,13 +5,16 @@ import (
 	"reflect"
 	"testing"
 
+	bmbilling "monorepo/bin-billing-manager/models/billing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"monorepo/bin-api-manager/pkg/dbhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
 func Test_BillingGets(t *testing.T) {

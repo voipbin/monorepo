@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	omoutdial "monorepo/bin-outdial-manager/models/outdial"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 )
 
 // outdialGet validates the outdial's ownership and returns the outdial info.

@@ -7,12 +7,13 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/pkg/listenhandler/models/request"
 )
 
 // processV1ExternalMediasGet handles GET /v1/external-medias request

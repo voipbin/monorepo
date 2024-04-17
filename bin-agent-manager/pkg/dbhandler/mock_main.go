@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	agent "monorepo/bin-agent-manager/models/agent"
+	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

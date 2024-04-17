@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	customer "monorepo/bin-customer-manager/models/customer"
+	action "monorepo/bin-flow-manager/models/action"
+	flow "monorepo/bin-flow-manager/models/flow"
 )
 
 // MockFlowHandler is a mock of FlowHandler interface.

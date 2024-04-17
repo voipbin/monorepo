@@ -7,11 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ChatV1ChatroomGet(t *testing.T) {

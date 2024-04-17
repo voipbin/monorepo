@@ -1,7 +1,7 @@
 package request
 
 import (
-	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	bmaccount "monorepo/bin-billing-manager/models/account"
 )
 
 // BodyBillingAccountsPOST is rquest body define for

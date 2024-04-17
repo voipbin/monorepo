@@ -8,8 +8,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
+	"monorepo/bin-registrar-manager/models/astaor"
+	"monorepo/bin-registrar-manager/pkg/cachehandler"
 )
 
 func TestAstAORCreate(t *testing.T) {

@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
+	"monorepo/bin-chat-manager/models/chat"
 )
 
 // V1DataChatsPost is

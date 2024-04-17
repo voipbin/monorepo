@@ -10,9 +10,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	campaign "monorepo/bin-campaign-manager/models/campaign"
+	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	outplan "monorepo/bin-campaign-manager/models/outplan"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

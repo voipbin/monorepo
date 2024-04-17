@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
 // RecordingfileGet returns downloadable url for recording

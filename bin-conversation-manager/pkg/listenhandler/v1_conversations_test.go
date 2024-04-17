@@ -4,15 +4,16 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/conversationhandler"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
+	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/media"
+	"monorepo/bin-conversation-manager/models/message"
+	"monorepo/bin-conversation-manager/pkg/conversationhandler"
+	"monorepo/bin-conversation-manager/pkg/messagehandler"
 )
 
 func Test_processV1ConversationsGet(t *testing.T) {

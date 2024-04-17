@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // processEventTMTranscriptCreated handles the call-manager's call related event

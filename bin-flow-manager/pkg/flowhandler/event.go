@@ -3,7 +3,7 @@ package flowhandler
 import (
 	"context"
 
-	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

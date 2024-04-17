@@ -1,20 +1,23 @@
 package chatbotcalls
 
 import (
+	_ "monorepo/bin-chatbot-manager/models/chatbotcall" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // chatbotcallsGET handles GET /chatbotcalls request.
 // It gets a list of chatbotcalls with the given info.
+//
 //	@Summary		Gets a list of chatbotcalls.
 //	@Description	Gets a list of chatbotcalls
 //	@Produce		json
@@ -81,6 +84,7 @@ func chatbotcallsGET(c *gin.Context) {
 
 // chatbotcallsIDGET handles GET /chatbotcalls/{id} request.
 // It returns detail chatbotcall info.
+//
 //	@Summary		Returns detail chatbotcall info.
 //	@Description	Returns detail chatbotcall info of the given chatbotcall id.
 //	@Produce		json
@@ -122,6 +126,7 @@ func chatbotcallsIDGET(c *gin.Context) {
 
 // chatbotcallsIDDELETE handles DELETE /chatbotcalls/{id} request.
 // It deletes a exist chatbot info.
+//
 //	@Summary		Delete a existing chatbotcall.
 //	@Description	Delete a existing chatbotcall.
 //	@Produce		json

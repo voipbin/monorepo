@@ -1,8 +1,9 @@
 package request
 
 import (
+	"monorepo/bin-conference-manager/models/conferencecall"
+
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
 // ParamConferencecallsGET is rquest param define for

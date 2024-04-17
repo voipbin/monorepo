@@ -10,12 +10,12 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	astaor "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
-	astauth "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
-	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
-	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
+	astaor "monorepo/bin-registrar-manager/models/astaor"
+	astauth "monorepo/bin-registrar-manager/models/astauth"
+	astcontact "monorepo/bin-registrar-manager/models/astcontact"
+	astendpoint "monorepo/bin-registrar-manager/models/astendpoint"
+	extension "monorepo/bin-registrar-manager/models/extension"
+	trunk "monorepo/bin-registrar-manager/models/trunk"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

@@ -7,13 +7,14 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
+	"monorepo/bin-conference-manager/pkg/conferencecallhandler"
+	"monorepo/bin-conference-manager/pkg/conferencehandler"
 )
 
 // pagination parameters

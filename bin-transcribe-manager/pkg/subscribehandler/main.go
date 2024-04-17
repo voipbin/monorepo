@@ -7,16 +7,19 @@ import (
 	"fmt"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/models/common"
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-transcribe-manager/pkg/transcribehandler"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
 // SubscribeHandler intreface for subscribed event listen handler

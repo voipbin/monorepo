@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
+	cfservice "monorepo/bin-conference-manager/models/service"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	cfservice "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {

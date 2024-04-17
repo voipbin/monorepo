@@ -1,7 +1,7 @@
 package response
 
 import (
-	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	rmprovider "monorepo/bin-route-manager/models/provider"
 )
 
 // BodyProvidersGET is rquest body define for

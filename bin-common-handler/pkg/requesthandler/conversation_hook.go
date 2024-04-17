@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
+	hmhook "monorepo/bin-hook-manager/models/hook"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ConversationV1Hook sends a hook

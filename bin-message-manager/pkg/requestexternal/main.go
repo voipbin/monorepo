@@ -5,7 +5,7 @@ package requestexternal
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/messagebird"
+	"monorepo/bin-message-manager/models/messagebird"
 )
 
 // messagebird

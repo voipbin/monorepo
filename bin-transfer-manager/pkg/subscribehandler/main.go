@@ -8,13 +8,15 @@ import (
 	"strings"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/transferhandler"
+	"monorepo/bin-transfer-manager/pkg/transferhandler"
 )
 
 // list of publishers

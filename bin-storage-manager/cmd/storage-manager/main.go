@@ -9,17 +9,18 @@ import (
 	"syscall"
 	"time"
 
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/filehandler"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
+	"monorepo/bin-storage-manager/pkg/filehandler"
+	"monorepo/bin-storage-manager/pkg/listenhandler"
+	"monorepo/bin-storage-manager/pkg/storagehandler"
 )
 
 // channels

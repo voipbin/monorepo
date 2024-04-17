@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmq"
+	"monorepo/bin-api-manager/pkg/zmq"
 )
 
 // ZMQSubHandler defines

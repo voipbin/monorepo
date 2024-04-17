@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	"monorepo/bin-billing-manager/models/billing"
 )
 
 // BillingStart starts the billing

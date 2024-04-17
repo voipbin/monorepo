@@ -5,12 +5,14 @@ package accounthandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-webhook-manager/models/account"
+	"monorepo/bin-webhook-manager/pkg/dbhandler"
 )
 
 // AccountHandler is interface for account handle

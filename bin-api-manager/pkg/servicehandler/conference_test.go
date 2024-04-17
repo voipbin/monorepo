@@ -6,16 +6,21 @@ import (
 	"reflect"
 	"testing"
 
+	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
+
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	cfconference "monorepo/bin-conference-manager/models/conference"
+
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
+	"monorepo/bin-api-manager/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/websockhandler"
 )
 
 func Test_ConferenceCreate(t *testing.T) {

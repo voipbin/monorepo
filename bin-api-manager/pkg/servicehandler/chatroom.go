@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	chatchat "monorepo/bin-chat-manager/models/chat"
+	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
-	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 )
 
 // chatroomGet validates the chatroom's ownership and returns the chatroom info.

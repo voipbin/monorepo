@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	uuid "github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // Conference type

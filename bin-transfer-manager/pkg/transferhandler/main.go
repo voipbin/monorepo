@@ -5,16 +5,18 @@ package transferhandler
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
-	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/dbhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-transfer-manager/models/transfer"
+	"monorepo/bin-transfer-manager/pkg/dbhandler"
 )
 
 // TransferHandler define

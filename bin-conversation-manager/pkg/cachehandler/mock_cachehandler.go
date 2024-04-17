@@ -10,10 +10,10 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
-	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	account "monorepo/bin-conversation-manager/models/account"
+	conversation "monorepo/bin-conversation-manager/models/conversation"
+	media "monorepo/bin-conversation-manager/models/media"
+	message "monorepo/bin-conversation-manager/models/message"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

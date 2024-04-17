@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	mmmessage "monorepo/bin-message-manager/models/message"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/message"
 )
 
 // Event handles received sms/mms message

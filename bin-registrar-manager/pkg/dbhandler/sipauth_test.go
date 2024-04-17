@@ -5,12 +5,13 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/pkg/utilhandler"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/sipauth"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
+	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/pkg/cachehandler"
 )
 
 func Test_SIPAuthCreate(t *testing.T) {

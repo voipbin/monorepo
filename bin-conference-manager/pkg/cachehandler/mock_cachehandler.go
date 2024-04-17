@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	conference "monorepo/bin-conference-manager/models/conference"
+	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

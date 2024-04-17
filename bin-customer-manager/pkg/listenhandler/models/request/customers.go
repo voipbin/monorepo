@@ -1,10 +1,11 @@
 package request
 
 import (
-	"github.com/gofrs/uuid"
-	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-customer-manager/models/customer"
 )
 
 // V1DataCustomersPost is

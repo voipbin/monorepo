@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"monorepo/bin-chatbot-manager/models/chatbot"
+	"monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 // ChatMessage sends/receives the messages from/to a chatbot

@@ -3,13 +3,16 @@ package billinghandler
 import (
 	"context"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+
+	"monorepo/bin-billing-manager/models/billing"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	mmmessage "monorepo/bin-message-manager/models/message"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // EventCMCallProgressing handles the call-manager's call_progressing event

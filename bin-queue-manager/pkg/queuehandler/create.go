@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	fmaction "monorepo/bin-flow-manager/models/action"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	"monorepo/bin-queue-manager/models/queue"
 )
 
 // Create creates a new queue.

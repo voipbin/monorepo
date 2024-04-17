@@ -8,14 +8,15 @@ import (
 	"errors"
 	"sort"
 
-	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/cachehandler"
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-chat-manager/models/chat"
+	"monorepo/bin-chat-manager/models/chatroom"
+	"monorepo/bin-chat-manager/models/messagechat"
+	"monorepo/bin-chat-manager/models/messagechatroom"
+	"monorepo/bin-chat-manager/pkg/cachehandler"
 )
 
 // DBHandler interface for call_manager database handle

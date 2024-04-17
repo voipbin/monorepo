@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	cmari "monorepo/bin-call-manager/models/ari"
+	cmbridge "monorepo/bin-call-manager/models/bridge"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // AstBridgeCreate sends the bridge create request

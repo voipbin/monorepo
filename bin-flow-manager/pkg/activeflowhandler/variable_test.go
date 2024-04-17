@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
+	gomock "github.com/golang/mock/gomock"
+
+	"monorepo/bin-flow-manager/models/variable"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
+	"monorepo/bin-flow-manager/pkg/variablehandler"
 )
 
 func Test_variableSubstitueAddress(t *testing.T) {

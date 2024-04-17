@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
+	hmhook "monorepo/bin-hook-manager/models/hook"
 )
 
 // Message handles message receive

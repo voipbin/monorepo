@@ -7,11 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func Test_CampaignV1CampaigncallGets(t *testing.T) {

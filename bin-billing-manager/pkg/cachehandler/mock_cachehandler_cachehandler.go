@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
-	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	account "monorepo/bin-billing-manager/models/account"
+	billing "monorepo/bin-billing-manager/models/billing"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

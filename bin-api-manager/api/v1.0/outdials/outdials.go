@@ -1,20 +1,23 @@
 package outdials
 
 import (
+	_ "monorepo/bin-outdial-manager/models/outdial" // for swag use
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	_ "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial" // for swag use
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/api/models/response"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
 // outdialsPOST handles POST /outdials request.
 // It creates a new outdial with the given info and returns created outdial info.
+//
 //	@Summary		Create a new outdial and returns detail created outdial info.
 //	@Description	Create a new outdial and returns detail created outdial info.
 //	@Produce		json
@@ -60,6 +63,7 @@ func outdialsPOST(c *gin.Context) {
 
 // outdialsGET handles GET /outdials request.
 // It gets a list of outdials with the given info.
+//
 //	@Summary		Gets a list of outdials.
 //	@Description	Gets a list of outdials
 //	@Produce		json
@@ -126,6 +130,7 @@ func outdialsGET(c *gin.Context) {
 
 // outdialsIDGET handles GET /outdials/{id} request.
 // It returns detail outdials info.
+//
 //	@Summary		Returns detail outdials info.
 //	@Description	Returns detail outdials info of the given outdials id.
 //	@Produce		json
@@ -167,6 +172,7 @@ func outdialsIDGET(c *gin.Context) {
 
 // outdialsIDDELETE handles DELETE /outdials/{id} request.
 // It deletes a exist outdial info.
+//
 //	@Summary		Delete a existing outdial.
 //	@Description	Delete a existing outdial.
 //	@Produce		json
@@ -210,6 +216,7 @@ func outdialsIDDELETE(c *gin.Context) {
 // outdialsIDPUT handles PUT /outdials/{id} request.
 // It updates a exist outdial info with the given outdial info.
 // And returns updated outdial info if it succeed.
+//
 //	@Summary		Update a outdial and reuturns updated outdial info.
 //	@Description	Update a outdial and returns detail updated outdial info.
 //	@Produce		json
@@ -261,6 +268,7 @@ func outdialsIDPUT(c *gin.Context) {
 // outdialsIDCampaignIDPUT handles PUT /outdials/{id}/campaign_id request.
 // It updates a exist outdial's campaign_id info with the given outdial info.
 // And returns updated outdial's campaign_id info if it succeed.
+//
 //	@Summary		Update a outdial's campaign_id and reuturns updated outdial info.
 //	@Description	Update a outdial's campaign_id and returns detail updated outdial info.
 //	@Produce		json
@@ -312,6 +320,7 @@ func outdialsIDCampaignIDPUT(c *gin.Context) {
 // outdialsIDDataPUT handles PUT /outdials/{id}/data request.
 // It updates a exist outdial's data info with the given outdial info.
 // And returns updated outdial's data info if it succeed.
+//
 //	@Summary		Update a outdial's data and reuturns updated outdial info.
 //	@Description	Update a outdial's data and returns detail updated outdial info.
 //	@Produce		json
@@ -363,6 +372,7 @@ func outdialsIDDataPUT(c *gin.Context) {
 // outdialsIDTargetsPOST handles POST /outdials/{id}/targets request.
 // It creates a new outdial's target info with the given target info.
 // And returns created outdial target's data info if it succeed.
+//
 //	@Summary		Create a new outdialtarget's data and reuturns updated outdial info.
 //	@Description	Update a outdial's data and returns detail updated outdial info.
 //	@Produce		json
@@ -413,6 +423,7 @@ func outdialsIDTargetsPOST(c *gin.Context) {
 
 // outdialsIDTargetsIDGET handles GET /outdials/{id}/targets/{target_id} request.
 // It gets a exist outdialtarget info.
+//
 //	@Summary		Get a existing outdialtarget.
 //	@Description	Get a existing outdialtarget.
 //	@Produce		json
@@ -460,6 +471,7 @@ func outdialsIDTargetsIDGET(c *gin.Context) {
 
 // outdialsIDTargetsIDDELETE handles DELETE /outdials/{id}/targets/{target_id} request.
 // It deletes a exist outdialtarget info.
+//
 //	@Summary		Delete a existing outdialtarget.
 //	@Description	Delete a existing outdialtarget.
 //	@Produce		json
@@ -507,6 +519,7 @@ func outdialsIDTargetsIDDELETE(c *gin.Context) {
 
 // outdialsIDTargetsGET handles GET /outdials/{id}/targets request.
 // It gets a list of outdialtargets.
+//
 //	@Summary		Get a list of outdialtargets.
 //	@Description	Get a list of outdialtargets.
 //	@Produce		json

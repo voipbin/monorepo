@@ -1,8 +1,8 @@
 package response
 
 import (
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 )
 
 // BodyCallsPOST is response body define for

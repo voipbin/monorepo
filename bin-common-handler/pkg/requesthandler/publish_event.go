@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/sirupsen/logrus"
-	commonoutline "gitlab.com/voipbin/bin-manager/common-handler.git/models/outline"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // publishEvent sends a event to the given destination.

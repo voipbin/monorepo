@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 )
 
 // campaigncallGet validates the campaigncall's ownership and returns the campaigncall info.

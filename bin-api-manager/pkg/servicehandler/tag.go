@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	tmtag "monorepo/bin-tag-manager/models/tag"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 )
 
 // tagGet validates the tag's ownership and returns the tag info.

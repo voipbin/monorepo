@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"monorepo/bin-flow-manager/models/action"
 )
 
 func Test_generateFlowActions(t *testing.T) {

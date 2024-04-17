@@ -1,7 +1,7 @@
 package request
 
 import (
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "monorepo/bin-flow-manager/models/action"
 )
 
 // BodyFlowsPOST is rquest body define for

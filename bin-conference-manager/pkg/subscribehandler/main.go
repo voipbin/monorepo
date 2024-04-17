@@ -7,13 +7,15 @@ import (
 	"fmt"
 	"time"
 
+	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
+	"monorepo/bin-conference-manager/pkg/conferencecallhandler"
+	"monorepo/bin-conference-manager/pkg/conferencehandler"
 )
 
 // list of publishers

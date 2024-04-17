@@ -4,15 +4,16 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/outdialhandler"
-	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/outdialtargethandler"
+	"monorepo/bin-outdial-manager/models/outdial"
+	"monorepo/bin-outdial-manager/models/outdialtarget"
+	"monorepo/bin-outdial-manager/pkg/outdialhandler"
+	"monorepo/bin-outdial-manager/pkg/outdialtargethandler"
 )
 
 func Test_v1OutdialsPost(t *testing.T) {

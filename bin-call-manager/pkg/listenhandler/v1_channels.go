@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-call-manager/pkg/listenhandler/models/request"
 )
 
 // processV1ChannelsIDHealthPost handles /v1/channels/<id>/health-check request
