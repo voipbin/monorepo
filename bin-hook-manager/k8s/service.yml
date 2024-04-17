@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hook-manager
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "hook-manager-static-ip"
+
+spec:
+  type: LoadBalancer
+  selector:
+    app: hook-manager
+  ports:
+  - name: https
+    port: 443
+    targetPort: 443
+    protocol: TCP
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
