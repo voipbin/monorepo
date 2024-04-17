@@ -1,0 +1,4 @@
+vendor
+transcribe-manager
+.vscode
+!cmd/*
