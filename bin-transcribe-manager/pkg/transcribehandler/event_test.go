@@ -1,0 +1,240 @@
+package transcribehandler
+
+import (
+	"context"
+	"testing"
+
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	cucustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
+)
+
+func Test_EventCUCustomerDeleted(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer            *cucustomer.Customer
+		responseTranscribes []*transcribe.Transcribe
+
+		expectFilters map[string]string
+	}{
+		{
+			name: "normal",
+
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("cac89366-f2e4-11ee-a393-f7b712d3f1a4"),
+			},
+			responseTranscribes: []*transcribe.Transcribe{
+				{
+					ID:       uuid.FromStringOrNil("caeca0bc-f2e4-11ee-a152-e7331c726b3b"),
+					Status:   transcribe.StatusDone,
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+				{
+					ID:       uuid.FromStringOrNil("cb17285a-f2e4-11ee-aaee-c31bb727756e"),
+					Status:   transcribe.StatusDone,
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+			},
+
+			expectFilters: map[string]string{
+				"customer_id": "cac89366-f2e4-11ee-a393-f7b712d3f1a4",
+				"deleted":     "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+			h := &transcribeHandler{
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				utilHandler:       mockUtil,
+				transcriptHandler: mockTranscript,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscribes, nil)
+
+			// delete each
+			for _, tr := range tt.responseTranscribes {
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+
+				tmpFilters := map[string]string{
+					"transcribe_id": tr.ID.String(),
+					"deleted":       "false",
+				}
+				mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", tmpFilters).Return([]*transcript.Transcript{}, nil)
+
+				mockDB.EXPECT().TranscribeDelete(ctx, tr.ID).Return(nil)
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, tr)
+			}
+
+			if err := h.EventCUCustomerDeleted(ctx, tt.customer); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventCMCallHangup(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call                *cmcall.Call
+		responseTranscribes []*transcribe.Transcribe
+
+		expectFilters map[string]string
+	}{
+		{
+			name: "normal",
+
+			call: &cmcall.Call{
+				ID: uuid.FromStringOrNil("60865546-f2ef-11ee-93b7-13e9bdae3b1c"),
+			},
+			responseTranscribes: []*transcribe.Transcribe{
+				{
+					ID:       uuid.FromStringOrNil("60c49f2c-f2ef-11ee-b34e-0ff8d9efb06c"),
+					Status:   transcribe.StatusDone,
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+				{
+					ID:       uuid.FromStringOrNil("61321d36-f2ef-11ee-91a2-1b4be4f8b801"),
+					Status:   transcribe.StatusDone,
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+			},
+
+			expectFilters: map[string]string{
+				"reference_id": "60865546-f2ef-11ee-93b7-13e9bdae3b1c",
+				"deleted":      "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+			h := &transcribeHandler{
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				utilHandler:       mockUtil,
+				transcriptHandler: mockTranscript,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscribes, nil)
+
+			// delete each
+			for _, tr := range tt.responseTranscribes {
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+			}
+
+			if err := h.EventCMCallHangup(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventCMConfbridgeTerminated(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		confbridge          *cmconfbridge.Confbridge
+		responseTranscribes []*transcribe.Transcribe
+
+		expectFilters map[string]string
+	}{
+		{
+			name: "normal",
+
+			confbridge: &cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("a722a706-f2f0-11ee-9467-abd69c44e65f"),
+			},
+			responseTranscribes: []*transcribe.Transcribe{
+				{
+					ID:       uuid.FromStringOrNil("a75970f6-f2f0-11ee-8f5f-c3086817f421"),
+					Status:   transcribe.StatusDone,
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+				{
+					ID:       uuid.FromStringOrNil("a789fbcc-f2f0-11ee-9902-4b978847b531"),
+					Status:   transcribe.StatusDone,
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+			},
+
+			expectFilters: map[string]string{
+				"reference_id": "a722a706-f2f0-11ee-9467-abd69c44e65f",
+				"deleted":      "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+
+			h := &transcribeHandler{
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				utilHandler:       mockUtil,
+				transcriptHandler: mockTranscript,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscribes, nil)
+
+			// delete each
+			for _, tr := range tt.responseTranscribes {
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+			}
+
+			if err := h.EventCMConfbridgeTerminated(ctx, tt.confbridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

@@ -1,0 +1,95 @@
+package transcripthandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package transcripthandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+
+	speech "cloud.google.com/go/speech/apiv1"
+	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	"google.golang.org/api/option"
+
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
+)
+
+// default variables
+const (
+	defaultBucketTimeout = 100000 // 100 sec
+)
+
+// transcriptHandler structure for streaming handler
+type transcriptHandler struct {
+	utilHandler   utilhandler.UtilHandler
+	reqHandler    requesthandler.RequestHandler
+	db            dbhandler.DBHandler
+	notifyHandler notifyhandler.NotifyHandler
+
+	clientSpeech *speech.Client
+}
+
+// prometheus
+var (
+	metricsNamespace = "transcribe_manager"
+
+	promTranscriptCreateTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "transcript_transcript_create_total",
+			Help:      "Total number of created transcribe type.",
+		},
+		[]string{"type"},
+	)
+)
+
+// TranscriptHandler defines
+type TranscriptHandler interface {
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		transcribeID uuid.UUID,
+		direction transcript.Direction,
+		message string,
+		tmTranscript string,
+	) (*transcript.Transcript, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error)
+	Delete(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error)
+
+	Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) (*transcript.Transcript, error)
+}
+
+// NewTranscriptHandler returns sttgoogle interface
+func NewTranscriptHandler(
+	reqHandler requesthandler.RequestHandler,
+	db dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+
+	credentialPath string,
+) TranscriptHandler {
+
+	// create client speech
+	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsFile(credentialPath))
+	if err != nil {
+		logrus.Errorf("Could not create a new client for speech. err: %v", err)
+		return nil
+	}
+
+	return &transcriptHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    reqHandler,
+		db:            db,
+		notifyHandler: notifyHandler,
+		clientSpeech:  clientSpeech,
+	}
+}
+
+func init() {
+	prometheus.MustRegister(
+		promTranscriptCreateTotal,
+	)
+}
