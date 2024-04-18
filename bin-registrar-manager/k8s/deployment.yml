@@ -24,7 +24,7 @@ spec:
         - name: registrar-manager
           image: registrar-manager-image
           command:
-            - '/app/registrar-manager'
+            - '/app/bin-registrar-manager/registrar-manager'
           args:
             - '-prom_endpoint'
             - '/metrics'

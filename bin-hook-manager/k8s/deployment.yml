@@ -24,12 +24,8 @@ spec:
         - name: hook-manager
           image: hook-manager-image
           command:
-            - '/app/hook-manager'
+            - '/app/bin-hook-manager/hook-manager'
           args:
-            # - '-prom_endpoint'
-            # - '/metrics'
-            # - '-prom_listen_addr'
-            # - ':2112'
             - '-dsn'
             - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
             - '-rabbit_addr'

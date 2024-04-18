@@ -24,7 +24,7 @@ spec:
         - name: message-manager
           image: message-manager-image
           command:
-            - '/app/message-manager'
+            - '/app/bin-message-manager/message-manager'
           args:
             - '-prom_listen_addr'
             - ':2112'
