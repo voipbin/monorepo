@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin
+  labels:
+    app: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin
+  template:
+    metadata:
+      labels:
+        app: admin
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: admin
+          image: admin-image
+          command:
+            - '/usr/local/bin/npm'
+          args:
+            - 'start'
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+            - name: https
+              protocol: "TCP"
+              containerPort: 443
+          resources:
+            limits:
+              cpu: "300m"
+              memory: "3G"
+          env:
+            - name: NODE_OPTIONS
+              value: "--max_old_space_size=3072"
+
