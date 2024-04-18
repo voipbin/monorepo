@@ -2,159 +2,42 @@ version: 2.1
 
 setup: true
 
-# the path-filtering orb is required to continue a pipeline based on
-# the path of an updated fileset
 orbs:
   path-filtering: circleci/path-filtering@1.0.0
 
 workflows:
-  # the always-run workflow is always triggered, regardless of the pipeline parameters.
-  always-run:
+  check-changes:
     jobs:
-      # the path-filtering/filter job determines which pipeline
-      # parameters to update.
       - path-filtering/filter:
           name: check-updated-files
-          # 3-column, whitespace-delimited mapping. One mapping per
-          # line:
-          # <regex path-to-test> <parameter-to-set> <value-of-pipeline-parameter>
-          mapping: |
-            bin-agent-manager/*        run-bin-agent-manager true
-            bin-agent-manager/.*       run-bin-agent-manager true
-            bin-agent-manager/.*       source-directory "bin-agent-manager"
-            
-            bin-api-manager/*          run-bin-api-manager true
-            bin-billing-manager/*      run-bin-billing-manager true
-            bin-call-manager/*         run-bin-call-manager true
-            bin-campaign-manager/*     run-bin-campaign-manager true
-            bin-chatbot-manager/*      run-bin-chatbot-manager true
-            bin-chat-manager/*         run-bin-chat-manager true
-            bin-common-handler/*       run-bin-common-handler true
-            bin-conference-manager/*   run-bin-conference-manager true
-            bin-conversation-manager/* run-bin-conversation-manager true
-            bin-customer-manager/*     run-bin-customer-manager true
-            bin-dbscheme-bin-manager/* run-bin-dbscheme-bin-manager true
-            bin-flow-manager/*         run-bin-flow-manager true
-            bin-hook-manager/*         run-bin-hook-manager true
-            bin-message-manager/*      run-bin-message-manager true
-            bin-number-manager/*       run-bin-number-manager true
-            bin-outdial-manager/*      run-bin-outdial-manager true
-            bin-queue-manager/*        run-bin-queue-manager true
-            bin-registrar-manager/*    run-bin-registrar-manager true
-            bin-route-manager/*        run-bin-route-manager true
-            bin-storage-manager/*      run-bin-storage-manager true
-            bin-tag-manager/*          run-bin-tag-manager true
-            bin-transcribe-manager/*   run-bin-transcribe-manager true
-            bin-transfer-manager/*     run-bin-transfer-manager true
-            bin-tts-manager/*          run-bin-tts-manager true
-            bin-webhook-manager/*      run-bin-webhook-manager true
-
           base-revision: main
-          # # this is the path of the configuration we should trigger once
-          # # path filtering and pipeline parameter value updates are
-          # # complete. In this case, we are using the parent dynamic
-          # # configuration itself.
           config-path: .circleci/config_work.yml
+          mapping: |
+            bin-agent-manager/.*        run-bin-agent-manager true
+            bin-api-manager/.*          run-bin-api-manager true
+            bin-billing-manager/.*      run-bin-billing-manager true
+            bin-call-manager/.*         run-bin-call-manager true
+            bin-campaign-manager/.*     run-bin-campaign-manager true
+            bin-chatbot-manager/.*      run-bin-chatbot-manager true
+            bin-chat-manager/.*         run-bin-chat-manager true
+            bin-common-handler/.*       run-bin-common-handler true
+            bin-conference-manager/.*   run-bin-conference-manager true
+            bin-conversation-manager/.* run-bin-conversation-manager true
+            bin-customer-manager/.*     run-bin-customer-manager true
+            bin-dbscheme-bin-manager/.* run-bin-dbscheme-bin-manager true
+            bin-flow-manager/.*         run-bin-flow-manager true
+            bin-hook-manager/.*         run-bin-hook-manager true
+            bin-message-manager/.*      run-bin-message-manager true
+            bin-number-manager/.*       run-bin-number-manager true
+            bin-outdial-manager/.*      run-bin-outdial-manager true
+            bin-queue-manager/.*        run-bin-queue-manager true
+            bin-registrar-manager/.*    run-bin-registrar-manager true
+            bin-route-manager/.*        run-bin-route-manager true
+            bin-storage-manager/.*      run-bin-storage-manager true
+            bin-tag-manager/.*          run-bin-tag-manager true
+            bin-transcribe-manager/.*   run-bin-transcribe-manager true
+            bin-transfer-manager/.*     run-bin-transfer-manager true
+            bin-tts-manager/.*          run-bin-tts-manager true
+            bin-webhook-manager/.*      run-bin-webhook-manager true
 
-  # bin-agent-manager:
-  #   when: << pipeline.parameters.run-bin-agent-manager >>
-  #   jobs:
-  #     - path-filtering/filter:
-  #         base-revision: main
-  #         config-path: ./bin-agent-manager/.circleci/config.yml
 
-
-
-      # - maven/test:
-      #     name: build-service-1
-      #     command: 'install -DskipTests'
-      #     app_src_directory: 'service1'
-  # when pipeline parameter, run-build-service-2-job is true, the
-  # build-service-2 job is triggered.
-
-
-
-
-
-
-
-
-
-# jobs:
-#   test-go:
-#     # Install go modules and run tests
-#     docker:
-#       - image: cimg/go:1.20
-#     working_directory: ~/project/bin-chat-manager
-#     steps:
-#       - checkout:
-#           path: ~/project
-#       - restore_cache:
-#           key: go-mod-{{ checksum "go.sum" }}
-#       - run:
-#           name: Download Go modules
-#           command: go mod download
-#       - run:
-#           name: Print go mod help instructions
-#           command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
-#           when: on_fail
-#       - save_cache:
-#           key: go-mod-{{ checksum "go.sum" }}
-#           paths:
-#             - /home/circleci/go/pkg/mod
-#       - run:
-#           name: Run tests
-#           command: gotestsum --junitfile junit.xml
-#       - store_test_results:
-#           path: junit.xml
-#   build-go-executables:
-#     # Build go executables and store them as artifacts
-#     docker:
-#       - image: cimg/go:1.20
-#     steps:
-#       - checkout:
-#           path: ~/project
-#       - restore_cache:
-#           key: go-mod-{{ checksum "go.sum" }}
-#       - run:
-#           name: Download Go modules
-#           command: go mod download
-#       - run:
-#           name: Print go mod help instructions
-#           command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
-#           when: on_fail
-#       - save_cache:
-#           key: go-mod-{{ checksum "go.sum" }}
-#           paths:
-#             - /home/circleci/go/pkg/mod
-#       - run:
-#           name: Create the ~/artifacts directory if it doesn't exist
-#           command: mkdir -p ~/artifacts
-#       - run:
-#           name: Build executables
-#           command: go build -o ~/artifacts ./...
-#       - store_artifacts:
-#           path: ~/artifacts
-#           destination: executables
-#   deploy:
-#     # This is an example deploy job, not actually used by the workflow
-#     docker:
-#       - image: cimg/base:stable
-#     steps:
-#       # Replace this with steps to deploy to users
-#       - run:
-#           name: deploy
-#           command: '#e.g. ./deploy.sh'
-#       - run:
-#           name: found gitlab workflows config
-#           command: ':'
-# workflows:
-#   build-and-test:
-#     jobs:
-#       - test-go
-#       - build-go-executables:
-#           requires:
-#             - test-go
-#     # - deploy:
-#     #     requires:
-#     #       - build-go-executables

@@ -173,8 +173,47 @@ commands:
           command: |
             cd << parameters.source-directory >>
             go mod download
-            go mod vendor
+            go mod vendor          
 
+      - run:
+          name: Linting and vet
+          command: |
+            cd << parameters.source-directory >>
+            golangci-lint run -v --timeout 5m
+            go vet $(go list ./...)
+
+      - run:
+          name: Testing
+          command: |
+            cd << parameters.source-directory >>
+            go test -coverprofile cp.out -v $(go list ./...)
+            go tool cover -html=cp.out -o cp.html
+            go tool cover -func=cp.out
+
+      - run:
+          name: Run gotestsum
+          command: |
+            cd << parameters.source-directory >>
+            gotestsum --junitfile test-results.xml
+
+      - store_test_results:
+          path: << parameters.source-directory >>/test-results.xml
+
+  go-test-api-manager:
+    description: "test and lint the go application"
+    parameters:
+      source-directory:
+        type: string
+        default: "none"
+    steps:
+      - run: echo working on << parameters.source-directory >>
+      - checkout
+      - run:
+          name: Install dependencies and vendor
+          command: |
+            cd << parameters.source-directory >>
+            go mod download
+            go mod vendor          
       - run:
           name: Install extra dependencies
           command: |
