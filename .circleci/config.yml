@@ -1,0 +1,43 @@
+version: 2.1
+
+setup: true
+
+orbs:
+  path-filtering: circleci/path-filtering@1.0.0
+
+workflows:
+  check-changes:
+    jobs:
+      - path-filtering/filter:
+          name: check-updated-files
+          base-revision: main
+          config-path: .circleci/config_work.yml
+          mapping: |
+            bin-agent-manager/.*        run-bin-agent-manager true
+            bin-api-manager/.*          run-bin-api-manager true
+            bin-billing-manager/.*      run-bin-billing-manager true
+            bin-call-manager/.*         run-bin-call-manager true
+            bin-campaign-manager/.*     run-bin-campaign-manager true
+            bin-chatbot-manager/.*      run-bin-chatbot-manager true
+            bin-chat-manager/.*         run-bin-chat-manager true
+            bin-common-handler/.*       run-bin-common-handler true
+            bin-conference-manager/.*   run-bin-conference-manager true
+            bin-conversation-manager/.* run-bin-conversation-manager true
+            bin-customer-manager/.*     run-bin-customer-manager true
+            bin-dbscheme-bin-manager/.* run-bin-dbscheme-bin-manager true
+            bin-flow-manager/.*         run-bin-flow-manager true
+            bin-hook-manager/.*         run-bin-hook-manager true
+            bin-message-manager/.*      run-bin-message-manager true
+            bin-number-manager/.*       run-bin-number-manager true
+            bin-outdial-manager/.*      run-bin-outdial-manager true
+            bin-queue-manager/.*        run-bin-queue-manager true
+            bin-registrar-manager/.*    run-bin-registrar-manager true
+            bin-route-manager/.*        run-bin-route-manager true
+            bin-storage-manager/.*      run-bin-storage-manager true
+            bin-tag-manager/.*          run-bin-tag-manager true
+            bin-transcribe-manager/.*   run-bin-transcribe-manager true
+            bin-transfer-manager/.*     run-bin-transfer-manager true
+            bin-tts-manager/.*          run-bin-tts-manager true
+            bin-webhook-manager/.*      run-bin-webhook-manager true
+
+

@@ -6,7 +6,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -47,7 +47,7 @@ func NewFileHandler(credentialPath string, projectID string, bucketMedia string,
 
 	ctx := context.Background()
 
-	jsonKey, err := ioutil.ReadFile(credentialPath)
+	jsonKey, err := os.ReadFile(credentialPath)
 	if err != nil {
 		logrus.Errorf("Could not read the credential file. err: %v", err)
 		return nil
@@ -83,7 +83,7 @@ func NewFileHandler(credentialPath string, projectID string, bucketMedia string,
 
 // Init initialize the bucket
 func (h *fileHandler) Init() {
-	return
+	// empty
 }
 
 // getFilename returns filename

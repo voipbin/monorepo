@@ -1,0 +1,1437 @@
+version: 2.1
+
+context_production: &context_production
+  context: 
+    - production
+
+parameters:
+  run-bin-agent-manager:
+    type: boolean
+    default: false
+
+  run-bin-api-manager:
+    type: boolean
+    default: false
+
+  run-bin-billing-manager:
+    type: boolean
+    default: false
+
+  run-bin-call-manager:
+    type: boolean
+    default: false
+
+  run-bin-campaign-manager:
+    type: boolean
+    default: false
+
+  run-bin-chatbot-manager:
+    type: boolean
+    default: false
+
+  run-bin-chat-manager:
+    type: boolean
+    default: false
+
+  run-bin-common-handler:
+    type: boolean
+    default: false
+
+  run-bin-conference-manager:
+    type: boolean
+    default: false
+
+  run-bin-conversation-manager:
+    type: boolean
+    default: false
+
+  run-bin-customer-manager:
+    type: boolean
+    default: false
+
+  run-bin-dbscheme-bin-manager:
+    type: boolean
+    default: false
+
+  run-bin-flow-manager:
+    type: boolean
+    default: false
+
+  run-bin-hook-manager:
+    type: boolean
+    default: false
+
+  run-bin-message-manager:
+    type: boolean
+    default: false
+
+  run-bin-number-manager:
+    type: boolean
+    default: false
+
+  run-bin-outdial-manager:
+    type: boolean
+    default: false
+
+  run-bin-queue-manager:
+    type: boolean
+    default: false
+
+  run-bin-registrar-manager:
+    type: boolean
+    default: false
+
+  run-bin-route-manager:
+    type: boolean
+    default: false
+
+  run-bin-storage-manager:
+    type: boolean
+    default: false
+
+  run-bin-tag-manager:
+    type: boolean
+    default: false
+
+  run-bin-transcribe-manager:
+    type: boolean
+    default: false
+
+  run-bin-transfer-manager:
+    type: boolean
+    default: false
+
+  run-bin-tts-manager:
+    type: boolean
+    default: false
+
+  run-bin-webhook-manager:
+    type: boolean
+    default: false
+
+workflows:
+  bin-agent-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-agent-manager >>, << pipeline.parameters.run-bin-common-handler >> ]
+    jobs:
+      - bin-agent-manager-test
+      - bin-agent-manager-build:
+          <<: *context_production
+          requires:
+            - bin-agent-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-agent-manager-build
+      - bin-agent-manager-release:
+          <<: *context_production
+          requires:
+            - bin-agent-manager-build
+            - release-approval
+
+  bin-api-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-api-manager-test
+      - bin-api-manager-build:
+          <<: *context_production
+          requires:
+            - bin-api-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-api-manager-build
+      - bin-api-manager-release:
+          <<: *context_production
+          requires:
+            - bin-api-manager-build
+            - release-approval
+
+  bin-billing-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-billing-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-billing-manager-test
+      - bin-billing-manager-build:
+          <<: *context_production
+          requires:
+            - bin-billing-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-billing-manager-build
+      - bin-billing-manager-release:
+          <<: *context_production
+          requires:
+            - bin-billing-manager-build
+            - release-approval
+
+  bin-call-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-call-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-call-manager-test
+      - bin-call-manager-build:
+          <<: *context_production
+          requires:
+            - bin-call-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-call-manager-build
+      - bin-call-manager-release:
+          <<: *context_production
+          requires:
+            - bin-call-manager-build
+            - release-approval
+
+  bin-campaign-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-campaign-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-campaign-manager-test
+      - bin-campaign-manager-build:
+          <<: *context_production
+          requires:
+            - bin-campaign-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-campaign-manager-build
+      - bin-campaign-manager-release:
+          <<: *context_production
+          requires:
+            - bin-campaign-manager-build
+            - release-approval
+
+  bin-chat-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-chat-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-chat-manager-test
+      - bin-chat-manager-build:
+          <<: *context_production
+          requires:
+            - bin-chat-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-chat-manager-build
+      - bin-chat-manager-release:
+          <<: *context_production
+          requires:
+            - bin-chat-manager-build
+            - release-approval
+
+  bin-chatbot-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-chatbot-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-chatbot-manager-test
+      - bin-chatbot-manager-build:
+          <<: *context_production
+          requires:
+            - bin-chatbot-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-chatbot-manager-build
+      - bin-chatbot-manager-release:
+          <<: *context_production
+          requires:
+            - bin-chatbot-manager-build
+            - release-approval
+
+  bin-common-manager:
+    when: << pipeline.parameters.run-bin-common-handler >>
+    jobs:
+      - bin-common-handler-test
+      - bin-common-handler-build:
+          <<: *context_production
+          requires:
+            - bin-common-handler-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-common-handler-build
+      - bin-common-handler-release:
+          <<: *context_production
+          requires:
+            - bin-common-handler-build
+            - release-approval
+
+  bin-conference-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-conference-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-conference-manager-test
+      - bin-conference-manager-build:
+          <<: *context_production
+          requires:
+            - bin-conference-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-conference-manager-build
+      - bin-conference-manager-release:
+          <<: *context_production
+          requires:
+            - bin-conference-manager-build
+            - release-approval
+
+  bin-conversation-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-conversation-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-conversation-manager-test
+      - bin-conversation-manager-build:
+          <<: *context_production
+          requires:
+            - bin-conversation-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-conversation-manager-build
+      - bin-conversation-manager-release:
+          <<: *context_production
+          requires:
+            - bin-conversation-manager-build
+            - release-approval
+
+  bin-customer-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-customer-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-customer-manager-test
+      - bin-customer-manager-build:
+          <<: *context_production
+          requires:
+            - bin-customer-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-customer-manager-build
+      - bin-customer-manager-release:
+          <<: *context_production
+          requires:
+            - bin-customer-manager-build
+            - release-approval
+
+  # bin-dbscheme-manager:
+  #   when: << pipeline.parameters.run-bin-dbscheme-bin-manager >>
+  #   jobs:
+  #     - bin-dbscheme-manager-test
+  #     - bin-dbscheme-manager-build:
+  #         <<: *context_production
+  #         requires:
+  #           - bin-dbscheme-manager-test
+  #     - release-approval:
+  #         type: approval
+  #         requires:
+  #           - bin-dbscheme-manager-build
+  #     - bin-dbscheme-manager-release:
+  #         <<: *context_production
+  #         requires:
+  #           - bin-dbscheme-manager-build
+  #           - release-approval
+
+  bin-flow-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-flow-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-flow-manager-test
+      - bin-flow-manager-build:
+          <<: *context_production
+          requires:
+            - bin-flow-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-flow-manager-build
+      - bin-flow-manager-release:
+          <<: *context_production
+          requires:
+            - bin-flow-manager-build
+            - release-approval
+
+  bin-hook-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-hook-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-hook-manager-test
+      - bin-hook-manager-build:
+          <<: *context_production
+          requires:
+            - bin-hook-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-hook-manager-build
+      - bin-hook-manager-release:
+          <<: *context_production
+          requires:
+            - bin-hook-manager-build
+            - release-approval
+
+  bin-message-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-message-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-message-manager-test
+      - bin-message-manager-build:
+          <<: *context_production
+          requires:
+            - bin-message-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-message-manager-build
+      - bin-message-manager-release:
+          <<: *context_production
+          requires:
+            - bin-message-manager-build
+            - release-approval
+
+  bin-number-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-number-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-number-manager-test
+      - bin-number-manager-build:
+          <<: *context_production
+          requires:
+            - bin-number-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-number-manager-build
+      - bin-number-manager-release:
+          <<: *context_production
+          requires:
+            - bin-number-manager-build
+            - release-approval
+
+  bin-outdial-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-outdial-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-outdial-manager-test
+      - bin-outdial-manager-build:
+          <<: *context_production
+          requires:
+            - bin-outdial-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-outdial-manager-build
+      - bin-outdial-manager-release:
+          <<: *context_production
+          requires:
+            - bin-outdial-manager-build
+            - release-approval
+
+  bin-queue-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-queue-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-queue-manager-test
+      - bin-queue-manager-build:
+          <<: *context_production
+          requires:
+            - bin-queue-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-queue-manager-build
+      - bin-queue-manager-release:
+          <<: *context_production
+          requires:
+            - bin-queue-manager-build
+            - release-approval
+
+  bin-registrar-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-registrar-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-registrar-manager-test
+      - bin-registrar-manager-build:
+          <<: *context_production
+          requires:
+            - bin-registrar-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-registrar-manager-build
+      - bin-registrar-manager-release:
+          <<: *context_production
+          requires:
+            - bin-registrar-manager-build
+            - release-approval
+
+  bin-route-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-route-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-route-manager-test
+      - bin-route-manager-build:
+          <<: *context_production
+          requires:
+            - bin-route-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-route-manager-build
+      - bin-route-manager-release:
+          <<: *context_production
+          requires:
+            - bin-route-manager-build
+            - release-approval
+
+  bin-storage-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-storage-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-storage-manager-test
+      - bin-storage-manager-build:
+          <<: *context_production
+          requires:
+            - bin-storage-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-storage-manager-build
+      - bin-storage-manager-release:
+          <<: *context_production
+          requires:
+            - bin-storage-manager-build
+            - release-approval
+
+  bin-tag-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-tag-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-tag-manager-test
+      - bin-tag-manager-build:
+          <<: *context_production
+          requires:
+            - bin-tag-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-tag-manager-build
+      - bin-tag-manager-release:
+          <<: *context_production
+          requires:
+            - bin-tag-manager-build
+            - release-approval
+
+  bin-transcribe-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-transcribe-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-transcribe-manager-test
+      - bin-transcribe-manager-build:
+          <<: *context_production
+          requires:
+            - bin-transcribe-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-transcribe-manager-build
+      - bin-transcribe-manager-release:
+          <<: *context_production
+          requires:
+            - bin-transcribe-manager-build
+            - release-approval
+
+  bin-transfer-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-transfer-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-transfer-manager-test
+      - bin-transfer-manager-build:
+          <<: *context_production
+          requires:
+            - bin-transfer-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-transfer-manager-build
+      - bin-transfer-manager-release:
+          <<: *context_production
+          requires:
+            - bin-transfer-manager-build
+            - release-approval
+
+  bin-tts-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-tts-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-tts-manager-test
+      - bin-tts-manager-build:
+          <<: *context_production
+          requires:
+            - bin-tts-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-tts-manager-build
+      - bin-tts-manager-release:
+          <<: *context_production
+          requires:
+            - bin-tts-manager-build
+            - release-approval
+
+  bin-webhook-manager:
+    when: 
+      or: [<< pipeline.parameters.run-bin-webhook-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-webhook-manager-test
+      - bin-webhook-manager-build:
+          <<: *context_production
+          requires:
+            - bin-webhook-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-webhook-manager-build
+      - bin-webhook-manager-release:
+          <<: *context_production
+          requires:
+            - bin-webhook-manager-build
+            - release-approval
+
+
+jobs:
+
+  ###### bin-agent-manager
+  bin-agent-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-agent-manager
+
+  bin-agent-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-agent-manager
+          image-name: agent-manager
+
+  bin-agent-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-agent-manager
+          image-name: agent-manager
+
+  ###### bin-api-manager
+  bin-api-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test-api-manager:
+          source-directory: bin-api-manager
+
+  bin-api-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-api-manager
+          image-name: api-manager
+
+  bin-api-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-api-manager
+          image-name: api-manager
+
+  ###### bin-billing-manager
+  bin-billing-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-billing-manager
+
+  bin-billing-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-billing-manager
+          image-name: billing-manager
+
+  bin-billing-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-billing-manager
+          image-name: billing-manager
+
+  ###### bin-call-manager
+  bin-call-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-call-manager
+
+  bin-call-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-call-manager
+          image-name: call-manager
+
+  bin-call-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-call-manager
+          image-name: call-manager
+
+
+  ###### bin-campaign-manager
+  bin-campaign-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-campaign-manager
+
+  bin-campaign-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-campaign-manager
+          image-name: campaign-manager
+
+  bin-campaign-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-campaign-manager
+          image-name: campaign-manager
+
+
+  ###### bin-chat-manager
+  bin-chat-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-chat-manager
+
+  bin-chat-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-chat-manager
+          image-name: chat-manager
+
+  bin-chat-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-chat-manager
+          image-name: chat-manager
+
+  ###### bin-chatbot-manager
+  bin-chatbot-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-chatbot-manager
+
+  bin-chatbot-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-chatbot-manager
+          image-name: chatbot-manager
+
+  bin-chatbot-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-chatbot-manager
+          image-name: chatbot-manager
+
+  ###### bin-common-handler
+  bin-common-handler-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-common-handler
+
+  bin-common-handler-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-common-handler
+          image-name: common-handler
+
+  bin-common-handler-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-common-handler
+          image-name: common-handler
+
+  ###### bin-conference-manager
+  bin-conference-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-conference-manager
+
+  bin-conference-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-conference-manager
+          image-name: conference-manager
+
+  bin-conference-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-conference-manager
+          image-name: conference-manager
+
+  ###### bin-conversation-manager
+  bin-conversation-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-conversation-manager
+
+  bin-conversation-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-conversation-manager
+          image-name: conversation-manager
+
+  bin-conversation-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-conversation-manager
+          image-name: conversation-manager
+
+  ###### bin-customer-manager
+  bin-customer-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-customer-manager
+
+  bin-customer-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-customer-manager
+          image-name: customer-manager
+
+  bin-customer-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-customer-manager
+          image-name: customer-manager
+
+  # ###### bin-dbscheme-manager
+  # bin-dbscheme-manager-test:
+  #   docker:
+  #     - image: cimg/go:1.22
+  #   steps:
+  #     - go-test:
+  #         source-directory: bin-dbscheme-manager
+
+  # bin-dbscheme-manager-build:
+  #   docker:
+  #     - image: cimg/gcp:2024.03
+  #   steps:
+  #     - go-build:
+  #         source-directory: bin-dbscheme-manager
+  #         image-name: dbscheme-manager
+
+  # bin-dbscheme-manager-release:
+  #   docker:
+  #     - image: google/cloud-sdk:debian_component_based
+  #   steps:
+  #     - go-release:
+  #         source-directory: bin-dbscheme-manager
+  #         image-name: dbscheme-manager
+
+  ###### bin-flow-manager
+  bin-flow-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-flow-manager
+
+  bin-flow-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-flow-manager
+          image-name: flow-manager
+
+  bin-flow-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-flow-manager
+          image-name: flow-manager
+
+  ###### bin-hook-manager
+  bin-hook-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-hook-manager
+
+  bin-hook-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-hook-manager
+          image-name: hook-manager
+
+  bin-hook-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-hook-manager
+          image-name: hook-manager
+
+  ###### bin-message-manager
+  bin-message-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-message-manager
+
+  bin-message-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-message-manager
+          image-name: message-manager
+
+  bin-message-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-message-manager
+          image-name: message-manager
+
+  ###### bin-number-manager
+  bin-number-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-number-manager
+
+  bin-number-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-number-manager
+          image-name: number-manager
+
+  bin-number-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-number-manager
+          image-name: number-manager
+
+  ###### bin-outdial-manager
+  bin-outdial-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-outdial-manager
+
+  bin-outdial-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-outdial-manager
+          image-name: outdial-manager
+
+  bin-outdial-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-outdial-manager
+          image-name: outdial-manager
+
+  ###### bin-queue-manager
+  bin-queue-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-queue-manager
+
+  bin-queue-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-queue-manager
+          image-name: queue-manager
+
+  bin-queue-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-queue-manager
+          image-name: queue-manager
+
+  ###### bin-registrar-manager
+  bin-registrar-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-registrar-manager
+
+  bin-registrar-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-registrar-manager
+          image-name: registrar-manager
+
+  bin-registrar-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-registrar-manager
+          image-name: registrar-manager
+
+  ###### bin-route-manager
+  bin-route-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-route-manager
+
+  bin-route-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-route-manager
+          image-name: route-manager
+
+  bin-route-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-route-manager
+          image-name: route-manager
+
+  ###### bin-storage-manager
+  bin-storage-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-storage-manager
+
+  bin-storage-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-storage-manager
+          image-name: storage-manager
+
+  bin-storage-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-storage-manager
+          image-name: storage-manager
+
+  ###### bin-tag-manager
+  bin-tag-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-tag-manager
+
+  bin-tag-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-tag-manager
+          image-name: tag-manager
+
+  bin-tag-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-tag-manager
+          image-name: tag-manager
+
+  ###### bin-transcribe-manager
+  bin-transcribe-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-transcribe-manager
+
+  bin-transcribe-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-transcribe-manager
+          image-name: transcribe-manager
+
+  bin-transcribe-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-transcribe-manager
+          image-name: transcribe-manager
+
+  ###### bin-transfer-manager
+  bin-transfer-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-transfer-manager
+
+  bin-transfer-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-transfer-manager
+          image-name: transfer-manager
+
+  bin-transfer-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-transfer-manager
+          image-name: transfer-manager
+
+  ###### bin-tts-manager
+  bin-tts-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-tts-manager
+
+  bin-tts-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-tts-manager
+          image-name: tts-manager
+
+  bin-tts-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-tts-manager
+          image-name: tts-manager
+
+  ###### bin-webhook-manager
+  bin-webhook-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-webhook-manager
+
+  bin-webhook-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: bin-manager
+          source-directory: bin-webhook-manager
+          image-name: webhook-manager
+
+  bin-webhook-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          namespace: bin-manager
+          source-directory: bin-webhook-manager
+          image-name: webhook-manager
+
+
+commands:
+  go-test:
+    description: "test and lint the go application"
+    parameters:
+      source-directory:
+        type: string
+        default: "none"
+    steps:
+      - run: echo working on << parameters.source-directory >>
+      - checkout
+      - run:
+          name: Install dependencies and vendor
+          command: |
+            cd << parameters.source-directory >>
+            go mod download
+            go mod vendor          
+
+      - run:
+          name: Linting and vet
+          command: |
+            cd << parameters.source-directory >>
+            golangci-lint run -v --timeout 5m
+            go vet $(go list ./...)
+
+      - run:
+          name: Testing
+          command: |
+            cd << parameters.source-directory >>
+            go test -coverprofile cp.out -v $(go list ./...)
+            go tool cover -html=cp.out -o cp.html
+            go tool cover -func=cp.out
+
+      - run:
+          name: Run gotestsum
+          command: |
+            cd << parameters.source-directory >>
+            gotestsum --junitfile test-results.xml
+
+      - store_test_results:
+          path: << parameters.source-directory >>/test-results.xml
+
+  go-test-api-manager:
+    description: "test and lint the go application"
+    parameters:
+      source-directory:
+        type: string
+        default: "none"
+    steps:
+      - run: echo working on << parameters.source-directory >>
+      - checkout
+      - run:
+          name: Install dependencies and vendor
+          command: |
+            cd << parameters.source-directory >>
+            go mod download
+            go mod vendor          
+      - run:
+          name: Install extra dependencies
+          command: |
+            sudo apt-get update && sudo apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
+
+      - run:
+          name: Linting and vet
+          command: |
+            cd << parameters.source-directory >>
+            golangci-lint run -v --timeout 5m
+            go vet $(go list ./...)
+
+      - run:
+          name: Testing
+          command: |
+            cd << parameters.source-directory >>
+            go test -coverprofile cp.out -v $(go list ./...)
+            go tool cover -html=cp.out -o cp.html
+            go tool cover -func=cp.out
+
+      - run:
+          name: Run gotestsum
+          command: |
+            cd << parameters.source-directory >>
+            gotestsum --junitfile test-results.xml
+
+      - store_test_results:
+          path: << parameters.source-directory >>/test-results.xml
+
+  go-build:
+    description: "build the go application docker image"
+    parameters:
+      namespace:
+        type: string
+        default: "none"
+      source-directory:
+        type: string
+        default: "World"
+      image-name:
+        type: string
+        default: "none"
+
+    steps:
+      - run: echo working on << parameters.source-directory >>
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Config service account
+          command: |
+            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
+            gcloud auth activate-service-account --key-file=./google_service_account.json
+            gcloud config set project $CC_GCP_PROJECT_ID
+            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
+
+      - run:
+          name: Config registry
+          command: |
+            cat google_service_account.json | docker login -u _json_key_base64 --password-stdin pkg.dev
+            gcloud auth activate-service-account --key-file=google_service_account.json
+            gcloud auth configure-docker $CC_REGISTRY_LOCATION
+
+      - run:
+          name: Building Docker image and push
+          command: |
+            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/<< parameters.image-name >>:latest -f << parameters.source-directory >>/Dockerfile .
+            docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
+
+  go-release:
+    description: "release the docker image"
+    parameters:
+      namespace:
+        type: string
+        default: "none"
+      source-directory:
+        type: string
+        default: "none"
+      image-name:
+        type: string
+        default: "none"
+    steps:
+      - run: echo Hello << parameters.source-directory >>
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Config service account
+          command: |
+            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
+            gcloud auth activate-service-account --key-file=./google_service_account.json
+            gcloud config set project $CC_GCP_PROJECT_ID
+            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
+
+      - run:
+          name: Release
+          command: |
+            cd << parameters.source-directory >>/k8s
+            kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
+            kubectl apply -k ./ -v6

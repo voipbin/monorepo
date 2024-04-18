@@ -43,7 +43,7 @@ spec:
             - name: shared-data
               mountPath: /shared-data
           command:
-            - '/app/tts-manager'
+            - '/app/bin-tts-manager/tts-manager'
           args:
             - '-prom_endpoint'
             - '/metrics'

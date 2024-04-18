@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
@@ -32,11 +31,6 @@ type listenHandler struct {
 }
 
 var (
-	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-
-	// speeches
-	regV1Speeches = regexp.MustCompile("/v1/speeches")
-
 	// recordings
 	regV1RecordingsID = regexp.MustCompile("/v1/recordings/(.*)")
 )
@@ -134,11 +128,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
-	case regV1RecordingsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/recordings"
 		response, err = h.v1RecordingsIDGet(ctx, m)
 
-	case regV1RecordingsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/recordings"
 		response, err = h.v1RecordingsIDDelete(ctx, m)
 
@@ -162,12 +156,4 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

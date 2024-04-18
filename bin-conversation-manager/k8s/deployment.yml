@@ -24,7 +24,7 @@ spec:
         - name: conversation-manager
           image: conversation-manager-image
           command:
-            - '/app/conversation-manager'
+            - '/app/bin-conversation-manager/conversation-manager'
           args:
             - '-prom_listen_addr'
             - ':2112'

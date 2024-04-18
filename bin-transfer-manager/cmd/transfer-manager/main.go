@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -31,14 +33,6 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-
-var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "comma separated rabbitmq exchange name for subscribe")
-
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.transfer-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.transfer-manager.event", "rabbitmq exchange name for event notify")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.transfer-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
-
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -147,11 +141,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTransferEvent, serviceName)
 	transferHandler := transferhandler.NewTransferHandler(reqHandler, notifyHandler, db)
 
 	// run event listener
-	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, transferHandler); err != nil {
+	if err := runSubscribe(serviceName, rabbitSock, transferHandler); err != nil {
 		return err
 	}
 
@@ -167,11 +161,14 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 func runSubscribe(
 	serviceName string,
 	rabbitSock rabbitmqhandler.Rabbit,
-	subscribeQueue string,
-	subscribeTargets string,
 	transferHandler transferhandler.TransferHandler,
 ) error {
-	subscribeHandler := subscribehandler.NewSubscribeHandler(serviceName, rabbitSock, subscribeQueue, subscribeTargets, transferHandler)
+
+	subscribeTargets := []string{
+		string(commonoutline.QueueNameCallEvent),
+	}
+
+	subscribeHandler := subscribehandler.NewSubscribeHandler(serviceName, rabbitSock, string(commonoutline.QueueNameTransferSubscribe), subscribeTargets, transferHandler)
 
 	// run
 	if err := subscribeHandler.Run(); err != nil {
@@ -189,8 +186,8 @@ func runRequestListen(
 
 	listenHandler := listenhandler.NewListenHandler(
 		rabbitSock,
-		*rabbitQueueListen,
-		*rabbitExchangeDelay,
+		string(commonoutline.QueueNameTransferRequest),
+		string(commonoutline.QueueNameDelay),
 		transferHandler,
 	)
 

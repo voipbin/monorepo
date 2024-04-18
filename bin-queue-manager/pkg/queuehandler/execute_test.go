@@ -93,7 +93,7 @@ func Test_Execute(t *testing.T) {
 
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.responseQueue.CustomerID, tt.responseCurTime, uint64(1), tt.expectFiltersQueue).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.responseCurTime, uint64(1), tt.expectFiltersQueue).Return(tt.responseQueuecall, nil)
 
 			// GetAgents
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)

@@ -119,15 +119,17 @@ func Test_blindExecute(t *testing.T) {
 			mockReq.EXPECT().CallV1ConfbridgeRing(ctx, tt.transfererCall.ConfbridgeID).Return(nil)
 			mockReq.EXPECT().CallV1GroupcallCreate(
 				ctx,
+				uuid.Nil,
 				tt.transfererCall.CustomerID,
+				tt.flow.ID,
 				tt.transfererCall.Source,
 				tt.transfereeAddresses,
-				tt.flow.ID,
 				tt.transfererCall.MasterCallID,
+				uuid.Nil,
 				cmgroupcall.RingMethodRingAll,
 				cmgroupcall.AnswerMethodHangupOthers,
 			).Return(tt.responseGroupcall, nil)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDTransfer)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTransfer)
 			mockDB.EXPECT().TransferCreate(ctx, tt.expectTransfer).Return(nil)
 
 			res, err := h.blindExecute(ctx, tt.transfererCall, tt.flow, tt.transfereeAddresses)

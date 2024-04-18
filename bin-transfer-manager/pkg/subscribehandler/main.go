@@ -5,7 +5,6 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
@@ -35,7 +34,7 @@ type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
 	subscribeQueue   string
-	subscribeTargets string
+	subscribeTargets []string
 
 	transferHandler transferhandler.TransferHandler
 }
@@ -67,7 +66,7 @@ func NewSubscribeHandler(
 	serviceName string,
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	transferHandler transferhandler.TransferHandler,
 ) SubscribeHandler {
 
@@ -95,8 +94,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribeTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {

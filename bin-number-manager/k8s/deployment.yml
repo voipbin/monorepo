@@ -24,7 +24,7 @@ spec:
         - name: number-manager
           image: number-manager-image
           command:
-            - '/app/number-manager'
+            - '/app/bin-number-manager/number-manager'
           args:
             - '-prom_listen_addr'
             - ':2112'

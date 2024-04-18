@@ -6,7 +6,6 @@ RUN apt update && apt install python3
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
 COPY . .
 
-RUN go build ./cmd/...
+RUN go build -C bin-tts-manager ./cmd/...

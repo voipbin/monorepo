@@ -45,8 +45,14 @@ const (
 )
 
 func main() {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "main",
+	})
 
-	run()
+	if errRun := run(); errRun != nil {
+		log.Errorf("Could not run correctly. err: %v", errRun)
+		return
+	}
 	<-chDone
 }
 

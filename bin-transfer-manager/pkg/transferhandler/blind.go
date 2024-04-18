@@ -102,11 +102,13 @@ func (h *transferHandler) blindExecute(ctx context.Context, transfererCall *cmca
 	// create outgoing call to the transferee
 	gc, err := h.reqHandler.CallV1GroupcallCreate(
 		ctx,
+		uuid.Nil,
 		transfererCall.CustomerID,
+		flow.ID,
 		transfererCall.Source,
 		transfereeAddresses,
-		flow.ID,
 		transfererCall.MasterCallID,
+		uuid.Nil,
 		cmgroupcall.RingMethodRingAll,
 		cmgroupcall.AnswerMethodHangupOthers,
 	)

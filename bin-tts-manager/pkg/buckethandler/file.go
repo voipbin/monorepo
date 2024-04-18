@@ -3,7 +3,6 @@ package buckethandler
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -114,7 +113,7 @@ func (h *bucketHandler) FileGet(ctx context.Context, target string) ([]byte, err
 	defer rc.Close()
 
 	// read the data
-	data, err := ioutil.ReadAll(rc)
+	data, err := io.ReadAll(rc)
 	if err != nil {
 		log.Errorf("Could not read the file. err: %v", err)
 		return nil, err
