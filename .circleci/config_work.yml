@@ -147,6 +147,7 @@ jobs:
     steps:
       - go-build:
           source-directory: bin-agent-manager
+          image-name: agent-manager
 
   bin-agent-manager-release:
     docker:
