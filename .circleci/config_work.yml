@@ -117,47 +117,62 @@ workflows:
   bin-agent-manager:
     when: << pipeline.parameters.run-bin-agent-manager >>
     jobs:
-      - test-bin-agent-manager
-      - build-bin-agent-manager:
+      - bin-agent-manager-test
+      - bin-agent-manager-build:
           <<: *context_production
           requires:
-            - test-bin-agent-manager
+            - bin-agent-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-agent-manager-build
+      - bin-agent-manager-release:
+          <<: *context_production
+          requires:
+            - bin-agent-manager-build
+            - release-approval
+
 
 jobs:
-  test-bin-agent-manager:
+  bin-agent-manager-test:
     docker:
       - image: cimg/go:1.22
     steps:
-      - test:
-          to: bin-agent-manager
+      - go-test:
+          source-directory: bin-agent-manager
 
-  build-bin-agent-manager:
+  bin-agent-manager-build:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - build:
-          to: bin-agent-manager
+      - go-build:
+          source-directory: bin-agent-manager
+
+  bin-agent-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          source-directory: bin-agent-manager
+          image-name: agent-manager
 
 
 commands:
-  test:
-    description: "test and lint the package"
+  go-test:
+    description: "test and lint the go application"
     parameters:
-      to:
+      source-directory:
         type: string
         default: "none"
     steps:
-      - run: echo Hello << parameters.to >>
+      - run: echo working on << parameters.source-directory >>
       - checkout
       - run:
           name: Install dependencies and vendor
           command: |
-            ls -tlr
-            cd << parameters.to >>
+            cd << parameters.source-directory >>
             go mod download
             go mod vendor
-            pwd
-            ls -tlr
 
       - run:
           name: Install extra dependencies
@@ -167,14 +182,14 @@ commands:
       - run:
           name: Linting and vet
           command: |
-            cd << parameters.to >>
+            cd << parameters.source-directory >>
             golangci-lint run -v --timeout 5m
             go vet $(go list ./...)
 
       - run:
           name: Testing
           command: |
-            cd << parameters.to >>
+            cd << parameters.source-directory >>
             go test -coverprofile cp.out -v $(go list ./...)
             go tool cover -html=cp.out -o cp.html
             go tool cover -func=cp.out
@@ -182,20 +197,24 @@ commands:
       - run:
           name: Run gotestsum
           command: |
-            cd << parameters.to >>
+            cd << parameters.source-directory >>
             gotestsum --junitfile test-results.xml
 
       - store_test_results:
-          path: test-results.xml
+          path: << parameters.source-directory >>/test-results.xml
 
-  build:
-    description: "build the docker image"
+  go-build:
+    description: "build the go application docker image"
     parameters:
-      to:
+      source-directory:
         type: string
         default: "World"
+      image-name:
+        type: string
+        default: "none"
+
     steps:
-      - run: echo Hello << parameters.to >>
+      - run: echo working on << parameters.source-directory >>
       - setup_remote_docker
       - checkout
       - run:
@@ -216,5 +235,40 @@ commands:
       - run:
           name: Building Docker image and push
           command: |
-            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:latest -f << parameters.to >>/Dockerfile .
-            docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/api-manager:$CIRCLE_SHA1
+            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/<< parameters.image-name >>:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/<< parameters.image-name >>:latest -f << parameters.source-directory >>/Dockerfile .
+            docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/<< parameters.image-name >>:$CIRCLE_SHA1
+
+  go-release:
+    description: "release the docker image"
+    parameters:
+      source-directory:
+        type: string
+        default: "World"
+      image-name:
+        type: string
+        default: "none"
+    steps:
+      - run: echo Hello << parameters.source-directory >>
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Config service account
+          command: |
+            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
+            gcloud auth activate-service-account --key-file=./google_service_account.json
+            gcloud config set project $CC_GCP_PROJECT_ID
+            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
+
+      # - run:
+      #     name: Config registry
+      #     command: |
+      #       cat google_service_account.json | docker login -u _json_key_base64 --password-stdin pkg.dev
+      #       gcloud auth activate-service-account --key-file=google_service_account.json
+      #       gcloud auth configure-docker $CC_REGISTRY_LOCATION
+
+      - run:
+          name: Release
+          command: |
+            cd << parameters.source-directory >>/k8s
+            kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/<< parameters.image-name >>:$CIRCLE_SHA1
+            kubectl apply -k ./ -v6
