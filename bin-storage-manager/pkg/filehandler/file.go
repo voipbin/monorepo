@@ -63,7 +63,7 @@ func (h *fileHandler) createCompressFile(ctx context.Context, zipFilepath string
 	defer func() {
 		if resErr != nil {
 			log.Errorf("Could not finish the create compress file correctly. Deleting the file. err: %v", resErr)
-			fo.Delete(ctx)
+			_ = fo.Delete(ctx)
 		}
 	}()
 
@@ -153,11 +153,7 @@ func (h *fileHandler) getAttrs(ctx context.Context, bucketName string, filepath 
 // IsExist returns true if the given file exist
 func (h *fileHandler) IsExist(ctx context.Context, bucketName string, filepath string) bool {
 	_, err := h.getAttrs(ctx, bucketName, filepath)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }
 
 // Delete deletes the given file

@@ -113,7 +113,7 @@ func getListenIP() string {
 
 // getRandomPort returns random listen port
 func getRandomPort() int {
-	rand.Seed(time.Now().UTC().UnixNano())
-	res := rand.Intn(defaultListenPortMax-defaultListenPortMin+1) + defaultListenPortMin
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	res := r.Intn(defaultListenPortMax-defaultListenPortMin+1) + defaultListenPortMin
 	return res
 }

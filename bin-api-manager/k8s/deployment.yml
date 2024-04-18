@@ -24,7 +24,7 @@ spec:
         - name: api-manager
           image: api-manager-image
           command:
-            - '/app/api-manager'
+            - '/app/bin-api-manager/api-manager'
           env:
             - name: POD_NAME
               valueFrom:

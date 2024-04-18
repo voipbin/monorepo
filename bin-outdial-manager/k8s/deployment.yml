@@ -24,7 +24,7 @@ spec:
         - name: outdial-manager
           image: outdial-manager-image
           command:
-            - '/app/outdial-manager'
+            - '/app/bin-outdial-manager/outdial-manager'
           args:
             - '-dbDSN'
             - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'

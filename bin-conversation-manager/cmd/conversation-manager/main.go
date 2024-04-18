@@ -14,6 +14,8 @@ import (
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -41,7 +43,6 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.conversation-manager.request", "rabbitmq queue name for request listen")
 var rabbitQueueSubscribe = flag.String("rabbit_queue_subscribe", "bin-manager.conversation-manager.subscribe", "rabbitmq queue name for request listen")
 var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.customer-manager.event", "comma separated rabbitmq exchange name for subscribe")
-var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.conversation-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -152,7 +153,7 @@ func run(dbHandler dbhandler.DBHandler) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
 
 	lineHandler := linehandler.NewLineHandler()
 	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler, notifyHandler, lineHandler)

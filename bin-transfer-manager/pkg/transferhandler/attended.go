@@ -10,6 +10,7 @@ import (
 
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -130,11 +131,13 @@ func (h *transferHandler) attendedExecute(ctx context.Context, transfererCall *c
 	// create outgoing call to the transferee
 	gc, err := h.reqHandler.CallV1GroupcallCreate(
 		ctx,
+		uuid.Nil,
 		transfererCall.CustomerID,
+		flow.ID,
 		transfererCall.Source,
 		transfereeAddresses,
-		flow.ID,
 		transfererCall.MasterCallID,
+		uuid.Nil,
 		cmgroupcall.RingMethodRingAll,
 		cmgroupcall.AnswerMethodHangupOthers,
 	)

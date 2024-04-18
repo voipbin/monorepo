@@ -32,7 +32,7 @@ func (h *transferHandler) Create(
 
 	// create a conference struct
 	res := &transfer.Transfer{
-		ID:         h.utilHandler.CreateUUID(),
+		ID:         h.utilHandler.UUIDCreate(),
 		CustomerID: customerID,
 
 		Type: transferType,
