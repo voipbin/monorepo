@@ -7,5 +7,4 @@ WORKDIR /app
 COPY . .
 
 RUN apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-RUN go mod vendor
 RUN go build -C bin-api-manager ./cmd/...
