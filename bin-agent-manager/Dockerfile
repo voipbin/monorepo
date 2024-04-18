@@ -9,4 +9,4 @@ COPY ./ .
 
 RUN ls -tlr
 RUN ls -tlr ../
-RUN cd bin-agent-manager && go build ./cmd/...
+RUN go -C bin-agent-manager build ./cmd/... && mv agent-manager ../
