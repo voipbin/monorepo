@@ -5,7 +5,7 @@ package buckethandler
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -89,7 +89,7 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 
 	ctx := context.Background()
 
-	jsonKey, err := ioutil.ReadFile(credentialPath)
+	jsonKey, err := os.ReadFile(credentialPath)
 	if err != nil {
 		logrus.Errorf("Could not read the credential file. err: %v", err)
 		return nil

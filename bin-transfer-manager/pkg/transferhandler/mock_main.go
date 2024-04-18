@@ -6,14 +6,14 @@ package transferhandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	call "monorepo/bin-call-manager/models/call"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	address "monorepo/bin-common-handler/models/address"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockTransferHandler is a mock of TransferHandler interface.

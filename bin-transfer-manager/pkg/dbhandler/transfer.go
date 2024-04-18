@@ -10,7 +10,7 @@ import (
 
 // ConferenceCreate creates a new conference record.
 func (h *handler) TransferCreate(ctx context.Context, tr *transfer.Transfer) error {
-	tr.TMCreate = h.utilHandler.GetCurTime()
+	tr.TMCreate = h.utilHandler.TimeGetCurTime()
 	tr.TMUpdate = DefaultTimeStamp
 	tr.TMDelete = DefaultTimeStamp
 
@@ -77,7 +77,7 @@ func (h *handler) TransferGetByGroupcallID(ctx context.Context, groupcallID uuid
 // TransferUpdate updates the given transfer.
 func (h *handler) TransferUpdate(ctx context.Context, tr *transfer.Transfer) error {
 
-	tr.TMUpdate = h.utilHandler.GetCurTime()
+	tr.TMUpdate = h.utilHandler.TimeGetCurTime()
 	if errSet := h.cache.TransferSet(ctx, tr); errSet != nil {
 		return errSet
 	}
