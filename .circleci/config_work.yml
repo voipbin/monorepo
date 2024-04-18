@@ -134,6 +134,8 @@ workflows:
 
 
 jobs:
+
+  ###### bin-agent-manager
   bin-agent-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -156,6 +158,35 @@ jobs:
       - go-release:
           source-directory: bin-agent-manager
           image-name: agent-manager
+
+  ###### bin-api-manager
+
+  ###### bin-billing-manager
+
+  ###### bin-call-manager
+  ###### bin-campaign-manager
+  ###### bin-chat-manager
+  ###### bin-chatbot-manager
+  ###### bin-common-manager
+  ###### bin-conference-manager
+  ###### bin-conversation-manager
+  ###### bin-customer-manager
+  ###### bin-dbscheme-manager
+  ###### bin-flow-manager
+  ###### bin-hook-manager
+  ###### bin-message-manager
+  ###### bin-number-manager
+  ###### bin-outdial-manager
+  ###### bin-queue-manager
+  ###### bin-registrar-manager
+  ###### bin-route-manager
+  ###### bin-storage-manager
+  ###### bin-tag-manager
+  ###### bin-transcribe-manager
+  ###### bin-transfer-manager
+  ###### bin-tts-manager
+  ###### bin-webhook-manager
+
 
 
 commands:
