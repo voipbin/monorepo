@@ -59,13 +59,46 @@ stages:
 
 build:
   stage: build
-  image: gitlab/dind:latest
+  image: docker:26.0.1
+  services:
+    - docker:26.0.1-dind
   timeout: 3 hours 30 minutes
+  # before_script:
+    # - echo "Log in the docker. " $GL_DOCKER_USERNAME
+    # - docker login -u $GL_DOCKER_USERNAME -p $GL_DOCKER_TOKEN
   script:
+    # - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    # - echo $DOCKER_HOST
+    # - echo "test"
+    # - echo $DOCKER_HOST
+    # - unset DOCKER_HOST    
+    # - export DOCKER_HOST=$CI_REGISTRY
+    # - echo $DOCKER_HOST
+
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+
+    # - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - docker build --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE:latest
+  variables:
+    # When using dind service, you must instruct docker to talk with the
+    # daemon started inside of the service. The daemon is available with
+    # a network connection instead of the default /var/run/docker.sock socket.
+    #
+    # The 'docker' hostname is the alias of the service container as described at
+    # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+    #
+    # If you're using GitLab Runner 12.7 or earlier with the Kubernetes executor and Kubernetes 1.6 or earlier,
+    # the variable must be set to tcp://localhost:2375 because of how the
+    # Kubernetes executor connects services to the job container
+    # DOCKER_HOST: tcp://localhost:2375
+    #
+    DOCKER_HOST: tcp://docker:2375
+    #
+    # This instructs Docker not to start over TLS.
+    DOCKER_TLS_CERTDIR: ""
 
 release:
   stage: release

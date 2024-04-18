@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -28,9 +28,15 @@ import {
   CallGetInfo,
 } from '../../phone'
 import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from "react-router-dom";
 
 const CurrentcallDetail = () => {
   console.log("CurrentcallDetail");
+  const navigate = useNavigate();
+
+  const ref_source = useRef(null);
+  const ref_destination = useRef(null);
+  const call_info = CallGetInfo();
 
   let currentCall = useSelector((state) => {
     // note: i don't know why this is needed, but this makes possible to
@@ -42,13 +48,23 @@ const CurrentcallDetail = () => {
 
   // get extension
   const tmp = localStorage.getItem("extension_info");
-  const extension = JSON.parse(tmp);
+  var extension = JSON.parse(tmp);
   console.log("Debug info. extension info: ", extension);
+  if (extension == null) {
+    extension = {};
+  }
 
-  const ref_source = useRef(null);
-  const ref_destination = useRef(null);
+  useEffect(() => {
 
-  const call_info = CallGetInfo();
+    // validate the extension info  
+    if (Object.keys(extension).length === 0) {
+      alert("You have no extension in the address. Please add the extension to your address.");
+
+      // go to main page
+      const navi = "/";
+      navigate(navi);
+    }
+  });
 
   const Detail = () => {
     return (

@@ -1,4 +1,4 @@
-FROM node:current-slim
+FROM node:20-slim
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
