@@ -132,6 +132,25 @@ workflows:
             - bin-agent-manager-build
             - release-approval
 
+  bin-api-manager:
+    when: << pipeline.parameters.run-bin-api-manager >>
+    jobs:
+      - bin-api-manager-test
+      - bin-api-manager-build:
+          <<: *context_production
+          requires:
+            - bin-api-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-api-manager-build
+      - bin-api-manager-release:
+          <<: *context_production
+          requires:
+            - bin-api-manager-build
+            - release-approval
+
+
 
 jobs:
 
@@ -160,6 +179,28 @@ jobs:
           image-name: agent-manager
 
   ###### bin-api-manager
+  bin-api-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test-api-manager:
+          source-directory: bin-api-manager
+
+  bin-api-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          source-directory: bin-api-manager
+          image-name: api-manager
+
+  bin-api-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          source-directory: bin-api-manager
+          image-name: api-manager
 
   ###### bin-billing-manager
 
