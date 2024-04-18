@@ -150,7 +150,23 @@ workflows:
             - bin-api-manager-build
             - release-approval
 
-
+  bin-billing-manager:
+    when: << pipeline.parameters.run-bin-billing-manager >>
+    jobs:
+      - bin-billing-manager-test
+      - bin-billing-manager-build:
+          <<: *context_production
+          requires:
+            - bin-billing-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-billing-manager-build
+      - bin-billing-manager-release:
+          <<: *context_production
+          requires:
+            - bin-billing-manager-build
+            - release-approval
 
 jobs:
 
@@ -203,6 +219,28 @@ jobs:
           image-name: api-manager
 
   ###### bin-billing-manager
+  bin-billing-manager-test:
+    docker:
+      - image: cimg/go:1.22
+    steps:
+      - go-test:
+          source-directory: bin-billing-manager
+
+  bin-billing-manager-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          source-directory: bin-billing-manager
+          image-name: billing-manager
+
+  bin-billing-manager-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
+          source-directory: bin-billing-manager
+          image-name: billing-manager
 
   ###### bin-call-manager
   ###### bin-campaign-manager
