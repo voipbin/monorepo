@@ -72,7 +72,7 @@ const calls = {
     {
       component: CNavItem,
       name: 'Currentcall',
-      to: '/resources/calls/currentcall_detail',
+      to: '/resources/currentcalls/detail',
     }
   ]
 };
