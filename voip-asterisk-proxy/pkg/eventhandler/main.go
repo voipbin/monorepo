@@ -1,11 +1,12 @@
 package eventhandler
 
 import (
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/gorilla/websocket"
 	"github.com/ivahaev/amigo"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // EventHandler interface type

@@ -8,16 +8,18 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/ivahaev/amigo"
 	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/eventhandler"
-	"gitlab.com/voipbin/voip/asterisk-proxy/pkg/listenhandler"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/voip-asterisk-proxy/pkg/eventhandler"
+	"monorepo/voip-asterisk-proxy/pkg/listenhandler"
 )
 
 const serviceName = "asterisk-proxy"
@@ -38,7 +40,6 @@ var flagInterfaceName = flag.String("interface_name", "eth0", "The main interfac
 var flagRabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "The asterisk-proxy connect to rabbitmq address.")
 var flagRabbitQueueListenRequest = flag.String("rabbit_queue_listen", "asterisk.call.request", "Additional comma separated asterisk-proxy's listen request queue name.")
 var flagRabbitQueuePublishEvent = flag.String("rabbit_queue_publish", "asterisk.all.event", "The asterisk-proxy sends the ARI event to this rabbitmq queue name. The queue must be created before.")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 var flagRedisAddr = flag.String("redis_addr", "localhost:6379", "The redis address for data caching")
 var flagRedisDB = flag.Int("redis_db", 0, "The redis database for caching")
@@ -70,7 +71,7 @@ func main() {
 	logrus.Debugf("Volatile listen queue name: %s", rabbitQueueListenRequestsVolatile)
 
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *flagRabbitQueuePublishEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName)
 
 	// create event handler
 	evtHandler := eventhandler.NewEventHandler(

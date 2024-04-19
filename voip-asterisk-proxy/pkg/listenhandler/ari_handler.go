@@ -9,7 +9,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ariSendRequestToAsterisk sends the request to the Asterisk's ARI.

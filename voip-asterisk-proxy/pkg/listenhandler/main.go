@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+
 	"github.com/ivahaev/amigo"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // ListenHandler interface type
@@ -113,7 +114,7 @@ func (h *listenHandler) listenRun() error {
 		logrus.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
 			for {
-				if err := h.rabbitSock.ConsumeRPCOpt(queue, "", false, false, false, h.listenHandler); err != nil {
+				if err := h.rabbitSock.ConsumeRPCOpt(queue, "", false, false, false, 10, h.listenHandler); err != nil {
 					logrus.Errorf("Could not handle the request message correctly. err: %v", err)
 				}
 			}
