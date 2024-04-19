@@ -1637,6 +1637,7 @@ commands:
           command: |
             cd << parameters.source-directory >>
             sed -i -e "s/\$ASTERISK-IMAGE/$CC_REGISTRY_LOCATION\/$CC_GCP_PROJECT_ID\/<< parameters.namespace >>\/asterisk:<< parameters.asterisk-version >>/g" Dockerfile
+            cat Dockerfile
             docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 .
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
 
