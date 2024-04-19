@@ -1385,7 +1385,7 @@ jobs:
     steps:
       - voip-build-asterisk-service:
           namespace: voip
-          source-directory: voip-asterisk-docker
+          source-directory: voip-asterisk-k8s-call
           asterisk-version: "21.1.0"
 
   voip-asterisk-k8s-call-release:
@@ -1394,7 +1394,7 @@ jobs:
     steps:
       - voip-release-asterisk-service:
           namespace: voip
-          source-directory: voip-asterisk-docker
+          source-directory: voip-asterisk-k8s-call
           asterisk-proxy-version: "latest"
 
 
@@ -1524,6 +1524,7 @@ commands:
           command: |
             docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:latest -f << parameters.source-directory >>/Dockerfile .
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
+            docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$latest
 
   go-release:
     description: "release the docker image"
