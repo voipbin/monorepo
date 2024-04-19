@@ -40,9 +40,3 @@ workflows:
             bin-tts-manager/.*          run-bin-tts-manager true
             bin-webhook-manager/.*      run-bin-webhook-manager true
             
-            square-admin/.* run-square-admin true
-            square-agent/.* run-square-agent true
-            square-main/.*  run-square-main true
-            square-meet/.*  run-square-meet true
-            square-talk/.*  run-square-talk true
-
