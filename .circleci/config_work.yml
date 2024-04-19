@@ -1332,7 +1332,7 @@ jobs:
     steps:
       - voip-build:
           namespace: voip
-          source-directory: asterisk-docker
+          source-directory: voip-asterisk-docker
           image-name: asterisk
 
 
