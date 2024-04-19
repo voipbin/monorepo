@@ -1336,6 +1336,21 @@ jobs:
           version: "21.1.0"
 
 
+  # voip-asterisk-k8s-call
+  voip-asterisk-k8s-call-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - voip-build-asterisk-service:
+          namespace: voip
+          source-directory: voip-asterisk-docker
+          asterisk-version: "21.1.0"
+      - voip-release-asterisk-service:
+          namespace: voip
+          source-directory: voip-asterisk-docker
+          version: "21.1.0"
+
+
 #########################################################################################################################################################################
 # commands
 #########################################################################################################################################################################
@@ -1605,5 +1620,6 @@ commands:
           name: Release
           command: |
             cd << parameters.source-directory >>/k8s
+            kustomize edit set image asterisk-proxy-image=registry.gitlab.com/voipbin/voip/asterisk-proxy:0fda25d01c0f5f28af4789832e7c2a9cd9376000
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
