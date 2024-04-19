@@ -1348,7 +1348,7 @@ jobs:
       - docker-build:
           namespace: square-manager
           source-directory: square-admin
-          image-name: admin-image
+          image-name: admin
 
   square-admin-release:
     docker:
@@ -1357,7 +1357,7 @@ jobs:
       - docker-release:
           namespace: square-manager
           source-directory: square-admin
-          image-name: admin-image
+          image-name: admin
 
 
 commands:
