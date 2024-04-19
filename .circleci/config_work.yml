@@ -121,6 +121,10 @@ parameters:
     type: boolean
     default: false
 
+  run-voip-asterisk-proxy:
+    type: boolean
+    default: false
+
 
 #########################################################################################################################################################################
 # workflows
@@ -626,6 +630,13 @@ workflows:
   ############################################
   # namespace: voip
   ############################################
+
+  voip-asterisk-proxy:
+    when: 
+      or: [<< pipeline.parameters.run-voip-asterisk-proxy >>]
+    jobs:
+      - voip-asterisk-proxy-build:
+          <<: *context_production
 
   voip-asterisk-docker:
     when: 
@@ -1325,6 +1336,16 @@ jobs:
   # namespace: voip
   ############################################
 
+  # voip-asterisk-proxy
+  voip-asterisk-proxy-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - go-build:
+          namespace: voip
+          source-directory: voip-asterisk-proxy
+
+
   # voip-asterisk-docker
   voip-asterisk-docker-build:
     docker:
@@ -1345,10 +1366,16 @@ jobs:
           namespace: voip
           source-directory: voip-asterisk-docker
           asterisk-version: "21.1.0"
+
+  voip-asterisk-k8s-call-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
       - voip-release-asterisk-service:
           namespace: voip
           source-directory: voip-asterisk-docker
-          version: "21.1.0"
+          asterisk-proxy-version: "latest"
+
 
 
 #########################################################################################################################################################################
@@ -1474,7 +1501,7 @@ commands:
       - run:
           name: Building Docker image and push
           command: |
-            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 -f << parameters.source-directory >>/Dockerfile .
+            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:latest -f << parameters.source-directory >>/Dockerfile .
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
 
   go-release:
@@ -1603,6 +1630,9 @@ commands:
       image-name:
         type: string
         default: "none"
+      asterisk-proxy-version:
+        type: string
+        default: "none"
 
     steps:
       - run: echo Hello << parameters.source-directory >>
@@ -1620,6 +1650,6 @@ commands:
           name: Release
           command: |
             cd << parameters.source-directory >>/k8s
-            kustomize edit set image asterisk-proxy-image=registry.gitlab.com/voipbin/voip/asterisk-proxy:0fda25d01c0f5f28af4789832e7c2a9cd9376000
+            kustomize edit set image CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>/asterisk-proxy:<< parameters.asterisk-proxy-version >>
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6

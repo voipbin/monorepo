@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 func (h *listenHandler) listenHandlerAMI(request *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

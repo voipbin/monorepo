@@ -14,7 +14,6 @@ workflows:
           config-path: .circleci/config_work.yml
           mapping: |
             bin-agent-manager/.*        run-bin-agent-manager true
-            bin-api-manager/.*          run-bin-api-manager true
             bin-billing-manager/.*      run-bin-billing-manager true
             bin-call-manager/.*         run-bin-call-manager true
             bin-campaign-manager/.*     run-bin-campaign-manager true
@@ -40,5 +39,7 @@ workflows:
             bin-tts-manager/.*          run-bin-tts-manager true
             bin-webhook-manager/.*      run-bin-webhook-manager true
 
+            voip-asterisk-proxy/.*      run-voip-asterisk-proxy true
             voip-asterisk-docker/.*     run-voip-asterisk-docker true
 
+#             bin-api-manager/.*          run-bin-api-manager true
