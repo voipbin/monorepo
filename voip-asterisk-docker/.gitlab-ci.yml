@@ -1,0 +1,38 @@
+image: voipbin/gitlab-runner:latest
+
+variables:
+
+stages:
+  - build
+  - release
+
+.gcp_init: &gcp_init |-
+  echo $LOCAL_CREDENTIAL > ./google_service_account.json
+  gcloud auth activate-service-account --key-file=./google_service_account.json
+  gcloud config set project $LOCAL_PROJECTID
+  gcloud container clusters get-credentials $LOCAL_CLUSTER_NAME --zone $LOCAL_ZONE --project $LOCAL_PROJECTID
+
+build:
+  stage: build
+  image: gitlab/dind:latest
+  variables:
+    LOCAL_RELEASE_VERSION: build-tmp
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:$LOCAL_RELEASE_VERSION .
+
+release:
+  stage: release
+  image: gitlab/dind:latest
+  when: manual
+  dependencies:
+    - build
+  variables:
+    LOCAL_RELEASE_VERSION: 21.1.0
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:$LOCAL_RELEASE_VERSION --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$LOCAL_RELEASE_VERSION
+    - docker push $CI_REGISTRY_IMAGE:latest
+  # only:
+  #   master
