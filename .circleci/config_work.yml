@@ -5,6 +5,11 @@ context_production: &context_production
     - production
 
 parameters:
+
+  ############################################
+  # namespace: bin
+  ############################################
+
   run-bin-agent-manager:
     type: boolean
     default: false
@@ -109,7 +114,22 @@ parameters:
     type: boolean
     default: false
 
+  ############################################
+  # namespace: voip
+  ############################################
+  run-voip-asterisk-docker:
+    type: boolean
+    default: false
+
+
+#########################################################################################################################################################################
+# workflows
+#########################################################################################################################################################################
 workflows:
+  ############################################
+  # namespace: bin
+  ############################################
+
   bin-agent-manager:
     when: 
       or: [<< pipeline.parameters.run-bin-agent-manager >>, << pipeline.parameters.run-bin-common-handler >> ]
@@ -603,9 +623,29 @@ workflows:
             - release-approval
 
 
+  ############################################
+  # namespace: voip
+  ############################################
+
+  voip-asterisk-docker:
+    when: 
+      or: [<< pipeline.parameters.run-voip-asterisk-docker >>]
+    jobs:
+      - voip-asterisk-docker-build:
+          <<: *context_production
+
+
+
+#########################################################################################################################################################################
+# jobs
+#########################################################################################################################################################################
 jobs:
 
-  ###### bin-agent-manager
+  ############################################
+  # namespace: bin
+  ############################################
+
+  # bin-agent-manager
   bin-agent-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -631,7 +671,7 @@ jobs:
           source-directory: bin-agent-manager
           image-name: agent-manager
 
-  ###### bin-api-manager
+  # bin-api-manager
   bin-api-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -657,7 +697,7 @@ jobs:
           source-directory: bin-api-manager
           image-name: api-manager
 
-  ###### bin-billing-manager
+  # bin-billing-manager
   bin-billing-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -683,7 +723,7 @@ jobs:
           source-directory: bin-billing-manager
           image-name: billing-manager
 
-  ###### bin-call-manager
+  # bin-call-manager
   bin-call-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -710,7 +750,7 @@ jobs:
           image-name: call-manager
 
 
-  ###### bin-campaign-manager
+  # bin-campaign-manager
   bin-campaign-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -737,7 +777,7 @@ jobs:
           image-name: campaign-manager
 
 
-  ###### bin-chat-manager
+  # bin-chat-manager
   bin-chat-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -763,7 +803,7 @@ jobs:
           source-directory: bin-chat-manager
           image-name: chat-manager
 
-  ###### bin-chatbot-manager
+  # bin-chatbot-manager
   bin-chatbot-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -789,7 +829,7 @@ jobs:
           source-directory: bin-chatbot-manager
           image-name: chatbot-manager
 
-  ###### bin-common-handler
+  # bin-common-handler
   bin-common-handler-test:
     docker:
       - image: cimg/go:1.22
@@ -815,7 +855,7 @@ jobs:
           source-directory: bin-common-handler
           image-name: common-handler
 
-  ###### bin-conference-manager
+  # bin-conference-manager
   bin-conference-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -841,7 +881,7 @@ jobs:
           source-directory: bin-conference-manager
           image-name: conference-manager
 
-  ###### bin-conversation-manager
+  # bin-conversation-manager
   bin-conversation-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -867,7 +907,7 @@ jobs:
           source-directory: bin-conversation-manager
           image-name: conversation-manager
 
-  ###### bin-customer-manager
+  # bin-customer-manager
   bin-customer-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -893,7 +933,7 @@ jobs:
           source-directory: bin-customer-manager
           image-name: customer-manager
 
-  # ###### bin-dbscheme-manager
+  # # bin-dbscheme-manager
   # bin-dbscheme-manager-test:
   #   docker:
   #     - image: cimg/go:1.22
@@ -917,7 +957,7 @@ jobs:
   #         source-directory: bin-dbscheme-manager
   #         image-name: dbscheme-manager
 
-  ###### bin-flow-manager
+  # bin-flow-manager
   bin-flow-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -943,7 +983,7 @@ jobs:
           source-directory: bin-flow-manager
           image-name: flow-manager
 
-  ###### bin-hook-manager
+  # bin-hook-manager
   bin-hook-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -969,7 +1009,7 @@ jobs:
           source-directory: bin-hook-manager
           image-name: hook-manager
 
-  ###### bin-message-manager
+  # bin-message-manager
   bin-message-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -995,7 +1035,7 @@ jobs:
           source-directory: bin-message-manager
           image-name: message-manager
 
-  ###### bin-number-manager
+  # bin-number-manager
   bin-number-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1021,7 +1061,7 @@ jobs:
           source-directory: bin-number-manager
           image-name: number-manager
 
-  ###### bin-outdial-manager
+  # bin-outdial-manager
   bin-outdial-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1047,7 +1087,7 @@ jobs:
           source-directory: bin-outdial-manager
           image-name: outdial-manager
 
-  ###### bin-queue-manager
+  # bin-queue-manager
   bin-queue-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1073,7 +1113,7 @@ jobs:
           source-directory: bin-queue-manager
           image-name: queue-manager
 
-  ###### bin-registrar-manager
+  # bin-registrar-manager
   bin-registrar-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1099,7 +1139,7 @@ jobs:
           source-directory: bin-registrar-manager
           image-name: registrar-manager
 
-  ###### bin-route-manager
+  # bin-route-manager
   bin-route-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1125,7 +1165,7 @@ jobs:
           source-directory: bin-route-manager
           image-name: route-manager
 
-  ###### bin-storage-manager
+  # bin-storage-manager
   bin-storage-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1151,7 +1191,7 @@ jobs:
           source-directory: bin-storage-manager
           image-name: storage-manager
 
-  ###### bin-tag-manager
+  # bin-tag-manager
   bin-tag-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1177,7 +1217,7 @@ jobs:
           source-directory: bin-tag-manager
           image-name: tag-manager
 
-  ###### bin-transcribe-manager
+  # bin-transcribe-manager
   bin-transcribe-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1203,7 +1243,7 @@ jobs:
           source-directory: bin-transcribe-manager
           image-name: transcribe-manager
 
-  ###### bin-transfer-manager
+  # bin-transfer-manager
   bin-transfer-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1229,7 +1269,7 @@ jobs:
           source-directory: bin-transfer-manager
           image-name: transfer-manager
 
-  ###### bin-tts-manager
+  # bin-tts-manager
   bin-tts-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1255,7 +1295,7 @@ jobs:
           source-directory: bin-tts-manager
           image-name: tts-manager
 
-  ###### bin-webhook-manager
+  # bin-webhook-manager
   bin-webhook-manager-test:
     docker:
       - image: cimg/go:1.22
@@ -1281,7 +1321,24 @@ jobs:
           source-directory: bin-webhook-manager
           image-name: webhook-manager
 
+  ############################################
+  # namespace: bin
+  ############################################
 
+  # voip-asterisk-docker
+  voip-asterisk-docker-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - voip-build:
+          namespace: voip
+          source-directory: asterisk-docker
+          image-name: asterisk
+
+
+#########################################################################################################################################################################
+# commands
+#########################################################################################################################################################################
 commands:
   go-test:
     description: "test and lint the go application"
@@ -1375,7 +1432,7 @@ commands:
         default: "none"
       source-directory:
         type: string
-        default: "World"
+        default: "none"
       image-name:
         type: string
         default: "none"
@@ -1402,7 +1459,7 @@ commands:
       - run:
           name: Building Docker image and push
           command: |
-            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/<< parameters.image-name >>:latest -f << parameters.source-directory >>/Dockerfile .
+            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 -f << parameters.source-directory >>/Dockerfile .
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
 
   go-release:
@@ -1435,3 +1492,42 @@ commands:
             cd << parameters.source-directory >>/k8s
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
+
+  voip-build:
+    description: "build the voip application docker image"
+    parameters:
+      namespace:
+        type: string
+        default: "none"
+      source-directory:
+        type: string
+        default: "none"
+      image-name:
+        type: string
+        default: "none"
+
+    steps:
+      - run: echo working on << parameters.source-directory >>
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Config service account
+          command: |
+            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
+            gcloud auth activate-service-account --key-file=./google_service_account.json
+            gcloud config set project $CC_GCP_PROJECT_ID
+            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
+
+      - run:
+          name: Config registry
+          command: |
+            cat google_service_account.json | docker login -u _json_key_base64 --password-stdin pkg.dev
+            gcloud auth activate-service-account --key-file=google_service_account.json
+            gcloud auth configure-docker $CC_REGISTRY_LOCATION
+
+      - run:
+          name: Building Docker image and push
+          command: |
+            cd << parameters.source-directory >>
+            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 .
+            docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
