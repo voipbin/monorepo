@@ -26,7 +26,7 @@ spec:
           command:
             - '/usr/local/bin/npm'
           args:
-            - 'start'
+            - '--prefix square-admin start'
           ports:
             - name: metrics
               protocol: "TCP"
