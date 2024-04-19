@@ -24,10 +24,10 @@ spec:
         - name: main
           image: main-image
           command:
-            - '/usr/local/bin/serve'
+            - '"/bin/sh","-c"'
           args:
-            - '-s'
-            - 'build'
+            - cd sqaure-main;
+              /usr/local/bin/serve -s build;
           ports:
             - name: metrics
               protocol: "TCP"

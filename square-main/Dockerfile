@@ -6,7 +6,5 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install
-RUN npm install -g serve
-RUN npm run build
+RUN cd square-main && npm install && npm install -g serve && npm run build
 

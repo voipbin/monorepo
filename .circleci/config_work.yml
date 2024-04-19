@@ -655,6 +655,38 @@ workflows:
             - square-admin-build
             - release-approval
 
+  # square-main:
+  #   when: << pipeline.parameters.run-square-main >>
+  #   jobs:
+  #     - square-main-build:
+  #         <<: *context_production
+  #     - release-approval:
+  #         type: approval
+  #         requires:
+  #           - square-main-build
+  #     - square-main-release:
+  #         <<: *context_production
+  #         requires:
+  #           - square-main-build
+  #           - release-approval
+
+  # square-meet:
+  #   when: << pipeline.parameters.run-square-meet >>
+  #   jobs:
+  #     - square-meet-build:
+  #         <<: *context_production
+  #     - release-approval:
+  #         type: approval
+  #         requires:
+  #           - square-meet-build
+  #     - square-meet-release:
+  #         <<: *context_production
+  #         requires:
+  #           - square-meet-build
+  #           - release-approval
+
+
+
 jobs:
 
   ################################################################################################################################################################################################################
@@ -1358,6 +1390,44 @@ jobs:
           namespace: square-manager
           source-directory: square-admin
           image-name: admin
+
+  ###### square-main
+  square-main-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - docker-build:
+          namespace: square-manager
+          source-directory: square-main
+          image-name: main
+
+  square-main-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - docker-release:
+          namespace: square-manager
+          source-directory: square-main
+          image-name: main
+
+  ###### square-meet
+  square-meet-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - docker-build:
+          namespace: square-manager
+          source-directory: square-meet
+          image-name: meet
+
+  square-meet-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - docker-release:
+          namespace: square-manager
+          source-directory: square-meet
+          image-name: meet
 
 
 commands:
