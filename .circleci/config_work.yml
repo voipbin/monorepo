@@ -5,6 +5,10 @@ context_production: &context_production
     - production
 
 parameters:
+
+  ################################################################################################################################################################################################################
+  ### namespace: bin-*
+  ################################################################################################################################################################################################################
   run-bin-agent-manager:
     type: boolean
     default: false
@@ -109,7 +113,37 @@ parameters:
     type: boolean
     default: false
 
+  ################################################################################################################################################################################################################
+  ### namespace: square-*
+  ################################################################################################################################################################################################################
+
+  run-square-admin:
+    type: boolean
+    default: false
+
+  run-square-agent:
+    type: boolean
+    default: false
+
+  run-square-main:
+    type: boolean
+    default: false
+
+  run-square-meet:
+    type: boolean
+    default: false
+
+  run-square-talk:
+    type: boolean
+    default: false
+
+
+
 workflows:
+
+  ################################################################################################################################################################################################################
+  ### namespace: bin-*
+  ################################################################################################################################################################################################################
   bin-agent-manager:
     when: 
       or: [<< pipeline.parameters.run-bin-agent-manager >>, << pipeline.parameters.run-bin-common-handler >> ]
@@ -602,8 +636,30 @@ workflows:
             - bin-webhook-manager-build
             - release-approval
 
+  ################################################################################################################################################################################################################
+  ### namespace: bin-*
+  ################################################################################################################################################################################################################
+
+  square-admin:
+    when: << pipeline.parameters.run-square-admin >>
+    jobs:
+      - square-admin-build:
+          <<: *context_production
+      - release-approval:
+          type: approval
+          requires:
+            - square-admin-build
+      - square-admin-release:
+          <<: *context_production
+          requires:
+            - square-admin-build
+            - release-approval
 
 jobs:
+
+  ################################################################################################################################################################################################################
+  ### namespace: bin-*
+  ################################################################################################################################################################################################################
 
   ###### bin-agent-manager
   bin-agent-manager-test:
@@ -617,7 +673,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-agent-manager
           image-name: agent-manager
@@ -626,7 +682,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-agent-manager
           image-name: agent-manager
@@ -643,7 +699,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-api-manager
           image-name: api-manager
@@ -652,7 +708,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-api-manager
           image-name: api-manager
@@ -669,7 +725,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-billing-manager
           image-name: billing-manager
@@ -678,7 +734,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-billing-manager
           image-name: billing-manager
@@ -695,7 +751,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-call-manager
           image-name: call-manager
@@ -704,11 +760,10 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-call-manager
           image-name: call-manager
-
 
   ###### bin-campaign-manager
   bin-campaign-manager-test:
@@ -722,7 +777,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-campaign-manager
           image-name: campaign-manager
@@ -731,7 +786,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-campaign-manager
           image-name: campaign-manager
@@ -749,7 +804,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-chat-manager
           image-name: chat-manager
@@ -758,7 +813,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-chat-manager
           image-name: chat-manager
@@ -775,7 +830,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-chatbot-manager
           image-name: chatbot-manager
@@ -784,7 +839,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-chatbot-manager
           image-name: chatbot-manager
@@ -801,7 +856,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-common-handler
           image-name: common-handler
@@ -810,7 +865,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-common-handler
           image-name: common-handler
@@ -827,7 +882,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-conference-manager
           image-name: conference-manager
@@ -836,7 +891,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-conference-manager
           image-name: conference-manager
@@ -853,7 +908,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-conversation-manager
           image-name: conversation-manager
@@ -862,7 +917,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-conversation-manager
           image-name: conversation-manager
@@ -879,7 +934,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-customer-manager
           image-name: customer-manager
@@ -888,7 +943,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-customer-manager
           image-name: customer-manager
@@ -905,7 +960,7 @@ jobs:
   #   docker:
   #     - image: cimg/gcp:2024.03
   #   steps:
-  #     - go-build:
+  #     - docker-build:
   #         source-directory: bin-dbscheme-manager
   #         image-name: dbscheme-manager
 
@@ -913,7 +968,7 @@ jobs:
   #   docker:
   #     - image: google/cloud-sdk:debian_component_based
   #   steps:
-  #     - go-release:
+  #     - docker-release:
   #         source-directory: bin-dbscheme-manager
   #         image-name: dbscheme-manager
 
@@ -929,7 +984,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-flow-manager
           image-name: flow-manager
@@ -938,7 +993,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-flow-manager
           image-name: flow-manager
@@ -955,7 +1010,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-hook-manager
           image-name: hook-manager
@@ -964,7 +1019,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-hook-manager
           image-name: hook-manager
@@ -981,7 +1036,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-message-manager
           image-name: message-manager
@@ -990,7 +1045,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-message-manager
           image-name: message-manager
@@ -1007,7 +1062,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-number-manager
           image-name: number-manager
@@ -1016,7 +1071,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-number-manager
           image-name: number-manager
@@ -1033,7 +1088,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-outdial-manager
           image-name: outdial-manager
@@ -1042,7 +1097,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-outdial-manager
           image-name: outdial-manager
@@ -1059,7 +1114,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-queue-manager
           image-name: queue-manager
@@ -1068,7 +1123,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-queue-manager
           image-name: queue-manager
@@ -1085,7 +1140,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-registrar-manager
           image-name: registrar-manager
@@ -1094,7 +1149,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-registrar-manager
           image-name: registrar-manager
@@ -1111,7 +1166,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-route-manager
           image-name: route-manager
@@ -1120,7 +1175,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-route-manager
           image-name: route-manager
@@ -1137,7 +1192,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-storage-manager
           image-name: storage-manager
@@ -1146,7 +1201,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-storage-manager
           image-name: storage-manager
@@ -1163,7 +1218,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-tag-manager
           image-name: tag-manager
@@ -1172,7 +1227,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-tag-manager
           image-name: tag-manager
@@ -1189,7 +1244,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-transcribe-manager
           image-name: transcribe-manager
@@ -1198,7 +1253,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-transcribe-manager
           image-name: transcribe-manager
@@ -1215,7 +1270,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-transfer-manager
           image-name: transfer-manager
@@ -1224,7 +1279,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-transfer-manager
           image-name: transfer-manager
@@ -1241,7 +1296,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-tts-manager
           image-name: tts-manager
@@ -1250,7 +1305,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-tts-manager
           image-name: tts-manager
@@ -1267,7 +1322,7 @@ jobs:
     docker:
       - image: cimg/gcp:2024.03
     steps:
-      - go-build:
+      - docker-build:
           namespace: bin-manager
           source-directory: bin-webhook-manager
           image-name: webhook-manager
@@ -1276,10 +1331,33 @@ jobs:
     docker:
       - image: google/cloud-sdk:debian_component_based
     steps:
-      - go-release:
+      - docker-release:
           namespace: bin-manager
           source-directory: bin-webhook-manager
           image-name: webhook-manager
+
+  ################################################################################################################################################################################################################
+  ### namespace: bin-*
+  ################################################################################################################################################################################################################
+
+  ###### square-admin
+  square-admin-build:
+    docker:
+      - image: cimg/gcp:2024.03
+    steps:
+      - docker-build:
+          namespace: square-manager
+          source-directory: square-admin
+          image-name: admin-image
+
+  square-admin-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - docker-release:
+          namespace: square-manager
+          source-directory: square-admin
+          image-name: admin-image
 
 
 commands:
@@ -1367,7 +1445,7 @@ commands:
       - store_test_results:
           path: << parameters.source-directory >>/test-results.xml
 
-  go-build:
+  docker-build:
     description: "build the go application docker image"
     parameters:
       namespace:
@@ -1375,7 +1453,7 @@ commands:
         default: "none"
       source-directory:
         type: string
-        default: "World"
+        default: "none"
       image-name:
         type: string
         default: "none"
@@ -1405,7 +1483,7 @@ commands:
             docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/bin-manager/<< parameters.image-name >>:latest -f << parameters.source-directory >>/Dockerfile .
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
 
-  go-release:
+  docker-release:
     description: "release the docker image"
     parameters:
       namespace:
