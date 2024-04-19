@@ -54,9 +54,9 @@ spec:
             - '-jwt_key'
             - 'voipbin'
             - '-ssl_private'
-            - './bin-api-manager/etc/ssl/privkey.pem'
+            - './etc/ssl/privkey.pem'
             - '-ssl_cert'
-            - './bin-api-manager/etc/ssl/cert.pem'
+            - './etc/ssl/cert.pem'
           readinessProbe:
             httpGet:
               path: /ping
