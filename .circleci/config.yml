@@ -40,6 +40,7 @@ workflows:
             bin-webhook-manager/.*      run-bin-webhook-manager true
 
             voip-asterisk-proxy/.*      run-voip-asterisk-proxy true
-            voip-asterisk-docker/.*     run-voip-asterisk-docker true
+            voip-asterisk-k8s-call/.*   run-voip-asterisk-k8s-call true
 
 #             bin-api-manager/.*          run-bin-api-manager true
+#            voip-asterisk-docker/.*     run-voip-asterisk-docker true

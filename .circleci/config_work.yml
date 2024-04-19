@@ -125,6 +125,10 @@ parameters:
     type: boolean
     default: false
 
+  run-voip-asterisk-k8s-call:
+    type: boolean
+    default: false
+
 
 #########################################################################################################################################################################
 # workflows
@@ -644,6 +648,22 @@ workflows:
     jobs:
       - voip-asterisk-docker-build:
           <<: *context_production
+
+  voip-asterisk-k8s-call:
+    when: 
+      or: [<< pipeline.parameters.run-voip-asterisk-proxy >>, << pipeline.parameters.run-voip-asterisk-docker >>, << pipeline.parameters.run-voip-asterisk-k8s-call >>]
+    jobs:
+      - voip-asterisk-k8s-call-build:
+          <<: *context_production
+      - release-approval:
+          type: approval
+          requires:
+            - voip-asterisk-k8s-call-build
+      - voip-asterisk-k8s-call-release:
+          <<: *context_production
+          requires:
+            - release-approval
+            - voip-asterisk-k8s-call-build
 
 
 
@@ -1344,6 +1364,7 @@ jobs:
       - go-build:
           namespace: voip
           source-directory: voip-asterisk-proxy
+          image-name: asterisk-proxy
 
 
   # voip-asterisk-docker
