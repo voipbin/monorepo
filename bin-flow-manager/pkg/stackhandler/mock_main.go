@@ -6,12 +6,12 @@ package stackhandler
 
 import (
 	context "context"
+	action "monorepo/bin-flow-manager/models/action"
+	stack "monorepo/bin-flow-manager/models/stack"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "monorepo/bin-flow-manager/models/action"
-	stack "monorepo/bin-flow-manager/models/stack"
 )
 
 // MockStackHandler is a mock of StackHandler interface.

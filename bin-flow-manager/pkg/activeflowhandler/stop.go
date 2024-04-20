@@ -28,17 +28,6 @@ func (h *activeflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow
 		return af, nil
 	}
 
-	switch af.ReferenceType {
-	case activeflow.ReferenceTypeCall:
-		_, err = h.reqHandler.CallV1CallHangup(ctx, af.ReferenceID)
-		if err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
-
-	default:
-		// nothing to do
-	}
-
 	if errSet := h.db.ActiveflowSetStatus(ctx, id, activeflow.StatusEnded); errSet != nil {
 		log.Errorf("Could not set activeflow status. err: %v", errSet)
 		return nil, errors.Wrap(errSet, "Could not set activeflow status.")

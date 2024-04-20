@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	cmcall "monorepo/bin-call-manager/models/call"
-
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -34,7 +32,8 @@ func Test_Stop(t *testing.T) {
 			id: uuid.FromStringOrNil("6d8a9464-c8d9-11ed-abfb-d3b58a5adf22"),
 
 			responseActiveflow: &activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("6d8a9464-c8d9-11ed-abfb-d3b58a5adf22"),
+				ID:            uuid.FromStringOrNil("6d8a9464-c8d9-11ed-abfb-d3b58a5adf22"),
+				ReferenceType: activeflow.ReferenceTypeCall,
 			},
 		},
 	}
@@ -58,11 +57,6 @@ func Test_Stop(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			switch tt.responseActiveflow.ReferenceType {
-			case activeflow.ReferenceTypeCall:
-				mockReq.EXPECT().CallV1CallHangup(ctx, tt.responseActiveflow.ReferenceID).Return(&cmcall.Call{}, nil)
-			}
-
 			mockDB.EXPECT().ActiveflowSetStatus(ctx, tt.id, activeflow.StatusEnded).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
