@@ -6,14 +6,14 @@ package dbhandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
 	flow "monorepo/bin-flow-manager/models/flow"
 	variable "monorepo/bin-flow-manager/models/variable"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

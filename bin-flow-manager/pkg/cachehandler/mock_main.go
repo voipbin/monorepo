@@ -6,13 +6,13 @@ package cachehandler
 
 import (
 	context "context"
+	activeflow "monorepo/bin-flow-manager/models/activeflow"
+	flow "monorepo/bin-flow-manager/models/flow"
+	variable "monorepo/bin-flow-manager/models/variable"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	activeflow "monorepo/bin-flow-manager/models/activeflow"
-	flow "monorepo/bin-flow-manager/models/flow"
-	variable "monorepo/bin-flow-manager/models/variable"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

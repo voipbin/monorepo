@@ -6,11 +6,11 @@ package actionhandler
 
 import (
 	context "context"
+	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "monorepo/bin-flow-manager/models/action"
 )
 
 // MockActionHandler is a mock of ActionHandler interface.

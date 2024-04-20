@@ -6,11 +6,11 @@ package variablehandler
 
 import (
 	context "context"
+	variable "monorepo/bin-flow-manager/models/variable"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	variable "monorepo/bin-flow-manager/models/variable"
 )
 
 // MockVariableHandler is a mock of VariableHandler interface.
