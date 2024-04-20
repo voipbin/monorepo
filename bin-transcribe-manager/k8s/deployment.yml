@@ -24,7 +24,7 @@ spec:
         - name: transcribe-manager
           image: transcribe-manager-image
           command:
-            - '/app/bin-transcribe-manager/transcribe-manager'
+            - './transcribe-manager'
           env:
             - name: NODE_IP
               valueFrom:
