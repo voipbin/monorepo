@@ -117,15 +117,7 @@ parameters:
   ############################################
   # namespace: voip
   ############################################
-  run-voip-asterisk-docker:
-    type: boolean
-    default: false
-
   run-voip-asterisk-proxy:
-    type: boolean
-    default: false
-
-  run-voip-asterisk-k8s-call:
     type: boolean
     default: false
 
@@ -641,30 +633,6 @@ workflows:
     jobs:
       - voip-asterisk-proxy-build:
           <<: *context_production
-
-  voip-asterisk-docker:
-    when: 
-      or: [<< pipeline.parameters.run-voip-asterisk-docker >>]
-    jobs:
-      - voip-asterisk-docker-build:
-          <<: *context_production
-
-  voip-asterisk-k8s-call:
-    when: 
-      or: [<< pipeline.parameters.run-voip-asterisk-proxy >>, << pipeline.parameters.run-voip-asterisk-docker >>, << pipeline.parameters.run-voip-asterisk-k8s-call >>]
-    jobs:
-      - voip-asterisk-k8s-call-build:
-          <<: *context_production
-      - release-approval:
-          type: approval
-          requires:
-            - voip-asterisk-k8s-call-build
-      - voip-asterisk-k8s-call-release:
-          <<: *context_production
-          requires:
-            - release-approval
-            - voip-asterisk-k8s-call-build
-
 
 
 #########################################################################################################################################################################
@@ -1367,38 +1335,6 @@ jobs:
           image-name: asterisk-proxy
 
 
-  # voip-asterisk-docker
-  voip-asterisk-docker-build:
-    docker:
-      - image: cimg/gcp:2024.03
-    steps:
-      - voip-build-asterisk-image:
-          namespace: voip
-          source-directory: voip-asterisk-docker
-          version: "21.1.0"
-
-
-  # voip-asterisk-k8s-call
-  voip-asterisk-k8s-call-build:
-    docker:
-      - image: cimg/gcp:2024.03
-    steps:
-      - voip-build-asterisk-service:
-          namespace: voip
-          source-directory: voip-asterisk-k8s-call
-          asterisk-version: "21.1.0"
-
-  voip-asterisk-k8s-call-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
-    steps:
-      - voip-release-asterisk-service:
-          namespace: voip
-          source-directory: voip-asterisk-k8s-call
-          asterisk-proxy-version: "latest"
-
-
-
 #########################################################################################################################################################################
 # commands
 #########################################################################################################################################################################
@@ -1526,6 +1462,7 @@ commands:
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:latest
 
+
   go-release:
     description: "release the docker image"
     parameters:
@@ -1539,7 +1476,7 @@ commands:
         type: string
         default: "none"
     steps:
-      - run: echo Hello << parameters.source-directory >>
+      - run: echo working on << parameters.source-directory >>
       - setup_remote_docker
       - checkout
       - run:
@@ -1557,122 +1494,3 @@ commands:
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 
-  voip-build-asterisk-image:
-    description: "build the voip application docker image"
-    parameters:
-      namespace:
-        type: string
-        default: "none"
-      source-directory:
-        type: string
-        default: "none"
-      version:
-        type: string
-        default: "none"
-
-    steps:
-      - run: echo working on << parameters.source-directory >>
-      - setup_remote_docker
-      - checkout
-      - run:
-          name: Config service account
-          command: |
-            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
-            gcloud auth activate-service-account --key-file=./google_service_account.json
-            gcloud config set project $CC_GCP_PROJECT_ID
-            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
-
-      - run:
-          name: Config registry
-          command: |
-            cat google_service_account.json | docker login -u _json_key_base64 --password-stdin pkg.dev
-            gcloud auth activate-service-account --key-file=google_service_account.json
-            gcloud auth configure-docker $CC_REGISTRY_LOCATION
-
-      - run:
-          name: Building Docker image and push
-          command: |
-            cd << parameters.source-directory >>
-            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/asterisk:<< parameters.version >> .
-            docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/asterisk:<< parameters.version >>
-
-
-  voip-build-asterisk-service:
-    description: "build the voip asterisk based service docker image"
-    parameters:
-      namespace:
-        type: string
-        default: "none"
-      source-directory:
-        type: string
-        default: "none"
-      image-name:
-        type: string
-        default: "none"
-      asterisk-version:
-        type: string
-        default: "none"
-
-    steps:
-      - run: echo working on << parameters.source-directory >>
-      - setup_remote_docker
-      - checkout
-      - run:
-          name: Config service account
-          command: |
-            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
-            gcloud auth activate-service-account --key-file=./google_service_account.json
-            gcloud config set project $CC_GCP_PROJECT_ID
-            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
-
-      - run:
-          name: Config registry
-          command: |
-            cat google_service_account.json | docker login -u _json_key_base64 --password-stdin pkg.dev
-            gcloud auth activate-service-account --key-file=google_service_account.json
-            gcloud auth configure-docker $CC_REGISTRY_LOCATION
-
-      - run:
-          name: Building Docker image and push
-          command: |
-            cd << parameters.source-directory >>
-            sed -i -e "s/\$ASTERISK-IMAGE/$CC_REGISTRY_LOCATION\/$CC_GCP_PROJECT_ID\/<< parameters.namespace >>\/asterisk:<< parameters.asterisk-version >>/g" Dockerfile
-            cat Dockerfile
-            docker build --tag $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1 .
-            docker push $CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
-
-  voip-release-asterisk-service:
-    description: "release the asterisk docker image"
-    parameters:
-      namespace:
-        type: string
-        default: "none"
-      source-directory:
-        type: string
-        default: "none"
-      image-name:
-        type: string
-        default: "none"
-      asterisk-proxy-version:
-        type: string
-        default: "none"
-
-    steps:
-      - run: echo Hello << parameters.source-directory >>
-      - setup_remote_docker
-      - checkout
-      - run:
-          name: Config service account
-          command: |
-            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
-            gcloud auth activate-service-account --key-file=./google_service_account.json
-            gcloud config set project $CC_GCP_PROJECT_ID
-            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
-
-      - run:
-          name: Release
-          command: |
-            cd << parameters.source-directory >>/k8s
-            kustomize edit set image CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>/asterisk-proxy:<< parameters.asterisk-proxy-version >>
-            kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
-            kubectl apply -k ./ -v6

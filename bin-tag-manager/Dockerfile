@@ -3,7 +3,7 @@ FROM golang:1.22-alpine
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
 WORKDIR /app
-
 COPY . .
 
-RUN go build -C bin-tag-manager ./cmd/...
+RUN cd bin-tag-manager && go build ./cmd/...
+WORKDIR /app/bin-tag-manager

@@ -24,7 +24,7 @@ spec:
         - name: call-manager
           image: call-manager-image
           command:
-            - '/app/bin-call-manager/call-manager'
+            - './call-manager'
           env:
             - name: NODE_IP
               valueFrom:

@@ -24,7 +24,7 @@ spec:
         - name: flow-manager
           image: flow-manager-image
           command:
-            - '/app/bin-flow-manager/flow-manager'
+            - './flow-manager'
           env:
             - name: NODE_IP
               valueFrom:
