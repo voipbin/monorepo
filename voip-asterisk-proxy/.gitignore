@@ -1,0 +1,4 @@
+.vscode
+vendor
+asterisk-proxy
+!cmd/

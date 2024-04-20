@@ -24,7 +24,7 @@ spec:
         - name: hook-manager
           image: hook-manager-image
           command:
-            - '/app/bin-hook-manager/hook-manager'
+            - './hook-manager'
           args:
             - '-dsn'
             - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'

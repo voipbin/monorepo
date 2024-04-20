@@ -24,7 +24,7 @@ spec:
         - name: campaign-manager
           image: campaign-manager-image
           command:
-            - '/app/bin-campaign-manager/campaign-manager'
+            - './campaign-manager'
           args:
             - '-dbDSN'
             - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
