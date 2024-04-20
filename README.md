@@ -22,5 +22,5 @@ $ git subtree add -P <destination repository directory> <source repository> <sou
 
 ## Exmaple
 ```
-$ git subtree add -P bin-agent-manager ../../gitlab/voipbin/bin-manager/agent-manager master
+$ git subtree add -P bin-agent-manager ../../../gitlab/voipbin/bin-manager/agent-manager master
 ```

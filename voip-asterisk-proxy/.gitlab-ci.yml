@@ -1,0 +1,89 @@
+image: voipbin/gitlab-runner:latest
+
+variables:
+  LOCAL_PACKAGE_NAME: asterisk_proxy
+  GOOS: linux
+  GOARCH: amd64
+
+stages:
+  - ensure
+  - test
+  - build
+  - release
+
+.gcp_init: &gcp_init |-
+  echo $LOCAL_CREDENTIAL > ./google_service_account.json
+  gcloud auth activate-service-account --key-file=./google_service_account.json
+  gcloud config set project $LOCAL_PROJECTID
+
+ensure:
+  stage: ensure
+  artifacts:
+    name: $CI_COMMIT_REF_NAME"
+    expire_in: 8 hours
+    paths:
+      - vendor/
+  script:
+    - git config --global url."https://$GL_DEPLOY_USER:$GL_DEPLOY_TOKEN@gitlab.com".insteadOf "https://gitlab.com"
+    - export GOPRIVATE="gitlab.com/voipbin"
+    - go mod download
+    - go mod vendor
+
+lint:
+  stage: test
+  script:
+    - golint -set_exit_status $(go list ./...)
+
+vet:
+  stage: test
+  script:
+    - go vet $(go list ./...)
+
+test:
+  stage: test
+  script:
+    - go test -v $(go list ./...)
+
+build:
+  stage: build
+  artifacts:
+    expire_in: 8 hours
+    paths:
+      - bin/$LOCAL_PACKAGE_NAME
+  script:
+    - mkdir bin
+    - GOOS=$GOOS GOARCH=$GOARCH go build -o bin/$LOCAL_PACKAGE_NAME -ldflags "-extldflags '-static'" ./cmd/...
+
+release:
+  stage: release
+  when: manual
+  image: gitlab/dind:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - echo "Released new asterisk-proxy docker. $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+
+# release:
+#   stage: release
+#   # only:
+#   #   - master
+#   when: manual
+#   dependencies:
+#     - build
+#   script:
+#     - *gcp_init
+#     - gsutil cp bin/$LOCAL_PACKAGE_NAME gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-latest
+#     - gsutil acl ch -u AllUsers:R gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-latest
+#     - gsutil cp bin/$LOCAL_PACKAGE_NAME gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA
+#     - gsutil acl ch -u AllUsers:R gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA
+#     - echo "Stored asterisk-proxy. gs://voipbin-voip-bucket-europe-west4/voip/$LOCAL_PACKAGE_NAME/$LOCAL_PACKAGE_NAME-$CI_COMMIT_SHA"
+#   variables:
+#     LOCAL_CREDENTIAL: $GL_GCP_CREDENTIAL
+#     LOCAL_PROJECTID: voipbin-production
+#     LOCAL_ENV: production
+#     LOCAL_ZONE: europe-west4-a
+#     LOCAL_REGION: europe-west4
+
+

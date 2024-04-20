@@ -6,4 +6,5 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -C bin-transcribe-manager ./cmd/...
+RUN cd bin-transcribe-manager && go build ./cmd/...
+WORKDIR /app/bin-transcribe-manager

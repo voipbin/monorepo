@@ -24,7 +24,7 @@ spec:
         - name: storage-manager
           image: storage-manager-image
           command:
-            - '/app/bin-storage-manager/storage-manager'
+            - './storage-manager'
           args:
             - '-prom_endpoint'
             - '/metrics'

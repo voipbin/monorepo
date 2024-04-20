@@ -5,7 +5,7 @@ LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 RUN apt update && apt install python3
 
 WORKDIR /app
-
 COPY . .
 
-RUN go build -C bin-tts-manager ./cmd/...
+RUN cd bin-tts-manager && go build ./cmd/...
+WORKDIR /app/bin-tts-manager
