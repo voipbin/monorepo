@@ -6,13 +6,13 @@ package websockhandler
 
 import (
 	context "context"
+	agent "monorepo/bin-agent-manager/models/agent"
+	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	http "net/http"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	agent "monorepo/bin-agent-manager/models/agent"
-	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 )
 
 // MockWebsockHandler is a mock of WebsockHandler interface.
