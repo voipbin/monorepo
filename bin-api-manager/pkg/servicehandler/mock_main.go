@@ -6,11 +6,6 @@ package servicehandler
 
 import (
 	context "context"
-	http "net/http"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	agent "monorepo/bin-agent-manager/models/agent"
 	request "monorepo/bin-api-manager/api/models/request"
 	account "monorepo/bin-billing-manager/models/account"
@@ -55,6 +50,11 @@ import (
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
+	http "net/http"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockServiceHandler is a mock of ServiceHandler interface.
