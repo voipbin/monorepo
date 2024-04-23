@@ -6,12 +6,12 @@ package messagehandler
 
 import (
 	context "context"
+	address "monorepo/bin-common-handler/models/address"
+	message "monorepo/bin-message-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "monorepo/bin-common-handler/models/address"
-	message "monorepo/bin-message-manager/models/message"
 )
 
 // MockMessageHandler is a mock of MessageHandler interface.
