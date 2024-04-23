@@ -8,11 +8,6 @@ import (
 	"monorepo/bin-message-manager/models/messagebird"
 )
 
-// // messagebird
-// const (
-// 	messagebirdAuth string = "AccessKey tEIpkNHtIzO0FR4RBsWfEOrce"
-// )
-
 var (
 	metricsNamespace = "message_manager"
 
