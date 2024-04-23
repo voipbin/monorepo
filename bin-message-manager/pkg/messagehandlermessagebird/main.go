@@ -16,7 +16,6 @@ import (
 
 // MessageHandlerMessagebird is interface for service handle
 type MessageHandlerMessagebird interface {
-	// SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
 	SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) ([]target.Target, error)
 }
 
@@ -31,11 +30,11 @@ type messageHandlerMessagebird struct {
 var (
 	metricsNamespace = "message_manager"
 
-	promMessagebirdCreateTotal = prometheus.NewCounterVec(
+	promMessagebirdSendTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
-			Name:      "messagebird_number_create_total",
-			Help:      "Total number of created number type by messagebird.",
+			Name:      "messagebird_number_send_total",
+			Help:      "Total number of send message by type.",
 		},
 		[]string{"type"},
 	)
@@ -43,7 +42,7 @@ var (
 
 func init() {
 	prometheus.MustRegister(
-		promMessagebirdCreateTotal,
+		promMessagebirdSendTotal,
 	)
 }
 
