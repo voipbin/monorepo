@@ -49,7 +49,7 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 // authtokens
-var authtokenMessagebird = flag.String("authtoken_messagebird", "", "authtoken for messagebird")
+var authtokenMessagebird = flag.String("authtoken_messagebird", "YOUR MESSAGEBIRD API KEY", "authtoken for messagebird")
 
 func main() {
 	log := logrus.WithField("func", "main")
@@ -138,6 +138,10 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 
 // runListen runs the listen service
 func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListen",
+	})
+
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
@@ -156,8 +160,9 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, messageHandler)
 
 	// run
-	if err := listenHandler.Run(string(commonoutline.QueueNameMessageRequest), string(commonoutline.QueueNameDelay)); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameMessageRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
+		log.Errorf("Could not run the listenhandler correctly. err: %v", errRun)
+		return errRun
 	}
 
 	return nil
