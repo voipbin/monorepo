@@ -36,5 +36,9 @@ func (h *messageHandlerMessagebird) SendMessage(messageID uuid.UUID, customerID 
 	log.WithField("message", m).Debugf("Received message sending response. message_id: %s", m.ID)
 
 	res := m.GetTargets()
+
+	// currently, the only sms type we send
+	promMessagebirdSendTotal.WithLabelValues("sms").Add(float64(len(res)))
+
 	return res, nil
 }

@@ -6,12 +6,12 @@ package dbhandler
 
 import (
 	context "context"
+	message "monorepo/bin-message-manager/models/message"
+	target "monorepo/bin-message-manager/models/target"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	message "monorepo/bin-message-manager/models/message"
-	target "monorepo/bin-message-manager/models/target"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

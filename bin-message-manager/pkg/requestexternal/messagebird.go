@@ -2,6 +2,7 @@ package requestexternal
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -51,7 +52,8 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 		return nil, errors.Wrap(err, "Could not create a request.")
 	}
 
-	r.Header.Add("Authorization", messagebirdAuth)
+	authtoken := fmt.Sprintf("AccessKey %s", h.authtokenMessagebird)
+	r.Header.Add("Authorization", authtoken)
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 	response, err := client.Do(r)
@@ -59,8 +61,13 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 		log.Errorf("Could not send the request. err: %v", err)
 		return nil, errors.Wrap(err, "Could not send the request.")
 	}
-
 	defer response.Body.Close()
+
+	if response.StatusCode > 299 {
+		log.Errorf("Could not send the message request. status_code: %d, err: %v", response.StatusCode, response.Body)
+		return nil, fmt.Errorf("could not send the message request. status_code: %d, err: %v", response.StatusCode, response.Status)
+	}
+
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Errorf("Could not receive the response correctly. err: %v", err)
@@ -70,6 +77,7 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 	res := messagebird.Message{}
 	if errParse := json.Unmarshal(body, &res); errParse != nil {
 		log.Errorf("Could not parse the response. err: %v", errParse)
+		return nil, errors.Wrapf(errParse, "could not parse the response correctly")
 	}
 
 	return &res, nil
