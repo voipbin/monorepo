@@ -18,8 +18,6 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "2112"
     spec:
-      imagePullSecrets:
-        - name: gitlab-auth
       containers:
         - name: message-manager
           image: message-manager-image
@@ -36,6 +34,8 @@ spec:
             - '10.164.15.220:6379'
             - '-redis_db'
             - '1'
+            - '-authtoken_messagebird'
+            - '$AUTHTOKEN_MESSAGEBIRD'
           ports:
             - name: metrics
               protocol: "TCP"

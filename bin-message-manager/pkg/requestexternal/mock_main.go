@@ -5,10 +5,10 @@
 package requestexternal
 
 import (
+	messagebird "monorepo/bin-message-manager/models/messagebird"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	messagebird "monorepo/bin-message-manager/models/messagebird"
 )
 
 // MockRequestExternal is a mock of RequestExternal interface.

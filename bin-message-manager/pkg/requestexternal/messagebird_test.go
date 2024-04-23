@@ -58,7 +58,9 @@ func Test_MessagebirdSendMessage(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			h := &requestExternal{}
+			h := &requestExternal{
+				authtokenMessagebird: "4wuGDgAYlgYqB8RoYWbQ4HlwL", // test api key. does not send actual message
+			}
 
 			res, err := h.MessagebirdSendMessage(tt.sender, tt.destinations, tt.text)
 			if err != nil {

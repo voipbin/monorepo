@@ -5,12 +5,12 @@
 package messagehandlermessagebird
 
 import (
+	address "monorepo/bin-common-handler/models/address"
+	target "monorepo/bin-message-manager/models/target"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "monorepo/bin-common-handler/models/address"
-	target "monorepo/bin-message-manager/models/target"
 )
 
 // MockMessageHandlerMessagebird is a mock of MessageHandlerMessagebird interface.

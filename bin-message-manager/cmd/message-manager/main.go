@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-message-manager/pkg/requestexternal"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -23,6 +24,7 @@ import (
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/listenhandler"
 	"monorepo/bin-message-manager/pkg/messagehandler"
+	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 )
 
 const serviceName = commonoutline.ServiceNameMessageManager
@@ -45,6 +47,9 @@ var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test",
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
+
+// authtokens
+var authtokenMessagebird = flag.String("authtoken_messagebird", "YOUR MESSAGEBIRD API KEY", "authtoken for messagebird")
 
 func main() {
 	log := logrus.WithField("func", "main")
@@ -133,6 +138,10 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 
 // runListen runs the listen service
 func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListen",
+	})
+
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
@@ -143,12 +152,17 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
-	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db)
+
+	requestExternal := requestexternal.NewRequestExternal(*authtokenMessagebird)
+	messagehandlerMessagebird := messagehandlermessagebird.NewMessageHandlerMessagebird(reqHandler, db, requestExternal)
+
+	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, messagehandlerMessagebird)
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, messageHandler)
 
 	// run
-	if err := listenHandler.Run(string(commonoutline.QueueNameMessageRequest), string(commonoutline.QueueNameDelay)); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	if errRun := listenHandler.Run(string(commonoutline.QueueNameMessageRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
+		log.Errorf("Could not run the listenhandler correctly. err: %v", errRun)
+		return errRun
 	}
 
 	return nil

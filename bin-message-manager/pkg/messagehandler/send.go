@@ -42,7 +42,7 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	}
 	if !valid {
 		log.Errorf("Customer has not enough balance. customer_id: %s", customerID)
-		return nil, errors.Wrap(err, "customer has not enough balance")
+		return nil, fmt.Errorf("customer has not enought balance")
 	}
 
 	// select provider
