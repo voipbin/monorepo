@@ -6,11 +6,11 @@ package providerhandler
 
 import (
 	context "context"
+	provider "monorepo/bin-route-manager/models/provider"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	provider "monorepo/bin-route-manager/models/provider"
 )
 
 // MockProviderHandler is a mock of ProviderHandler interface.

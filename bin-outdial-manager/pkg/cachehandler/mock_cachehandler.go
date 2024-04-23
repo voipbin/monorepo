@@ -6,13 +6,13 @@ package cachehandler
 
 import (
 	context "context"
+	outdial "monorepo/bin-outdial-manager/models/outdial"
+	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
+	outdialtargetcall "monorepo/bin-outdial-manager/models/outdialtargetcall"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	outdial "monorepo/bin-outdial-manager/models/outdial"
-	outdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
-	outdialtargetcall "monorepo/bin-outdial-manager/models/outdialtargetcall"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

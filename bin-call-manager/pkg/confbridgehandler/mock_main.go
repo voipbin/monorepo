@@ -6,16 +6,16 @@ package confbridgehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	bridge "monorepo/bin-call-manager/models/bridge"
 	channel "monorepo/bin-call-manager/models/channel"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	recording "monorepo/bin-call-manager/models/recording"
 	customer "monorepo/bin-customer-manager/models/customer"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockConfbridgeHandler is a mock of ConfbridgeHandler interface.

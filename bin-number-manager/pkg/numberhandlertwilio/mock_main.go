@@ -6,12 +6,12 @@ package numberhandlertwilio
 
 import (
 	context "context"
+	availablenumber "monorepo/bin-number-manager/models/availablenumber"
+	number "monorepo/bin-number-manager/models/number"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	availablenumber "monorepo/bin-number-manager/models/availablenumber"
-	number "monorepo/bin-number-manager/models/number"
 )
 
 // MockNumberHandlerTwilio is a mock of NumberHandlerTwilio interface.

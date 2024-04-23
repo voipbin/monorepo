@@ -6,13 +6,13 @@ package conversationhandler
 
 import (
 	context "context"
+	conversation "monorepo/bin-conversation-manager/models/conversation"
+	media "monorepo/bin-conversation-manager/models/media"
+	message "monorepo/bin-conversation-manager/models/message"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	conversation "monorepo/bin-conversation-manager/models/conversation"
-	media "monorepo/bin-conversation-manager/models/media"
-	message "monorepo/bin-conversation-manager/models/message"
 )
 
 // MockConversationHandler is a mock of ConversationHandler interface.

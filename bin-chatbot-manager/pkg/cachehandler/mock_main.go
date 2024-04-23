@@ -6,12 +6,12 @@ package cachehandler
 
 import (
 	context "context"
+	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
+	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	chatbot "monorepo/bin-chatbot-manager/models/chatbot"
-	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

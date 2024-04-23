@@ -6,12 +6,12 @@ package conferencecallhandler
 
 import (
 	context "context"
+	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
+	service "monorepo/bin-conference-manager/models/service"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
-	service "monorepo/bin-conference-manager/models/service"
 )
 
 // MockConferencecallHandler is a mock of ConferencecallHandler interface.

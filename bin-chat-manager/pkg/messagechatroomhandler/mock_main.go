@@ -6,13 +6,13 @@ package messagechatroomhandler
 
 import (
 	context "context"
+	media "monorepo/bin-chat-manager/models/media"
+	messagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
+	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	media "monorepo/bin-chat-manager/models/media"
-	messagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockMessagechatroomHandler is a mock of MessagechatroomHandler interface.

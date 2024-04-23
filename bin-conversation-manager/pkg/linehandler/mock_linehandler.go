@@ -6,14 +6,14 @@ package linehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	gomock "github.com/golang/mock/gomock"
 	address "monorepo/bin-common-handler/models/address"
 	account "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
 	message "monorepo/bin-conversation-manager/models/message"
+	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockLineHandler is a mock of LineHandler interface.

@@ -6,14 +6,14 @@ package messagehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	address "monorepo/bin-common-handler/models/address"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
 	message "monorepo/bin-conversation-manager/models/message"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockMessageHandler is a mock of MessageHandler interface.

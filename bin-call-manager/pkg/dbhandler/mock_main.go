@@ -7,10 +7,6 @@ package dbhandler
 import (
 	context "context"
 	sql "database/sql"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	ari "monorepo/bin-call-manager/models/ari"
 	bridge "monorepo/bin-call-manager/models/bridge"
 	call "monorepo/bin-call-manager/models/call"
@@ -21,6 +17,10 @@ import (
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	recording "monorepo/bin-call-manager/models/recording"
 	action "monorepo/bin-flow-manager/models/action"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

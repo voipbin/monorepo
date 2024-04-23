@@ -6,11 +6,11 @@ package bridgehandler
 
 import (
 	context "context"
+	bridge "monorepo/bin-call-manager/models/bridge"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bridge "monorepo/bin-call-manager/models/bridge"
 )
 
 // MockBridgeHandler is a mock of BridgeHandler interface.

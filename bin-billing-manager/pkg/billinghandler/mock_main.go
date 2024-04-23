@@ -6,14 +6,14 @@ package billinghandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
 	message "monorepo/bin-message-manager/models/message"
 	number "monorepo/bin-number-manager/models/number"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockBillingHandler is a mock of BillingHandler interface.

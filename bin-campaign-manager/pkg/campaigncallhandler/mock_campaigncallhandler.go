@@ -6,13 +6,13 @@ package campaigncallhandler
 
 import (
 	context "context"
+	call "monorepo/bin-call-manager/models/call"
+	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	call "monorepo/bin-call-manager/models/call"
-	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
-	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockCampaigncallHandler is a mock of CampaigncallHandler interface.

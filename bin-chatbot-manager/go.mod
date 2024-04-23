@@ -61,7 +61,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.0
-	github.com/sashabaranov/go-openai v1.20.3
+	github.com/sashabaranov/go-openai v1.22.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
@@ -77,8 +77,8 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.52.3 // indirect
-	github.com/prometheus/procfs v0.13.0 // indirect
+	github.com/prometheus/common v0.53.0 // indirect
+	github.com/prometheus/procfs v0.14.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.9.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	google.golang.org/genproto v0.0.0-20240415180920-8c6c420018be // indirect

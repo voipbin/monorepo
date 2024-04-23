@@ -6,11 +6,11 @@ package accounthandler
 
 import (
 	context "context"
+	account "monorepo/bin-conversation-manager/models/account"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	account "monorepo/bin-conversation-manager/models/account"
 )
 
 // MockAccountHandler is a mock of AccountHandler interface.

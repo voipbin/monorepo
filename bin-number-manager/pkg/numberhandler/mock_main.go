@@ -6,14 +6,14 @@ package numberhandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	customer "monorepo/bin-customer-manager/models/customer"
 	flow "monorepo/bin-flow-manager/models/flow"
 	availablenumber "monorepo/bin-number-manager/models/availablenumber"
 	number "monorepo/bin-number-manager/models/number"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockNumberHandler is a mock of NumberHandler interface.

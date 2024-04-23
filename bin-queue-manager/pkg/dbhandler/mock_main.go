@@ -6,13 +6,13 @@ package dbhandler
 
 import (
 	context "context"
+	action "monorepo/bin-flow-manager/models/action"
+	queue "monorepo/bin-queue-manager/models/queue"
+	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	action "monorepo/bin-flow-manager/models/action"
-	queue "monorepo/bin-queue-manager/models/queue"
-	queuecall "monorepo/bin-queue-manager/models/queuecall"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
