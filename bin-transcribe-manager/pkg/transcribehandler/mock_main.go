@@ -6,14 +6,14 @@ package transcribehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	call "monorepo/bin-call-manager/models/call"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	customer "monorepo/bin-customer-manager/models/customer"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockTranscribeHandler is a mock of TranscribeHandler interface.

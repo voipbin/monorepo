@@ -6,11 +6,11 @@ package cachehandler
 
 import (
 	context "context"
+	account "monorepo/bin-webhook-manager/models/account"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	account "monorepo/bin-webhook-manager/models/account"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

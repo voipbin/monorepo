@@ -6,16 +6,16 @@ package cachehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	astaor "monorepo/bin-registrar-manager/models/astaor"
 	astauth "monorepo/bin-registrar-manager/models/astauth"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	astendpoint "monorepo/bin-registrar-manager/models/astendpoint"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

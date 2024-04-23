@@ -6,11 +6,11 @@ package recordinghandler
 
 import (
 	context "context"
+	recording "monorepo/bin-call-manager/models/recording"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	recording "monorepo/bin-call-manager/models/recording"
 )
 
 // MockRecordingHandler is a mock of RecordingHandler interface.

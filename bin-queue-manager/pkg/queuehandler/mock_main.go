@@ -6,14 +6,14 @@ package queuehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	agent "monorepo/bin-agent-manager/models/agent"
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
 	queue "monorepo/bin-queue-manager/models/queue"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockQueueHandler is a mock of QueueHandler interface.

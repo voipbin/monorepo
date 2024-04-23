@@ -6,12 +6,12 @@ package extensionhandler
 
 import (
 	context "context"
+	customer "monorepo/bin-customer-manager/models/customer"
+	extension "monorepo/bin-registrar-manager/models/extension"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "monorepo/bin-customer-manager/models/customer"
-	extension "monorepo/bin-registrar-manager/models/extension"
 )
 
 // MockExtensionHandler is a mock of ExtensionHandler interface.

@@ -7,11 +7,11 @@ package webhookhandler
 import (
 	context "context"
 	json "encoding/json"
+	webhook "monorepo/bin-webhook-manager/models/webhook"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	webhook "monorepo/bin-webhook-manager/models/webhook"
 )
 
 // MockWebhookHandler is a mock of WebhookHandler interface.

@@ -5,12 +5,5 @@ namespace: bin-manager
 
 resources:
   - namespace.yml
-  - secret.yml
   - deployment.yml
   - service.yml
-
-images:
-- name: queue-manager-image
-  newName: queue-manager
-  newTag: latest
-

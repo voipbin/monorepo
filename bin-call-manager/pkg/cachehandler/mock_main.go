@@ -6,10 +6,6 @@ package cachehandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	bridge "monorepo/bin-call-manager/models/bridge"
 	call "monorepo/bin-call-manager/models/call"
 	callapplication "monorepo/bin-call-manager/models/callapplication"
@@ -18,6 +14,10 @@ import (
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	recording "monorepo/bin-call-manager/models/recording"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

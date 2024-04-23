@@ -5,12 +5,6 @@ namespace: bin-manager
 
 resources:
   - namespace.yml
-  - secret.yml
   - deployment.yml
   - service.yml
-
-images:
-- name: customer-manager-image
-  newName: customer-manager
-  newTag: latest
-
+  

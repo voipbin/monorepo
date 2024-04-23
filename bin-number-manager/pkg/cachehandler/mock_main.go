@@ -6,11 +6,11 @@ package cachehandler
 
 import (
 	context "context"
+	number "monorepo/bin-number-manager/models/number"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	number "monorepo/bin-number-manager/models/number"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

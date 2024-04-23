@@ -6,11 +6,11 @@ package externalmediahandler
 
 import (
 	context "context"
+	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 )
 
 // MockExternalMediaHandler is a mock of ExternalMediaHandler interface.

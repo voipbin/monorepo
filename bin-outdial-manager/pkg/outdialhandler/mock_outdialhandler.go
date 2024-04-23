@@ -6,11 +6,11 @@ package outdialhandler
 
 import (
 	context "context"
+	outdial "monorepo/bin-outdial-manager/models/outdial"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	outdial "monorepo/bin-outdial-manager/models/outdial"
 )
 
 // MockOutdialHandler is a mock of OutdialHandler interface.

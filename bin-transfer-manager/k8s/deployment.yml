@@ -18,8 +18,6 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "2112"
     spec:
-      imagePullSecrets:
-        - name: gitlab-auth
       containers:
         - name: transfer-manager
           image: transfer-manager-image

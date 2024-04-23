@@ -6,11 +6,11 @@ package contacthandler
 
 import (
 	context "context"
+	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 )
 
 // MockContactHandler is a mock of ContactHandler interface.

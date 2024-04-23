@@ -6,12 +6,12 @@ package campaignhandler
 
 import (
 	context "context"
+	campaign "monorepo/bin-campaign-manager/models/campaign"
+	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	campaign "monorepo/bin-campaign-manager/models/campaign"
-	action "monorepo/bin-flow-manager/models/action"
 )
 
 // MockCampaignHandler is a mock of CampaignHandler interface.

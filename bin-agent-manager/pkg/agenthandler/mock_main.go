@@ -6,14 +6,14 @@ package agenthandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	agent "monorepo/bin-agent-manager/models/agent"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	address "monorepo/bin-common-handler/models/address"
 	customer "monorepo/bin-customer-manager/models/customer"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockAgentHandler is a mock of AgentHandler interface.

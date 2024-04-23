@@ -6,13 +6,13 @@ package messagechathandler
 
 import (
 	context "context"
+	media "monorepo/bin-chat-manager/models/media"
+	messagechat "monorepo/bin-chat-manager/models/messagechat"
+	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	media "monorepo/bin-chat-manager/models/media"
-	messagechat "monorepo/bin-chat-manager/models/messagechat"
-	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockMessagechatHandler is a mock of MessagechatHandler interface.

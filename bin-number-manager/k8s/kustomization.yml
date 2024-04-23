@@ -5,13 +5,6 @@ namespace: bin-manager
 
 resources:
   - namespace.yml
-  - secret.yml
   - deployment.yml
   - service.yml
   - cronjob.yml
-
-images:
-- name: number-manager-image
-  newName: number-manager
-  newTag: latest
-

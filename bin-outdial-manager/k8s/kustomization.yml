@@ -7,11 +7,5 @@ commonLabels:
 
 resources:
   - namespace.yml
-  - secret.yml
   - deployment.yml
   - service.yml
-
-images:
-- name: outdial-manager-image
-  newName: outdial-manager
-  newTag: latest

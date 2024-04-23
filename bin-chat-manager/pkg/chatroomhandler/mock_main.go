@@ -6,11 +6,11 @@ package chatroomhandler
 
 import (
 	context "context"
+	chatroom "monorepo/bin-chat-manager/models/chatroom"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	chatroom "monorepo/bin-chat-manager/models/chatroom"
 )
 
 // MockChatroomHandler is a mock of ChatroomHandler interface.

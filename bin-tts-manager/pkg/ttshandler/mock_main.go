@@ -6,11 +6,11 @@ package ttshandler
 
 import (
 	context "context"
+	tts "monorepo/bin-tts-manager/models/tts"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	tts "monorepo/bin-tts-manager/models/tts"
 )
 
 // MockTTSHandler is a mock of TTSHandler interface.

@@ -6,13 +6,13 @@ package streaminghandler
 
 import (
 	context "context"
+	streaming "monorepo/bin-transcribe-manager/models/streaming"
+	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
+	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	streaming "monorepo/bin-transcribe-manager/models/streaming"
-	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
-	transcript "monorepo/bin-transcribe-manager/models/transcript"
 )
 
 // MockStreamingHandler is a mock of StreamingHandler interface.

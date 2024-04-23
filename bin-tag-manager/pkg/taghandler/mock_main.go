@@ -6,12 +6,12 @@ package taghandler
 
 import (
 	context "context"
+	customer "monorepo/bin-customer-manager/models/customer"
+	tag "monorepo/bin-tag-manager/models/tag"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "monorepo/bin-customer-manager/models/customer"
-	tag "monorepo/bin-tag-manager/models/tag"
 )
 
 // MockTagHandler is a mock of TagHandler interface.

@@ -6,13 +6,13 @@ package groupcallhandler
 
 import (
 	context "context"
+	groupcall "monorepo/bin-call-manager/models/groupcall"
+	address "monorepo/bin-common-handler/models/address"
+	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	groupcall "monorepo/bin-call-manager/models/groupcall"
-	address "monorepo/bin-common-handler/models/address"
-	customer "monorepo/bin-customer-manager/models/customer"
 )
 
 // MockGroupcallHandler is a mock of GroupcallHandler interface.

@@ -6,12 +6,12 @@ package customerhandler
 
 import (
 	context "context"
+	billing "monorepo/bin-billing-manager/models/billing"
+	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	billing "monorepo/bin-billing-manager/models/billing"
-	customer "monorepo/bin-customer-manager/models/customer"
 )
 
 // MockCustomerHandler is a mock of CustomerHandler interface.

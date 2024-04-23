@@ -6,11 +6,11 @@ package storagehandler
 
 import (
 	context "context"
+	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
 )
 
 // MockStorageHandler is a mock of StorageHandler interface.

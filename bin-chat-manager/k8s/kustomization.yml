@@ -7,7 +7,6 @@ commonLabels:
 
 resources:
   - namespace.yml
-  - secret.yml
   - deployment.yml
   - service.yml
 
