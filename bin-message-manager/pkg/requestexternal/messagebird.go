@@ -51,7 +51,7 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 		return nil, errors.Wrap(err, "Could not create a request.")
 	}
 
-	r.Header.Add("Authorization", messagebirdAuth)
+	r.Header.Add("Authorization", h.authtokenMessagebird)
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 	response, err := client.Do(r)

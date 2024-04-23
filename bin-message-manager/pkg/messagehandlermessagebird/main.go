@@ -48,10 +48,7 @@ func init() {
 }
 
 // NewMessageHandlerMessagebird returns new service handler
-func NewMessageHandlerMessagebird(r requesthandler.RequestHandler, db dbhandler.DBHandler) MessageHandlerMessagebird {
-
-	reqExternal := requestexternal.NewRequestExternal()
-
+func NewMessageHandlerMessagebird(r requesthandler.RequestHandler, db dbhandler.DBHandler, reqExternal requestexternal.RequestExternal) MessageHandlerMessagebird {
 	h := &messageHandlerMessagebird{
 		reqHandler:      r,
 		db:              db,

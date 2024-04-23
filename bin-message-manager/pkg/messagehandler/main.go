@@ -63,9 +63,7 @@ const (
 )
 
 // NewMessageHandler returns a new MessageHandler
-func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler) MessageHandler {
-
-	messageHandlerMessagebird := messagehandlermessagebird.NewMessageHandlerMessagebird(r, db)
+func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, messageHandlerMessagebird messagehandlermessagebird.MessageHandlerMessagebird) MessageHandler {
 
 	return &messageHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),

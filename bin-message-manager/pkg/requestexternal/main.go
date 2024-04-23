@@ -8,10 +8,10 @@ import (
 	"monorepo/bin-message-manager/models/messagebird"
 )
 
-// messagebird
-const (
-	messagebirdAuth string = "AccessKey tEIpkNHtIzO0FR4RBsWfEOrce"
-)
+// // messagebird
+// const (
+// 	messagebirdAuth string = "AccessKey tEIpkNHtIzO0FR4RBsWfEOrce"
+// )
 
 var (
 	metricsNamespace = "message_manager"
@@ -42,11 +42,15 @@ type RequestExternal interface {
 	MessagebirdSendMessage(sender string, destinations []string, text string) (*messagebird.Message, error)
 }
 
-type requestExternal struct{}
+type requestExternal struct {
+	authtokenMessagebird string // authentication token for messagebird
+}
 
 // NewRequestExternal create RequestExternal
-func NewRequestExternal() RequestExternal {
-	h := &requestExternal{}
+func NewRequestExternal(authtokenMessagebird string) RequestExternal {
+	h := &requestExternal{
+		authtokenMessagebird: authtokenMessagebird,
+	}
 
 	return h
 }
