@@ -5,12 +5,5 @@ namespace: bin-manager
 
 resources:
   - namespace.yml
-  - secret.yml
   - deployment.yml
   - service.yml
-
-images:
-- name: webhook-manager-image
-  newName: webhook-manager
-  newTag: latest
-
