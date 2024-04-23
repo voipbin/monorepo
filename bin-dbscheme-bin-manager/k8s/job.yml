@@ -16,8 +16,6 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "2112"
     spec:
-      imagePullSecrets:
-        - name: gitlab-auth
       containers:
         - name: dbscheme-bin-manager
           image: dbscheme-bin-manager-image

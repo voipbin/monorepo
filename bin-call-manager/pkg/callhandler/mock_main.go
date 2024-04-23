@@ -6,10 +6,6 @@ package callhandler
 
 import (
 	context "context"
-	reflect "reflect"
-
-	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	bridge "monorepo/bin-call-manager/models/bridge"
 	call "monorepo/bin-call-manager/models/call"
 	channel "monorepo/bin-call-manager/models/channel"
@@ -20,6 +16,10 @@ import (
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockCallHandler is a mock of CallHandler interface.

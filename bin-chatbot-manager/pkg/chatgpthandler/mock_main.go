@@ -6,10 +6,10 @@ package chatgpthandler
 
 import (
 	context "context"
+	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 )
 
 // MockChatgptHandler is a mock of ChatgptHandler interface.

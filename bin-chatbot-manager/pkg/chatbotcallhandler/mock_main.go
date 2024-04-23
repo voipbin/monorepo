@@ -6,12 +6,12 @@ package chatbotcallhandler
 
 import (
 	context "context"
+	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	service "monorepo/bin-chatbot-manager/models/service"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	chatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
-	service "monorepo/bin-chatbot-manager/models/service"
 )
 
 // MockChatbotcallHandler is a mock of ChatbotcallHandler interface.

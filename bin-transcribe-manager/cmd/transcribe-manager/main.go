@@ -53,7 +53,7 @@ var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
 // gcp info
-var gcpCredential = flag.String("gcp_credential", "./google_service_account.json", "the GCP credential file path")
+var gcpCredential = flag.String("gcp_credential", "../google_service_account.json", "the GCP credential file path")
 
 func main() {
 	fmt.Printf("Starting transcribe-manager.\n")

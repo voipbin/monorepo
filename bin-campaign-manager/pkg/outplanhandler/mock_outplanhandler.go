@@ -6,12 +6,12 @@ package outplanhandler
 
 import (
 	context "context"
+	outplan "monorepo/bin-campaign-manager/models/outplan"
+	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	outplan "monorepo/bin-campaign-manager/models/outplan"
-	address "monorepo/bin-common-handler/models/address"
 )
 
 // MockOutplanHandler is a mock of OutplanHandler interface.

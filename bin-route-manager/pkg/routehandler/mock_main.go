@@ -6,11 +6,11 @@ package routehandler
 
 import (
 	context "context"
+	route "monorepo/bin-route-manager/models/route"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	route "monorepo/bin-route-manager/models/route"
 )
 
 // MockRouteHandler is a mock of RouteHandler interface.

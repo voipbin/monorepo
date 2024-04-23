@@ -7,11 +7,5 @@ commonLabels:
 
 resources:
   - namespace.yml
-  - secret.yml
   - deployment.yml
   - service.yml
-
-images:
-- name: flow-manager-image
-  newName: flow-manager
-  newTag: latest

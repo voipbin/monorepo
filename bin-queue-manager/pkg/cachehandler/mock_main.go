@@ -6,12 +6,12 @@ package cachehandler
 
 import (
 	context "context"
+	queue "monorepo/bin-queue-manager/models/queue"
+	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	queue "monorepo/bin-queue-manager/models/queue"
-	queuecall "monorepo/bin-queue-manager/models/queuecall"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

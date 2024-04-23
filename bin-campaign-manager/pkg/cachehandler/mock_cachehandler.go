@@ -6,13 +6,13 @@ package cachehandler
 
 import (
 	context "context"
+	campaign "monorepo/bin-campaign-manager/models/campaign"
+	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	outplan "monorepo/bin-campaign-manager/models/outplan"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	campaign "monorepo/bin-campaign-manager/models/campaign"
-	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
-	outplan "monorepo/bin-campaign-manager/models/outplan"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.

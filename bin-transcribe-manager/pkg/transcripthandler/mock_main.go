@@ -6,11 +6,11 @@ package transcripthandler
 
 import (
 	context "context"
+	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	transcript "monorepo/bin-transcribe-manager/models/transcript"
 )
 
 // MockTranscriptHandler is a mock of TranscriptHandler interface.

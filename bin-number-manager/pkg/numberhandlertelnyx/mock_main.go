@@ -6,12 +6,12 @@ package numberhandlertelnyx
 
 import (
 	context "context"
-	reflect "reflect"
-
-	gomock "github.com/golang/mock/gomock"
 	availablenumber "monorepo/bin-number-manager/models/availablenumber"
 	number "monorepo/bin-number-manager/models/number"
 	providernumber "monorepo/bin-number-manager/models/providernumber"
+	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockNumberHandlerTelnyx is a mock of NumberHandlerTelnyx interface.

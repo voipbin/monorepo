@@ -6,13 +6,13 @@ package trunkhandler
 
 import (
 	context "context"
+	customer "monorepo/bin-customer-manager/models/customer"
+	sipauth "monorepo/bin-registrar-manager/models/sipauth"
+	trunk "monorepo/bin-registrar-manager/models/trunk"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	customer "monorepo/bin-customer-manager/models/customer"
-	sipauth "monorepo/bin-registrar-manager/models/sipauth"
-	trunk "monorepo/bin-registrar-manager/models/trunk"
 )
 
 // MockTrunkHandler is a mock of TrunkHandler interface.

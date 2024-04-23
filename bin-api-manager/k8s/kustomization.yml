@@ -7,8 +7,3 @@ commonLabels:
 resources:
   - deployment.yml
   - service.yml
-
-images:
-- name: api-manager-image
-  newName: api-manager
-  newTag: latest
