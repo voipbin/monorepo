@@ -2,8 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	reflect "reflect"
 	"testing"
 
@@ -14,6 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_RegistrarV1TrunkCreate(t *testing.T) {
@@ -102,6 +101,7 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     []rmtrunk.Trunk
@@ -120,9 +120,10 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 				Data:       []byte(`[{"id":"b215904a-549b-11ee-874c-7f01e2fb3e8c"}]`),
 			},
 
+			expectURL:    "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/trunks?page_token=%s&page_size=10&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -140,11 +141,14 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1TrunkGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

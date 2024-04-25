@@ -7,6 +7,7 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -23,6 +24,7 @@ func Test_BillingV1BillingGets(t *testing.T) {
 
 		responseBillings *rabbitmqhandler.Response
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     []bmbilling.Billing
@@ -42,6 +44,7 @@ func Test_BillingV1BillingGets(t *testing.T) {
 				Data:       []byte(`[{"id":"854608c2-f556-11ee-bcaa-7b93c058e8f6"},{"id":"85fdae46-f556-11ee-ba13-c3b959ad9a23"}]`),
 			},
 
+			expectURL:    "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
 				URI:    "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10&filter_customer_id=84ec5606-f556-11ee-b9a0-dbdcc291145b",
@@ -64,14 +67,17 @@ func Test_BillingV1BillingGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := requestHandler{
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseBillings, nil)
 
-			res, err := reqHandler.BillingV1BillingGets(ctx, tt.token, tt.size, tt.filters)
+			res, err := h.BillingV1BillingGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

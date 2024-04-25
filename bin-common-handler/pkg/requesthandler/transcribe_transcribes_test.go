@@ -5,13 +5,13 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_TranscribeV1TranscribeGet(t *testing.T) {
@@ -85,6 +85,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
@@ -99,6 +100,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 				"customer_id": "adddce70-8093-11ed-9a79-530f80f428d8",
 			},
 
+			"/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.transcribe-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=adddce70-8093-11ed-9a79-530f80f428d8",
@@ -125,6 +127,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 				"customer_id": "bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
 			},
 
+			"/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.transcribe-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
@@ -153,14 +156,17 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := requestHandler{
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -181,7 +187,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 		referenceType tmtranscribe.ReferenceType
 		referenceID   uuid.UUID
 		language      string
-		direction     transcribe.Direction
+		direction     tmtranscribe.Direction
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -196,7 +202,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 			tmtranscribe.ReferenceTypeCall,
 			uuid.FromStringOrNil("2ae8944c-8227-11ed-acb4-c3e23ea3a2a4"),
 			"en-US",
-			transcribe.DirectionBoth,
+			tmtranscribe.DirectionBoth,
 
 			"bin-manager.transcribe-manager.request",
 			&rabbitmqhandler.Request{

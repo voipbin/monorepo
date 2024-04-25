@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ChatV1ChatroomGet(t *testing.T) {
@@ -86,6 +87,7 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  []chatchatroom.Chatroom
@@ -105,6 +107,7 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 				Data:       []byte(`[{"id":"1a6c8efc-3696-11ed-b8f6-f7375910007f"}]`),
 			},
 
+			"/v1/chatrooms?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=10&filter_owner_id=19de5bc8-3696-11ed-b9b7-3f54f6f0297b", url.QueryEscape("2020-09-20 03:23:20.995000")),
@@ -125,11 +128,14 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ChatV1ChatroomGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

@@ -26,7 +26,7 @@ func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string,
 	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

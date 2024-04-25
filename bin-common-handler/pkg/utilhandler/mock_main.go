@@ -92,6 +92,20 @@ func (mr *MockUtilHandlerMockRecorder) TimeParse(timeString interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeParse", reflect.TypeOf((*MockUtilHandler)(nil).TimeParse), timeString)
 }
 
+// URLMergeFilters mocks base method.
+func (m *MockUtilHandler) URLMergeFilters(uri string, filters map[string]string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "URLMergeFilters", uri, filters)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// URLMergeFilters indicates an expected call of URLMergeFilters.
+func (mr *MockUtilHandlerMockRecorder) URLMergeFilters(uri, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "URLMergeFilters", reflect.TypeOf((*MockUtilHandler)(nil).URLMergeFilters), uri, filters)
+}
+
 // URLParseFilters mocks base method.
 func (m *MockUtilHandler) URLParseFilters(u *url.URL) map[string]string {
 	m.ctrl.T.Helper()

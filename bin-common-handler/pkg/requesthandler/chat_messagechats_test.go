@@ -2,8 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	"reflect"
 	"testing"
 
@@ -15,6 +13,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ChatV1MessagechatCreate(t *testing.T) {
@@ -171,6 +170,7 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  []chatmessagechat.Messagechat
@@ -190,9 +190,10 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 				Data:       []byte(`[{"id":"fe1ec10c-369f-11ed-aa7b-6f4631dff513"}]`),
 			},
 
+			"/v1/messagechats?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=10&filter_chat_id=fdf8ca74-369f-11ed-b48b-b728ad308b30", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      "/v1/messagechats?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_chat_id=fdf8ca74-369f-11ed-b48b-b728ad308b30",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -210,14 +211,17 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := requestHandler{
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatV1MessagechatGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.ChatV1MessagechatGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

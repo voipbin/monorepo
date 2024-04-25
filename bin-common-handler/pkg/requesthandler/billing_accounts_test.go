@@ -12,6 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_BillingV1AccountGets(t *testing.T) {
@@ -23,6 +24,7 @@ func Test_BillingV1AccountGets(t *testing.T) {
 		token   string
 		filters map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     []bmaccount.Account
@@ -37,6 +39,7 @@ func Test_BillingV1AccountGets(t *testing.T) {
 				"customer_id": "33a95f94-0e7c-11ee-aeb3-57a93b9f70fd",
 			},
 
+			expectURL:    "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
 				URI:    "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10&filter_customer_id=33a95f94-0e7c-11ee-aeb3-57a93b9f70fd",
@@ -65,13 +68,15 @@ func Test_BillingV1AccountGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			res, err := reqHandler.BillingV1AccountGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

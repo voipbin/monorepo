@@ -21,7 +21,7 @@ func (r *requestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pag
 	uri := fmt.Sprintf("/v1/conferencecalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
