@@ -5,7 +5,6 @@ package listenhandler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
 	"time"
 
@@ -148,18 +147,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var response *rabbitmqhandler.Response
 
 	ctx := context.Background()
-
-	uri, err := url.QueryUnescape(m.URI)
-	if err != nil {
-		response := simpleResponse(400)
-		return response, nil
-	}
-	m.URI = uri
-
 	log := logrus.WithFields(logrus.Fields{
 		"request": m,
 	})
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -237,7 +228,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, m.URI)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -246,13 +237,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, m.URI)
 		response = simpleResponse(400)
 		err = nil
 	} else {
 		log.WithFields(logrus.Fields{
 			"response": response,
-		}).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 	}
 
 	return response, err

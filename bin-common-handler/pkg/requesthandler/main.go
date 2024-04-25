@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	cmari "monorepo/bin-call-manager/models/ari"
 	cmbridge "monorepo/bin-call-manager/models/bridge"
@@ -978,9 +979,10 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.Serv
 }
 
 func parseFilters(uri string, filters map[string]string) string {
+	res := uri
 	for k, v := range filters {
-		uri = fmt.Sprintf("%s&filter_%s=%s", uri, k, v)
+		res = fmt.Sprintf("%s&filter_%s=%s", res, url.QueryEscape(k), url.QueryEscape(v))
 	}
 
-	return uri
+	return res
 }
