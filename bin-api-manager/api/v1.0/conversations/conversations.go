@@ -112,7 +112,7 @@ func conversationsIDGet(c *gin.Context) {
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
-	log.Debug("Executing customersIDGET.")
+	log.Debug("Executing conversationsIDGet.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ConversationGet(c.Request.Context(), &a, id)
@@ -218,7 +218,7 @@ func conversationsIDMessagesGet(c *gin.Context) {
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
-	log.Debug("Executing customersIDGET.")
+	log.Debug("Executing conversationsIDMessagesGet.")
 
 	// get tmpRes
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
@@ -280,7 +280,7 @@ func conversationsIDMessagesPost(c *gin.Context) {
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
-	log.Debug("Executing customersIDGET.")
+	log.Debug("Executing conversationsIDMessagesPost.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ConversationMessageSend(c.Request.Context(), &a, id, req.Text, []cvmedia.Media{})

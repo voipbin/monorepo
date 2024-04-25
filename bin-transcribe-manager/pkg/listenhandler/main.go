@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
 	"time"
 
@@ -228,13 +227,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
-	uri, err := url.QueryUnescape(m.URI)
-	if err != nil {
-		uri = "could not unescape uri"
-	}
-	m.URI = uri
-
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -309,7 +302,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		err = nil
 	}
 
-	log.WithField("response", response).Debugf("Response the request. method: %s, uri: %s", m.Method, uri)
+	log.WithField("response", response).Debugf("Response the request. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

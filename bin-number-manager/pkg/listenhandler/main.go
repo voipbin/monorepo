@@ -5,7 +5,6 @@ package listenhandler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
 	"time"
 
@@ -143,12 +142,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
-	uri, err := url.QueryUnescape(m.URI)
-	if err != nil {
-		uri = "could not unescape uri"
-	}
-	m.URI = uri
-
 	ctx := context.Background()
 
 	logrus.WithFields(logrus.Fields{
@@ -157,7 +150,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		"method":    m.Method,
 		"data_type": m.DataType,
 		"data":      m.Data,
-	}).Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+	}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -243,7 +236,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		logrus.Fields{
 			"response": response,
 		},
-	).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+	).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

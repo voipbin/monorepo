@@ -14,24 +14,14 @@ func (h *utilHandler) URLParseFilters(u *url.URL) map[string]string {
 func URLParseFilters(u *url.URL) map[string]string {
 	res := map[string]string{}
 
-	tmpParams, err := url.QueryUnescape(u.Query().Encode())
-	if err != nil {
-		return res
-	}
-
-	params := strings.Split(tmpParams, "&")
-	for _, param := range params {
-		if !strings.HasPrefix(param, "filter_") {
+	tmpQueris := u.Query()
+	for k, v := range tmpQueris {
+		if !strings.HasPrefix(k, "filter_") {
 			continue
 		}
 
-		filter := strings.TrimPrefix(param, "filter_")
-		tmps := strings.Split(filter, "=")
-		if len(tmps) == 1 {
-			res[tmps[0]] = ""
-		} else {
-			res[tmps[0]] = tmps[1]
-		}
+		filter := strings.TrimPrefix(k, "filter_")
+		res[filter] = v[0]
 	}
 
 	return res
