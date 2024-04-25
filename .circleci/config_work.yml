@@ -823,24 +823,6 @@ jobs:
       - go-test:
           source-directory: bin-common-handler
 
-  bin-common-handler-build:
-    docker:
-      - image: cimg/gcp:2024.03
-    steps:
-      - go-build:
-          namespace: bin-manager
-          source-directory: bin-common-handler
-          image-name: common-handler
-
-  bin-common-handler-release:
-    docker:
-      - image: google/cloud-sdk:debian_component_based
-    steps:
-      - go-release:
-          namespace: bin-manager
-          source-directory: bin-common-handler
-          image-name: common-handler
-
   # bin-conference-manager
   bin-conference-manager-test:
     docker:
