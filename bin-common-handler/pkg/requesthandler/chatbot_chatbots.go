@@ -21,7 +21,7 @@ func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, c
 	uri := fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatbotChatbots, 30000, 0, ContentTypeNone, nil)
 	switch {

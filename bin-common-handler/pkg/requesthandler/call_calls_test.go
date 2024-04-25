@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-call-manager/models/call"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
@@ -17,6 +16,7 @@ import (
 
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_CallV1CallHealth(t *testing.T) {
@@ -451,6 +451,7 @@ func Test_CallV1CallGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
@@ -465,6 +466,7 @@ func Test_CallV1CallGets(t *testing.T) {
 				"deleted": "false",
 			},
 
+			"/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
@@ -490,6 +492,7 @@ func Test_CallV1CallGets(t *testing.T) {
 				"deleted": "false",
 			},
 
+			"/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
@@ -517,11 +520,14 @@ func Test_CallV1CallGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
@@ -1478,7 +1484,7 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 		name string
 
 		callID    uuid.UUID
-		direction call.MuteDirection
+		direction cmcall.MuteDirection
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -1488,7 +1494,7 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b3c32e88-cef5-11ed-9f30-1b12722669f5"),
-			call.MuteDirectionBoth,
+			cmcall.MuteDirectionBoth,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
@@ -1529,7 +1535,7 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 		name string
 
 		callID    uuid.UUID
-		direction call.MuteDirection
+		direction cmcall.MuteDirection
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -1539,7 +1545,7 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b3ebe8dc-cef5-11ed-a05a-8730dc1ef961"),
-			call.MuteDirectionBoth,
+			cmcall.MuteDirectionBoth,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{

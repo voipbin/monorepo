@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ConferenceV1ConferencecallGets(t *testing.T) {
@@ -22,6 +23,7 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
@@ -37,6 +39,7 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 				"deleted": "false",
 			},
 
+			"/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
@@ -65,11 +68,14 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferencecallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

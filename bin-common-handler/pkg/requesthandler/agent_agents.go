@@ -103,7 +103,7 @@ func (r *requestHandler) AgentV1AgentGets(ctx context.Context, pageToken string,
 	uri := fmt.Sprintf("/v1/agents?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

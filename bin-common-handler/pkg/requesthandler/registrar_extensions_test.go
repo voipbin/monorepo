@@ -2,8 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	reflect "reflect"
 	"testing"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_RegistrarExtensionCreate(t *testing.T) {
@@ -359,6 +358,7 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     []rmextension.Extension
@@ -378,9 +378,10 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 				Data:       []byte(`[{"id":"f1d6686e-4ff3-11ee-a1cc-cbb904dc2d7e"}]`),
 			},
 
+			"/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/extensions?page_token=%s&page_size=10&filter_customer_id=f18dcabe-4ff3-11ee-80be-875a8c6041d4", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      "/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=f18dcabe-4ff3-11ee-80be-875a8c6041d4",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -398,11 +399,14 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
 
 			ctx := context.Background()
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

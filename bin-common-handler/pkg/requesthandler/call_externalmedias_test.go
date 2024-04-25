@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_CallV1ExternalMediaGets(t *testing.T) {
@@ -22,6 +23,7 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
@@ -36,6 +38,7 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 				"reference_id": "6ddd7aa8-e82c-11ee-9ae3-23cca4c32454",
 			},
 
+			"/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=6ddd7aa8-e82c-11ee-9ae3-23cca4c32454",
@@ -61,6 +64,7 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 				"reference_id": "a188209c-e82c-11ee-9a12-2f13b7edeb5f",
 			},
 
+			"/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=a188209c-e82c-11ee-9a12-2f13b7edeb5f",
@@ -88,11 +92,14 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ExternalMediaGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

@@ -2,8 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	"reflect"
 	"testing"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
@@ -27,6 +26,7 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  []cbchatbot.Chatbot
@@ -47,9 +47,10 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 				Data:       []byte(`[{"id":"db662396-4449-456c-a6ee-39aa2ec30b55"},{"id":"0ea936d3-c74f-4744-8ca6-44e47178d88a"}]`),
 			},
 
+			"/v1/chatbots?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df",
 			"bin-manager.chatbot-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:    "/v1/chatbots?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=83fec56f-8e28-4356-a50c-7641e39ed2df&filter_deleted=false",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			[]cbchatbot.Chatbot{
@@ -69,14 +70,17 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := requestHandler{
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.ChatbotV1ChatbotGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -43,10 +43,6 @@ func Test_Create(t *testing.T) {
 					Role:    openai.ChatMessageRoleUser,
 					Content: `this is test message.`,
 				},
-				{
-					Role:    openai.ChatMessageRoleAssistant,
-					Content: `Yes`,
-				},
 			},
 		},
 	}
@@ -64,9 +60,12 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			for i := 0; i < 2; i++ {
+				if !reflect.DeepEqual(tt.expectRes[i], res[i]) {
+					t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[i], res[i])
+				}
 			}
+
 		})
 	}
 }

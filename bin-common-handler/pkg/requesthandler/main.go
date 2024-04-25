@@ -5,8 +5,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net/url"
 
 	cmari "monorepo/bin-call-manager/models/ari"
 	cmbridge "monorepo/bin-call-manager/models/bridge"
@@ -87,6 +85,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // contents type
@@ -962,6 +961,8 @@ type requestHandler struct {
 	sock rabbitmqhandler.Rabbit
 
 	publisher commonoutline.ServiceName
+
+	utilHandler utilhandler.UtilHandler
 }
 
 // NewRequestHandler create RequesterHandler
@@ -969,7 +970,8 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.Serv
 	h := &requestHandler{
 		sock: sock,
 
-		publisher: publisher,
+		publisher:   publisher,
+		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
 	namespace := commonoutline.GetMetricNameSpace(publisher)
@@ -978,11 +980,11 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.Serv
 	return h
 }
 
-func parseFilters(uri string, filters map[string]string) string {
-	res := uri
-	for k, v := range filters {
-		res = fmt.Sprintf("%s&filter_%s=%s", res, url.QueryEscape(k), url.QueryEscape(v))
-	}
+// func h.utilHandler.URLh.utilHandler.URLMergeFilters(uri string, filters map[string]string) string {
+// 	res := uri
+// 	for k, v := range filters {
+// 		res = fmt.Sprintf("%s&filter_%s=%s", res, url.QueryEscape(k), url.QueryEscape(v))
+// 	}
 
-	return res
-}
+// 	return res
+// }
