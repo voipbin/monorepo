@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_QueueV1QueuecallGets(t *testing.T) {
@@ -22,6 +23,7 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
@@ -36,6 +38,7 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 				"deleted": "false",
 			},
 
+			"/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
@@ -61,6 +64,7 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 				"deleted": "false",
 			},
 
+			"/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
@@ -88,14 +92,17 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := requestHandler{
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QueueV1QueuecallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.QueueV1QueuecallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

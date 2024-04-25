@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-call-manager/models/confbridge"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
@@ -429,7 +428,7 @@ func Test_CallV1ConfbridgeFlagAdd(t *testing.T) {
 		name string
 
 		confbridgeID uuid.UUID
-		flag         confbridge.Flag
+		flag         cmconfbridge.Flag
 
 		response *rabbitmqhandler.Response
 
@@ -440,7 +439,7 @@ func Test_CallV1ConfbridgeFlagAdd(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("367d97a2-d7be-11ed-90bb-3354b92cec8a"),
-			confbridge.FlagNoAutoLeave,
+			cmconfbridge.FlagNoAutoLeave,
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -492,7 +491,7 @@ func Test_CallV1ConfbridgeFlagRemove(t *testing.T) {
 		name string
 
 		confbridgeID uuid.UUID
-		flag         confbridge.Flag
+		flag         cmconfbridge.Flag
 
 		response *rabbitmqhandler.Response
 
@@ -503,7 +502,7 @@ func Test_CallV1ConfbridgeFlagRemove(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("96c67bf6-d7be-11ed-abd3-efffaa03c246"),
-			confbridge.FlagNoAutoLeave,
+			cmconfbridge.FlagNoAutoLeave,
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

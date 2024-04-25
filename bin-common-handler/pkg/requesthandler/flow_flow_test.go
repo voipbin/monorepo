@@ -2,8 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	reflect "reflect"
 	"testing"
 
@@ -14,6 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_FlowV1FlowCreate(t *testing.T) {
@@ -303,6 +302,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  []fmflow.Flow
@@ -322,9 +322,10 @@ func Test_FlowV1FlowGets(t *testing.T) {
 				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"c971cc06-7f4d-11ec-b0dc-5ff21ea97f57","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
+			"/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&filter_customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -356,9 +357,10 @@ func Test_FlowV1FlowGets(t *testing.T) {
 				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"d9fceace-7f4d-11ec-8949-cf7a5dce40c9","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
 			},
 
+			"/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.flow-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/flows?page_token=%s&page_size=10&filter_type=conference", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_type=conference",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -382,11 +384,14 @@ func Test_FlowV1FlowGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
+
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1FlowGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

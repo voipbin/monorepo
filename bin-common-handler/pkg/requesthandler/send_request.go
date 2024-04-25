@@ -53,7 +53,7 @@ func (r *requestHandler) sendRequest(ctx context.Context, queue commonoutline.Qu
 	case delay > 0:
 		// send scheduled message.
 		// we don't expect the response message here.
-		if err := r.sendDelayedRequest(cctx, string(queue), resource, delay, req); err != nil {
+		if err := r.sendDelayedRequest(string(queue), resource, delay, req); err != nil {
 			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
 		}
 		return nil, nil
@@ -84,7 +84,7 @@ func (r *requestHandler) sendDirectRequest(ctx context.Context, target string, r
 
 // sendDelayedRequest sends the delayed request to the target
 // delay: delay time(millisecond).
-func (r *requestHandler) sendDelayedRequest(ctx context.Context, queue string, resource resource, delay int, req *rabbitmqhandler.Request) error {
+func (r *requestHandler) sendDelayedRequest(queue string, resource resource, delay int, req *rabbitmqhandler.Request) error {
 
 	start := time.Now()
 	err := r.sock.PublishExchangeDelayedRequest(string(commonoutline.QueueNameDelay), queue, req, delay)

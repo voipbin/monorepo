@@ -2,8 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	"reflect"
 	"testing"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_NumberV1NumberCreate(t *testing.T) {
@@ -95,6 +94,7 @@ func Test_NumberV1NumberGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
@@ -104,15 +104,16 @@ func Test_NumberV1NumberGets(t *testing.T) {
 		{
 			"normal",
 
-			"2021-03-02 03:23:20.995000",
+			"2020-09-20T03:23:20.995000",
 			10,
 			map[string]string{
 				"customer_id": "b7041f62-7ff5-11ec-b1dd-d7e05b3c5096",
 			},
 
+			"/v1/numbers?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.number-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/numbers?page_token=%s&page_size=10&filter_customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      "/v1/numbers?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -146,12 +147,14 @@ func Test_NumberV1NumberGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
 
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
