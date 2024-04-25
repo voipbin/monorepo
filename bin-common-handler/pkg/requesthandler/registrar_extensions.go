@@ -144,7 +144,7 @@ func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken
 	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

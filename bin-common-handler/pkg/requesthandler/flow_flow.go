@@ -177,7 +177,7 @@ func (r *requestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, p
 	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

@@ -20,7 +20,7 @@ func (r *requestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToke
 	uri := fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

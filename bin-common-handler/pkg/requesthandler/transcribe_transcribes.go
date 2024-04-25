@@ -46,7 +46,7 @@ func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageTok
 	uri := fmt.Sprintf("/v1/transcribes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceTranscribeTranscribes, 30000, 0, ContentTypeJSON, nil)
 	switch {

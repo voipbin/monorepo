@@ -63,7 +63,7 @@ func (r *requestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken str
 	uri := fmt.Sprintf("/v1/trunks?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {

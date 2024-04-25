@@ -48,7 +48,7 @@ func (r *requestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken s
 	uri := fmt.Sprintf("/v1/customers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	// parse filters
-	uri = parseFilters(uri, filters)
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
