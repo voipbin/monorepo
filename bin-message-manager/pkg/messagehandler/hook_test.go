@@ -104,7 +104,7 @@ func Test_Hook(t *testing.T) {
 			responseMessage: &message.Message{},
 
 			expectFilters: map[string]string{
-				"number":  "+15734531118",
+				"number":  "%2B15734531118",
 				"deleted": "false",
 			},
 		},

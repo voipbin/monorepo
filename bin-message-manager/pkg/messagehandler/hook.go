@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -70,8 +71,9 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 		return nil, nil, fmt.Errorf("destination address is empty")
 	}
 
-	destinationNumber := hm.Data.Payload.To[0].PhoneNumber
-	log.Debugf("Parsed destination number. destination_number: %s", destinationNumber)
+	tmpDestinationNumber := hm.Data.Payload.To[0].PhoneNumber
+	destinationNumber := url.QueryEscape(tmpDestinationNumber)
+	log.Debugf("Parsed destination number. tmpDestination_number: %s, destination_number: %s", tmpDestinationNumber, destinationNumber)
 
 	// get number info
 	filters := map[string]string{
