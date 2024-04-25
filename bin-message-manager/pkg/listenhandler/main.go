@@ -197,7 +197,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response = simpleResponse(400)
 		err = nil
 	}
-
 	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
