@@ -263,23 +263,10 @@ workflows:
             - bin-chatbot-manager-build
             - release-approval
 
-  bin-common-manager:
+  bin-common-handler:
     when: << pipeline.parameters.run-bin-common-handler >>
     jobs:
       - bin-common-handler-test
-      - bin-common-handler-build:
-          <<: *context_production
-          requires:
-            - bin-common-handler-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-common-handler-build
-      - bin-common-handler-release:
-          <<: *context_production
-          requires:
-            - bin-common-handler-build
-            - release-approval
 
   bin-conference-manager:
     when: 
