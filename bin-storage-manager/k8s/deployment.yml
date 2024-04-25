@@ -31,7 +31,7 @@ spec:
             - '-rabbit_addr'
             - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
             - '-gcp_credential'
-            - './google_service_account.json'
+            - '../google_service_account.json'
             - '-gcp_project_id'
             - 'voipbin-production'
             - '-gcp_bucket_media'
