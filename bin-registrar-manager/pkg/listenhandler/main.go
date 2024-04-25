@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
 	"time"
 
@@ -157,12 +156,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var response *rabbitmqhandler.Response
 
 	ctx := context.Background()
-
-	uri, err := url.QueryUnescape(m.URI)
-	if err != nil {
-		uri = "could not unescape uri"
-	}
-
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "processRequest",
 		"uri":       m.URI,
@@ -171,7 +164,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		"data":      m.Data,
 	},
 	)
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {

@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
 	"time"
 
@@ -168,15 +167,9 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
+
 	ctx := context.Background()
-
-	uri, err := url.QueryUnescape(m.URI)
-	if err != nil {
-		uri = "could not unescape uri"
-	}
-	m.URI = uri
-
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -279,7 +272,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, m.URI)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -289,12 +282,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// default error handler
 	if err != nil {
-		log.Errorf("Could not process the request correctly. method: %s, uri: %s, err: %v", m.Method, uri, err)
+		log.Errorf("Could not process the request correctly. method: %s, uri: %s, err: %v", m.Method, m.URI, err)
 		response = simpleResponse(400)
 		err = nil
 	}
 
-	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

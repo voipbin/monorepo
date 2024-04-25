@@ -165,7 +165,7 @@ func conversationAccountsIDGet(c *gin.Context) {
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
-	log.Debug("Executing customersIDGET.")
+	log.Debug("Executing conversationAccountsIDGet.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.ConversationAccountGet(c.Request.Context(), &a, id)
