@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -30,7 +31,8 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	tagHandler taghandler.TagHandler
+	utilHandler utilhandler.UtilHandler
+	tagHandler  taghandler.TagHandler
 }
 
 var (
@@ -77,7 +79,8 @@ func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, tagHandler taghandler.T
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
 
-		tagHandler: tagHandler,
+		utilHandler: utilhandler.NewUtilHandler(),
+		tagHandler:  tagHandler,
 	}
 
 	return h
