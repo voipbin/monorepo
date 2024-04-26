@@ -1,71 +1,60 @@
 package chatgpthandler
 
-import (
-	"context"
-	reflect "reflect"
-	"testing"
+// func Test_Create(t *testing.T) {
 
-	gomock "github.com/golang/mock/gomock"
-	"github.com/sashabaranov/go-openai"
+// 	tests := []struct {
+// 		name string
 
-	"monorepo/bin-chatbot-manager/models/chatbotcall"
-)
+// 		messages []chatbotcall.Message
+// 		role     string
+// 		text     string
 
-func Test_Create(t *testing.T) {
+// 		expectRes []chatbotcall.Message
+// 	}{
+// 		{
+// 			name: "normal",
 
-	tests := []struct {
-		name string
+// 			messages: []chatbotcall.Message{
+// 				{
+// 					Role:    openai.ChatMessageRoleSystem,
+// 					Content: `Just say "yes" to all message.`,
+// 				},
+// 			},
+// 			role: openai.ChatMessageRoleUser,
+// 			text: "this is test message.",
 
-		messages []chatbotcall.Message
-		role     string
-		text     string
+// 			expectRes: []chatbotcall.Message{
+// 				{
+// 					Role:    openai.ChatMessageRoleSystem,
+// 					Content: `Just say "yes" to all message.`,
+// 				},
+// 				{
+// 					Role:    openai.ChatMessageRoleUser,
+// 					Content: `this is test message.`,
+// 				},
+// 			},
+// 		},
+// 	}
 
-		expectRes []chatbotcall.Message
-	}{
-		{
-			name: "normal",
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			messages: []chatbotcall.Message{
-				{
-					Role:    openai.ChatMessageRoleSystem,
-					Content: `Just say "yes" to all message.`,
-				},
-			},
-			role: openai.ChatMessageRoleUser,
-			text: "this is test message.",
+// 			h := NewChatgptHandler("<put your api key here>")
+// 			ctx := context.Background()
 
-			expectRes: []chatbotcall.Message{
-				{
-					Role:    openai.ChatMessageRoleSystem,
-					Content: `Just say "yes" to all message.`,
-				},
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: `this is test message.`,
-				},
-			},
-		},
-	}
+// 			res, err := h.MessageSend(ctx, tt.messages, tt.role, tt.text)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 			for i := 0; i < 2; i++ {
+// 				if !reflect.DeepEqual(tt.expectRes[i], res[i]) {
+// 					t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[i], res[i])
+// 				}
+// 			}
 
-			h := NewChatgptHandler("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")
-			ctx := context.Background()
-
-			res, err := h.MessageSend(ctx, tt.messages, tt.role, tt.text)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			for i := 0; i < 2; i++ {
-				if !reflect.DeepEqual(tt.expectRes[i], res[i]) {
-					t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[i], res[i])
-				}
-			}
-
-		})
-	}
-}
+// 		})
+// 	}
+// }
