@@ -37,7 +37,7 @@ spec:
             - '-redis_db'
             - '1'
             - '-engine_key_chatgpt'
-            - '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'
+            - '$AUTHTOKEN_OPENAI'
           ports:
             - name: metrics
               protocol: "TCP"
