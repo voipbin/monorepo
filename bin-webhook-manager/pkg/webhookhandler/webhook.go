@@ -13,11 +13,10 @@ import (
 
 // SendWebhookToCustomer sends the webhook to the given customerID with the given method and data.
 func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "SendWebhookToCustomer",
+		"customer_id": customerID,
+	})
 	log.WithFields(logrus.Fields{
 		"data_type": dataType,
 		"data":      data,
@@ -29,22 +28,17 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 		return fmt.Errorf("could not get account. err: %v", err)
 	}
 
-	if m.WebhookURI == "" {
-		// no place to send
-		log.Infof("Invalid uri target. uri: %s", m.WebhookURI)
-		return nil
+	if m.WebhookURI != "" {
+		// send webhook message
+		go func() {
+			res, err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data)
+			if err != nil {
+				log.Errorf("Could not send a request. err: %v", err)
+				return
+			}
+			log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", m.WebhookMethod, m.WebhookURI, res.StatusCode)
+		}()
 	}
-
-	// send message
-	go func() {
-		res, err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data)
-		if err != nil {
-			log.Errorf("Could not send a request. err: %v", err)
-			return
-		}
-		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", m.WebhookMethod, m.WebhookURI, res.StatusCode)
-
-	}()
 
 	wh := &webhook.Webhook{
 		CustomerID: customerID,
@@ -58,12 +52,11 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 
 // SendWebhookToURI sends the webhook to the given uri with the given method and data.
 func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.UUID, uri string, method webhook.MethodType, dataType webhook.DataType, data json.RawMessage) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"customer_id": customerID,
-			"uri":         uri,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "SendWebhookToURI",
+		"customer_id": customerID,
+		"uri":         uri,
+	})
 	log.WithFields(logrus.Fields{
 		"data_type": dataType,
 		"data":      data,

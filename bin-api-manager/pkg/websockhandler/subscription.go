@@ -86,7 +86,7 @@ func (h *websockHandler) subscriptionRunWebsock(
 
 	for {
 		// receive the message from the subscriber
-		m, err := h.receiveBinaryFromWebsock(ctx, ws)
+		m, err := h.receiveTextFromWebsock(ctx, ws)
 		if err != nil {
 			log.Infof("Could not receive the message correctly. Assume the websocket has closed. err: %v", err)
 			return
