@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,7 @@ func wsGET(c *gin.Context) {
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	if err := serviceHandler.WebsockCreate(c.Request.Context(), &a, c.Writer, c.Request); err != nil {
+	if err := serviceHandler.WebsockCreate(context.Background(), &a, c.Writer, c.Request); err != nil {
 		log.Errorf("Could not handler the websocket correctly. err: %v", err)
 	}
 }
