@@ -94,9 +94,9 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 	return res, nil
 }
 
-// AgentGet sends a request to agent-manager
+// AgentGets sends a request to agent-manager
 // to getting a list of agents.
-// it returns agent info if it succeed.
+// it returns list of agents if it succeed.
 func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "AgentGets",
@@ -110,7 +110,7 @@ func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size u
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
