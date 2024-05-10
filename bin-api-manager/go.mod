@@ -65,7 +65,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/client_golang v1.19.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
@@ -148,7 +148,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	google.golang.org/genproto v0.0.0-20240506185236-b8a5c65736ae // indirect
+	google.golang.org/genproto v0.0.0-20240509183442-62759503f434 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
