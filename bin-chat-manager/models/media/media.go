@@ -9,9 +9,9 @@ import (
 // Media define
 type Media struct {
 	Type    Type                  `json:"type,omitempty"`
-	Address commonaddress.Address `json:"address,omitempty"` // valid only if the Type is address type
-	FileID  uuid.UUID             `json:"file_id,omitempty"` // valid only if the Type is file
-	Link    string                `json:"link,omitempty"`    // valid only if the Type is link type
+	Address commonaddress.Address `json:"address,omitempty"`  // valid only if the Type is address type
+	FileID  uuid.UUID             `json:"file_id,omitempty"`  // valid only if the Type is file
+	LinkURL string                `json:"link_url,omitempty"` // valid only if the Type is link type
 }
 
 // Type define
