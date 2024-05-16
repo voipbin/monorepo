@@ -1272,18 +1272,18 @@ func (mr *MockServiceHandlerMockRecorder) ChatroomUpdateBasicInfo(ctx, a, id, na
 }
 
 // ChatroommessageCreate mocks base method.
-func (m *MockServiceHandler) ChatroommessageCreate(ctx context.Context, a *agent.Agent, chatroomID uuid.UUID, message string) (*messagechatroom.WebhookMessage, error) {
+func (m *MockServiceHandler) ChatroommessageCreate(ctx context.Context, a *agent.Agent, chatroomID uuid.UUID, message string, medias []media.Media) (*messagechatroom.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatroommessageCreate", ctx, a, chatroomID, message)
+	ret := m.ctrl.Call(m, "ChatroommessageCreate", ctx, a, chatroomID, message, medias)
 	ret0, _ := ret[0].(*messagechatroom.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatroommessageCreate indicates an expected call of ChatroommessageCreate.
-func (mr *MockServiceHandlerMockRecorder) ChatroommessageCreate(ctx, a, chatroomID, message interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ChatroommessageCreate(ctx, a, chatroomID, message, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatroommessageCreate", reflect.TypeOf((*MockServiceHandler)(nil).ChatroommessageCreate), ctx, a, chatroomID, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatroommessageCreate", reflect.TypeOf((*MockServiceHandler)(nil).ChatroommessageCreate), ctx, a, chatroomID, message, medias)
 }
 
 // ChatroommessageDelete mocks base method.

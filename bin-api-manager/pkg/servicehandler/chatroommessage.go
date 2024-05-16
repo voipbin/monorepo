@@ -6,6 +6,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
+	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 
@@ -64,12 +65,13 @@ func (h *serviceHandler) ChatroommessageGet(ctx context.Context, a *amagent.Agen
 
 // ChatroommessageCreate creates the chatroom message of the given chatroom id.
 // It returns created chatroommessages if it succeed.
-func (h *serviceHandler) ChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string) (*chatmessagechatroom.WebhookMessage, error) {
+func (h *serviceHandler) ChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string, medias []chatmedia.Media) (*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatroommessageCreate",
 		"agent":       a,
 		"chatroom_id": chatroomID,
 		"message":     message,
+		"medias":      medias,
 	})
 	log.Debug("Creating the chatroom message.")
 
@@ -86,7 +88,7 @@ func (h *serviceHandler) ChatroommessageCreate(ctx context.Context, a *amagent.A
 		Target:     a.ID.String(),
 		TargetName: a.Name,
 	}
-	cm, err := h.ChatmessageCreate(ctx, a, cr.ChatID, source, chatmessagechat.TypeNormal, message, nil)
+	cm, err := h.ChatmessageCreate(ctx, a, cr.ChatID, source, chatmessagechat.TypeNormal, message, medias)
 	if err != nil {
 		log.Errorf("Could not create chatmessage. err: %v", err)
 		return nil, err
