@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 
@@ -87,6 +88,7 @@ func Test_ChatroommessageCreate(t *testing.T) {
 		agent      *amagent.Agent
 		chatroomID uuid.UUID
 		message    string
+		medias     []chatmedia.Media
 
 		responseChatroom        *chatchatroom.Chatroom
 		responseMessagechat     *chatmessagechat.Messagechat
@@ -107,6 +109,15 @@ func Test_ChatroommessageCreate(t *testing.T) {
 			},
 			chatroomID: uuid.FromStringOrNil("e59dcafa-bbf6-11ee-914f-ab362a70a1cf"),
 			message:    "hello world",
+			medias: []chatmedia.Media{
+				{
+					Type: chatmedia.TypeAgent,
+					Address: commonaddress.Address{
+						Type:   commonaddress.TypeTel,
+						Target: "+123456789",
+					},
+				},
+			},
 
 			responseChatroom: &chatchatroom.Chatroom{
 				ID:     uuid.FromStringOrNil("e59dcafa-bbf6-11ee-914f-ab362a70a1cf"),
@@ -152,12 +163,12 @@ func Test_ChatroommessageCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1MessagechatCreate(ctx, tt.agent.CustomerID, tt.responseChatroom.ChatID, tt.expectSource, chatmessagechat.TypeNormal, tt.message, nil).Return(tt.responseMessagechat, nil)
+			mockReq.EXPECT().ChatV1MessagechatCreate(ctx, tt.agent.CustomerID, tt.responseChatroom.ChatID, tt.expectSource, chatmessagechat.TypeNormal, tt.message, tt.medias).Return(tt.responseMessagechat, nil)
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return(tt.responseMessagechatroom, nil)
 
-			res, err := h.ChatroommessageCreate(ctx, tt.agent, tt.chatroomID, tt.message)
+			res, err := h.ChatroommessageCreate(ctx, tt.agent, tt.chatroomID, tt.message, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

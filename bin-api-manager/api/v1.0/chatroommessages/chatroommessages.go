@@ -51,7 +51,7 @@ func chatroommessagesPOST(c *gin.Context) {
 
 	// create
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatroommessageCreate(c.Request.Context(), &a, req.ChatroomID, req.Text)
+	res, err := serviceHandler.ChatroommessageCreate(c.Request.Context(), &a, req.ChatroomID, req.Text, req.Medias)
 	if err != nil {
 		log.Errorf("Could not create a chatroommessage. err: %v", err)
 		c.AbortWithStatus(400)
