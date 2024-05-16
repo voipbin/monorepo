@@ -7,9 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	chatmedia "monorepo/bin-chat-manager/models/media"
+	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -47,6 +48,15 @@ func Test_chatroommessagesPOST(t *testing.T) {
 			request.BodyChatroommessagesPOST{
 				ChatroomID: uuid.FromStringOrNil("eac45700-bbfc-11ee-8a32-ef7ecccd51ae"),
 				Text:       "test text",
+				Medias: []chatmedia.Media{
+					{
+						Type: chatmedia.TypeAddress,
+						Address: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
+							Target: "+123456789",
+						},
+					},
+				},
 			},
 
 			&chatmessagechatroom.WebhookMessage{
@@ -86,6 +96,7 @@ func Test_chatroommessagesPOST(t *testing.T) {
 				&tt.agent,
 				tt.reqBody.ChatroomID,
 				tt.reqBody.Text,
+				tt.reqBody.Medias,
 			).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
