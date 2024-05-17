@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 
@@ -23,6 +24,7 @@ import (
 const (
 	bucketDirectoryRecording = "recording"
 	bucketDirectoryTmp       = "tmp"
+	bucketDirectoryBin       = "bin" // bin project services directory. mostly chat-manager.
 )
 
 // FileHandler intreface for GCP bucket handler
@@ -33,9 +35,11 @@ type FileHandler interface {
 }
 
 type fileHandler struct {
-	utilHandler utilhandler.UtilHandler
-	client      *storage.Client
-	db          dbhandler.DBHandler
+	utilHandler   utilhandler.UtilHandler
+	notifyHandler notifyhandler.NotifyHandler
+	db            dbhandler.DBHandler
+
+	client *storage.Client
 
 	projectID string
 
@@ -47,7 +51,14 @@ type fileHandler struct {
 }
 
 // NewFileHandler create bucket handler
-func NewFileHandler(db dbhandler.DBHandler, credentialPath string, projectID string, bucketMedia string, bucketTmp string) FileHandler {
+func NewFileHandler(
+	notifyHandler notifyhandler.NotifyHandler,
+	db dbhandler.DBHandler,
+	credentialPath string,
+	projectID string,
+	bucketMedia string,
+	bucketTmp string,
+) FileHandler {
 
 	ctx := context.Background()
 

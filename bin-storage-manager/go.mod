@@ -74,6 +74,7 @@ require (
 require (
 	github.com/go-redsync/redsync/v4 v4.13.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/smotes/purse v1.0.1
 )
@@ -97,7 +98,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/procfs v0.15.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect

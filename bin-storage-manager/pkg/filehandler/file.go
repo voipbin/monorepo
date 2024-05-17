@@ -19,10 +19,13 @@ func (h *fileHandler) Create(ctx context.Context, customerID uuid.UUID, ownerID 
 		"func":        "Create",
 		"customer_id": customerID,
 		"owner_id":    ownerID,
+		"name":        name,
+		"detail":      detail,
 		"filepath":    filepath,
 	})
 
 	// check file does exist
+	// we are expecting all original files are located in the tmp bucket
 	attrs, err := h.getAttrs(ctx, h.bucketTmp, filepath)
 	if err != nil {
 		log.Errorf("Could not get attrs. Considering the file does not exist. err: %v", err)
@@ -32,24 +35,30 @@ func (h *fileHandler) Create(ctx context.Context, customerID uuid.UUID, ownerID 
 
 	// generate destination filepath
 	tmpFilename := getFilename(filepath)
-	destFilepath := fmt.Sprintf("%s/%s", "bin", tmpFilename)
+	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, tmpFilename)
 
-	// move the file to the new location
-	dstAttrs, err := h.moveFile(ctx, h.bucketTmp, filepath, h.bucketMedia, destFilepath)
+	// move the file from the tmp bucket to the new location
+	dstAttrs, err := h.moveFile(ctx, h.bucketTmp, filepath, h.bucketMedia, dstFilepath)
 	if err != nil {
 		log.Errorf("Could not move the file. err: %v", err)
 		return nil, err
 	}
+	log.WithField("dst_attrs", dstAttrs).Debugf("Moved file. bucket_link: %s", dstAttrs.MediaLink)
 
-	// get permernat dowload uri
-	expireDuration := 365 * 24 * time.Hour           // 1 year
-	tmExpire := time.Now().UTC().Add(expireDuration) // 1 year4
+	// get dowload uri
+	expireDuration := 3650 * 24 * time.Hour // valid for 10 years
+	tmExpire := time.Now().UTC().Add(expireDuration)
 	tmDownloadExpire := h.utilHandler.TimeGetCurTimeAdd(expireDuration)
 	downloadURI, err := h.generateDownloadURI(h.bucketTmp, filepath, tmExpire)
+	if err != nil {
+		log.Errorf("Could not generate download URI. err: %v", err)
+		return nil, err
+	}
 
 	// create db row
+	id := h.utilHandler.UUIDCreate()
 	f := &file.File{
-		ID:               h.utilHandler.UUIDCreate(),
+		ID:               id,
 		CustomerID:       customerID,
 		OwnerID:          ownerID,
 		Name:             name,
@@ -60,11 +69,29 @@ func (h *fileHandler) Create(ctx context.Context, customerID uuid.UUID, ownerID 
 	}
 
 	if errCreate := h.db.FileCreate(ctx, f); errCreate != nil {
-		log.Errorf("Could not create file")
+		log.Errorf("Could not create file. err: %v", errCreate)
+		return nil, errCreate
 	}
 
-	// res, err :=
+	// get created file
+	res, err := h.db.FileGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get created file info. err: %v", err)
+		return nil, err
+	}
 
+	h.notifyHandler.PublishEvent(ctx, file.EventTypeFileCreated, res)
+
+	return res, nil
+}
+
+func (h *fileHandler) Get(ctx context.Context, id uuid.UUID) (*file.File, error) {
+	res, err := h.db.FileGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get file info")
+	}
+
+	return res, nil
 }
 
 // GetDownloadURL returns a download url for given target files

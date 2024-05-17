@@ -100,7 +100,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 		f.URIBucket,
 		f.URIDownload,
 
-		DefaultTimeStamp,
+		f.TMDownloadExpire,
 		h.util.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
