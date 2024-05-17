@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 
@@ -20,6 +21,7 @@ type StorageHandler interface {
 }
 
 type storageHandler struct {
+	utilHandler utilhandler.UtilHandler
 	reqHandler  requesthandler.RequestHandler
 	fileHandler filehandler.FileHandler
 
@@ -35,6 +37,7 @@ const (
 func NewStorageHandler(reqHandler requesthandler.RequestHandler, fileHandler filehandler.FileHandler, bucketNameMedia string) StorageHandler {
 
 	h := &storageHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
 		reqHandler:  reqHandler,
 		fileHandler: fileHandler,
 

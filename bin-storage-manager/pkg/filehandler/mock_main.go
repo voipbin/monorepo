@@ -35,18 +35,50 @@ func (m *MockFileHandler) EXPECT() *MockFileHandlerMockRecorder {
 	return m.recorder
 }
 
-// Delete mocks base method.
-func (m *MockFileHandler) Delete(ctx context.Context, bucketName, filepath string) error {
+// CompressCreate mocks base method.
+func (m *MockFileHandler) CompressCreate(ctx context.Context, srcBucketName string, srcFilepaths []string) (string, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, bucketName, filepath)
+	ret := m.ctrl.Call(m, "CompressCreate", ctx, srcBucketName, srcFilepaths)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CompressCreate indicates an expected call of CompressCreate.
+func (mr *MockFileHandlerMockRecorder) CompressCreate(ctx, srcBucketName, srcFilepaths interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompressCreate", reflect.TypeOf((*MockFileHandler)(nil).CompressCreate), ctx, srcBucketName, srcFilepaths)
+}
+
+// DeleteForce mocks base method.
+func (m *MockFileHandler) DeleteForce(ctx context.Context, bucketName, filepath string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteForce", ctx, bucketName, filepath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
-func (mr *MockFileHandlerMockRecorder) Delete(ctx, bucketName, filepath interface{}) *gomock.Call {
+// DeleteForce indicates an expected call of DeleteForce.
+func (mr *MockFileHandlerMockRecorder) DeleteForce(ctx, bucketName, filepath interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFileHandler)(nil).Delete), ctx, bucketName, filepath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteForce", reflect.TypeOf((*MockFileHandler)(nil).DeleteForce), ctx, bucketName, filepath)
+}
+
+// DownloadURIGet mocks base method.
+func (m *MockFileHandler) DownloadURIGet(ctx context.Context, bucketName, filepath string, expire time.Duration) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DownloadURIGet", ctx, bucketName, filepath, expire)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// DownloadURIGet indicates an expected call of DownloadURIGet.
+func (mr *MockFileHandlerMockRecorder) DownloadURIGet(ctx, bucketName, filepath, expire interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadURIGet", reflect.TypeOf((*MockFileHandler)(nil).DownloadURIGet), ctx, bucketName, filepath, expire)
 }
 
 // GetDownloadURI mocks base method.

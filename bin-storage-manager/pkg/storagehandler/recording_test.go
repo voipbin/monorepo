@@ -10,6 +10,7 @@ import (
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -28,7 +29,9 @@ func Test_RecordingGet(t *testing.T) {
 		responseRecording *cmrecording.Recording
 
 		filepath            string
-		responseBucketpath  string
+		responseBucketName  string
+		responseFilepath    string
+		responseBucketURI   string
 		responseDownloadURI string
 
 		expectTargets []string
@@ -52,7 +55,10 @@ func Test_RecordingGet(t *testing.T) {
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_out.wav",
 				},
 			},
+
 			"recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
+			"bucketTmp",
+			"tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
 			"gs://voipbin-production/tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
 			"https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 
@@ -75,20 +81,24 @@ func Test_RecordingGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockBucket := filehandler.NewMockFileHandler(mc)
+			mockFile := filehandler.NewMockFileHandler(mc)
 
 			h := storageHandler{
+				utilHandler: mockUtil,
 				reqHandler:  mockReq,
-				fileHandler: mockBucket,
+				fileHandler: mockFile,
 
 				bucketNameMedia: "media",
 			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
-			mockBucket.EXPECT().GetDownloadURI(ctx, h.bucketNameMedia, tt.expectTargets, time.Hour*24).Return(&tt.responseBucketpath, &tt.responseDownloadURI, nil)
+			mockFile.EXPECT().CompressCreate(ctx, h.bucketNameMedia, tt.expectTargets).Return(tt.responseBucketName, tt.responseFilepath, nil)
+			mockFile.EXPECT().DownloadURIGet(ctx, tt.responseBucketName, tt.responseFilepath, time.Hour*24).Return(tt.responseBucketURI, tt.responseDownloadURI, nil)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(gomock.Any()).Return("")
+
 			res, err := h.RecordingGet(ctx, tt.recordingID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -154,7 +164,7 @@ func Test_RecordingDelete(t *testing.T) {
 			for _, filename := range tt.responseRecording.Filenames {
 				filepath := fmt.Sprintf("recording/%s", filename)
 				mockBucket.EXPECT().IsExist(ctx, h.bucketNameMedia, filepath).Return(true)
-				mockBucket.EXPECT().Delete(ctx, h.bucketNameMedia, filepath).Return(nil)
+				mockBucket.EXPECT().DeleteForce(ctx, h.bucketNameMedia, filepath).Return(nil)
 			}
 
 			err := h.RecordingDelete(ctx, tt.recordingID)

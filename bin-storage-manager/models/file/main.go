@@ -11,6 +11,9 @@ type File struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
+	BucketName string `json:"bucket_name"` // bucket name for file storage
+	Filepath   string `json:"filepath"`    // file path for file
+
 	URIBucket   string `json:"uri_bucket"`   // uri for bucket
 	URIDownload string `json:"uri_download"` // uri for download
 

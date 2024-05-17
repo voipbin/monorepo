@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -18,6 +20,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-storage-manager/pkg/cachehandler"
+	"monorepo/bin-storage-manager/pkg/dbhandler"
 	"monorepo/bin-storage-manager/pkg/filehandler"
 	"monorepo/bin-storage-manager/pkg/listenhandler"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
@@ -34,6 +38,14 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
 
+// args for database
+var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for flow-manager.")
+
+// args for redis
+var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
+var redisPassword = flag.String("redis_password", "", "redis password")
+var redisDB = flag.Int("redis_db", 1, "redis database.")
+
 // gcp info
 var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
 var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
@@ -49,7 +61,14 @@ func main() {
 		"func": "main",
 	})
 
-	if errRun := run(); errRun != nil {
+	// create dbhandler
+	dbHandler, err := createDBHandler()
+	if err != nil {
+		logrus.Errorf("Could not connect to the database or failed to initiate the cachehandler. err: ")
+		return
+	}
+
+	if errRun := run(dbHandler); errRun != nil {
 		log.Errorf("Could not run correctly. err: %v", errRun)
 		return
 	}
@@ -108,11 +127,33 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
+// connectDatabase connects to the database and cachehandler
+func createDBHandler() (dbhandler.DBHandler, error) {
+	// connect to database
+	db, err := sql.Open("mysql", *dbDSN)
+	if err != nil {
+		logrus.Errorf("Could not access to database. err: %v", err)
+		return nil, err
+	}
+
+	// connect to cache
+	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
+	if err := cache.Connect(); err != nil {
+		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		return nil, err
+	}
+
+	// create dbhandler
+	dbHandler := dbhandler.NewHandler(db, cache)
+
+	return dbHandler, nil
+}
+
 // Run the services
-func run() error {
+func run(dbHandler dbhandler.DBHandler) error {
 
 	// run listener
-	if err := runListen(); err != nil {
+	if err := runListen(dbHandler); err != nil {
 		return err
 	}
 
@@ -120,15 +161,16 @@ func run() error {
 }
 
 // runListen run the listener
-func runListen() error {
+func runListen(dbHandler dbhandler.DBHandler) error {
 	// rabbitmq sock connect
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
 
 	// create bucket handler
-	bucketHandler := filehandler.NewFileHandler(*gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
+	bucketHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, *gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
 	if bucketHandler == nil {
 		logrus.Errorf("Could not create bucket handler.")
 		return fmt.Errorf("could not create bucket handler")

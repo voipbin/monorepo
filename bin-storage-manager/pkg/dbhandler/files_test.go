@@ -27,13 +27,16 @@ func Test_FileCreate(t *testing.T) {
 		{
 			"normal",
 			&file.File{
-				ID:          uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
-				CustomerID:  uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
-				OwnerID:     uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
-				Name:        "test name",
-				Detail:      "test detail",
-				URIBucket:   "https://test.com/uri_bucket",
-				URIDownload: "https://test.com/uri_download",
+				ID:               uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
+				CustomerID:       uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
+				Name:             "test name",
+				Detail:           "test detail",
+				BucketName:       "bucket_tmp",
+				Filepath:         "/tmp/6c0e06ba-146a-11ef-8697-c7c53a81a655",
+				URIBucket:        "https://test.com/uri_bucket",
+				URIDownload:      "https://test.com/uri_download",
+				TMDownloadExpire: "2024-05-18 03:22:17.995000",
 			},
 
 			"2024-05-18 03:22:17.995000",
@@ -43,9 +46,11 @@ func Test_FileCreate(t *testing.T) {
 				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
 				Name:             "test name",
 				Detail:           "test detail",
+				BucketName:       "bucket_tmp",
+				Filepath:         "/tmp/6c0e06ba-146a-11ef-8697-c7c53a81a655",
 				URIBucket:        "https://test.com/uri_bucket",
 				URIDownload:      "https://test.com/uri_download",
-				TMDownloadExpire: DefaultTimeStamp,
+				TMDownloadExpire: "2024-05-18 03:22:17.995000",
 				TMCreate:         "2024-05-18 03:22:17.995000",
 				TMUpdate:         DefaultTimeStamp,
 				TMDelete:         DefaultTimeStamp,
@@ -84,7 +89,7 @@ func Test_FileCreate(t *testing.T) {
 
 			tt.expectRes.TMCreate = res.TMCreate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -126,22 +131,20 @@ func Test_FileGets(t *testing.T) {
 			"2024-05-16 03:22:17.995000",
 			[]*file.File{
 				{
-					ID:               uuid.FromStringOrNil("a3f9552a-13f2-11ef-bbbd-23b99b535400"),
-					CustomerID:       uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
-					Name:             "test1",
-					TMDownloadExpire: DefaultTimeStamp,
-					TMCreate:         "2024-05-16 03:22:17.995000",
-					TMUpdate:         DefaultTimeStamp,
-					TMDelete:         DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("a3f9552a-13f2-11ef-bbbd-23b99b535400"),
+					CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
+					Name:       "test1",
+					TMCreate:   "2024-05-16 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:               uuid.FromStringOrNil("a45d53cc-13f2-11ef-af26-cbcf0eb06b9e"),
-					CustomerID:       uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
-					Name:             "test2",
-					TMDownloadExpire: DefaultTimeStamp,
-					TMCreate:         "2024-05-16 03:22:17.995000",
-					TMUpdate:         DefaultTimeStamp,
-					TMDelete:         DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("a45d53cc-13f2-11ef-af26-cbcf0eb06b9e"),
+					CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
+					Name:       "test2",
+					TMCreate:   "2024-05-16 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
