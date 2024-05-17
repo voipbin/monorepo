@@ -29,7 +29,7 @@ const (
 
 // FileHandler intreface for GCP bucket handler
 type FileHandler interface {
-	GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error)
+	// GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error)
 	DeleteForce(ctx context.Context, bucketName string, filepath string) error
 
 	CompressCreate(ctx context.Context, srcBucketName string, srcFilepaths []string) (string, string, error)

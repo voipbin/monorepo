@@ -81,22 +81,6 @@ func (mr *MockFileHandlerMockRecorder) DownloadURIGet(ctx, bucketName, filepath,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadURIGet", reflect.TypeOf((*MockFileHandler)(nil).DownloadURIGet), ctx, bucketName, filepath, expire)
 }
 
-// GetDownloadURI mocks base method.
-func (m *MockFileHandler) GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDownloadURI", ctx, bucketName, filepaths, expire)
-	ret0, _ := ret[0].(*string)
-	ret1, _ := ret[1].(*string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GetDownloadURI indicates an expected call of GetDownloadURI.
-func (mr *MockFileHandlerMockRecorder) GetDownloadURI(ctx, bucketName, filepaths, expire interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDownloadURI", reflect.TypeOf((*MockFileHandler)(nil).GetDownloadURI), ctx, bucketName, filepaths, expire)
-}
-
 // IsExist mocks base method.
 func (m *MockFileHandler) IsExist(ctx context.Context, bucketName, filepath string) bool {
 	m.ctrl.T.Helper()
