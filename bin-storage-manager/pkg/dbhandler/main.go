@@ -3,16 +3,26 @@ package dbhandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/cachehandler"
+
+	"github.com/gofrs/uuid"
 )
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
+	FileCreate(ctx context.Context, f *file.File) error
+	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
+	FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)
+	FileUpdate(ctx context.Context, id uuid.UUID, name, detail string) error
+	FileDelete(ctx context.Context, id uuid.UUID) error
+	FileUpdateDownloadInfo(ctx context.Context, id uuid.UUID, uriDownload string, tmDownloadExpire string) error
 }
 
 // handler database handler

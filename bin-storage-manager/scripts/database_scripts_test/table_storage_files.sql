@@ -2,6 +2,7 @@ create table storage_files(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
+  owner_id          binary(16), -- owner id
 
   name      varchar(255),
   detail    text,

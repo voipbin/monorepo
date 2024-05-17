@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-storage-manager/models/file"
 	"strconv"
 
@@ -17,6 +16,7 @@ const (
 	select
 		id,
 		customer_id,
+		owner_id,
 
 		name,
 		detail,
@@ -40,6 +40,7 @@ func (h *handler) fileGetFromRow(row *sql.Rows) (*file.File, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.OwnerID,
 
 		&res.Name,
 		&res.Detail,
@@ -64,6 +65,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	q := `insert into storage_files(
 		id,
 		customer_id,
+		owner_id,
 
 		name,
 		detail,
@@ -76,7 +78,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
         tm_update,
         tm_delete
 	) values(
-		?, ?,
+		?, ?, ?,
 		?, ?,
 		?, ?,
 		?, ?, ?, ?
@@ -90,6 +92,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
 		f.CustomerID.Bytes(),
+		f.OwnerID.Bytes(),
 
 		f.Name,
 		f.Detail,
@@ -226,8 +229,8 @@ func (h *handler) FileGets(ctx context.Context, token string, size uint64, filte
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id":
-			q = fmt.Sprintf("%s and customer_id = ?", q)
+		case "customer_id", "owner_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
 
@@ -307,18 +310,19 @@ func (h *handler) FileDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// FileUpdateActions updates the actions.
-func (h *handler) FileUpdateURIDownload(ctx context.Context, id uuid.UUID, actions []action.Action) error {
+// FileUpdateDownloadInfo updates the file's download info.
+func (h *handler) FileUpdateDownloadInfo(ctx context.Context, id uuid.UUID, uriDownload string, tmDownloadExpire string) error {
 	q := `
 	update storage_files set
-		actions = ?,
+		uri_download = ?,
+		tm_download_expire = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, tmpActions, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. FileUpdateActions. err: %v", err)
+	if _, err := h.db.Exec(q, uriDownload, tmDownloadExpire, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. FileUpdateDownloadInfo. err: %v", err)
 	}
 
 	// set to the cache

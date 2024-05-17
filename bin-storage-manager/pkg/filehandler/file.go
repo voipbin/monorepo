@@ -3,12 +3,69 @@ package filehandler
 import (
 	"archive/zip"
 	"context"
+	"fmt"
 	"io"
+	"monorepo/bin-storage-manager/models/file"
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
+
+func (h *fileHandler) Create(ctx context.Context, customerID uuid.UUID, ownerID uuid.UUID, name string, detail string, filepath string) (*file.File, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"customer_id": customerID,
+		"owner_id":    ownerID,
+		"filepath":    filepath,
+	})
+
+	// check file does exist
+	attrs, err := h.getAttrs(ctx, h.bucketTmp, filepath)
+	if err != nil {
+		log.Errorf("Could not get attrs. Considering the file does not exist. err: %v", err)
+		return nil, errors.Wrapf(err, "file does not exist")
+	}
+	log.WithField("attrs", attrs).Debugf("Found file. name: %s", attrs.Name)
+
+	// generate destination filepath
+	tmpFilename := getFilename(filepath)
+	destFilepath := fmt.Sprintf("%s/%s", "bin", tmpFilename)
+
+	// move the file to the new location
+	dstAttrs, err := h.moveFile(ctx, h.bucketTmp, filepath, h.bucketMedia, destFilepath)
+	if err != nil {
+		log.Errorf("Could not move the file. err: %v", err)
+		return nil, err
+	}
+
+	// get permernat dowload uri
+	expireDuration := 365 * 24 * time.Hour           // 1 year
+	tmExpire := time.Now().UTC().Add(expireDuration) // 1 year4
+	tmDownloadExpire := h.utilHandler.TimeGetCurTimeAdd(expireDuration)
+	downloadURI, err := h.generateDownloadURI(h.bucketTmp, filepath, tmExpire)
+
+	// create db row
+	f := &file.File{
+		ID:               h.utilHandler.UUIDCreate(),
+		CustomerID:       customerID,
+		OwnerID:          ownerID,
+		Name:             name,
+		Detail:           detail,
+		URIBucket:        dstAttrs.MediaLink,
+		URIDownload:      downloadURI,
+		TMDownloadExpire: tmDownloadExpire,
+	}
+
+	if errCreate := h.db.FileCreate(ctx, f); errCreate != nil {
+		log.Errorf("Could not create file")
+	}
+
+	// res, err :=
+
+}
 
 // GetDownloadURL returns a download url for given target files
 func (h *fileHandler) GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error) {
@@ -108,6 +165,45 @@ func (h *fileHandler) createCompressFile(ctx context.Context, zipFilepath string
 	}
 
 	return nil
+}
+
+// moveFile moves the file from one bucket to another
+func (h *fileHandler) moveFile(ctx context.Context, sourceBucketName string, sourceFilepath string, destBucketName string, destFilepath string) (*storage.ObjectAttrs, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":               "moveFile",
+		"source_bucket_name": sourceBucketName,
+		"source_filepath":    sourceFilepath,
+		"dest_bucket_name":   destBucketName,
+		"dest_filepath":      destFilepath,
+	})
+
+	// check source
+	src := h.client.Bucket(sourceBucketName).Object(sourceFilepath)
+	if _, err := src.Attrs(ctx); err != nil {
+		log.Errorf("The source does not exist. err: %v", err)
+		return nil, errors.Wrap(err, "source does not exist")
+	}
+
+	// check destination
+	dst := h.client.Bucket(destBucketName).Object(destFilepath)
+	res, err := dst.Attrs(ctx)
+	if err == nil {
+		log.Errorf("The destination already exists. err: %v", err)
+		return nil, errors.Wrap(err, "destination already exists")
+	}
+
+	// copy to the destination
+	if _, err := dst.CopierFrom(src).Run(ctx); err != nil {
+		return nil, errors.Wrap(err, "could not copy the file to the destination")
+	}
+
+	// delete source
+	if err := src.Delete(ctx); err != nil {
+		// we could not delete the source, but we don't want to fail
+		log.Errorf("Could not delete the source. err: %v", err)
+	}
+
+	return res, nil
 }
 
 // generateDownloadURI returns google cloud storage signed url for file download

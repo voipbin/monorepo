@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	db.SetMaxOpenConns(1)
 
 	// Load all SQL files from specified directory into a map
-	ps, err := purse.New(filepath.Join("../../scripts/database_scripts"))
+	ps, err := purse.New(filepath.Join("../../scripts/database_scripts_test"))
 	if err != nil {
 		log.Infof("Err. err: %v", err)
 	}

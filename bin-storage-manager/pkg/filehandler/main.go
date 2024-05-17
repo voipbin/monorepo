@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-storage-manager/pkg/dbhandler"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -34,16 +35,19 @@ type FileHandler interface {
 type fileHandler struct {
 	utilHandler utilhandler.UtilHandler
 	client      *storage.Client
+	db          dbhandler.DBHandler
 
-	projectID   string
-	bucketMedia string
-	bucketTmp   string
-	accessID    string
-	privateKey  []byte
+	projectID string
+
+	bucketMedia string // bucket for call medias. (recording/tts/file/tmp)
+	bucketTmp   string // bucket for temporary files.
+
+	accessID   string
+	privateKey []byte
 }
 
 // NewFileHandler create bucket handler
-func NewFileHandler(credentialPath string, projectID string, bucketMedia string, bucketTmp string) FileHandler {
+func NewFileHandler(db dbhandler.DBHandler, credentialPath string, projectID string, bucketMedia string, bucketTmp string) FileHandler {
 
 	ctx := context.Background()
 
@@ -69,6 +73,7 @@ func NewFileHandler(credentialPath string, projectID string, bucketMedia string,
 
 	h := &fileHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
 		client:      client,
 
 		projectID:   projectID,
