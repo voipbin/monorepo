@@ -164,7 +164,7 @@ func Test_RecordingDelete(t *testing.T) {
 			for _, filename := range tt.responseRecording.Filenames {
 				filepath := fmt.Sprintf("recording/%s", filename)
 				mockBucket.EXPECT().IsExist(ctx, h.bucketNameMedia, filepath).Return(true)
-				mockBucket.EXPECT().DeleteForce(ctx, h.bucketNameMedia, filepath).Return(nil)
+				mockBucket.EXPECT().DeleteBucketfile(ctx, h.bucketNameMedia, filepath).Return(nil)
 			}
 
 			err := h.RecordingDelete(ctx, tt.recordingID)

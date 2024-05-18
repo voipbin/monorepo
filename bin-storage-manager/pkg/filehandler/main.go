@@ -13,9 +13,11 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 
 	"cloud.google.com/go/storage"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -29,8 +31,21 @@ const (
 
 // FileHandler intreface for GCP bucket handler
 type FileHandler interface {
-	// GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error)
-	DeleteForce(ctx context.Context, bucketName string, filepath string) error
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		referenceType file.ReferenceType,
+		referenceID uuid.UUID,
+		name string,
+		detail string,
+		bucketName string,
+		filepath string,
+	) (*file.File, error)
+	Get(ctx context.Context, id uuid.UUID) (*file.File, error)
+	Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)
+	Delete(ctx context.Context, id uuid.UUID) (*file.File, error)
+	DeleteBucketfile(ctx context.Context, bucketName string, filepath string) error
 
 	CompressCreate(ctx context.Context, srcBucketName string, srcFilepaths []string) (string, string, error)
 	DownloadURIGet(ctx context.Context, bucketName string, filepath string, expire time.Duration) (string, string, error)

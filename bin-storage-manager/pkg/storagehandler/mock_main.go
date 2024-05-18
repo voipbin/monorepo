@@ -7,6 +7,7 @@ package storagehandler
 import (
 	context "context"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	file "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -34,6 +35,66 @@ func NewMockStorageHandler(ctrl *gomock.Controller) *MockStorageHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockStorageHandler) EXPECT() *MockStorageHandlerMockRecorder {
 	return m.recorder
+}
+
+// FileCreate mocks base method.
+func (m *MockStorageHandler) FileCreate(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, bucketName, filepath string) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileCreate", ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileCreate indicates an expected call of FileCreate.
+func (mr *MockStorageHandlerMockRecorder) FileCreate(ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileCreate", reflect.TypeOf((*MockStorageHandler)(nil).FileCreate), ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+}
+
+// FileDelete mocks base method.
+func (m *MockStorageHandler) FileDelete(ctx context.Context, id uuid.UUID) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileDelete", ctx, id)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileDelete indicates an expected call of FileDelete.
+func (mr *MockStorageHandlerMockRecorder) FileDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileDelete", reflect.TypeOf((*MockStorageHandler)(nil).FileDelete), ctx, id)
+}
+
+// FileGet mocks base method.
+func (m *MockStorageHandler) FileGet(ctx context.Context, id uuid.UUID) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileGet", ctx, id)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileGet indicates an expected call of FileGet.
+func (mr *MockStorageHandlerMockRecorder) FileGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGet", reflect.TypeOf((*MockStorageHandler)(nil).FileGet), ctx, id)
+}
+
+// FileGets mocks base method.
+func (m *MockStorageHandler) FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileGets", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileGets indicates an expected call of FileGets.
+func (mr *MockStorageHandlerMockRecorder) FileGets(ctx, token, size, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGets", reflect.TypeOf((*MockStorageHandler)(nil).FileGets), ctx, token, size, filters)
 }
 
 // RecordingDelete mocks base method.

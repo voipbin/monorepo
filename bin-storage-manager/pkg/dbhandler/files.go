@@ -18,6 +18,9 @@ const (
 		customer_id,
 		owner_id,
 
+		reference_type,
+		reference_id,
+
 		name,
 		detail,
 
@@ -44,6 +47,9 @@ func (h *handler) fileGetFromRow(row *sql.Rows) (*file.File, error) {
 		&res.ID,
 		&res.CustomerID,
 		&res.OwnerID,
+
+		&res.ReferenceType,
+		&res.ReferenceID,
 
 		&res.Name,
 		&res.Detail,
@@ -73,6 +79,9 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 		customer_id,
 		owner_id,
 
+		reference_type,
+		reference_id,
+
 		name,
 		detail,
 
@@ -91,6 +100,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 		?, ?,
 		?, ?,
 		?, ?,
+		?, ?,
 		?, ?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -103,6 +113,9 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 		f.ID.Bytes(),
 		f.CustomerID.Bytes(),
 		f.OwnerID.Bytes(),
+
+		f.ReferenceType,
+		f.ReferenceID.Bytes(),
 
 		f.Name,
 		f.Detail,

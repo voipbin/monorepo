@@ -4,6 +4,9 @@ create table storage_files(
   customer_id       binary(16),   -- customer id
   owner_id          binary(16),   -- owner id
 
+  reference_type  varchar(255),   -- reference type
+  reference_id    binary(16),     -- reference id
+
   name      varchar(255),
   detail    text,
 

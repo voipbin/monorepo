@@ -8,6 +8,9 @@ type File struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 	OwnerID    uuid.UUID `json:"owner_id"`
 
+	ReferenceType ReferenceType `json:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
+
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
@@ -22,3 +25,12 @@ type File struct {
 	TMUpdate         string `json:"tm_update"`
 	TMDelete         string `json:"tm_delete"`
 }
+
+// ReferenceType define
+type ReferenceType string
+
+// list of reference types
+const (
+	ReferenceTypeNone      ReferenceType = ""
+	ReferenceTypeRecording ReferenceType = "recording"
+)

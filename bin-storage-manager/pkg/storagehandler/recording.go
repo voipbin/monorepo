@@ -84,7 +84,7 @@ func (h *storageHandler) RecordingDelete(ctx context.Context, id uuid.UUID) erro
 		}
 
 		// delete
-		if errDelete := h.fileHandler.DeleteForce(ctx, h.bucketNameMedia, filepath); errDelete != nil {
+		if errDelete := h.fileHandler.DeleteBucketfile(ctx, h.bucketNameMedia, filepath); errDelete != nil {
 			log.Errorf("Could not delete recording file. filepath: %s, err: %v", filepath, errDelete)
 			return errDelete
 		}

@@ -12,15 +12,27 @@ import (
 )
 
 // Create Creates the file and returns the created file
-func (h *fileHandler) Create(ctx context.Context, customerID uuid.UUID, ownerID uuid.UUID, name string, detail string, bucketName string, filepath string) (*file.File, error) {
+func (h *fileHandler) Create(
+	ctx context.Context,
+	customerID uuid.UUID,
+	ownerID uuid.UUID,
+	referenceType file.ReferenceType,
+	referenceID uuid.UUID,
+	name string,
+	detail string,
+	bucketName string,
+	filepath string,
+) (*file.File, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Create",
-		"customer_id": customerID,
-		"owner_id":    ownerID,
-		"name":        name,
-		"detail":      detail,
-		"bucket_name": bucketName,
-		"filepath":    filepath,
+		"func":           "Create",
+		"customer_id":    customerID,
+		"owner_id":       ownerID,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+		"name":           name,
+		"detail":         detail,
+		"bucket_name":    bucketName,
+		"filepath":       filepath,
 	})
 
 	// check file does exist
@@ -60,6 +72,8 @@ func (h *fileHandler) Create(ctx context.Context, customerID uuid.UUID, ownerID 
 		ID:               id,
 		CustomerID:       customerID,
 		OwnerID:          ownerID,
+		ReferenceType:    referenceType,
+		ReferenceID:      referenceID,
 		Name:             name,
 		Detail:           detail,
 		BucketName:       h.bucketMedia,
@@ -95,6 +109,24 @@ func (h *fileHandler) Get(ctx context.Context, id uuid.UUID) (*file.File, error)
 	return res, nil
 }
 
+// Gets returns list of files
+func (h *fileHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "Gets",
+		"token": token,
+		"size":  size,
+		"limit": size,
+	})
+
+	res, err := h.db.FileGets(ctx, token, size, filters)
+	if err != nil {
+		log.Errorf("Could not get files. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // IsExist returns true if the given file exist
 func (h *fileHandler) IsExist(ctx context.Context, bucketName string, filepath string) bool {
 	_, err := h.bucketfileGetAttrs(ctx, bucketName, filepath)
@@ -102,7 +134,37 @@ func (h *fileHandler) IsExist(ctx context.Context, bucketName string, filepath s
 }
 
 // DeleteForce deletes the given file from the bucket
-func (h *fileHandler) DeleteForce(ctx context.Context, bucketName string, filepath string) error {
+func (h *fileHandler) Delete(ctx context.Context, id uuid.UUID) (*file.File, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Delete",
+		"id":   id,
+	})
+
+	if errDelete := h.db.FileDelete(ctx, id); errDelete != nil {
+		log.Errorf("Could not delete the file. err: %v", errDelete)
+		return nil, errDelete
+	}
+
+	// get deleted file
+	res, err := h.db.FileGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted file info. err: %v", err)
+		return nil, err
+	}
+
+	// delete file
+	if errDelete := h.bucketfileDelete(ctx, res.BucketName, res.Filepath); errDelete != nil {
+		log.Errorf("Could not delete the bucketfile. err: %v", errDelete)
+		// we could not delete the bucketfile. but we don't return the error here.
+	}
+
+	h.notifyHandler.PublishEvent(ctx, file.EventTypeFileDeleted, res)
+
+	return res, nil
+}
+
+// DeleteBucketfile deletes the given file from the bucket
+func (h *fileHandler) DeleteBucketfile(ctx context.Context, bucketName string, filepath string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "DeleteForce",
 		"bucket_name": bucketName,

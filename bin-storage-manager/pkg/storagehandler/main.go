@@ -11,11 +11,27 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-storage-manager/models/bucketfile"
+	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/filehandler"
 )
 
 // StorageHandler intreface for storage handler
 type StorageHandler interface {
+	FileCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		referenceType file.ReferenceType,
+		referenceID uuid.UUID,
+		name string,
+		detail string,
+		bucketName string,
+		filepath string,
+	) (*file.File, error)
+	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
+	FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)
+	FileDelete(ctx context.Context, id uuid.UUID) (*file.File, error)
+
 	RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)
 	RecordingDelete(ctx context.Context, id uuid.UUID) error
 }

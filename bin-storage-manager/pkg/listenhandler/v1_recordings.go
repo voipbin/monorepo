@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// v1RecordingsIDGet handles /v1/recordings/<id> POST request
+// v1RecordingsIDGet handles /v1/recordings/<id> GET request
 // creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
 func (h *listenHandler) v1RecordingsIDGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
