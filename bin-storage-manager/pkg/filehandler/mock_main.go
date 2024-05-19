@@ -6,9 +6,11 @@ package filehandler
 
 import (
 	context "context"
+	file "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 	time "time"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,34 +37,110 @@ func (m *MockFileHandler) EXPECT() *MockFileHandlerMockRecorder {
 	return m.recorder
 }
 
-// Delete mocks base method.
-func (m *MockFileHandler) Delete(ctx context.Context, bucketName, filepath string) error {
+// CompressCreate mocks base method.
+func (m *MockFileHandler) CompressCreate(ctx context.Context, srcBucketName string, srcFilepaths []string) (string, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, bucketName, filepath)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Delete indicates an expected call of Delete.
-func (mr *MockFileHandlerMockRecorder) Delete(ctx, bucketName, filepath interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFileHandler)(nil).Delete), ctx, bucketName, filepath)
-}
-
-// GetDownloadURI mocks base method.
-func (m *MockFileHandler) GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDownloadURI", ctx, bucketName, filepaths, expire)
-	ret0, _ := ret[0].(*string)
-	ret1, _ := ret[1].(*string)
+	ret := m.ctrl.Call(m, "CompressCreate", ctx, srcBucketName, srcFilepaths)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// GetDownloadURI indicates an expected call of GetDownloadURI.
-func (mr *MockFileHandlerMockRecorder) GetDownloadURI(ctx, bucketName, filepaths, expire interface{}) *gomock.Call {
+// CompressCreate indicates an expected call of CompressCreate.
+func (mr *MockFileHandlerMockRecorder) CompressCreate(ctx, srcBucketName, srcFilepaths interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDownloadURI", reflect.TypeOf((*MockFileHandler)(nil).GetDownloadURI), ctx, bucketName, filepaths, expire)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompressCreate", reflect.TypeOf((*MockFileHandler)(nil).CompressCreate), ctx, srcBucketName, srcFilepaths)
+}
+
+// Create mocks base method.
+func (m *MockFileHandler) Create(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, bucketName, filepath string) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockFileHandlerMockRecorder) Create(ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFileHandler)(nil).Create), ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+}
+
+// Delete mocks base method.
+func (m *MockFileHandler) Delete(ctx context.Context, id uuid.UUID) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockFileHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFileHandler)(nil).Delete), ctx, id)
+}
+
+// DeleteBucketfile mocks base method.
+func (m *MockFileHandler) DeleteBucketfile(ctx context.Context, bucketName, filepath string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteBucketfile", ctx, bucketName, filepath)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteBucketfile indicates an expected call of DeleteBucketfile.
+func (mr *MockFileHandlerMockRecorder) DeleteBucketfile(ctx, bucketName, filepath interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBucketfile", reflect.TypeOf((*MockFileHandler)(nil).DeleteBucketfile), ctx, bucketName, filepath)
+}
+
+// DownloadURIGet mocks base method.
+func (m *MockFileHandler) DownloadURIGet(ctx context.Context, bucketName, filepath string, expire time.Duration) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DownloadURIGet", ctx, bucketName, filepath, expire)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// DownloadURIGet indicates an expected call of DownloadURIGet.
+func (mr *MockFileHandlerMockRecorder) DownloadURIGet(ctx, bucketName, filepath, expire interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadURIGet", reflect.TypeOf((*MockFileHandler)(nil).DownloadURIGet), ctx, bucketName, filepath, expire)
+}
+
+// Get mocks base method.
+func (m *MockFileHandler) Get(ctx context.Context, id uuid.UUID) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockFileHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockFileHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockFileHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockFileHandlerMockRecorder) Gets(ctx, token, size, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockFileHandler)(nil).Gets), ctx, token, size, filters)
 }
 
 // IsExist mocks base method.

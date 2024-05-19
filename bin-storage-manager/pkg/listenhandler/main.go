@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -26,11 +27,19 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
+	utilHandler    utilhandler.UtilHandler
 	rabbitSock     rabbitmqhandler.Rabbit
 	storageHandler storagehandler.StorageHandler
 }
 
 var (
+	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+	// files
+	regV1FilesGet = regexp.MustCompile(`/v1/files\?`)
+	regV1Files    = regexp.MustCompile("/v1/files$")
+	regV1FilesID  = regexp.MustCompile("/v1/files/" + regUUID + "$")
+
 	// recordings
 	regV1RecordingsID = regexp.MustCompile("/v1/recordings/(.*)")
 )
@@ -70,6 +79,7 @@ func NewListenHandler(
 	storageHandler storagehandler.StorageHandler,
 ) ListenHandler {
 	h := &listenHandler{
+		utilHandler:    utilhandler.NewUtilHandler(),
 		rabbitSock:     rabbitSock,
 		storageHandler: storageHandler,
 	}
@@ -127,7 +137,28 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	start := time.Now()
 	switch {
 
-	// v1
+	///////////////////////////////////////////////////////////////////////
+	// v1 /////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+
+	// files ////////////////
+	case regV1Files.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/files"
+		response, err = h.v1FilesPost(ctx, m)
+
+	case regV1FilesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/files"
+		response, err = h.v1FilesGet(ctx, m)
+
+	case regV1FilesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/files/<file-id>"
+		response, err = h.v1FilesIDGet(ctx, m)
+
+	case regV1FilesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/files/<file-id>"
+		response, err = h.v1FilesIDDelete(ctx, m)
+
+	// recordings /////////////
 	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/recordings"
 		response, err = h.v1RecordingsIDGet(ctx, m)

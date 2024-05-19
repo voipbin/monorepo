@@ -20,7 +20,7 @@ func (r *requestHandler) FlowV1FlowCreate(ctx context.Context, customerID uuid.U
 
 	uri := "/v1/flows"
 
-	reqData := &fmrequest.V1DataFlowPost{
+	reqData := &fmrequest.V1DataFlowsPost{
 		CustomerID: customerID,
 		Type:       flowType,
 		Name:       name,
@@ -106,7 +106,7 @@ func (r *requestHandler) FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID)
 func (r *requestHandler) FlowV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", f.ID)
 
-	data := &fmrequest.V1DataFlowIDPut{
+	data := &fmrequest.V1DataFlowsIDPut{
 		Name:    f.Name,
 		Detail:  f.Detail,
 		Actions: f.Actions,
