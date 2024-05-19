@@ -67,10 +67,14 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
+
+	"cloud.google.com/go/storage"
 )
 
 const (
@@ -596,6 +600,11 @@ type serviceHandler struct {
 	reqHandler     requesthandler.RequestHandler
 	dbHandler      dbhandler.DBHandler
 	websockHandler websockhandler.WebsockHandler
+
+	// storage information
+	storageClient *storage.Client
+	projectID     string
+	bucketName    string
 }
 
 // NewServiceHandler return ServiceHandler interface
@@ -603,13 +612,31 @@ func NewServiceHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
 	websockHandler websockhandler.WebsockHandler,
-) ServiceHandler {
-	return &serviceHandler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		reqHandler:  reqHandler,
-		dbHandler:   dbHandler,
 
+	credentialPath string,
+	projectID string,
+	bucketName string,
+) ServiceHandler {
+
+	// init storage client
+	ctx := context.Background()
+
+	// create storageClient
+	storageClient, err := storage.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	if err != nil {
+		logrus.Errorf("Could not create a new client. err: %v", err)
+		return nil
+	}
+
+	return &serviceHandler{
+		utilHandler:    utilhandler.NewUtilHandler(),
+		reqHandler:     reqHandler,
+		dbHandler:      dbHandler,
 		websockHandler: websockHandler,
+
+		storageClient: storageClient,
+		projectID:     projectID,
+		bucketName:    bucketName,
 	}
 }
 
