@@ -27,3 +27,4 @@ create table storage_files(
 
 create index idx_storage_files_customer_id on storage_files(customer_id);
 create index idx_storage_files_owner_id on storage_files(owner_id);
+create index idx_storage_files_reference_id on storage_files(reference_id);
