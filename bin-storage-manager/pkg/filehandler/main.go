@@ -11,9 +11,13 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-storage-manager/models/file"
+	"monorepo/bin-storage-manager/pkg/dbhandler"
 
 	"cloud.google.com/go/storage"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -22,28 +26,58 @@ import (
 const (
 	bucketDirectoryRecording = "recording"
 	bucketDirectoryTmp       = "tmp"
+	bucketDirectoryBin       = "bin" // bin project services directory. mostly chat-manager.
 )
 
 // FileHandler intreface for GCP bucket handler
 type FileHandler interface {
-	GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error)
-	Delete(ctx context.Context, bucketName string, filepath string) error
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		referenceType file.ReferenceType,
+		referenceID uuid.UUID,
+		name string,
+		detail string,
+		bucketName string,
+		filepath string,
+	) (*file.File, error)
+	Get(ctx context.Context, id uuid.UUID) (*file.File, error)
+	Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)
+	Delete(ctx context.Context, id uuid.UUID) (*file.File, error)
+	DeleteBucketfile(ctx context.Context, bucketName string, filepath string) error
+
+	CompressCreate(ctx context.Context, srcBucketName string, srcFilepaths []string) (string, string, error)
+	DownloadURIGet(ctx context.Context, bucketName string, filepath string, expire time.Duration) (string, string, error)
+
 	IsExist(ctx context.Context, bucketName string, filepath string) bool
 }
 
 type fileHandler struct {
-	utilHandler utilhandler.UtilHandler
-	client      *storage.Client
+	utilHandler   utilhandler.UtilHandler
+	notifyHandler notifyhandler.NotifyHandler
+	db            dbhandler.DBHandler
 
-	projectID   string
-	bucketMedia string
-	bucketTmp   string
-	accessID    string
-	privateKey  []byte
+	client *storage.Client
+
+	projectID string
+
+	bucketMedia string // bucket for call medias. (recording/tts/file/tmp)
+	bucketTmp   string // bucket for temporary files.
+
+	accessID   string
+	privateKey []byte
 }
 
 // NewFileHandler create bucket handler
-func NewFileHandler(credentialPath string, projectID string, bucketMedia string, bucketTmp string) FileHandler {
+func NewFileHandler(
+	notifyHandler notifyhandler.NotifyHandler,
+	db dbhandler.DBHandler,
+	credentialPath string,
+	projectID string,
+	bucketMedia string,
+	bucketTmp string,
+) FileHandler {
 
 	ctx := context.Background()
 
@@ -69,6 +103,7 @@ func NewFileHandler(credentialPath string, projectID string, bucketMedia string,
 
 	h := &fileHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
 		client:      client,
 
 		projectID:   projectID,
