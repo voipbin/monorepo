@@ -7,10 +7,10 @@ import (
 	"monorepo/bin-flow-manager/models/flow"
 )
 
-// V1DataFlowPost is
+// V1DataFlowsPost is
 // v1 data type request struct for
 // /v1/flows POST
-type V1DataFlowPost struct {
+type V1DataFlowsPost struct {
 	CustomerID uuid.UUID `json:"customer_id"` // flow's owner
 	Type       flow.Type `json:"type"`        // flow's type
 
@@ -22,10 +22,10 @@ type V1DataFlowPost struct {
 	Persist bool `json:"persist"` // persist. If it is true, set the flow into the database.
 }
 
-// V1DataFlowIDPut is
+// V1DataFlowsIDPut is
 // v1 data type request struct for
 // /v1/flows/{id} PUT
-type V1DataFlowIDPut struct {
+type V1DataFlowsIDPut struct {
 	Name   string `json:"name"`   // name
 	Detail string `json:"detail"` // detail
 

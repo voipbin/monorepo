@@ -68,7 +68,7 @@ func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *rabbitmqhandler.Req
 	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 
-	var req request.V1DataFlowIDPut
+	var req request.V1DataFlowsIDPut
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
@@ -139,7 +139,7 @@ func (h *listenHandler) v1FlowsPost(ctx context.Context, m *rabbitmqhandler.Requ
 		"request": m,
 	})
 
-	var req request.V1DataFlowPost
+	var req request.V1DataFlowsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
