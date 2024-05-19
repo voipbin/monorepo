@@ -65,6 +65,7 @@ import (
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
@@ -919,9 +920,25 @@ type RequestHandler interface {
 	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 	RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 
-	// storage-manager: recording
+	// storage-manager recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)
 	StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error
+
+	// storage-manager file
+	StorageV1FileCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		referenceType smfile.ReferenceType,
+		referenceID uuid.UUID,
+		name string,
+		detail string,
+		bucketName string,
+		filepath string,
+	) (*smfile.File, error)
+	StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
+	StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smfile.File, error)
+	StorageV1FileDelete(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
 
 	// tag-manager
 	TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name string, detail string) (*tmtag.Tag, error)
