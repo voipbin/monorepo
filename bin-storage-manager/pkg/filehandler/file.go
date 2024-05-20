@@ -46,8 +46,6 @@ func (h *fileHandler) Create(
 
 	// generate destination filepath
 	id := h.utilHandler.UUIDCreate()
-
-	// tmpFilename := getFilename(filepath)
 	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, id)
 
 	// move the file from the tmp bucket to the new location

@@ -801,6 +801,7 @@ type RequestHandler interface {
 		detail string,
 		bucketName string,
 		filepath string,
+		requestTimeout int,
 	) (*smfile.File, error)
 	StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
 	StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smfile.File, error)

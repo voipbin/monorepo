@@ -54,20 +54,25 @@ func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, f mul
 
 	// open file writer
 	filepath := fmt.Sprintf("tmp/%s", h.utilHandler.UUIDCreate())
+	log.Debugf("Filename: %s", filepath)
 	wc := h.storageClient.Bucket(h.bucketName).Object(filepath).NewWriter(ctx)
 
 	// upload the file
-	if _, err := io.Copy(wc, f); err != nil {
+	w, err := io.Copy(wc, f)
+	if err != nil {
 		log.Errorf("Could not upload the file. err: %v", err)
 		return nil, err
 	}
+	log.Debugf("Wrote file. count: %d", w)
+
 	if err := wc.Close(); err != nil {
 		log.Errorf("Could not close the file. err: %v", err)
 		return nil, err
 	}
 
 	// create file
-	tmp, err := h.reqHandler.StorageV1FileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, h.bucketName, filepath)
+	// set timeout for 60 secs
+	tmp, err := h.reqHandler.StorageV1FileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, h.bucketName, filepath, 60000)
 	if err != nil {
 		log.Errorf("Could not create a file. err: %v", err)
 		return nil, err

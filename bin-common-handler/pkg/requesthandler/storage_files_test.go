@@ -17,14 +17,15 @@ func Test_StorageV1FileCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID    uuid.UUID
-		ownerID       uuid.UUID
-		referenceType smfile.ReferenceType
-		referenceID   uuid.UUID
-		fileName      string
-		detail        string
-		bucketName    string
-		filepath      string
+		customerID     uuid.UUID
+		ownerID        uuid.UUID
+		referenceType  smfile.ReferenceType
+		referenceID    uuid.UUID
+		fileName       string
+		detail         string
+		bucketName     string
+		filepath       string
+		requestTimeout int
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -35,14 +36,15 @@ func Test_StorageV1FileCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID:    uuid.FromStringOrNil("4edf2f7e-160e-11ef-9cee-7f2de117897d"),
-			ownerID:       uuid.FromStringOrNil("4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f"),
-			referenceType: smfile.ReferenceTypeRecording,
-			referenceID:   uuid.FromStringOrNil("4f6d6000-160e-11ef-a051-a7a6e34953db"),
-			fileName:      "test name",
-			detail:        "test detail",
-			bucketName:    "test_bucket",
-			filepath:      "tmp/file/path",
+			customerID:     uuid.FromStringOrNil("4edf2f7e-160e-11ef-9cee-7f2de117897d"),
+			ownerID:        uuid.FromStringOrNil("4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f"),
+			referenceType:  smfile.ReferenceTypeRecording,
+			referenceID:    uuid.FromStringOrNil("4f6d6000-160e-11ef-a051-a7a6e34953db"),
+			fileName:       "test name",
+			detail:         "test detail",
+			bucketName:     "test_bucket",
+			filepath:       "tmp/file/path",
+			requestTimeout: 5000,
 
 			expectTarget: "bin-manager.storage-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
@@ -76,7 +78,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.StorageV1FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.bucketName, tt.filepath)
+			res, err := reqHandler.StorageV1FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.bucketName, tt.filepath, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
