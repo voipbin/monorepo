@@ -20,7 +20,7 @@ func (r *requestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageTok
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceTranscribeTranscripts, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, "transcribe/transcripts", 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

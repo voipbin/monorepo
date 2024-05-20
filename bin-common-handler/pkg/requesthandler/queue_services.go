@@ -33,7 +33,7 @@ func (r *requestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, q
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceQueueServiceTypeQueuecall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/services/type/queuecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

@@ -49,7 +49,7 @@ func (r *requestHandler) CallV1GroupcallCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallGroupcalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -77,7 +77,7 @@ func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken stri
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallGroupcalls, 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/groupcalls", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -102,7 +102,7 @@ func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken stri
 func (r *requestHandler) CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls/%s", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallGroupcallsID, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -127,7 +127,7 @@ func (r *requestHandler) CallV1GroupcallGet(ctx context.Context, groupcallID uui
 func (r *requestHandler) CallV1GroupcallDelete(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls/%s", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallGroupcallsID, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -152,7 +152,7 @@ func (r *requestHandler) CallV1GroupcallDelete(ctx context.Context, groupcallID 
 func (r *requestHandler) CallV1GroupcallHangup(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallGroupcallsIDHangup, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

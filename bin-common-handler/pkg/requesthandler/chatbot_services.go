@@ -45,7 +45,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceChatbotServiceTypeChatbotcall, requestTimeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPost, "chatbot/services/type/chatbotcall", requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
