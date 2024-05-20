@@ -31,7 +31,7 @@ func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceServiceTypeConferencecall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/services/type/conferencecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

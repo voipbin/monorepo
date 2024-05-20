@@ -28,7 +28,7 @@ func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUI
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTTS(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTTS(ctx, uri, rabbitmqhandler.RequestMethodPost, "tts/speeches", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

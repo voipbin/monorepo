@@ -17,7 +17,7 @@ func (r *requestHandler) FlowV1ActionGet(ctx context.Context, flowID, actionID u
 
 	uri := fmt.Sprintf("/flows/%s/actions/%s", flowID, actionID)
 
-	res, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}

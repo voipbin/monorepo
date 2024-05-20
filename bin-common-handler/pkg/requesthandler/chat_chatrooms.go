@@ -20,7 +20,7 @@ import (
 func (r *requestHandler) ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error) {
 	uri := fmt.Sprintf("/v1/chatrooms/%s", chatroomID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, "chat/chatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -48,7 +48,7 @@ func (r *requestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken strin
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, "chat/chatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -73,7 +73,7 @@ func (r *requestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken strin
 func (r *requestHandler) ChatV1ChatroomDelete(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error) {
 	uri := fmt.Sprintf("/v1/chatrooms/%s", chatroomID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, "chat/chatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -107,7 +107,7 @@ func (r *requestHandler) ChatV1ChatroomUpdateBasicInfo(ctx context.Context, id u
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPut, "chat/chats", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

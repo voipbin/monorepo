@@ -18,7 +18,7 @@ func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, customerID 
 
 	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}

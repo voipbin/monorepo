@@ -125,77 +125,6 @@ var (
 
 type resource string
 
-const (
-	resourceChatChats            resource = "chat/chats"
-	resourceChatChatrooms        resource = "chat/chatrooms"
-	resourceChatMessagechats     resource = "chat/messagechats"
-	resourceChatMessagechatrooms resource = "chat/messagechatrooms"
-
-	resourceChatbotChatbots   resource = "chatbot/chatbots"
-	resourceChatbotChatbotsID resource = "chatbot/chatbots/<chatbot-id>"
-
-	resourceChatbotChatbotcalls   resource = "chatbot/chatbots"
-	resourceChatbotChatbotcallsID resource = "chatbot/chatbots/<chatbot-id>"
-
-	resourceChatbotServiceTypeChatbotcall resource = "chatbot/services/type/chatbotcall"
-
-	resourceConferenceConferences                  resource = "conference/conferences"
-	resourceConferenceConferencesID                resource = "conference/conferences/<conference-id>"
-	resourceConferenceConferencesIDRecordingStart  resource = "conference/conferences/<conference-id>/recording_start"
-	resourceConferenceConferencesIDRecordingStop   resource = "conference/conferences/<conference-id>/recording_stop"
-	resourceConferenceConferencesIDTranscribeStart resource = "conference/conferences/<conference-id>/transdribe_start"
-	resourceConferenceConferencesIDTranscribeStop  resource = "conference/conferences/<conference-id>/transcribe_stop"
-	resourceConferenceConferencecalls              resource = "conference/conferencecalls"
-
-	resourceConferenceServiceTypeConferencecall resource = "conference/services/type/conferencecall"
-
-	resourceCustomerCustomers resource = "customer/customers"
-	resourceCustomerLogin     resource = "customer/login"
-
-	resourceConversationConversations           resource = "conversation/conversations"
-	resourceConversationConversationsIDMessages resource = "conversation/conversations/<conversation-id>/messages"
-	resourceConversationSetup                   resource = "conversation/setup"
-
-	resourceFlowActions     resource = "flow/actions"
-	resourceFlowFlows       resource = "flow/flows"
-	resourceFlowActiveFlows resource = "flow/activeflows"
-	resourceFlowVariables   resource = "flow/variables"
-
-	resourceMessageMessages resource = "message/messages"
-
-	resourceNumberAvailableNumbers resource = "number/available-number"
-	resourceNumberNumbers          resource = "number/numbers"
-
-	resourceOutdialOutdials       resource = "outdial/outdials"
-	resourceOutdialOutdialTargets resource = "outdial/outdial_targets"
-
-	resourceQueueQueues                      resource = "queue/queues"
-	resourceQueueQueuecalls                  resource = "queue/queuecalls"
-	resourceQueueQueuecallsID                resource = "queue/queuecalls/<queuecall-id>"
-	resourceQueueQueuecallsIDKick            resource = "queue/queuecalls/<queuecall-id>/kick"
-	resourceQueueQueuecallsIDTimeoutWait     resource = "queue/queuecalls/<queuecall-id>/timeout_wait"
-	resourceQueueQueuecallsIDTiemoutService  resource = "queue/queuecalls/<queuecall-id>/timeout_service"
-	resourceQueueQueuecallsReferenceIDIDKick resource = "queue/queuecalls/reference_id/<reference-id>/kick"
-
-	resourceQueueServiceTypeQueuecall resource = "queue/services/type/queuecall"
-
-	resourceRegistrarDomains    resource = "registrar/domain"
-	resourceRegistrarExtensions resource = "registrar/extension"
-
-	resourceStorageRecording resource = "storage/recording"
-
-	resourceTagTags resource = "tag/tags"
-
-	resourceTranscribeTranscribes              resource = "transcribe/transcribes"
-	resourceTranscribeTranscribesID            resource = "transcribe/transcribes/<transcribe-id>"
-	resourceTranscribeTranscribesIDHealthCheck resource = "transcribe/transcribes/<transcribe-id>/health-check"
-	resourceTranscribeTranscripts              resource = "transcribe/transcripts"
-
-	resourceTTSSpeeches resource = "tts/speeches"
-
-	resourceWebhookWebhooks resource = "webhook/webhooks"
-)
-
 func initPrometheus(namespace string) {
 
 	promRequestProcessTime = prometheus.NewHistogramVec(
@@ -933,12 +862,3 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.Serv
 
 	return h
 }
-
-// func h.utilHandler.URLh.utilHandler.URLMergeFilters(uri string, filters map[string]string) string {
-// 	res := uri
-// 	for k, v := range filters {
-// 		res = fmt.Sprintf("%s&filter_%s=%s", res, url.QueryEscape(k), url.QueryEscape(v))
-// 	}
-
-// 	return res
-// }

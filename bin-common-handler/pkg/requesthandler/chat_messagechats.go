@@ -44,7 +44,7 @@ func (r *requestHandler) ChatV1MessagechatCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceChatMessagechats, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPost, "chat/messagechats", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -69,7 +69,7 @@ func (r *requestHandler) ChatV1MessagechatCreate(
 func (r *requestHandler) ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error) {
 	uri := fmt.Sprintf("/v1/messagechats/%s", messagechatID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, "chat/messagechats", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -97,7 +97,7 @@ func (r *requestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken st
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, "chat/messagechats", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -122,7 +122,7 @@ func (r *requestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken st
 func (r *requestHandler) ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error) {
 	uri := fmt.Sprintf("/v1/messagechats/%s", chatID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatMessagechats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, "chat/messagechats", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
