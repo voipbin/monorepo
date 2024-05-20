@@ -1,13 +1,11 @@
 package files
 
 import (
-	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-common-handler/pkg/utilhandler"
+	"net/http"
 
 	"monorepo/bin-api-manager/api/models/common"
 	"monorepo/bin-api-manager/api/models/request"
-	"monorepo/bin-api-manager/api/models/response"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	"github.com/gin-gonic/gin"
@@ -40,20 +38,30 @@ func filesPOST(c *gin.Context) {
 		"agent": a,
 	})
 
-	f, err := c.FormFile("file")
+	// set limit for max file sizw. 30M
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(30<<20))
+
+	f, header, err := c.Request.FormFile("file")
 	if err != nil {
 		log.Errorf("Could not get file. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
+	log.WithField("file", header).Debugf("Checking uploaded file header. filename: %s", header.Filename)
 
-	// save the file
-	tmpFilepath := fmt.Sprintf("/tmp/%s", utilhandler.UUIDCreate())
-	if errSave := c.SaveUploadedFile(f, tmpFilepath); errSave != nil {
-		log.Errorf("Could not save uploaded file. err: %v", errSave)
-		c.AbortWithStatus(400)
-		return
-	}
+	// f, err := c.FormFile("file")
+	// if err != nil {
+	// 	log.Errorf("Could not get file. err: %v", err)
+	// 	c.AbortWithStatus(400)
+	// 	return
+	// }
+
+	// if f.Size == 0 {
+	// 	// no file
+	// 	log.Errorf("Invalid file size. size: %d", f.Size)
+	// 	c.AbortWithStatus(400)
+	// 	return
+	// }
 
 	var req request.BodyFilesPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -66,16 +74,11 @@ func filesPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	tmpCalls, tmpGroupcalls, err := serviceHandler.CallCreate(c.Request.Context(), &a, req.FlowID, req.Actions, &req.Source, req.Destinations)
+	res, err := serviceHandler.FileCreate(c.Request.Context(), &a, f, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
 		return
-	}
-
-	res := &response.BodyCallsPOST{
-		Calls:      tmpCalls,
-		Groupcalls: tmpGroupcalls,
 	}
 
 	c.JSON(200, res)

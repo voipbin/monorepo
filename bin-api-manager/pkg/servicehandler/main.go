@@ -4,11 +4,13 @@ package servicehandler
 
 import (
 	"context"
+	"mime/multipart"
 	"net/http"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -376,6 +378,9 @@ type ServiceHandler interface {
 	ExtensionGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
+
+	// file handlers
+	FileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string) (*smfile.WebhookMessage, error)
 
 	// flow handlers
 	FlowCreate(ctx context.Context, a *amagent.Agent, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)

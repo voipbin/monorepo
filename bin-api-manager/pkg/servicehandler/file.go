@@ -3,18 +3,19 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	cmcall "monorepo/bin-call-manager/models/call"
-	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
-// CallCreate sends a request to call-manager
-// to creating a call.
-// it returns created calls and groupcalls info if it succeed.
-func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, filepath string, name string, detail string) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
+// FileCreate sends a request to storage-manager
+// to creating a file.
+// it returns created file info if it succeed.
+func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string) (*smfile.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FileCreate",
 		"customer_id": a.CustomerID,
@@ -22,55 +23,34 @@ func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, filep
 		"name":        name,
 		"detail":      detail,
 	})
-	log.Debug("Creating a new call.")
+	log.Debug("Creating a new file.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
-		return nil, nil, fmt.Errorf("user has no permission")
+		return nil, fmt.Errorf("user has no permission")
 	}
 
-	h.reqHandler.Storage
+	// open file writer
+	filepath := fmt.Sprintf("tmp/%s", h.utilHandler.UUIDCreate())
+	wc := h.storageClient.Bucket(h.bucketName).Object(filepath).NewWriter(ctx)
 
-	targetFlowID := flowID
-	if targetFlowID == uuid.Nil {
-		log.Debugf("The flowID is null. Creating a new temp flow for call dialing.")
-		f, err := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow", actions, false)
-		if err != nil {
-			log.Errorf("Could not create a flow for outoing call. err: %v", err)
-			return nil, nil, err
-		}
-		log.WithField("flow", f).Debugf("Create a new tmp flow for call dialing. flow_id: %s", f.ID)
-
-		targetFlowID = f.ID
+	// upload the file
+	if _, err := io.Copy(wc, f); err != nil {
+		log.Errorf("Could not upload the file. err: %v", err)
+		return nil, err
+	}
+	if err := wc.Close(); err != nil {
+		log.Errorf("Could not close the file. err: %v", err)
+		return nil, err
 	}
 
-	// verify the flow
-	f, err := h.flowGet(ctx, targetFlowID)
+	// create file
+	tmp, err := h.reqHandler.StorageV1FileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, h.bucketName, filepath)
 	if err != nil {
-		log.Errorf("Could not get flow info. err: %v", err)
-		return nil, nil, err
+		log.Errorf("Could not create a file. err: %v", err)
+		return nil, err
 	}
-	if f.CustomerID != a.CustomerID {
-		log.WithField("flow", f).Errorf("The flow has wrong customer id")
-		return nil, nil, fmt.Errorf("the flow has wrong customer id")
-	}
+	log.WithField("file", tmp).Debugf("Created file. file_id: %s", tmp.ID)
 
-	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false)
-	if err != nil {
-		log.Errorf("Could not create a call. err: %v", err)
-		return nil, nil, err
-	}
-
-	resCalls := []*cmcall.WebhookMessage{}
-	for _, tmp := range tmpCalls {
-		t := tmp.ConvertWebhookMessage()
-		resCalls = append(resCalls, t)
-	}
-
-	resGroupcalls := []*cmgroupcall.WebhookMessage{}
-	for _, tmp := range tmpGroupcalls {
-		t := tmp.ConvertWebhookMessage()
-		resGroupcalls = append(resGroupcalls, t)
-	}
-
-	return resCalls, resGroupcalls, nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
