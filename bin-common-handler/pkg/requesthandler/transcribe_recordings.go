@@ -17,7 +17,7 @@ package requesthandler
 // 		return nil, err
 // 	}
 
-// 	res, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60000, 0, ContentTypeJSON, m)
+// 	res, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/recording", 60000, 0, ContentTypeJSON, m)
 // 	switch {
 // 	case err != nil:
 // 		return nil, err

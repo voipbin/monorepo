@@ -20,7 +20,7 @@ func (r *requestHandler) MessageV1Hook(ctx context.Context, hm *hmhook.Hook) err
 		return err
 	}
 
-	tmp, err := r.sendRequestMessage(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceMessageMessages, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestMessage(ctx, uri, rabbitmqhandler.RequestMethodPost, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
