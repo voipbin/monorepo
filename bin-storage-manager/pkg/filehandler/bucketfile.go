@@ -158,7 +158,7 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 
 	// create opt
 	opts := &storage.SignedURLOptions{
-		Scheme:         storage.SigningSchemeV4,
+		Scheme:         storage.SigningSchemeV2,
 		Method:         "GET",
 		GoogleAccessID: h.accessID,
 		PrivateKey:     h.privateKey,
