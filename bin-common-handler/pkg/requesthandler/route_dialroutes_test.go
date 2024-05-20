@@ -45,7 +45,7 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      fmt.Sprintf("/v1/dialroutes?customer_id=177ca524-52b6-11ed-bc27-67e42188fe83&target=%s", url.QueryEscape("+82")),
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			[]rmroute.Route{
 				{

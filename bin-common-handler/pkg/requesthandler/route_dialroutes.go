@@ -19,7 +19,7 @@ import (
 func (r *requestHandler) RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/dialroutes?customer_id=%s&target=%s", customerID, url.QueryEscape(target))
 
-	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, "route/dialroutes", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

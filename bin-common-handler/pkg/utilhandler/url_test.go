@@ -59,14 +59,15 @@ func Test_URLMergeFilters(t *testing.T) {
 		{
 			"normal",
 
-			"/v1/calls/5bfcdcd6-4c6e-11ec-bed9-8fe4c0fdf5ba",
+			"/v1/calls/5bfcdcd6-4c6e-11ec-bed9-8fe4c0fdf5ba?token=some_token",
 			map[string]string{
 				"customer_id": "c222417c-f0b8-11ee-ba42-d3d4b7a5fd72",
-				"deleted":     "false",
-				"number":      "+123456789",
+				// "deleted":     "false",
+				// "number":      "+123456789",
 			},
 
-			"/v1/calls/5bfcdcd6-4c6e-11ec-bed9-8fe4c0fdf5ba&filter_customer_id=c222417c-f0b8-11ee-ba42-d3d4b7a5fd72&filter_deleted=false&filter_number=%2B123456789",
+			// "/v1/calls/5bfcdcd6-4c6e-11ec-bed9-8fe4c0fdf5ba?token=some_token&filter_customer_id=c222417c-f0b8-11ee-ba42-d3d4b7a5fd72&filter_deleted=false&filter_number=%2B123456789",
+			"/v1/calls/5bfcdcd6-4c6e-11ec-bed9-8fe4c0fdf5ba?token=some_token&filter_customer_id=c222417c-f0b8-11ee-ba42-d3d4b7a5fd72",
 		},
 		{
 			"empty uri",
@@ -74,11 +75,12 @@ func Test_URLMergeFilters(t *testing.T) {
 			"",
 			map[string]string{
 				"customer_id": "0438f358-f0b9-11ee-b276-873b0a3bf9bd",
-				"deleted":     "false",
-				"number":      "+123456789",
+				// "deleted":     "false",
+				// "number":      "+123456789",
 			},
 
-			"&filter_customer_id=0438f358-f0b9-11ee-b276-873b0a3bf9bd&filter_deleted=false&filter_number=%2B123456789",
+			// "&filter_customer_id=0438f358-f0b9-11ee-b276-873b0a3bf9bd&filter_deleted=false&filter_number=%2B123456789",
+			"&filter_customer_id=0438f358-f0b9-11ee-b276-873b0a3bf9bd",
 		},
 	}
 

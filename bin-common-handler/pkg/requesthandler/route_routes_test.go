@@ -114,7 +114,7 @@ func Test_RouteV1RouteGet(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      "/v1/routes/20e596b2-c7ea-4e88-bb7f-92ac5003c388",
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			&rmroute.Route{
 				ID: uuid.FromStringOrNil("20e596b2-c7ea-4e88-bb7f-92ac5003c388"),
@@ -175,7 +175,7 @@ func Test_RouteV1RouteDelete(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      "/v1/routes/eeda13db-aeb1-448b-bd86-cf64df8b36be",
 				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			&rmroute.Route{
 				ID: uuid.FromStringOrNil("eeda13db-aeb1-448b-bd86-cf64df8b36be"),
@@ -312,7 +312,7 @@ func Test_RouteV1RouteGetsByCustomerID(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10&customer_id=aee4503c-2657-41c9-8f20-5848173bcecf", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			[]rmroute.Route{
 				{
@@ -377,7 +377,7 @@ func Test_RouteV1RouteGets(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			[]rmroute.Route{
 				{
