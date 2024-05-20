@@ -381,6 +381,9 @@ type ServiceHandler interface {
 
 	// file handlers
 	FileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string) (*smfile.WebhookMessage, error)
+	FileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	FileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	FileGetsByOnwerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
 
 	// flow handlers
 	FlowCreate(ctx context.Context, a *amagent.Agent, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
