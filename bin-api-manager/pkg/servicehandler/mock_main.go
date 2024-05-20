@@ -6,6 +6,7 @@ package servicehandler
 
 import (
 	context "context"
+	multipart "mime/multipart"
 	agent "monorepo/bin-agent-manager/models/agent"
 	request "monorepo/bin-api-manager/api/models/request"
 	account "monorepo/bin-billing-manager/models/account"
@@ -46,6 +47,7 @@ import (
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	provider "monorepo/bin-route-manager/models/provider"
 	route "monorepo/bin-route-manager/models/route"
+	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
@@ -1838,6 +1840,21 @@ func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *agent.Agent
 func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(ctx, a, id, name, detail, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionUpdate), ctx, a, id, name, detail, password)
+}
+
+// FileCreate mocks base method.
+func (m *MockServiceHandler) FileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail string) (*file.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileCreate", ctx, a, f, name, detail)
+	ret0, _ := ret[0].(*file.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileCreate indicates an expected call of FileCreate.
+func (mr *MockServiceHandlerMockRecorder) FileCreate(ctx, a, f, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileCreate", reflect.TypeOf((*MockServiceHandler)(nil).FileCreate), ctx, a, f, name, detail)
 }
 
 // FlowCreate mocks base method.
