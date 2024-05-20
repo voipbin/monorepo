@@ -42,7 +42,7 @@ func (r *requestHandler) RouteV1RouteCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodPost, "route/routes", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -67,7 +67,7 @@ func (r *requestHandler) RouteV1RouteCreate(
 func (r *requestHandler) RouteV1RouteGet(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/routes/%s", routeID)
 
-	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, "route/routes/<route-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -91,7 +91,7 @@ func (r *requestHandler) RouteV1RouteGet(ctx context.Context, routeID uuid.UUID)
 func (r *requestHandler) RouteV1RouteDelete(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/routes/%s", routeID)
 
-	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodDelete, "route/routes/<route-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -137,7 +137,7 @@ func (r *requestHandler) RouteV1RouteUpdate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodPut, "route/routes/<route-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -162,7 +162,7 @@ func (r *requestHandler) RouteV1RouteUpdate(
 func (r *requestHandler) RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, "route/routes", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -187,7 +187,7 @@ func (r *requestHandler) RouteV1RouteGetsByCustomerID(ctx context.Context, custo
 func (r *requestHandler) RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, "route/routes", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

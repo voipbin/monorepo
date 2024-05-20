@@ -242,9 +242,6 @@ const (
 	resourceRegistrarDomains    resource = "registrar/domain"
 	resourceRegistrarExtensions resource = "registrar/extension"
 
-	resourceRouteRoutes    resource = "route/routes"
-	resourceRouteProviders resource = "route/providers"
-
 	resourceStorageRecording resource = "storage/recording"
 
 	resourceTagTags resource = "tag/tags"
