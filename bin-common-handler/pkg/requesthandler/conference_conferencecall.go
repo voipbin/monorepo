@@ -47,7 +47,7 @@ func (r *requestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conf
 
 	uri := fmt.Sprintf("/v1/conferencecalls/%s", conferencecallID)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferencecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (r *requestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conf
 func (r *requestHandler) ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error) {
 	uri := fmt.Sprintf("/v1/conferencecalls/%s", conferencecallID)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferencecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -102,7 +102,7 @@ func (r *requestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Conte
 		return err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencecalls, requestTimeoutDefault, delay, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferencecalls", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

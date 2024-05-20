@@ -60,6 +60,7 @@ import (
 	provider "monorepo/bin-route-manager/models/provider"
 	route "monorepo/bin-route-manager/models/route"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
@@ -4512,6 +4513,66 @@ func (m *MockRequestHandler) SendRequest(ctx context.Context, queue outline.Queu
 func (mr *MockRequestHandlerMockRecorder) SendRequest(ctx, queue, uri, method, timeout, delay, dataType, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRequest", reflect.TypeOf((*MockRequestHandler)(nil).SendRequest), ctx, queue, uri, method, timeout, delay, dataType, data)
+}
+
+// StorageV1FileCreate mocks base method.
+func (m *MockRequestHandler) StorageV1FileCreate(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, bucketName, filepath string) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1FileCreate", ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1FileCreate indicates an expected call of StorageV1FileCreate.
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreate(ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileCreate), ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+}
+
+// StorageV1FileDelete mocks base method.
+func (m *MockRequestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UUID) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1FileDelete", ctx, fileID)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1FileDelete indicates an expected call of StorageV1FileDelete.
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileDelete(ctx, fileID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileDelete", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileDelete), ctx, fileID)
+}
+
+// StorageV1FileGet mocks base method.
+func (m *MockRequestHandler) StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1FileGet", ctx, fileID)
+	ret0, _ := ret[0].(*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1FileGet indicates an expected call of StorageV1FileGet.
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileGet(ctx, fileID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileGet), ctx, fileID)
+}
+
+// StorageV1FileGets mocks base method.
+func (m *MockRequestHandler) StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1FileGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1FileGets indicates an expected call of StorageV1FileGets.
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileGets", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileGets), ctx, pageToken, pageSize, filters)
 }
 
 // StorageV1RecordingDelete mocks base method.

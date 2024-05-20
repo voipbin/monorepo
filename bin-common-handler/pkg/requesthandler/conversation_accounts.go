@@ -119,7 +119,7 @@ func (r *requestHandler) ConversationV1AccountUpdate(ctx context.Context, accoun
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConversationConversations, 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPut, "conversation/conversations", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -144,7 +144,7 @@ func (r *requestHandler) ConversationV1AccountUpdate(ctx context.Context, accoun
 func (r *requestHandler) ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConversationConversations, 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodDelete, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

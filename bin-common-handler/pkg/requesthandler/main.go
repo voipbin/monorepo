@@ -65,6 +65,7 @@ import (
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
@@ -123,140 +124,6 @@ var (
 )
 
 type resource string
-
-const (
-	resourceAstBridges              resource = "ast/bridges"
-	resourceAstBridgesAddChannel    resource = "ast/bridges/addchannel"
-	resourceAstBridgesRemoveChannel resource = "ast/bridges/removechannel"
-
-	resourceAstAMI resource = "ast/ami"
-
-	resourceAstChannels              resource = "ast/channels"
-	resourceAstChannelsAnswer        resource = "ast/channels/answer"
-	resourceAstChannelsContinue      resource = "ast/channels/continue"
-	resourceAstChannelsDial          resource = "ast/channels/dial"
-	resourceAstChannelsExternalMedia resource = "ast/channels/externalmedia"
-	resourceAstChannelsHangup        resource = "ast/channels/hangup"
-	resourceAstChannelsHold          resource = "ast/channels/hold"
-	resourceAstChannelsMOH           resource = "ast/channels/moh"
-	resourceAstChannelsMute          resource = "ast/channels/mute"
-	resourceAstChannelsPlay          resource = "ast/channels/play"
-	resourceAstChannelsRecord        resource = "ast/channels/record"
-	resourceAstChannelsSilence       resource = "ast/channels/silence"
-	resourceAstChannelsSnoop         resource = "ast/channels/snoop"
-	resourceAstChannelsVar           resource = "ast/channels/var"
-
-	resourceAstPlaybacks resource = "ast/playbacks"
-
-	resourceAstRecordingStop    resource = "ast/recording/<recording_name>/stop"
-	resourceAstRecordingPause   resource = "ast/recording/<recording_name>/pause"
-	resourceAstRecordingUnpause resource = "ast/recording/<recording_name>/unpause"
-	resourceAstRecordingMute    resource = "ast/recording/<recording_name>/mute"
-	resourceAstRecordingUnmute  resource = "ast/recording/<recording_name>/unmute"
-
-	resourceAgentAgents resource = "agent/agents"
-
-	resourceCampaignCampaigns     resource = "campaign/campaigns"
-	resourceCampaignCampaigncalls resource = "campaign/campaigncalls"
-	resourceCampaignOutplans      resource = "campaign/outplans"
-
-	resourceCallCalls                      resource = "call/calls"
-	resourceCallCallsCallIDActionNext      resource = "call/calls/<call-id>/action-next"
-	resourceCallCallsCallIDActionTimeout   resource = "call/calls/<call-id>/action-timeout"
-	resourceCallCallsHealth                resource = "call/calls/health"
-	resourceCallCallsCallIDRecordingStart  resource = "call/calls/<call-id>/recording-start"
-	resourceCallCallsCallIDRecordingStop   resource = "call/calls/<call-id>/recording-stop"
-	resourceCallCallsCallIDConfbridgeID    resource = "call/calls/<call-id>/confbirdge_id"
-	resourceCallCallsCallIDExternalMedia   resource = "call/calls/<call-id>/external-media"
-	resourceCallCallsCallIDTalk            resource = "call/calls/<call-id>/talk"
-	resourceCallCallsCallIDPlay            resource = "call/calls/<call-id>/play"
-	resourceCallCallsCallIDHold            resource = "call/calls/<call-id>/hold"
-	resourceCallCallsCallIDMOH             resource = "call/calls/<call-id>/moh"
-	resourceCallCallsCallIDMute            resource = "call/calls/<call-id>/mute"
-	resourceCallCallsCallIDSilence         resource = "call/calls/<call-id>/silence"
-	resourceCallChannelsHealth             resource = "call/channels/health"
-	resourceCallConfbridges                resource = "call/confbridges"
-	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
-	resourceCallConfbridgesRecordingStart  resource = "call/confbridges/<confbridge-id>/recording-start"
-	resourceCallConfbridgesRecordingStop   resource = "call/confbridges/<confbridge-id>/recording-stop"
-	resourceCallGroupcalls                 resource = "call/groupcalls"
-	resourceCallGroupcallsID               resource = "call/groupcalls/<groupcall-id>"
-	resourceCallGroupcallsIDHangup         resource = "call/groupcalls/<groupcall-id>/hangup"
-	resourceCallRecordings                 resource = "call/recordings"
-	resourceCallExternalMedia              resource = "call/external-medias"
-
-	resourceChatChats            resource = "chat/chats"
-	resourceChatChatrooms        resource = "chat/chatrooms"
-	resourceChatMessagechats     resource = "chat/messagechats"
-	resourceChatMessagechatrooms resource = "chat/messagechatrooms"
-
-	resourceChatbotChatbots   resource = "chatbot/chatbots"
-	resourceChatbotChatbotsID resource = "chatbot/chatbots/<chatbot-id>"
-
-	resourceChatbotChatbotcalls   resource = "chatbot/chatbots"
-	resourceChatbotChatbotcallsID resource = "chatbot/chatbots/<chatbot-id>"
-
-	resourceChatbotServiceTypeChatbotcall resource = "chatbot/services/type/chatbotcall"
-
-	resourceConferenceConferences                  resource = "conference/conferences"
-	resourceConferenceConferencesID                resource = "conference/conferences/<conference-id>"
-	resourceConferenceConferencesIDRecordingStart  resource = "conference/conferences/<conference-id>/recording_start"
-	resourceConferenceConferencesIDRecordingStop   resource = "conference/conferences/<conference-id>/recording_stop"
-	resourceConferenceConferencesIDTranscribeStart resource = "conference/conferences/<conference-id>/transdribe_start"
-	resourceConferenceConferencesIDTranscribeStop  resource = "conference/conferences/<conference-id>/transcribe_stop"
-	resourceConferenceConferencecalls              resource = "conference/conferencecalls"
-
-	resourceConferenceServiceTypeConferencecall resource = "conference/services/type/conferencecall"
-
-	resourceCustomerCustomers resource = "customer/customers"
-	resourceCustomerLogin     resource = "customer/login"
-
-	resourceConversationConversations           resource = "conversation/conversations"
-	resourceConversationConversationsIDMessages resource = "conversation/conversations/<conversation-id>/messages"
-	resourceConversationSetup                   resource = "conversation/setup"
-
-	resourceFlowActions     resource = "flow/actions"
-	resourceFlowFlows       resource = "flow/flows"
-	resourceFlowActiveFlows resource = "flow/activeflows"
-	resourceFlowVariables   resource = "flow/variables"
-
-	resourceMessageMessages resource = "message/messages"
-
-	resourceNumberAvailableNumbers resource = "number/available-number"
-	resourceNumberNumbers          resource = "number/numbers"
-
-	resourceOutdialOutdials       resource = "outdial/outdials"
-	resourceOutdialOutdialTargets resource = "outdial/outdial_targets"
-
-	resourceQueueQueues                      resource = "queue/queues"
-	resourceQueueQueuecalls                  resource = "queue/queuecalls"
-	resourceQueueQueuecallsID                resource = "queue/queuecalls/<queuecall-id>"
-	resourceQueueQueuecallsIDKick            resource = "queue/queuecalls/<queuecall-id>/kick"
-	resourceQueueQueuecallsIDTimeoutWait     resource = "queue/queuecalls/<queuecall-id>/timeout_wait"
-	resourceQueueQueuecallsIDTiemoutService  resource = "queue/queuecalls/<queuecall-id>/timeout_service"
-	resourceQueueQueuecallsReferenceIDIDKick resource = "queue/queuecalls/reference_id/<reference-id>/kick"
-
-	resourceQueueServiceTypeQueuecall resource = "queue/services/type/queuecall"
-
-	resourceRegistrarDomains    resource = "registrar/domain"
-	resourceRegistrarExtensions resource = "registrar/extension"
-
-	resourceRouteRoutes    resource = "route/routes"
-	resourceRouteProviders resource = "route/providers"
-
-	resourceStorageRecording resource = "storage/recording"
-
-	resourceTagTags resource = "tag/tags"
-
-	resourceTranscribeTranscribes              resource = "transcribe/transcribes"
-	resourceTranscribeTranscribesID            resource = "transcribe/transcribes/<transcribe-id>"
-	resourceTranscribeTranscribesIDHealthCheck resource = "transcribe/transcribes/<transcribe-id>/health-check"
-	resourceTranscribeTranscripts              resource = "transcribe/transcripts"
-
-	resourceTTSSpeeches resource = "tts/speeches"
-
-	resourceWebhookWebhooks resource = "webhook/webhooks"
-)
 
 func initPrometheus(namespace string) {
 
@@ -919,9 +786,25 @@ type RequestHandler interface {
 	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 	RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 
-	// storage-manager: recording
+	// storage-manager recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)
 	StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error
+
+	// storage-manager file
+	StorageV1FileCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		referenceType smfile.ReferenceType,
+		referenceID uuid.UUID,
+		name string,
+		detail string,
+		bucketName string,
+		filepath string,
+	) (*smfile.File, error)
+	StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
+	StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smfile.File, error)
+	StorageV1FileDelete(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
 
 	// tag-manager
 	TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name string, detail string) (*tmtag.Tag, error)
@@ -979,12 +862,3 @@ func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.Serv
 
 	return h
 }
-
-// func h.utilHandler.URLh.utilHandler.URLMergeFilters(uri string, filters map[string]string) string {
-// 	res := uri
-// 	for k, v := range filters {
-// 		res = fmt.Sprintf("%s&filter_%s=%s", res, url.QueryEscape(k), url.QueryEscape(v))
-// 	}
-
-// 	return res
-// }

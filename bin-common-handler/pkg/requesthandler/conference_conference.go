@@ -21,7 +21,7 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, "conference/conferences", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageTok
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, "conference/conferences", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -72,7 +72,7 @@ func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageTok
 func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferencesID, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, "conference/conferences/<conference-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -97,7 +97,7 @@ func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, confe
 func (r *requestHandler) ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferences, requestTimeoutDefault, delay, ContentTypeNone, nil)
+	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, "conference/conferences", requestTimeoutDefault, delay, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -118,7 +118,7 @@ func (r *requestHandler) ConferenceV1ConferenceDeleteDelay(ctx context.Context, 
 func (r *requestHandler) ConferenceV1ConferenceStop(ctx context.Context, conferenceID uuid.UUID, delay int) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/stop", conferenceID)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesID, requestTimeoutDefault, delay, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferences/<conference-id>", requestTimeoutDefault, delay, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -170,7 +170,7 @@ func (r *requestHandler) ConferenceV1ConferenceCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferences", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -208,7 +208,7 @@ func (r *requestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, "conference/conferences", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -242,7 +242,7 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, "conference/conferences", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -267,7 +267,7 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_start", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDRecordingStart, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferences/<conference-id>/recording_start", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -292,7 +292,7 @@ func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Contex
 func (r *requestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_stop", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferences/<conference-id>/recording_stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -326,7 +326,7 @@ func (r *requestHandler) ConferenceV1ConferenceTranscribeStart(ctx context.Conte
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDTranscribeStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferences/<conference-id>/transdribe_start", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -351,7 +351,7 @@ func (r *requestHandler) ConferenceV1ConferenceTranscribeStart(ctx context.Conte
 func (r *requestHandler) ConferenceV1ConferenceTranscribeStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/transcribe_stop", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDTranscribeStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferences/<conference-id>/transcribe_stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

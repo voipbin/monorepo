@@ -11,7 +11,7 @@ import (
 func (r *requestHandler) AstPlaybackStop(ctx context.Context, asteriskID string, playabckID string) error {
 	url := fmt.Sprintf("/ari/playbacks/%s", playabckID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstPlaybacks, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, "ast/playbacks", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

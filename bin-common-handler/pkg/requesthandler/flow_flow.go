@@ -34,7 +34,7 @@ func (r *requestHandler) FlowV1FlowCreate(ctx context.Context, customerID uuid.U
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (r *requestHandler) FlowV1FlowCreate(ctx context.Context, customerID uuid.U
 func (r *requestHandler) FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -81,7 +81,7 @@ func (r *requestHandler) FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*
 func (r *requestHandler) FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodDelete, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -117,7 +117,7 @@ func (r *requestHandler) FlowV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPut, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -151,7 +151,7 @@ func (r *requestHandler) FlowV1FlowUpdateActions(ctx context.Context, flowID uui
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPut, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -179,7 +179,7 @@ func (r *requestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, p
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, "flow/flows", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

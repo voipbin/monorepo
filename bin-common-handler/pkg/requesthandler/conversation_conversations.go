@@ -21,7 +21,7 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 
 	uri := fmt.Sprintf("/v1/conversations/%s", conversationID)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConversationConversations, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/conversations", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 func (r *requestHandler) ConversationV1ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cvconversation.Conversation, error) {
 	uri := fmt.Sprintf("/v1/conversations?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConversationConversations, 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -113,7 +113,7 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConversationConversationsIDMessages, 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPost, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -138,7 +138,7 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 func (r *requestHandler) ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/conversations/%s/messages?page_token=%s&page_size=%d", conversationID, url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConversationConversationsIDMessages, 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

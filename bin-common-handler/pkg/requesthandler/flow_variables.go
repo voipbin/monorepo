@@ -19,7 +19,7 @@ func (r *requestHandler) FlowV1VariableGet(ctx context.Context, variableID uuid.
 
 	uri := fmt.Sprintf("/v1/variables/%s", variableID)
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowVariables, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, "flow/variables", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (r *requestHandler) FlowV1VariableSetVariable(ctx context.Context, variable
 		return err
 	}
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceFlowVariables, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, "flow/variables", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -70,7 +70,7 @@ func (r *requestHandler) FlowV1VariableSetVariable(ctx context.Context, variable
 func (r *requestHandler) FlowV1VariableDeleteVariable(ctx context.Context, variableID uuid.UUID, key string) error {
 	uri := fmt.Sprintf("/v1/variables/%s/variables/%s", variableID, url.QueryEscape(key))
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceFlowVariables, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodDelete, "flow/variables", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

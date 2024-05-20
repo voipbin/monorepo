@@ -22,7 +22,7 @@ import (
 func (r *requestHandler) CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", customerID)
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -50,7 +50,7 @@ func (r *requestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken s
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -99,7 +99,7 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -121,7 +121,7 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 func (r *requestHandler) CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodDelete, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -169,7 +169,7 @@ func (r *requestHandler) CustomerV1CustomerUpdate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
