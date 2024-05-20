@@ -26,7 +26,7 @@ func (r *requestHandler) CallV1ConfbridgeCreate(ctx context.Context, customerID 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -48,7 +48,7 @@ func (r *requestHandler) CallV1ConfbridgeCreate(ctx context.Context, customerID 
 func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s", confbridgeID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -72,7 +72,7 @@ func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, confbridgeI
 func (r *requestHandler) CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s", confbridgeID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/calls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -95,7 +95,7 @@ func (r *requestHandler) CallV1ConfbridgeGet(ctx context.Context, confbridgeID u
 func (r *requestHandler) CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", confbridgeID, callID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -112,7 +112,7 @@ func (r *requestHandler) CallV1ConfbridgeCallKick(ctx context.Context, confbridg
 func (r *requestHandler) CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", confbridgeID, callID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -154,7 +154,7 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridgesIDExternalMedia, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges/<confbridge-id>/external-media", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -179,7 +179,7 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", confbridgeID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridgesIDExternalMedia, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/confbridges/<confbridge-id>/external-media", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -216,7 +216,7 @@ func (r *requestHandler) CallV1ConfbridgeRecordingStart(ctx context.Context, con
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridgesRecordingStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges/<confbridge-id>/recording-start", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -241,7 +241,7 @@ func (r *requestHandler) CallV1ConfbridgeRecordingStart(ctx context.Context, con
 func (r *requestHandler) CallV1ConfbridgeRecordingStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s/recording_stop", confbridgeID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridgesRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges/<confbridge-id>/recording-stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -275,7 +275,7 @@ func (r *requestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridge
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridgesRecordingStop, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges/<confbridge-id>/recording-stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -309,7 +309,7 @@ func (r *requestHandler) CallV1ConfbridgeFlagRemove(ctx context.Context, confbri
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridgesRecordingStop, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/confbridges/<confbridge-id>/recording-stop", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

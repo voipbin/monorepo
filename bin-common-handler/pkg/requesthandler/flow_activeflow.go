@@ -81,7 +81,7 @@ func (r *requestHandler) FlowV1ActiveflowGets(ctx context.Context, pageToken str
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/calls", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
