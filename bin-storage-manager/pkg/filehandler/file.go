@@ -45,8 +45,10 @@ func (h *fileHandler) Create(
 	log.WithField("attrs", attrs).Debugf("Found file. name: %s", attrs.Name)
 
 	// generate destination filepath
-	tmpFilename := getFilename(filepath)
-	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, tmpFilename)
+	id := h.utilHandler.UUIDCreate()
+
+	// tmpFilename := getFilename(filepath)
+	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, id)
 
 	// move the file from the tmp bucket to the new location
 	dstAttrs, err := h.bucketfileMove(ctx, bucketName, filepath, h.bucketMedia, dstFilepath)
@@ -67,7 +69,6 @@ func (h *fileHandler) Create(
 	}
 
 	// create db row
-	id := h.utilHandler.UUIDCreate()
 	f := &file.File{
 		ID:               id,
 		CustomerID:       customerID,
