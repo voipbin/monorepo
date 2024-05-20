@@ -95,6 +95,7 @@ func (h *fileHandler) Create(
 		log.Errorf("Could not get created file info. err: %v", err)
 		return nil, err
 	}
+	log.WithField("file", res).Debugf("Created file info. id: %s", res.ID)
 
 	h.notifyHandler.PublishEvent(ctx, file.EventTypeFileCreated, res)
 
