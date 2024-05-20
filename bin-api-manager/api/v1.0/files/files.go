@@ -2,7 +2,6 @@ package files
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"net/http"
 
 	"monorepo/bin-api-manager/api/models/common"
 	"monorepo/bin-api-manager/api/models/request"
@@ -40,8 +39,8 @@ func filesPOST(c *gin.Context) {
 		"agent": a,
 	})
 
-	// set limit for max file sizw. 30M
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(30<<20))
+	// // set limit for max file sizw. 30M
+	// c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(30<<20))
 
 	f, header, err := c.Request.FormFile("file")
 	if err != nil {
@@ -65,18 +64,18 @@ func filesPOST(c *gin.Context) {
 	// 	return
 	// }
 
-	var req request.BodyFilesPOST
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
+	// var req request.BodyFilesPOST
+	// if err := c.BindJSON(&req); err != nil {
+	// 	log.Errorf("Could not parse the request. err: %v", err)
+	// 	c.AbortWithStatus(400)
+	// 	return
+	// }
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	res, err := serviceHandler.FileCreate(c.Request.Context(), &a, f, req.Name, req.Detail)
+	res, err := serviceHandler.FileCreate(c.Request.Context(), &a, f, header.Filename, "")
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
