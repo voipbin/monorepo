@@ -114,7 +114,7 @@ func filesGET(c *gin.Context) {
 		"agent": a,
 	})
 
-	var req request.ParamFlowsGET
+	var req request.ParamFilesGET
 	if err := c.BindQuery(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
