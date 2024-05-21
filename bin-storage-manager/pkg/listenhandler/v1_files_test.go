@@ -24,8 +24,12 @@ func Test_v1FilesPost(t *testing.T) {
 		referenceID   uuid.UUID
 		fileName      string
 		detail        string
+		filename      string
 		bucketName    string
 		filepath      string
+
+		responseFile *file.File
+		expectRes    *rabbitmqhandler.Response
 	}{
 		{
 			name: "normal",
@@ -33,7 +37,7 @@ func Test_v1FilesPost(t *testing.T) {
 				URI:      "/v1/files",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"4d85dc7a-153e-11ef-9221-13c46bd56c4c", "owner_id":"4dc51b42-153e-11ef-94b6-63fbe2cffaae", "reference_type":"recording", "reference_id":"4df207d8-153e-11ef-8e6d-9fc4e34455ba","name":"test","detail":"test detail","bucket_name":"test_bucket","filepath":"test/file/path"}`),
+				Data:     []byte(`{"customer_id":"4d85dc7a-153e-11ef-9221-13c46bd56c4c", "owner_id":"4dc51b42-153e-11ef-94b6-63fbe2cffaae", "reference_type":"recording", "reference_id":"4df207d8-153e-11ef-8e6d-9fc4e34455ba","name":"test","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"test/file/path"}`),
 			},
 
 			customerID:    uuid.FromStringOrNil("4d85dc7a-153e-11ef-9221-13c46bd56c4c"),
@@ -42,8 +46,18 @@ func Test_v1FilesPost(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("4df207d8-153e-11ef-8e6d-9fc4e34455ba"),
 			fileName:      "test",
 			detail:        "test detail",
+			filename:      "test_filename.txt",
 			bucketName:    "test_bucket",
 			filepath:      "test/file/path",
+
+			responseFile: &file.File{
+				ID: uuid.FromStringOrNil("9de3d544-1739-11ef-acf1-e7fe99b5d7d0"),
+			},
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"9de3d544-1739-11ef-acf1-e7fe99b5d7d0","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","bucket_name":"","filepath":"","uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
 		},
 	}
 
@@ -60,10 +74,15 @@ func Test_v1FilesPost(t *testing.T) {
 				storageHandler: mockStorageHandler,
 			}
 
-			mockStorageHandler.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.bucketName, tt.filepath).Return(&file.File{}, nil)
+			mockStorageHandler.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
 
-			if _, err := h.processRequest(tt.request); err != nil {
+			res, err := h.processRequest(tt.request)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -106,7 +125,7 @@ func Test_v1FilesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bec1be20-15ea-11ef-ab62-ab3b98e4ee3c","customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filepath":"","uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"bec1be20-15ea-11ef-ab62-ab3b98e4ee3c","customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","bucket_name":"","filepath":"","uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -163,7 +182,7 @@ func Test_v1FilesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2a5db58a-15eb-11ef-b669-bba0fb7a717d","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filepath":"","uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2a5db58a-15eb-11ef-b669-bba0fb7a717d","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","bucket_name":"","filepath":"","uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -221,7 +240,7 @@ func Test_v1FilesIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"97a4e91a-15eb-11ef-bf44-eb05a9976a61","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filepath":"","uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"97a4e91a-15eb-11ef-bf44-eb05a9976a61","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","bucket_name":"","filepath":"","uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

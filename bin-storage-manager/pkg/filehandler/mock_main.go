@@ -54,18 +54,18 @@ func (mr *MockFileHandlerMockRecorder) CompressCreate(ctx, srcBucketName, srcFil
 }
 
 // Create mocks base method.
-func (m *MockFileHandler) Create(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, bucketName, filepath string) (*file.File, error) {
+func (m *MockFileHandler) Create(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, filename, bucketName, filepath string) (*file.File, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath)
 	ret0, _ := ret[0].(*file.File)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockFileHandlerMockRecorder) Create(ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath interface{}) *gomock.Call {
+func (mr *MockFileHandlerMockRecorder) Create(ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFileHandler)(nil).Create), ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFileHandler)(nil).Create), ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath)
 }
 
 // Delete mocks base method.

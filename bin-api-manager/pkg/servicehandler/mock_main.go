@@ -1843,18 +1843,18 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(ctx, a, id, name, deta
 }
 
 // FileCreate mocks base method.
-func (m *MockServiceHandler) FileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail string) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) FileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail, filename string) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileCreate", ctx, a, f, name, detail)
+	ret := m.ctrl.Call(m, "FileCreate", ctx, a, f, name, detail, filename)
 	ret0, _ := ret[0].(*file.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FileCreate indicates an expected call of FileCreate.
-func (mr *MockServiceHandlerMockRecorder) FileCreate(ctx, a, f, name, detail interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) FileCreate(ctx, a, f, name, detail, filename interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileCreate", reflect.TypeOf((*MockServiceHandler)(nil).FileCreate), ctx, a, f, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileCreate", reflect.TypeOf((*MockServiceHandler)(nil).FileCreate), ctx, a, f, name, detail, filename)
 }
 
 // FileDelete mocks base method.
