@@ -177,7 +177,7 @@ func (h *serviceHandler) FileDelete(ctx context.Context, a *amagent.Agent, id uu
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.StorageV1FileDelete(ctx, id)
+	tmp, err := h.reqHandler.StorageV1FileDelete(ctx, id, 60000)
 	if err != nil {
 		return nil, err
 	}
