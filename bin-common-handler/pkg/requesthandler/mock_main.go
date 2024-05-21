@@ -4516,18 +4516,18 @@ func (mr *MockRequestHandlerMockRecorder) SendRequest(ctx, queue, uri, method, t
 }
 
 // StorageV1FileCreate mocks base method.
-func (m *MockRequestHandler) StorageV1FileCreate(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, bucketName, filepath string, requestTimeout int) (*file.File, error) {
+func (m *MockRequestHandler) StorageV1FileCreate(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, filename, bucketName, filepath string, requestTimeout int) (*file.File, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageV1FileCreate", ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath, requestTimeout)
+	ret := m.ctrl.Call(m, "StorageV1FileCreate", ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, requestTimeout)
 	ret0, _ := ret[0].(*file.File)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // StorageV1FileCreate indicates an expected call of StorageV1FileCreate.
-func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreate(ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath, requestTimeout interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreate(ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, requestTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileCreate), ctx, customerID, ownerID, referenceType, referenceID, name, detail, bucketName, filepath, requestTimeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileCreate), ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, requestTimeout)
 }
 
 // StorageV1FileDelete mocks base method.

@@ -23,6 +23,7 @@ const (
 
 		name,
 		detail,
+		filename,
 
 		bucket_name,
 		filepath,
@@ -53,6 +54,7 @@ func (h *handler) fileGetFromRow(row *sql.Rows) (*file.File, error) {
 
 		&res.Name,
 		&res.Detail,
+		&res.Filename,
 
 		&res.BucketName,
 		&res.Filepath,
@@ -84,6 +86,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 
 		name,
 		detail,
+		filename,
 
 		bucket_name,
 		filepath,
@@ -98,7 +101,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	) values(
 		?, ?, ?,
 		?, ?,
-		?, ?,
+		?, ?, ?,
 		?, ?,
 		?, ?,
 		?, ?, ?, ?
@@ -119,6 +122,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 
 		f.Name,
 		f.Detail,
+		f.Filename,
 
 		f.BucketName,
 		f.Filepath,

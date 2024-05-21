@@ -37,6 +37,7 @@ func (h *listenHandler) v1FilesPost(ctx context.Context, m *rabbitmqhandler.Requ
 		req.ReferenceID,
 		req.Name,
 		req.Detail,
+		req.Filename,
 		req.BucketName,
 		req.Filepath,
 	)

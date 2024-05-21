@@ -16,8 +16,9 @@ type V1DataFilesPost struct {
 	ReferenceType file.ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID          `json:"reference_id"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name     string `json:"name"`
+	Detail   string `json:"detail"`
+	Filename string `json:"filename"`
 
 	BucketName string `json:"bucket_name"`
 	Filepath   string `json:"filepath"`

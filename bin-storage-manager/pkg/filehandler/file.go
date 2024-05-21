@@ -20,6 +20,7 @@ func (h *fileHandler) Create(
 	referenceID uuid.UUID,
 	name string,
 	detail string,
+	filename string,
 	bucketName string,
 	filepath string,
 ) (*file.File, error) {
@@ -31,6 +32,7 @@ func (h *fileHandler) Create(
 		"reference_id":   referenceID,
 		"name":           name,
 		"detail":         detail,
+		"filename":       filename,
 		"bucket_name":    bucketName,
 		"filepath":       filepath,
 	})
@@ -75,6 +77,7 @@ func (h *fileHandler) Create(
 		ReferenceID:      referenceID,
 		Name:             name,
 		Detail:           detail,
+		Filename:         filename,
 		BucketName:       h.bucketMedia,
 		Filepath:         dstFilepath,
 		URIBucket:        dstAttrs.MediaLink,

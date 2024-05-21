@@ -9,6 +9,7 @@ create table storage_files(
 
   name      varchar(255),
   detail    text,
+  filename  varchar(1023),
 
 	bucket_name text,
 	filepath    text,

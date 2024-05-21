@@ -25,6 +25,7 @@ type StorageHandler interface {
 		referenceID uuid.UUID,
 		name string,
 		detail string,
+		filename string,
 		bucketName string,
 		filepath string,
 	) (*file.File, error)

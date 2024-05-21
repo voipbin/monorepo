@@ -15,8 +15,9 @@ type WebhookMessage struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name     string `json:"name"`
+	Detail   string `json:"detail"`
+	Filename string `json:"filename"`
 
 	URIDownload string `json:"uri_download"` // uri for download
 
@@ -36,8 +37,9 @@ func (h *File) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
-		Name:   h.Name,
-		Detail: h.Detail,
+		Name:     h.Name,
+		Detail:   h.Detail,
+		Filename: h.Filename,
 
 		URIDownload: h.URIDownload,
 

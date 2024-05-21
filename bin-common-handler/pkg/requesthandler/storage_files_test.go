@@ -23,6 +23,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 		referenceID    uuid.UUID
 		fileName       string
 		detail         string
+		filename       string
 		bucketName     string
 		filepath       string
 		requestTimeout int
@@ -42,6 +43,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 			referenceID:    uuid.FromStringOrNil("4f6d6000-160e-11ef-a051-a7a6e34953db"),
 			fileName:       "test name",
 			detail:         "test detail",
+			filename:       "test_filename.txt",
 			bucketName:     "test_bucket",
 			filepath:       "tmp/file/path",
 			requestTimeout: 5000,
@@ -51,7 +53,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 				URI:      "/v1/files",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"4edf2f7e-160e-11ef-9cee-7f2de117897d","owner_id":"4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f","reference_type":"recording","reference_id":"4f6d6000-160e-11ef-a051-a7a6e34953db","name":"test name","detail":"test detail","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
+				Data:     []byte(`{"customer_id":"4edf2f7e-160e-11ef-9cee-7f2de117897d","owner_id":"4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f","reference_type":"recording","reference_id":"4f6d6000-160e-11ef-a051-a7a6e34953db","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
 			},
 
 			response: &rabbitmqhandler.Response{
@@ -78,7 +80,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.StorageV1FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.bucketName, tt.filepath, tt.requestTimeout)
+			res, err := reqHandler.StorageV1FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
