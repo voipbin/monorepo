@@ -272,7 +272,7 @@ func Test_filesIDGET(t *testing.T) {
 	}
 }
 
-func Test_flowsIDDELETE(t *testing.T) {
+func Test_filesIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -296,7 +296,7 @@ func Test_flowsIDDELETE(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("22bad83e-1718-11ef-8e93-63a03937356b"),
-			`"id":"22bad83e-1718-11ef-8e93-63a03937356b","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"22bad83e-1718-11ef-8e93-63a03937356b","customer_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
