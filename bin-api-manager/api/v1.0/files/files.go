@@ -79,7 +79,6 @@ func filesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "filesGET",
 		"request_address": c.ClientIP,
-		"request":         c.Request,
 	})
 
 	tmp, exists := c.Get("agent")

@@ -72,7 +72,6 @@ func groupcallsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "groupcallsGET",
 		"request_address": c.ClientIP,
-		"request":         c.Request,
 	})
 
 	tmp, exists := c.Get("agent")
