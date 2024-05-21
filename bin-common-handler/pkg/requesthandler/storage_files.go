@@ -27,6 +27,7 @@ func (r *requestHandler) StorageV1FileCreate(
 	detail string,
 	bucketName string,
 	filepath string,
+	requestTimeout int, // milliseconds
 ) (*smfile.File, error) {
 	uri := "/v1/files"
 
@@ -46,7 +47,7 @@ func (r *requestHandler) StorageV1FileCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/files", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/files", requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

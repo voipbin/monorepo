@@ -45,6 +45,11 @@ var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
+// gcp info
+var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
+var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
+var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name for tmp storage")
+
 //	@title			VoIPBIN project API
 //	@version		3.1.0
 //	@description	RESTful API documents for VoIPBIN project.
@@ -107,7 +112,7 @@ func run(
 	requestHandler := requesthandler.NewRequestHandler(sock, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, *gcpCredential, *gcpProjectID, *gcpBucketName)
 
 	if errSub := runSubscribe(sock, zmqPubHandler); errSub != nil {
 		log.Errorf("Could not run subscribe handler. err: %v", errSub)

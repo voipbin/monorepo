@@ -62,7 +62,7 @@ type fileHandler struct {
 
 	projectID string
 
-	bucketMedia string // bucket for call medias. (recording/tts/file/tmp)
+	bucketMedia string // bucket for call medias. (recording/tts/file/tmp...)
 	bucketTmp   string // bucket for temporary files.
 
 	accessID   string
@@ -102,9 +102,10 @@ func NewFileHandler(
 	}
 
 	h := &fileHandler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		db:          db,
-		client:      client,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		notifyHandler: notifyHandler,
+		db:            db,
+		client:        client,
 
 		projectID:   projectID,
 		bucketMedia: bucketMedia,

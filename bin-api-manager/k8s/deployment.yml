@@ -55,6 +55,12 @@ spec:
             - './etc/ssl/privkey.pem'
             - '-ssl_cert'
             - './etc/ssl/cert.pem'
+            - '-gcp_credential'
+            - '../google_service_account.json'
+            - '-gcp_project_id'
+            - 'voipbin-production'
+            - '-gcp_bucket_name'
+            - 'voipbin-tmp-bucket-europe-west4'
           readinessProbe:
             httpGet:
               path: /ping
