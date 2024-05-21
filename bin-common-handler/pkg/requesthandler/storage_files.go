@@ -122,10 +122,10 @@ func (r *requestHandler) StorageV1FileGet(ctx context.Context, fileID uuid.UUID)
 // StorageV1FileDelete sends a request to storage-manager
 // to deleting a files.
 // it returns error if it fails
-func (r *requestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UUID) (*smfile.File, error) {
+func (r *requestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smfile.File, error) {
 	uri := fmt.Sprintf("/v1/files/%s", fileID)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodDelete, "storage/files/<file-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodDelete, "storage/files/<file-id>", requestTimeout, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

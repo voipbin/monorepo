@@ -75,7 +75,6 @@ func flowsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "flowsGET",
 		"request_address": c.ClientIP,
-		"request":         c.Request,
 	})
 
 	tmp, exists := c.Get("agent")

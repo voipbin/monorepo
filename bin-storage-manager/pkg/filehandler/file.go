@@ -153,6 +153,7 @@ func (h *fileHandler) Delete(ctx context.Context, id uuid.UUID) (*file.File, err
 	}
 
 	// delete file
+	log.WithField("file", res).Debugf("Deleting bucketfile. bucket_name: %s, filepath: %s", res.BucketName, res.Filepath)
 	if errDelete := h.bucketfileDelete(ctx, res.BucketName, res.Filepath); errDelete != nil {
 		log.Errorf("Could not delete the bucketfile. err: %v", errDelete)
 		// we could not delete the bucketfile. but we don't return the error here.

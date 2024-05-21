@@ -805,7 +805,7 @@ type RequestHandler interface {
 	) (*smfile.File, error)
 	StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
 	StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smfile.File, error)
-	StorageV1FileDelete(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
+	StorageV1FileDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smfile.File, error)
 
 	// tag-manager
 	TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name string, detail string) (*tmtag.Tag, error)

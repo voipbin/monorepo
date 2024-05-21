@@ -178,7 +178,7 @@ func Test_filesGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			"/v1.0/files",
+			"/v1.0/files?token_size=100",
 			[]*smfile.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
