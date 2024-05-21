@@ -232,7 +232,8 @@ func Test_StorageV1FileDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		fileID uuid.UUID
+		fileID         uuid.UUID
+		requestTimeout int
 
 		response *rabbitmqhandler.Response
 
@@ -244,6 +245,7 @@ func Test_StorageV1FileDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b0cf0e3c-1610-11ef-8e33-0b8cfeddd4f8"),
+			5000,
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"b0cf0e3c-1610-11ef-8e33-0b8cfeddd4f8"}`),
@@ -274,7 +276,7 @@ func Test_StorageV1FileDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.StorageV1FileDelete(ctx, tt.fileID)
+			res, err := reqHandler.StorageV1FileDelete(ctx, tt.fileID, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

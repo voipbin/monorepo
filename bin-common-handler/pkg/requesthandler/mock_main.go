@@ -4531,18 +4531,18 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreate(ctx, customerID, o
 }
 
 // StorageV1FileDelete mocks base method.
-func (m *MockRequestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UUID) (*file.File, error) {
+func (m *MockRequestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*file.File, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageV1FileDelete", ctx, fileID)
+	ret := m.ctrl.Call(m, "StorageV1FileDelete", ctx, fileID, requestTimeout)
 	ret0, _ := ret[0].(*file.File)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // StorageV1FileDelete indicates an expected call of StorageV1FileDelete.
-func (mr *MockRequestHandlerMockRecorder) StorageV1FileDelete(ctx, fileID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileDelete(ctx, fileID, requestTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileDelete", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileDelete), ctx, fileID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileDelete", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileDelete), ctx, fileID, requestTimeout)
 }
 
 // StorageV1FileGet mocks base method.

@@ -16,7 +16,7 @@ import (
 func (h *serviceHandler) fileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "fileGet",
-		"flow_id": fileID,
+		"file_id": fileID,
 	})
 
 	// send request
@@ -83,8 +83,8 @@ func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, f mul
 	return res, nil
 }
 
-// FileGets gets the list of flow of the given customer id.
-// It returns list of flows if it succeed.
+// FileGets gets the list of file of the given customer id.
+// It returns list of files if it succeed.
 func (h *serviceHandler) FileGetsByOnwerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FileGets",
@@ -93,7 +93,7 @@ func (h *serviceHandler) FileGetsByOnwerID(ctx context.Context, a *amagent.Agent
 		"size":        size,
 		"token":       token,
 	})
-	log.Debug("Getting a flow.")
+	log.Debug("Getting a file.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
@@ -111,16 +111,16 @@ func (h *serviceHandler) FileGetsByOnwerID(ctx context.Context, a *amagent.Agent
 		"owner_id":    a.ID.String(),
 	}
 
-	// get flows
-	flows, err := h.reqHandler.StorageV1FileGets(ctx, token, size, filters)
+	// get files
+	files, err := h.reqHandler.StorageV1FileGets(ctx, token, size, filters)
 	if err != nil {
-		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find flows info. err: %v", err)
+		log.Errorf("Could not get files info from the storage-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find files info. err: %v", err)
 	}
 
 	// create result
 	res := []*smfile.WebhookMessage{}
-	for _, f := range flows {
+	for _, f := range files {
 		tmp := f.ConvertWebhookMessage()
 		res = append(res, tmp)
 	}
@@ -135,15 +135,15 @@ func (h *serviceHandler) FileGet(ctx context.Context, a *amagent.Agent, id uuid.
 		"func":        "FileGet",
 		"customer_id": a.CustomerID,
 		"username":    a.Username,
-		"flow_id":     id,
+		"file_id":     id,
 	})
 	log.Debug("Getting a file.")
 
-	// get flow
+	// get file
 	f, err := h.fileGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find flow info. err: %v", err)
+		log.Errorf("Could not get file info from the storage-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find file info. err: %v", err)
 	}
 
 	if f.OwnerID != a.ID && !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -165,11 +165,11 @@ func (h *serviceHandler) FileDelete(ctx context.Context, a *amagent.Agent, id uu
 	})
 	log.Debug("Deleting a file.")
 
-	// get flow
+	// get file
 	f, err := h.fileGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find flow info. err: %v", err)
+		log.Errorf("Could not get file info from the storage-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find file info. err: %v", err)
 	}
 
 	if f.OwnerID != a.ID && !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -177,7 +177,7 @@ func (h *serviceHandler) FileDelete(ctx context.Context, a *amagent.Agent, id uu
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.StorageV1FileDelete(ctx, id)
+	tmp, err := h.reqHandler.StorageV1FileDelete(ctx, id, 60000)
 	if err != nil {
 		return nil, err
 	}
