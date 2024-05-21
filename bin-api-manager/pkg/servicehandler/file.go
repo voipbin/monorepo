@@ -93,7 +93,7 @@ func (h *serviceHandler) FileGetsByOnwerID(ctx context.Context, a *amagent.Agent
 		"size":        size,
 		"token":       token,
 	})
-	log.Debug("Getting a flow.")
+	log.Debug("Getting a file.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
@@ -111,8 +111,8 @@ func (h *serviceHandler) FileGetsByOnwerID(ctx context.Context, a *amagent.Agent
 		"owner_id":    a.ID.String(),
 	}
 
-	// get flows
-	flows, err := h.reqHandler.StorageV1FileGets(ctx, token, size, filters)
+	// get files
+	files, err := h.reqHandler.StorageV1FileGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
@@ -120,7 +120,7 @@ func (h *serviceHandler) FileGetsByOnwerID(ctx context.Context, a *amagent.Agent
 
 	// create result
 	res := []*smfile.WebhookMessage{}
-	for _, f := range flows {
+	for _, f := range files {
 		tmp := f.ConvertWebhookMessage()
 		res = append(res, tmp)
 	}

@@ -15,7 +15,7 @@ import (
 )
 
 // filesPOST handles POST /files request.
-// It creates a temp flow and create a call with temp flow.
+// It creates a temp file and create a call with temp file.
 //
 //	@Summary		Make an outbound call
 //	@Description	dialing to destination
@@ -73,11 +73,11 @@ func filesPOST(c *gin.Context) {
 //	@Produce		json
 //	@Param			page_size	query		int		false	"The size of results. Max 100"
 //	@Param			page_token	query		string	false	"The token. tm_create"
-//	@Success		200			{object}	response.BodyFlowsGET
+//	@Success		200			{object}	response.BodyFilesGET
 //	@Router			/v1.0/files [get]
 func filesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "flowsGET",
+		"func":            "filesGET",
 		"request_address": c.ClientIP,
 		"request":         c.Request,
 	})
@@ -106,7 +106,7 @@ func filesGET(c *gin.Context) {
 		pageSize = 100
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
-	log.Debugf("flowsGET. Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
+	log.Debugf("filesGET. Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
@@ -114,7 +114,7 @@ func filesGET(c *gin.Context) {
 	// get files
 	files, err := serviceHandler.FileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
-		log.Errorf("Could not get a flow list. err: %v", err)
+		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -176,7 +176,7 @@ func filesIDGET(c *gin.Context) {
 }
 
 // filesIDDELETE handles DELETE /files/{id} request.
-// It deletes a exist flow info.
+// It deletes a exist file info.
 //
 //	@Summary		Delete a file.
 //	@Description	Delete a file.
@@ -206,7 +206,7 @@ func filesIDDELETE(c *gin.Context) {
 	log = log.WithField("file_id", id)
 	log.Debug("Executing filesIDDELETE.")
 
-	// delete a flow
+	// delete a file
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.FileDelete(c.Request.Context(), &a, id)
 	if err != nil {
