@@ -38,13 +38,14 @@ func (h *serviceHandler) fileGet(ctx context.Context, fileID uuid.UUID) (*smfile
 // FileCreate sends a request to storage-manager
 // to creating a file.
 // it returns created file info if it succeed.
-func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string) (*smfile.WebhookMessage, error) {
+func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FileCreate",
 		"customer_id": a.CustomerID,
 		"username":    a.Username,
 		"name":        name,
 		"detail":      detail,
+		"filename":    filename,
 	})
 	log.Debug("Creating a new file.")
 
@@ -72,7 +73,7 @@ func (h *serviceHandler) FileCreate(ctx context.Context, a *amagent.Agent, f mul
 
 	// create file
 	// set timeout for 60 secs
-	tmp, err := h.reqHandler.StorageV1FileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, h.bucketName, filepath, 60000)
+	tmp, err := h.reqHandler.StorageV1FileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, filename, h.bucketName, filepath, 60000)
 	if err != nil {
 		log.Errorf("Could not create a file. err: %v", err)
 		return nil, err

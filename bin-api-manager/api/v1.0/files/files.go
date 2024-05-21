@@ -55,7 +55,7 @@ func filesPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	res, err := serviceHandler.FileCreate(c.Request.Context(), &a, f, header.Filename, "")
+	res, err := serviceHandler.FileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)

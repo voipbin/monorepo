@@ -25,6 +25,7 @@ func (r *requestHandler) StorageV1FileCreate(
 	referenceID uuid.UUID,
 	name string,
 	detail string,
+	filename string,
 	bucketName string,
 	filepath string,
 	requestTimeout int, // milliseconds
@@ -38,6 +39,7 @@ func (r *requestHandler) StorageV1FileCreate(
 		ReferenceID:   referenceID,
 		Name:          name,
 		Detail:        detail,
+		Filename:      filename,
 		BucketName:    bucketName,
 		Filepath:      filepath,
 	}
