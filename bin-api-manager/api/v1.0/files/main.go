@@ -11,3 +11,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	files.DELETE("/:id", filesIDDELETE)
 	files.GET("/:id", filesIDGET)
 }
+
+const (
+	constMaxFileSize = int64(30 << 20) // Max upload file size. 30 MB.
+)

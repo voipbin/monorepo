@@ -2,6 +2,7 @@ package files
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"net/http"
 
 	"monorepo/bin-api-manager/api/models/common"
 	"monorepo/bin-api-manager/api/models/request"
@@ -39,8 +40,8 @@ func filesPOST(c *gin.Context) {
 		"agent": a,
 	})
 
-	// // set limit for max file sizw. 30M
-	// c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(30<<20))
+	// set limit for max file siz
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, constMaxFileSize)
 
 	f, header, err := c.Request.FormFile("file")
 	if err != nil {
@@ -49,27 +50,6 @@ func filesPOST(c *gin.Context) {
 		return
 	}
 	log.WithField("file", header).Debugf("Checking uploaded file header. filename: %s", header.Filename)
-
-	// f, err := c.FormFile("file")
-	// if err != nil {
-	// 	log.Errorf("Could not get file. err: %v", err)
-	// 	c.AbortWithStatus(400)
-	// 	return
-	// }
-
-	// if f.Size == 0 {
-	// 	// no file
-	// 	log.Errorf("Invalid file size. size: %d", f.Size)
-	// 	c.AbortWithStatus(400)
-	// 	return
-	// }
-
-	// var req request.BodyFilesPOST
-	// if err := c.BindJSON(&req); err != nil {
-	// 	log.Errorf("Could not parse the request. err: %v", err)
-	// 	c.AbortWithStatus(400)
-	// 	return
-	// }
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
