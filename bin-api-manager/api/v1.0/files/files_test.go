@@ -72,7 +72,10 @@ func Test_filesPOST(t *testing.T) {
 
 			// 10 MB
 			testFileData := bytes.Repeat([]byte("a"), int(10<<20))
-			part.Write(testFileData)
+			_, err = part.Write(testFileData)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 			writer.Close()
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
@@ -140,7 +143,10 @@ func Test_filesPOST_err(t *testing.T) {
 
 			// Set file size
 			testFileData := bytes.Repeat([]byte("a"), tt.filesize)
-			part.Write(testFileData)
+			_, err = part.Write(testFileData)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 			writer.Close()
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
