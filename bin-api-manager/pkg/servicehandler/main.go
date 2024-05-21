@@ -4,11 +4,13 @@ package servicehandler
 
 import (
 	"context"
+	"mime/multipart"
 	"net/http"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -67,10 +69,14 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
+
+	"cloud.google.com/go/storage"
 )
 
 const (
@@ -373,6 +379,12 @@ type ServiceHandler interface {
 	ExtensionGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 
+	// file handlers
+	FileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string) (*smfile.WebhookMessage, error)
+	FileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	FileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	FileGetsByOnwerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
+
 	// flow handlers
 	FlowCreate(ctx context.Context, a *amagent.Agent, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
 	FlowDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error)
@@ -596,6 +608,11 @@ type serviceHandler struct {
 	reqHandler     requesthandler.RequestHandler
 	dbHandler      dbhandler.DBHandler
 	websockHandler websockhandler.WebsockHandler
+
+	// storage information
+	storageClient *storage.Client
+	projectID     string
+	bucketName    string
 }
 
 // NewServiceHandler return ServiceHandler interface
@@ -603,13 +620,31 @@ func NewServiceHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
 	websockHandler websockhandler.WebsockHandler,
-) ServiceHandler {
-	return &serviceHandler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		reqHandler:  reqHandler,
-		dbHandler:   dbHandler,
 
+	credentialPath string,
+	projectID string,
+	bucketName string,
+) ServiceHandler {
+
+	// init storage client
+	ctx := context.Background()
+
+	// create storageClient
+	storageClient, err := storage.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	if err != nil {
+		logrus.Errorf("Could not create a new client. err: %v", err)
+		return nil
+	}
+
+	return &serviceHandler{
+		utilHandler:    utilhandler.NewUtilHandler(),
+		reqHandler:     reqHandler,
+		dbHandler:      dbHandler,
 		websockHandler: websockHandler,
+
+		storageClient: storageClient,
+		projectID:     projectID,
+		bucketName:    bucketName,
 	}
 }
 

@@ -30,14 +30,16 @@ func (h *fileHandler) bucketfileMove(ctx context.Context, sourceBucketName strin
 
 	// check destination
 	dst := h.client.Bucket(destBucketName).Object(destFilepath)
-	res, err := dst.Attrs(ctx)
+	_, err := dst.Attrs(ctx)
 	if err == nil {
 		log.Errorf("The destination already exists. err: %v", err)
 		return nil, errors.Wrap(err, "destination already exists")
 	}
 
 	// copy to the destination
-	if _, err := dst.CopierFrom(src).Run(ctx); err != nil {
+	res, err := dst.CopierFrom(src).Run(ctx)
+	if err != nil {
+		log.Errorf("Could not copy the file to the destination. err: %v", err)
 		return nil, errors.Wrap(err, "could not copy the file to the destination")
 	}
 
@@ -156,7 +158,7 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 
 	// create opt
 	opts := &storage.SignedURLOptions{
-		Scheme:         storage.SigningSchemeV4,
+		Scheme:         storage.SigningSchemeV2,
 		Method:         "GET",
 		GoogleAccessID: h.accessID,
 		PrivateKey:     h.privateKey,

@@ -45,8 +45,8 @@ func (h *fileHandler) Create(
 	log.WithField("attrs", attrs).Debugf("Found file. name: %s", attrs.Name)
 
 	// generate destination filepath
-	tmpFilename := getFilename(filepath)
-	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, tmpFilename)
+	id := h.utilHandler.UUIDCreate()
+	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, id)
 
 	// move the file from the tmp bucket to the new location
 	dstAttrs, err := h.bucketfileMove(ctx, bucketName, filepath, h.bucketMedia, dstFilepath)
@@ -60,14 +60,13 @@ func (h *fileHandler) Create(
 	expireDuration := 3650 * 24 * time.Hour // valid for 10 years
 	tmExpire := time.Now().UTC().Add(expireDuration)
 	tmDownloadExpire := h.utilHandler.TimeGetCurTimeAdd(expireDuration)
-	downloadURI, err := h.bucketfileGenerateDownloadURI(h.bucketMedia, filepath, tmExpire)
+	downloadURI, err := h.bucketfileGenerateDownloadURI(h.bucketMedia, dstFilepath, tmExpire)
 	if err != nil {
 		log.Errorf("Could not generate download URI. err: %v", err)
 		return nil, err
 	}
 
 	// create db row
-	id := h.utilHandler.UUIDCreate()
 	f := &file.File{
 		ID:               id,
 		CustomerID:       customerID,
@@ -94,6 +93,7 @@ func (h *fileHandler) Create(
 		log.Errorf("Could not get created file info. err: %v", err)
 		return nil, err
 	}
+	log.WithField("file", res).Debugf("Created file info. id: %s", res.ID)
 
 	h.notifyHandler.PublishEvent(ctx, file.EventTypeFileCreated, res)
 
