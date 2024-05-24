@@ -6,6 +6,7 @@ import "github.com/gofrs/uuid"
 type File struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	AccountID  uuid.UUID `json:"account_id"`
 	OwnerID    uuid.UUID `json:"owner_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`

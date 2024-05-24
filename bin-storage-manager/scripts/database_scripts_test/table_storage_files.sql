@@ -2,6 +2,7 @@ create table storage_files(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
+  account_id        binary(16),   -- account id
   owner_id          binary(16),   -- owner id
 
   reference_type  varchar(255),   -- reference type
@@ -28,5 +29,6 @@ create table storage_files(
 );
 
 create index idx_storage_files_customer_id on storage_files(customer_id);
+create index idx_storage_files_account_id on storage_files(account_id);
 create index idx_storage_files_owner_id on storage_files(owner_id);
 create index idx_storage_files_reference_id on storage_files(reference_id);

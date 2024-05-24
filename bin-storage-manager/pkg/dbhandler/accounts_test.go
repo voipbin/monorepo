@@ -167,7 +167,7 @@ func Test_AccountGets(t *testing.T) {
 	}
 }
 
-func Test_AccountIncreaseFile(t *testing.T) {
+func Test_AccountIncreaseFileInfo(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -230,7 +230,88 @@ func Test_AccountIncreaseFile(t *testing.T) {
 			}
 
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
-			if errIncrease := h.AccountIncreaseFile(ctx, tt.id, tt.filecount, tt.filesize); errIncrease != nil {
+			if errIncrease := h.AccountIncreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize); errIncrease != nil {
+				t.Errorf("Wrong match. expect: ok, got: got: %v", errIncrease)
+			}
+
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			res, err := h.AccountGet(ctx, tt.account.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AccountDecreaseFileInfo(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		account *account.Account
+
+		id        uuid.UUID
+		filecount int64
+		filesize  int64
+
+		responseCurTime string
+		expectRes       *account.Account
+	}{
+		{
+			name: "normal",
+			account: &account.Account{
+				ID:         uuid.FromStringOrNil("218ea34a-19a3-11ef-af7b-8b096eadd9cd"),
+				CustomerID: uuid.FromStringOrNil("7e4d9caa-198d-11ef-a42b-abbbe058dea6"),
+
+				TotalFileCount: 10,
+				TotalFileSize:  10240,
+			},
+
+			id:        uuid.FromStringOrNil("218ea34a-19a3-11ef-af7b-8b096eadd9cd"),
+			filecount: 1,
+			filesize:  1024,
+
+			responseCurTime: "2024-05-18 03:22:17.995000",
+			expectRes: &account.Account{
+				ID:         uuid.FromStringOrNil("218ea34a-19a3-11ef-af7b-8b096eadd9cd"),
+				CustomerID: uuid.FromStringOrNil("7e4d9caa-198d-11ef-a42b-abbbe058dea6"),
+
+				TotalFileCount: 9,
+				TotalFileSize:  9216,
+
+				TMCreate: "2024-05-18 03:22:17.995000",
+				TMUpdate: "2024-05-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if err := h.AccountCreate(ctx, tt.account); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if errIncrease := h.AccountDecreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize); errIncrease != nil {
 				t.Errorf("Wrong match. expect: ok, got: got: %v", errIncrease)
 			}
 

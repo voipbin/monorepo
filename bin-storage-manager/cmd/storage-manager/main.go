@@ -21,6 +21,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/cachehandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 	"monorepo/bin-storage-manager/pkg/filehandler"
@@ -169,9 +170,10 @@ func runListen(dbHandler dbhandler.DBHandler) error {
 
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
+	accountHandler := accounthandler.NewAccountHandler(notifyHandler, dbHandler)
 
 	// create bucket handler
-	bucketHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, *gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
+	bucketHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, *gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
 	if bucketHandler == nil {
 		logrus.Errorf("Could not create bucket handler.")
 		return fmt.Errorf("could not create bucket handler")

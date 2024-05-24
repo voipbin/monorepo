@@ -37,6 +37,34 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
+// AccountCreate mocks base method.
+func (m *MockDBHandler) AccountCreate(ctx context.Context, f *account.Account) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountCreate", ctx, f)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountCreate indicates an expected call of AccountCreate.
+func (mr *MockDBHandlerMockRecorder) AccountCreate(ctx, f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountCreate", reflect.TypeOf((*MockDBHandler)(nil).AccountCreate), ctx, f)
+}
+
+// AccountDecreaseFileInfo mocks base method.
+func (m *MockDBHandler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount, filesize int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountDecreaseFileInfo", ctx, id, filecount, filesize)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountDecreaseFileInfo indicates an expected call of AccountDecreaseFileInfo.
+func (mr *MockDBHandlerMockRecorder) AccountDecreaseFileInfo(ctx, id, filecount, filesize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountDecreaseFileInfo", reflect.TypeOf((*MockDBHandler)(nil).AccountDecreaseFileInfo), ctx, id, filecount, filesize)
+}
+
 // AccountDelete mocks base method.
 func (m *MockDBHandler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -81,18 +109,18 @@ func (mr *MockDBHandlerMockRecorder) AccountGets(ctx, token, size, filters inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGets", reflect.TypeOf((*MockDBHandler)(nil).AccountGets), ctx, token, size, filters)
 }
 
-// AccountIncreaseFile mocks base method.
-func (m *MockDBHandler) AccountIncreaseFile(ctx context.Context, id uuid.UUID, filecount, filesize int64) error {
+// AccountIncreaseFileInfo mocks base method.
+func (m *MockDBHandler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount, filesize int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountIncreaseFile", ctx, id, filecount, filesize)
+	ret := m.ctrl.Call(m, "AccountIncreaseFileInfo", ctx, id, filecount, filesize)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AccountIncreaseFile indicates an expected call of AccountIncreaseFile.
-func (mr *MockDBHandlerMockRecorder) AccountIncreaseFile(ctx, id, filecount, filesize interface{}) *gomock.Call {
+// AccountIncreaseFileInfo indicates an expected call of AccountIncreaseFileInfo.
+func (mr *MockDBHandlerMockRecorder) AccountIncreaseFileInfo(ctx, id, filecount, filesize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountIncreaseFile", reflect.TypeOf((*MockDBHandler)(nil).AccountIncreaseFile), ctx, id, filecount, filesize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountIncreaseFileInfo", reflect.TypeOf((*MockDBHandler)(nil).AccountIncreaseFileInfo), ctx, id, filecount, filesize)
 }
 
 // FileCreate mocks base method.

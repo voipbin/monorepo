@@ -49,7 +49,7 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 	return res, nil
 }
 
-// AccountCreate creates a new file row
+// AccountCreate creates a new account row
 func (h *handler) AccountCreate(ctx context.Context, f *account.Account) error {
 
 	q := `insert into storage_accounts(
@@ -234,8 +234,8 @@ func (h *handler) AccountGets(ctx context.Context, token string, size uint64, fi
 	return res, nil
 }
 
-// AccountIncreaseFile increase the account info.
-func (h *handler) AccountIncreaseFile(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error {
+// AccountIncreaseFileInfo increase the account info.
+func (h *handler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error {
 	q := `
 	update storage_accounts set
 		total_file_count = total_file_count + ?,
@@ -247,6 +247,27 @@ func (h *handler) AccountIncreaseFile(ctx context.Context, id uuid.UUID, filecou
 
 	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. AccountIncreaseFile. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.accountUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// AccountDecreaseFileInfo increase the account info.
+func (h *handler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error {
+	q := `
+	update storage_accounts set
+		total_file_count = total_file_count - ?,
+		total_file_size = total_file_size - ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. AccountDecreaseFileInfo. err: %v", err)
 	}
 
 	// set to the cache

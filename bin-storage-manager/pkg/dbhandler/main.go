@@ -18,9 +18,11 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
+	AccountCreate(ctx context.Context, f *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	AccountGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*account.Account, error)
-	AccountIncreaseFile(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
+	AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
+	AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 
 	FileCreate(ctx context.Context, f *file.File) error

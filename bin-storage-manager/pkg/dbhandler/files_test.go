@@ -29,6 +29,7 @@ func Test_FileCreate(t *testing.T) {
 			&file.File{
 				ID:               uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
 				CustomerID:       uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				AccountID:        uuid.FromStringOrNil("2e716278-19ad-11ef-b03d-67ce8ed81b5a"),
 				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
 				ReferenceType:    file.ReferenceTypeRecording,
 				ReferenceID:      uuid.FromStringOrNil("305ff91a-1538-11ef-8ceb-f7ad81138af6"),
@@ -47,6 +48,7 @@ func Test_FileCreate(t *testing.T) {
 			&file.File{
 				ID:               uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
 				CustomerID:       uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				AccountID:        uuid.FromStringOrNil("2e716278-19ad-11ef-b03d-67ce8ed81b5a"),
 				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
 				ReferenceType:    file.ReferenceTypeRecording,
 				ReferenceID:      uuid.FromStringOrNil("305ff91a-1538-11ef-8ceb-f7ad81138af6"),
