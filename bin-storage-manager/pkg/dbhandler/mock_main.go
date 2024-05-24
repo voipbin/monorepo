@@ -6,6 +6,7 @@ package dbhandler
 
 import (
 	context "context"
+	account "monorepo/bin-storage-manager/models/account"
 	file "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 
@@ -34,6 +35,64 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// AccountDelete mocks base method.
+func (m *MockDBHandler) AccountDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountDelete indicates an expected call of AccountDelete.
+func (mr *MockDBHandlerMockRecorder) AccountDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountDelete", reflect.TypeOf((*MockDBHandler)(nil).AccountDelete), ctx, id)
+}
+
+// AccountGet mocks base method.
+func (m *MockDBHandler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountGet", ctx, id)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccountGet indicates an expected call of AccountGet.
+func (mr *MockDBHandlerMockRecorder) AccountGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGet", reflect.TypeOf((*MockDBHandler)(nil).AccountGet), ctx, id)
+}
+
+// AccountGets mocks base method.
+func (m *MockDBHandler) AccountGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountGets", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccountGets indicates an expected call of AccountGets.
+func (mr *MockDBHandlerMockRecorder) AccountGets(ctx, token, size, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGets", reflect.TypeOf((*MockDBHandler)(nil).AccountGets), ctx, token, size, filters)
+}
+
+// AccountIncreaseFile mocks base method.
+func (m *MockDBHandler) AccountIncreaseFile(ctx context.Context, id uuid.UUID, filecount, filesize int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountIncreaseFile", ctx, id, filecount, filesize)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountIncreaseFile indicates an expected call of AccountIncreaseFile.
+func (mr *MockDBHandlerMockRecorder) AccountIncreaseFile(ctx, id, filecount, filesize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountIncreaseFile", reflect.TypeOf((*MockDBHandler)(nil).AccountIncreaseFile), ctx, id, filecount, filesize)
 }
 
 // FileCreate mocks base method.

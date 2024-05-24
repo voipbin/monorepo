@@ -11,12 +11,13 @@ type File struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
-	Name     string `json:"name"`
-	Detail   string `json:"detail"`
-	Filename string `json:"filename"`
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 
 	BucketName string `json:"bucket_name"` // bucket name for file storage
-	Filepath   string `json:"filepath"`    // file path for file
+	Filename   string `json:"filename"`
+	Filepath   string `json:"filepath"` // file path for file
+	Filesize   int64  `json:"filesize"` // file size in bytes
 
 	URIBucket   string `json:"uri_bucket"`   // uri for bucket
 	URIDownload string `json:"uri_download"` // uri for download

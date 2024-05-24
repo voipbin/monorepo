@@ -11,8 +11,9 @@ create table storage_files(
   detail    text,
   filename  varchar(1023),
 
-	bucket_name text,
-	filepath    text,
+  bucket_name text,
+  filepath    text,
+  filesize    integer,
 
   uri_bucket    text,
   uri_download  text,
