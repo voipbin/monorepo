@@ -35,11 +35,12 @@ def upgrade():
     op.execute("""create index idx_storage_accounts_customer_id on storage_accounts(customer_id);""")
 
     # create storage_accounts rows from the customers table
-    op.execute("""insert into storage_accounts(
-        id, customer_id, total_file_count, total_file_size, tm_create, tm_update, tm_delete)
-        select id, id, 0, 0, now(6), now(6), "9999-01-01 00:00:000"
-        from customers
-    ;""")
+    op.execute("""
+        insert into storage_accounts(
+            id, customer_id, total_file_count, total_file_size, tm_create, tm_update, tm_delete
+        )
+        select unhex(replace(UUID(), '-', '')), id, 0, 0, now(6), now(6), "9999-01-01 00:00:000" from customers;
+    """)
 
 
     # modify the storage_files table
