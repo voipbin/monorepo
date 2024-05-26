@@ -93,7 +93,7 @@ func (h *handler) AccountCreate(ctx context.Context, f *account.Account) error {
 	return nil
 }
 
-// accountUpdateToCache gets the flow from the DB and update the cache.
+// accountUpdateToCache gets the account from the DB and update the cache.
 func (h *handler) accountUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.accountGetFromDB(ctx, id)
@@ -276,7 +276,7 @@ func (h *handler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 	return nil
 }
 
-// AccountDelete deletes the given flow
+// AccountDelete deletes the given account
 func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
 	update storage_accounts set
