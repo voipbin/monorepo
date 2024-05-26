@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	// select query for flow get
+	// select query for account get
 	accountSelect = `
 	select
 		id,
