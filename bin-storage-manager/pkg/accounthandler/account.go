@@ -17,18 +17,9 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID) (*acc
 		"customer_id": customerID,
 	})
 
-	// check the account exists
-	filters := map[string]string{
-		"deleted":     "false",
-		"customer_id": customerID.String(),
-	}
-	tmps, err := h.Gets(ctx, "", 1, filters)
-	if err != nil {
-		log.Errorf("Could not check the accounts. err: %v", err)
-		return nil, err
-	}
-	if len(tmps) > 0 {
-		log.WithField("account", tmps[0]).Errorf("The customer already has an account. account_id: %v", tmps[0].ID)
+	tmp, err := h.getByCustomerID(ctx, customerID)
+	if err == nil || tmp != nil {
+		log.WithField("account", tmp).Errorf("The customer already has an account. account_id: %v", tmp.ID)
 		return nil, fmt.Errorf("the customer already has an account")
 	}
 
@@ -65,6 +56,31 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 		return nil, errors.Wrap(err, "could not get file info")
 	}
 
+	return res, nil
+}
+
+// getByCustomerID returns given customer's account
+func (h *accountHandler) getByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getByCustomerID",
+		"customer_id": customerID,
+	})
+
+	// check the account exists
+	filters := map[string]string{
+		"deleted":     "false",
+		"customer_id": customerID.String(),
+	}
+	tmps, err := h.Gets(ctx, "", 1, filters)
+	if err != nil {
+		log.Errorf("Could not check the accounts. err: %v", err)
+		return nil, err
+	}
+	if len(tmps) == 0 {
+		return nil, fmt.Errorf("no account found")
+	}
+
+	res := tmps[0]
 	return res, nil
 }
 

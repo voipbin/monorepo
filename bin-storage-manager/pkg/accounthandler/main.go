@@ -6,6 +6,7 @@ import (
 	"context"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 
@@ -27,6 +28,9 @@ type AccountHandler interface {
 	DecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) (*account.Account, error)
 
 	ValidateFileInfoByCustomerID(ctx context.Context, customerID uuid.UUID, filecount int64, filesize int64) (*account.Account, error)
+
+	EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer) error
+	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
 }
 
 type accountHandler struct {

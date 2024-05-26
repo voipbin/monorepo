@@ -13,6 +13,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-storage-manager/models/file"
 	accounthandler "monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
@@ -53,6 +54,8 @@ type FileHandler interface {
 	DownloadURIGet(ctx context.Context, bucketName string, filepath string, expire time.Duration) (string, string, error)
 
 	IsExist(ctx context.Context, bucketName string, filepath string) bool
+
+	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
 }
 
 type fileHandler struct {
