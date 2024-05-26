@@ -183,7 +183,7 @@ func runListen(dbHandler dbhandler.DBHandler) error {
 	storageHandler := storagehandler.NewStorageHandler(reqHandler, bucketHandler, *gcpBucketMedia)
 
 	// create listen handler
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, storageHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, storageHandler, accountHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameStorageRequest), string(commonoutline.QueueNameDelay)); err != nil {

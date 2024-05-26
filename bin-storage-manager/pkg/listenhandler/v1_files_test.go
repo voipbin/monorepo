@@ -67,14 +67,14 @@ func Test_v1FilesPost(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockStorageHandler := storagehandler.NewMockStorageHandler(mc)
+			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:     mockSock,
-				storageHandler: mockStorageHandler,
+				storageHandler: mockStorage,
 			}
 
-			mockStorageHandler.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
+			mockStorage.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

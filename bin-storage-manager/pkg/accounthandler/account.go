@@ -17,6 +17,21 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID) (*acc
 		"customer_id": customerID,
 	})
 
+	// check the account exists
+	filters := map[string]string{
+		"deleted":     "false",
+		"customer_id": customerID.String(),
+	}
+	tmps, err := h.Gets(ctx, "", 1, filters)
+	if err != nil {
+		log.Errorf("Could not check the accounts. err: %v", err)
+		return nil, err
+	}
+	if len(tmps) > 0 {
+		log.WithField("account", tmps[0]).Errorf("The customer already has an account. account_id: %v", tmps[0].ID)
+		return nil, fmt.Errorf("the customer already has an account")
+	}
+
 	id := h.utilHandler.UUIDCreate()
 	f := &account.Account{
 		ID:             id,

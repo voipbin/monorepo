@@ -23,6 +23,7 @@ func Test_Create(t *testing.T) {
 		responseUUID    uuid.UUID
 		responseAccount *account.Account
 
+		expectFilters map[string]string
 		expectAccount *account.Account
 	}{
 		{
@@ -35,6 +36,10 @@ func Test_Create(t *testing.T) {
 				ID: uuid.FromStringOrNil("95ebf6c4-1530-11ef-932d-037065591eab"),
 			},
 
+			expectFilters: map[string]string{
+				"deleted":     "false",
+				"customer_id": "955fa98a-1530-11ef-94b7-cfc6e6161c56",
+			},
 			expectAccount: &account.Account{
 				ID:         uuid.FromStringOrNil("9e444942-199b-11ef-ad96-27cf40005448"),
 				CustomerID: uuid.FromStringOrNil("955fa98a-1530-11ef-94b7-cfc6e6161c56"),
@@ -59,6 +64,7 @@ func Test_Create(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
+			mockDB.EXPECT().AccountGets(ctx, "", uint64(1), tt.expectFilters).Return([]*account.Account{}, nil)
 			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
