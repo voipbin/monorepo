@@ -14,6 +14,11 @@ This voipbin monorepo has many sub repositories with multiple namespaces.
 * voip-*: voip based projects.
 * infra-* infrastructure projects.
 
+# Update all project
+```
+$ ls -d */ | xargs -I {} bash -c "cd '{}' && go get -u ./... && go mod vendor && go generate ./... && go test ./..."
+```
+
 # Merge existing projects
 The monorepo concist of many sub projects. Most of projects were merged from the existing projects using the following command.
 ```
