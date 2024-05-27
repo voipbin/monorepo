@@ -10,6 +10,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	smaccount "monorepo/bin-storage-manager/models/account"
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
@@ -572,6 +573,13 @@ type ServiceHandler interface {
 		priority int,
 		target string,
 	) (*rmroute.WebhookMessage, error)
+
+	// storage_account
+	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error)
+	StorageAccountGet(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)
+	StorageAccountGetByCustomerID(ctx context.Context, a *amagent.Agent) (*smaccount.WebhookMessage, error)
+	StorageAccountGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.WebhookMessage, error)
+	StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)
 
 	// tag handlers
 	TagCreate(ctx context.Context, a *amagent.Agent, name string, detail string) (*tmtag.WebhookMessage, error)

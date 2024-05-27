@@ -123,6 +123,12 @@ $ sudo apt install python3-sphinx
 $ pip3 install sphinx-rtd-theme
 ```
 
+## Install sphinx-wagtail-theme
+```
+$ python3 -m venv ~/.venv/sphinx-wagtail-theme
+$ ~/.venv/sphinx-wagtail-theme/bin/pip install sphinx-wagtail-theme
+```
+
 ## Sphinx with docker
 ```
 $ cd docsdev
@@ -133,4 +139,6 @@ $ docker run --rm -v /Users/sungtaekim/gitlab/voipbin/bin-manager/api-manager/do
 ```
 $ cd docsdev
 $ make html
+~/.venv/sphinx-wagtail-theme/bin/sphinx-rtd-theme make html
+
 ```
