@@ -6,6 +6,7 @@ package cachehandler
 
 import (
 	context "context"
+	account "monorepo/bin-storage-manager/models/account"
 	file "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 
@@ -34,6 +35,35 @@ func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
+}
+
+// AccountGet mocks base method.
+func (m *MockCacheHandler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountGet", ctx, id)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccountGet indicates an expected call of AccountGet.
+func (mr *MockCacheHandlerMockRecorder) AccountGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGet", reflect.TypeOf((*MockCacheHandler)(nil).AccountGet), ctx, id)
+}
+
+// AccountSet mocks base method.
+func (m *MockCacheHandler) AccountSet(ctx context.Context, f *account.Account) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountSet", ctx, f)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountSet indicates an expected call of AccountSet.
+func (mr *MockCacheHandlerMockRecorder) AccountSet(ctx, f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSet", reflect.TypeOf((*MockCacheHandler)(nil).AccountSet), ctx, f)
 }
 
 // Connect mocks base method.

@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/cachehandler"
 
@@ -17,6 +18,13 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
+	AccountCreate(ctx context.Context, f *account.Account) error
+	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
+	AccountGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*account.Account, error)
+	AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
+	AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
+	AccountDelete(ctx context.Context, id uuid.UUID) error
+
 	FileCreate(ctx context.Context, f *file.File) error
 	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
 	FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)

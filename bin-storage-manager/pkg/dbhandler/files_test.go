@@ -29,12 +29,14 @@ func Test_FileCreate(t *testing.T) {
 			&file.File{
 				ID:               uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
 				CustomerID:       uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				AccountID:        uuid.FromStringOrNil("2e716278-19ad-11ef-b03d-67ce8ed81b5a"),
 				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
 				ReferenceType:    file.ReferenceTypeRecording,
 				ReferenceID:      uuid.FromStringOrNil("305ff91a-1538-11ef-8ceb-f7ad81138af6"),
 				Name:             "test name",
 				Detail:           "test detail",
 				Filename:         "filename.txt",
+				Filesize:         1000,
 				BucketName:       "bucket_tmp",
 				Filepath:         "/tmp/6c0e06ba-146a-11ef-8697-c7c53a81a655",
 				URIBucket:        "https://test.com/uri_bucket",
@@ -46,6 +48,7 @@ func Test_FileCreate(t *testing.T) {
 			&file.File{
 				ID:               uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
 				CustomerID:       uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				AccountID:        uuid.FromStringOrNil("2e716278-19ad-11ef-b03d-67ce8ed81b5a"),
 				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
 				ReferenceType:    file.ReferenceTypeRecording,
 				ReferenceID:      uuid.FromStringOrNil("305ff91a-1538-11ef-8ceb-f7ad81138af6"),
@@ -54,6 +57,7 @@ func Test_FileCreate(t *testing.T) {
 				Filename:         "filename.txt",
 				BucketName:       "bucket_tmp",
 				Filepath:         "/tmp/6c0e06ba-146a-11ef-8697-c7c53a81a655",
+				Filesize:         1000,
 				URIBucket:        "https://test.com/uri_bucket",
 				URIDownload:      "https://test.com/uri_download",
 				TMDownloadExpire: "2024-05-18 03:22:17.995000",
@@ -79,7 +83,7 @@ func Test_FileCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileCreate(ctx, tt.file); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -91,9 +95,7 @@ func Test_FileCreate(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-			t.Logf("Created flow. flow: %v", res)
 
-			tt.expectRes.TMCreate = res.TMCreate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

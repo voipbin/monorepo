@@ -16,6 +16,7 @@ const (
 	select
 		id,
 		customer_id,
+		account_id,
 		owner_id,
 
 		reference_type,
@@ -23,10 +24,11 @@ const (
 
 		name,
 		detail,
-		filename,
-
+		
 		bucket_name,
+		filename,
 		filepath,
+		filesize,
 
 		uri_bucket,
 		uri_download,
@@ -47,6 +49,7 @@ func (h *handler) fileGetFromRow(row *sql.Rows) (*file.File, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.AccountID,
 		&res.OwnerID,
 
 		&res.ReferenceType,
@@ -54,10 +57,11 @@ func (h *handler) fileGetFromRow(row *sql.Rows) (*file.File, error) {
 
 		&res.Name,
 		&res.Detail,
-		&res.Filename,
 
 		&res.BucketName,
+		&res.Filename,
 		&res.Filepath,
+		&res.Filesize,
 
 		&res.URIBucket,
 		&res.URIDownload,
@@ -79,6 +83,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	q := `insert into storage_files(
 		id,
 		customer_id,
+		account_id,
 		owner_id,
 
 		reference_type,
@@ -86,10 +91,11 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 
 		name,
 		detail,
-		filename,
-
+		
 		bucket_name,
+		filename,
 		filepath,
+		filesize,
 
 		uri_bucket,
 		uri_download,
@@ -99,10 +105,10 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
         tm_update,
         tm_delete
 	) values(
-		?, ?, ?,
+		?, ?, ?, ?,
 		?, ?,
-		?, ?, ?,
-		?, ?,
+		?, ?, 
+		?, ?, ?, ?,
 		?, ?,
 		?, ?, ?, ?
 		)`
@@ -115,6 +121,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
 		f.CustomerID.Bytes(),
+		f.AccountID.Bytes(),
 		f.OwnerID.Bytes(),
 
 		f.ReferenceType,
@@ -122,10 +129,11 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 
 		f.Name,
 		f.Detail,
-		f.Filename,
 
 		f.BucketName,
+		f.Filename,
 		f.Filepath,
+		f.Filesize,
 
 		f.URIBucket,
 		f.URIDownload,
@@ -259,7 +267,7 @@ func (h *handler) FileGets(ctx context.Context, token string, size uint64, filte
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "owner_id":
+		case "customer_id", "account_id", "owner_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

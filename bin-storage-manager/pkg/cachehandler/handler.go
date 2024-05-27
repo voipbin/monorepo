@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/models/file"
 )
 
@@ -78,4 +79,27 @@ func (h *handler) FileDel(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+// AccountSet sets the account info into the cache.
+func (h *handler) AccountSet(ctx context.Context, f *account.Account) error {
+	key := fmt.Sprintf("storage:account:%s", f.ID)
+
+	if err := h.setSerialize(ctx, key, f); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AccountGet returns cached account info
+func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	key := fmt.Sprintf("storage:account:%s", id)
+
+	var res account.Account
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
