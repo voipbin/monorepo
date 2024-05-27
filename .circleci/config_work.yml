@@ -1321,6 +1321,7 @@ commands:
           name: Install dependencies and vendor
           command: |
             cd << parameters.source-directory >>
+            go mod tidy
             go mod download
             go mod vendor          
 
@@ -1361,6 +1362,7 @@ commands:
           name: Install dependencies and vendor
           command: |
             cd << parameters.source-directory >>
+            go mod tidy
             go mod download
             go mod vendor          
       - run:
