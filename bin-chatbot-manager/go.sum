@@ -611,6 +611,8 @@ github.com/sashabaranov/go-openai v1.22.0 h1:bjYkELQCbOBMW9B7zi/KA5L4syPfn/3qRvU
 github.com/sashabaranov/go-openai v1.22.0/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/sashabaranov/go-openai v1.24.0 h1:4H4Pg8Bl2RH/YSnU8DYumZbuHnnkfioor/dtNlB20D4=
 github.com/sashabaranov/go-openai v1.24.0/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
+github.com/sashabaranov/go-openai v1.24.1 h1:DWK95XViNb+agQtuzsn+FyHhn3HQJ7Va8z04DQDJ1MI=
+github.com/sashabaranov/go-openai v1.24.1/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/sirupsen/logrus v1.9.0/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
@@ -1137,6 +1139,8 @@ google.golang.org/genproto v0.0.0-20240515191416-fc5f0ca64291 h1:CTZGpOdDJr2Jq+L
 google.golang.org/genproto v0.0.0-20240515191416-fc5f0ca64291/go.mod h1:ch5ZrEj5+9MCxUeR3Gp3mCJ4u0eVpusYAmSr/mvpMSk=
 google.golang.org/genproto v0.0.0-20240520151616-dc85e6b867a5 h1:IGsMFz879l+GhhDJ9fN5rWnkVrGnoZv8oeYfpk82QZQ=
 google.golang.org/genproto v0.0.0-20240520151616-dc85e6b867a5/go.mod h1:ch5ZrEj5+9MCxUeR3Gp3mCJ4u0eVpusYAmSr/mvpMSk=
+google.golang.org/genproto v0.0.0-20240521202816-d264139d666e h1:axIBUGXSVho2zB+3tJj8l9Qvm/El5vVYPYqhGA5PmJM=
+google.golang.org/genproto v0.0.0-20240521202816-d264139d666e/go.mod h1:gOvX/2dWTqh+u3+IHjFeCxinlz5AZ5qhOufbQPub/dE=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=

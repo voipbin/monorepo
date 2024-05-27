@@ -59,6 +59,7 @@ import (
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	provider "monorepo/bin-route-manager/models/provider"
 	route "monorepo/bin-route-manager/models/route"
+	account1 "monorepo/bin-storage-manager/models/account"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
@@ -4513,6 +4514,66 @@ func (m *MockRequestHandler) SendRequest(ctx context.Context, queue outline.Queu
 func (mr *MockRequestHandlerMockRecorder) SendRequest(ctx, queue, uri, method, timeout, delay, dataType, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRequest", reflect.TypeOf((*MockRequestHandler)(nil).SendRequest), ctx, queue, uri, method, timeout, delay, dataType, data)
+}
+
+// StorageV1AccountCreate mocks base method.
+func (m *MockRequestHandler) StorageV1AccountCreate(ctx context.Context, customerID uuid.UUID) (*account1.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1AccountCreate", ctx, customerID)
+	ret0, _ := ret[0].(*account1.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1AccountCreate indicates an expected call of StorageV1AccountCreate.
+func (mr *MockRequestHandlerMockRecorder) StorageV1AccountCreate(ctx, customerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountCreate), ctx, customerID)
+}
+
+// StorageV1AccountDelete mocks base method.
+func (m *MockRequestHandler) StorageV1AccountDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*account1.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1AccountDelete", ctx, fileID, requestTimeout)
+	ret0, _ := ret[0].(*account1.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1AccountDelete indicates an expected call of StorageV1AccountDelete.
+func (mr *MockRequestHandlerMockRecorder) StorageV1AccountDelete(ctx, fileID, requestTimeout interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountDelete", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountDelete), ctx, fileID, requestTimeout)
+}
+
+// StorageV1AccountGet mocks base method.
+func (m *MockRequestHandler) StorageV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account1.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1AccountGet", ctx, accountID)
+	ret0, _ := ret[0].(*account1.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1AccountGet indicates an expected call of StorageV1AccountGet.
+func (mr *MockRequestHandlerMockRecorder) StorageV1AccountGet(ctx, accountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountGet), ctx, accountID)
+}
+
+// StorageV1AccountGets mocks base method.
+func (m *MockRequestHandler) StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]account1.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1AccountGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]account1.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1AccountGets indicates an expected call of StorageV1AccountGets.
+func (mr *MockRequestHandlerMockRecorder) StorageV1AccountGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountGets), ctx, pageToken, pageSize, filters)
 }
 
 // StorageV1FileCreate mocks base method.
