@@ -36,6 +36,8 @@ import (
 	"monorepo/bin-api-manager/api/v1.0/recordingfiles"
 	"monorepo/bin-api-manager/api/v1.0/recordings"
 	"monorepo/bin-api-manager/api/v1.0/routes"
+	storage_account "monorepo/bin-api-manager/api/v1.0/storage_account"
+	storage_accounts "monorepo/bin-api-manager/api/v1.0/storage_accounts"
 	"monorepo/bin-api-manager/api/v1.0/tags"
 	"monorepo/bin-api-manager/api/v1.0/transcribes"
 	"monorepo/bin-api-manager/api/v1.0/transcripts"
@@ -83,6 +85,8 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	recordings.ApplyRoutes(v1)
 	recordingfiles.ApplyRoutes(v1)
 	routes.ApplyRoutes(v1)
+	storage_account.ApplyRoutes(v1)
+	storage_accounts.ApplyRoutes(v1)
 	tags.ApplyRoutes(v1)
 	transcribes.ApplyRoutes(v1)
 	transcripts.ApplyRoutes(v1)

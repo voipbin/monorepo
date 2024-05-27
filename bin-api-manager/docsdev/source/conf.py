@@ -61,7 +61,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -83,7 +83,23 @@ html_theme = 'sphinx_wagtail_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = dict(
+    project_name = "VoIPBin Documentation",
+    logo = "images/voipbin-high-resolution-logo-white-transparent.png",
+    logo_alt = "voipbin",
+    logo_height = 80,
+    logo_url = "/",
+    logo_width = 45,
+
+    header_links = ",".join([
+        "Project|http://voipbin.net",
+        "Admin|https://admin.voipbin.net",
+    ]),
+    footer_links = ",".join([
+        "About Us|http://voipbin.net",
+        "Contact|http://voipbin.net",
+    ]),
+)
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

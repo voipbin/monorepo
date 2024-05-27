@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// storageAccountGet validates the storage account's ownership and returns the storage account info.
+// storageAccountGet validates the storage account info.
 func (h *serviceHandler) storageAccountGet(ctx context.Context, a *amagent.Agent, accountID uuid.UUID) (*smaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "storageAccountGet",
