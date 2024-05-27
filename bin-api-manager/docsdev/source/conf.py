@@ -21,7 +21,7 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'voipbin'
-copyright = '2020, Sungtae Kim'
+copyright = '2024, Sungtae Kim'
 author = 'Sungtae Kim'
 
 # The short X.Y version
@@ -40,7 +40,8 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx_rtd_theme"
+    "sphinx_rtd_theme",
+    "sphinx_wagtail_theme"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -60,7 +61,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -76,13 +77,30 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_wagtail_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = dict(
+    project_name = "VoIPBin Documentation",
+    logo = "images/voipbin-high-resolution-logo-white-transparent.png",
+    logo_alt = "voipbin",
+    logo_height = 80,
+    logo_url = "intro.html",
+    logo_width = 45,
+
+    github_url = "",
+    header_links = ",".join([
+        "Project|http://voipbin.net",
+        "Admin|https://admin.voipbin.net",
+    ]),
+    footer_links = ",".join([
+        "About Us|http://voipbin.net",
+        "Contact|http://voipbin.net",
+    ]),
+)
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

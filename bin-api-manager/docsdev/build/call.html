@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Call &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=ea6a6c20" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="Message" href="message.html" />
+            <link rel="prev" title="Activeflow" href="activeflow.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chatbot.html">Chatbot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Call</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/call.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="call">
+<span id="call-main"></span><h1>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h1>
+<section id="overview">
+<span id="call-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The VoIPBIN call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBIN API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBIN actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different gender and accents.</p>
+<p>With the VoIPBIN API you can:</p>
+<ul class="simple">
+<li><p>Build apps that scale with the web technologies you are already using.</p></li>
+<li><p>Control the flow of inbound and outbound calls in JSON with VoIPBIN’s actions.</p></li>
+<li><p>Record and store inbound or outbound calls.</p></li>
+<li><p>Create conference calls.</p></li>
+<li><p>Send text-to-speech messages in 50 languages with different gender and accents.</p></li>
+</ul>
+<section id="protocol">
+<h3>Protocol<a class="headerlink" href="#protocol" title="Link to this heading"></a></h3>
+<p>VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
+<img alt="_images/call_overview_protocol.png" src="_images/call_overview_protocol.png" />
+</section>
+<section id="pstn-phone-number-format">
+<h3>PSTN/Phone Number Format<a class="headerlink" href="#pstn-phone-number-format" title="Link to this heading"></a></h3>
+<p>In the VoIPBIN APIs, all PSTN/Phone numbers must adhere to the <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This format standardizes the representation of phone numbers to facilitate smooth communication and interoperability across different systems.</p>
+<p>Key requirements for phone numbers within the VoIPBIN APIs:</p>
+<ul class="simple">
+<li><p>The phone number must have the ‘+’ symbol at the beginning.</p></li>
+<li><p>The number should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
+</ul>
+<p>For example, a US phone number should be represented as +16062067563, and a Korea phone number should be represented as +821021656521.</p>
+</section>
+<section id="extension-number-format">
+<h3>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Link to this heading"></a></h3>
+<p>The extension numbers used in the VoIPBIN system can be customized according to specific requirements. However, they must adhere to the following limitation:</p>
+<ul class="simple">
+<li><p>Extension numbers should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
+</ul>
+<p>The absence of special characters ensures consistent and reliable processing of extension numbers within the VoIPBIN system, promoting smooth communication and interaction.</p>
+<p>With the VoIPBIN call API’s robust features and support for various protocols, developers can create versatile and efficient call applications, enabling seamless communication and collaboration for end-users.</p>
+</section>
+<section id="incoming-call">
+<h3>Incoming call<a class="headerlink" href="#incoming-call" title="Link to this heading"></a></h3>
+<p>The VoIPBin system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
+When an incoming call is received, the VoIPBin system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
+</section>
+<section id="execution-of-call-flow-for-incoming-call">
+<h3>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Link to this heading"></a></h3>
+<p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
+<ul class="simple">
+<li><p>Call Verification: When an incoming call is received, the VoIPBin system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
+<li><p>Determine Call Flow: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.</p></li>
+<li><p>Execute Call Flow: Once the call flow is determined, the system proceeds to execute it without delay. The call flow actions are triggered in accordance with the predefined configuration for the call destination.</p></li>
+<li><p>End the Call: After executing the call flow actions, the system initiates the process of ending the call. The call is terminated, and the connection with the external party is disconnected.</p></li>
+</ul>
+<p>By following this streamlined call flow process, the VoIPBin system efficiently handles incoming calls, ensures their secure and verified handling, and executes the appropriate flow actions based on the call destination. After executing the call flow, the system promptly ends the call, completing the call handling process for the incoming call. Customizable flow actions allow users to tailor the call handling process according to their application’s needs, optimizing user experience and call management efficiency.</p>
+<img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
+</section>
+<section id="outgoing-call">
+<h3>Outgoing call<a class="headerlink" href="#outgoing-call" title="Link to this heading"></a></h3>
+<p>The VoIPBin system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
+To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBin system, which then processes the request and attempts to establish a connection with the specified destination.</p>
+</section>
+<section id="execution-of-call-flow-for-outgoing-call">
+<h3>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading"></a></h3>
+<p>Once the outgoing call request is initiated, the VoIPBin system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
+<p>The call flow execution occurs as follows:</p>
+<ul class="simple">
+<li><p>Initiation: The user triggers the outgoing call request, providing the necessary call parameters.</p></li>
+<li><p>Call Setup: The VoIPBin system processes the request and establishes a connection with the destination phone number.</p></li>
+<li><p>Wait for Call Answer: After the call setup, the system waits for the called party to answer the call. This waiting period involves ringing the called party’s phone and monitoring the call status.</p></li>
+<li><p>Call Answered: Once the called party answers the outgoing call, the system proceeds to execute the predefined call flow actions.</p></li>
+<li><p>Flow Actions Execution: The call flow actions are a set of customizable operations that are executed upon call answer. These actions can include call recording, call routing, call analytics, notifications, and post-call actions, among others.</p></li>
+</ul>
+<p>The call flow execution is critical for ensuring a smooth and efficient communication experience. By customizing the flow actions, users can tailor the call handling process to meet the specific requirements of their application or service, enhancing user engagement and overall call management.</p>
+<img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
+</section>
+<section id="error-handling-and-termination">
+<h3>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Link to this heading"></a></h3>
+<p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
+The VoIPBin system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
+</section>
+<section id="call-concept">
+<h3>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading"></a></h3>
+<p>The concept of a call in Voipbin departs from the traditional 1:1 call model. Here’s an overview:</p>
+<p>In Voipbin, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
+<p>In Voipbin, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>            <span class="n">Voipbin</span>            <span class="n">B</span>
+<span class="o">|&lt;--</span> <span class="n">Call</span> <span class="mi">1</span> <span class="o">---&gt;|</span>               <span class="o">|</span>
+<span class="o">|</span>               <span class="o">|&lt;---</span> <span class="n">Call</span> <span class="mi">2</span> <span class="o">--&gt;|</span>
+<span class="o">|&lt;-----</span><span class="n">RTP</span><span class="o">-----&gt;|&lt;-----</span><span class="n">RTP</span><span class="o">-----&gt;|</span>
+</pre></div>
+</div>
+<section id="comparison-traditional-call-concept-vs-voipbin-call-concept">
+<h4>Comparison: Traditional Call Concept vs Voipbin Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Link to this heading"></a></h4>
+<p>Traditional Call Concept</p>
+<ul class="simple">
+<li><p>Follows a 1:1 model where a call is a direct connection between a source and a destination.</p></li>
+<li><p>Typically involves a straightforward flow from the caller to the recipient.</p></li>
+<li><p>Limited in handling complex call journeys or interactions with multiple parties.</p></li>
+</ul>
+<p>Voipbin Call Concept</p>
+<ul class="simple">
+<li><p>Deviates from the traditional 1:1 model, allowing for more intricate call structures.</p></li>
+<li><p>Encompasses source, destination, and additional metadata in a call.</p></li>
+<li><p>Permits connections to multiple other calls, creating dynamic call journeys.</p></li>
+<li><p>Visualizes a call’s path, which may involve connecting to an agent and branching to additional destinations.</p></li>
+</ul>
+<p>In summary, while the traditional call concept adheres to a simple point-to-point model, the Voipbin call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
+</section>
+</section>
+</section>
+<section id="transfer">
+<span id="call-transfer"></span><h2>Transfer<a class="headerlink" href="#transfer" title="Link to this heading"></a></h2>
+<p>CPaaS, or Communications Platform as a Service, is a cloud-based technology that allows developers to add real-time communication features to their applications, such as voice and messaging capabilities.
+Call transfer is a common feature in CPaaS that allows an ongoing phone call to be transferred from one person to another, or from one device to another, without disrupting the conversation.</p>
+<p>There are two main types of call transfer in CPaaS: blind transfer and attended transfer.</p>
+<p>In both types of call transfer, the transfer can be done manually by the person initiating the transfer, or it can be automated using CPaaS software. Automated transfer is typically done using rules-based routing, which determines the appropriate person or device to transfer the call to based on predefined rules or criteria.</p>
+<p>Call transfer is just one of many features available in CPaaS technology, which can help improve call handling, reduce call times, and improve overall customer service.</p>
+<section id="blind-transfer">
+<span id="call-transfer-blind-transfer"></span><h3>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading"></a></h3>
+<p>Blind transfer is the simplest type of call transfer. In this type of transfer, the person initiating the transfer simply transfers the call to another person or phone number without first speaking to them. This is useful when the person receiving the call is known to be available and ready to take the call. Blind transfer is commonly used in call center environments where a caller needs to be routed to the appropriate agent or department.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Call</span> <span class="ow">in</span>       <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">progress</span>      <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|&lt;----------------&gt;|&lt;--------------&gt;|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Send</span> <span class="n">transfer</span>  <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Request</span>        <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;---------------|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Dial</span>           <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|--------------------------------&gt;|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Ring</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|&lt;-----------------|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Hangup</span>         <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|---------------&gt;|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>     <span class="n">Answer</span>     <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;--------------------------------|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Stop</span> <span class="n">ring</span>       <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|&lt;-----------------|</span>                <span class="o">|</span>                <span class="o">|</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The Caller initiates a call to the VoIPBin and the call is in progress.</p></li>
+<li><p>The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.</p></li>
+<li><p>The Transferer sends a transfer request to the VoIPBin, indicating the Transferee’s number.</p></li>
+<li><p>The VoIPBin dials to the Transferee.</p></li>
+<li><p>The VoIPBin hangs up the transferer right after dials to the transferee.</p></li>
+<li><p>The Transferee answers the call and is connected to the Caller.</p></li>
+</ul>
+<p>This is the basic process of an blind transfer using a CPaaS like VoIPBin.</p>
+</section>
+<section id="attended-transfer">
+<span id="call-transfer-attended-transfer"></span><h3>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Link to this heading"></a></h3>
+<p>Attended transfer, also known as consultative transfer, involves the person initiating the transfer first speaking to the person who will be taking the call. This allows the person initiating the transfer to provide context or information about the caller or the reason for the transfer. Once the person who will be taking the call is ready, the transfer is initiated and the original caller is connected to the new person or device. Attended transfer is commonly used in situations where the person receiving the call may need more information before taking the call, such as when transferring a call to a supervisor or manager.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Call</span> <span class="ow">in</span>       <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">progress</span>      <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|&lt;----------------&gt;|&lt;--------------&gt;|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Send</span> <span class="n">transfer</span>  <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Request</span>        <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;---------------|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Dial</span>           <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|--------------------------------&gt;|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>   <span class="n">MOH</span><span class="o">/</span><span class="n">Mute</span>       <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|&lt;-----------------|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>    <span class="n">Answer</span>      <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;--------------------------------|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;--------------&gt;|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;-------------------------------&gt;|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Hangup</span>         <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;---------------|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="n">MOH</span> <span class="n">off</span><span class="o">/</span><span class="n">Unmute</span>  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|&lt;-----------------|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Call</span> <span class="ow">in</span>       <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">progress</span>      <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|&lt;----------------&gt;|</span>                <span class="o">|</span>                <span class="o">|</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The Caller initiates a call to the VoIPBin, and the call is in progress with transferer.</p></li>
+<li><p>The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.</p></li>
+<li><p>The Transferer sends a transfer request to the VoIPBin, indicating the Transferee’s number.</p></li>
+<li><p>The VoIPBin dials to the Transferee.</p></li>
+<li><p>The VoIPBin puts the Caller on music on hold and mute.</p></li>
+<li><p>The Transferee answers the call and is connected to the Transferer and talk to each other.</p></li>
+<li><p>The Transferer drops out of the call.</p></li>
+<li><p>The VoIPBin turn off the Caller’s Music on hold and the Caller and Transferee can now hear each other.</p></li>
+</ul>
+<p>This is the basic process of an attended transfer using a CPaaS like VoIPBin. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.</p>
+</section>
+</section>
+<section id="groupcall">
+<span id="call-groupcall"></span><h2>Groupcall<a class="headerlink" href="#groupcall" title="Link to this heading"></a></h2>
+<p>The Groupcall feature in Voipbin is a blast calling functionality that enables team members to communicate in real-time. When a Group Call is initiated, an alert is sent to all team members, allowing them to join the call with a single click. The feature uses VoIP technology to enable high-quality audio communication and offers benefits such as increased productivity, improved collaboration, and enhanced connectivity.</p>
+<section id="ringall">
+<h3>Ringall<a class="headerlink" href="#ringall" title="Link to this heading"></a></h3>
+<p>Ringall send the dial request to the all of destinations.</p>
+<p>The ringall ring method is a way to make calls to multiple destinations simultaneously. When you initiate a groupcall using the ringall method, VoIPBin will place calls to all of the destinations on your list at once.
+This means that each destination’s phone will start ringing simultaneously, and the person who answers first will begin executing the call flow specified for that groupcall, while all other destinations that have not yet been answered will be hung up immediately.
+This ensures that only one call is active at a time and the call flow is executed by the person who answered first.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Client</span>           <span class="n">VoIPBin</span>        <span class="n">Destination</span><span class="o">-</span><span class="mi">1</span>    <span class="n">Destination</span><span class="o">-</span><span class="mi">2</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Groupcall</span>     <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>    <span class="n">request</span>       <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|-----------------&gt;|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Dial</span>           <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|---------------&gt;|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Dial</span>           <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|--------------------------------&gt;|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>         <span class="n">Answer</span> <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|&lt;--------------------------------|</span>
+<span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span> <span class="n">Cancel</span>         <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|---------------&gt;|</span>                <span class="o">|</span>
+</pre></div>
+</div>
+<p>The diagram shows the sequence of events for a Group Call request in VoIPBin with two destination endpoints, Destination-1 and Destination-2.
+* The Client initiates the Group Call request by sending a request message to the VoIPBin server.
+* The server then sends a Dial message to Destination-1 and Destination-2 to establish the call.
+* After Destination-2 answers the call, it sends an Answer message back to the server.
+* The VoIPBin cancels the call to Destination-1 by sending a Cancel message to Destination-1.</p>
+</section>
+<section id="linear">
+<h3>Linear<a class="headerlink" href="#linear" title="Link to this heading"></a></h3>
+<p>The linear ring method is a way to call a list of destinations one by one, in a specific order.</p>
+<p>When you initiate a groupcall using the linear method, VoIPBin will call the first destination on your list. If that destination does not answer, VoIPBin will move on to the next destination on the list and call it instead.
+This process will continue until one of the destinations answers the call, at which point the call flow specified for the groupcall will be executed. If all of the destinations on the list have been called and none of them have answered, the call will end without any further action.</p>
+<p>The linear method is useful when you want to call a list of destinations in a specific order and don’t want to simultaneously ring all destinations at once.</p>
+<p>For example, you might use the linear method for a sales team to call potential clients one by one, in a specific order based on priority.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupcall1</span>            <span class="n">destinationA</span>       <span class="n">destinationB</span>        <span class="n">destinationC</span>
+    <span class="o">|-----</span> <span class="n">ring</span> <span class="o">----------&gt;|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|&lt;----</span> <span class="n">no</span> <span class="n">answer</span> <span class="o">------|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|-----</span> <span class="n">ring</span> <span class="o">------------------------------&gt;|</span>                   <span class="o">|</span>
+    <span class="o">|&lt;----</span> <span class="n">no</span> <span class="n">answer</span> <span class="o">--------------------------|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|-----</span> <span class="n">ring</span> <span class="o">--------------------------------------------------&gt;|</span>
+    <span class="o">|&lt;----</span> <span class="n">answer</span> <span class="o">-------------------------------------------------|</span>
+</pre></div>
+</div>
+</section>
+<section id="nested-groupcall">
+<h3>Nested groupcall<a class="headerlink" href="#nested-groupcall" title="Link to this heading"></a></h3>
+<p>A nested groupcall is a groupcall that is included as one of the destinations in another groupcall. When a groupcall with a nested groupcall is initiated, the nested groupcall is also initiated, creating a “nested” groupcall within the main groupcall.</p>
+<p>For example, let’s say you have a groupcall with the following list of destinations: Destination A, Destination B, and Destination C. Destination C is a nested groupcall that includes its own list of destinations: Destination X and Destination Y.</p>
+<p>When you initiate the main groupcall, VoIPBin will begin calling Destination A and Destination B simultaneously according to the ring method you’ve specified (either ringall or linear). When it reaches Destination C, the nested groupcall is initiated and VoIPBin will begin calling Destination X and Destination Y according to the ring method specified in the nested groupcall.</p>
+<p>Once a destination in the nested groupcall has answered the call, the flow specified for that groupcall is executed. The child groupcall informs the master groupcall that it has answered call. The master groupcall then hangs up any remaining calls that have not yet been answered in the child groupcall, and stops calling the remaining destinations in the main groupcall list.</p>
+<p>In VoIPBin, the main groupcall is considered the “master” groupcall and the nested groupcall is considered a “chained” groupcall. Each chained groupcall is assigned a unique ID, and the IDs of all chained groupcalls are stored in a list within the master groupcall. This allows VoIPBin to keep track of all nested groupcalls and their current status within the main call.</p>
+<p>It is also possible to have chained groupcalls within chained groupcalls, creating multiple levels of nesting. This means that a nested groupcall can itself include another groupcall as one of its destinations, forming a chain of groupcalls. The nested groupcalls can continue to be chained in a cascading manner, allowing for complex call flows and routing scenarios.</p>
+<p>For example, the main groupcall may include a chained groupcall as one of its destinations, and that chained groupcall may, in turn, include another chained groupcall within it. This nesting can extend to multiple levels, providing a highly flexible and customizable approach to call routing and management.</p>
+<p>By allowing nested and chained groupcalls, VoIPBin empowers users to design and implement intricate call flows that cater to their specific needs. This functionality opens up possibilities for applications such as multi-level call routing, call forwarding to different departments or teams, and advanced call handling scenarios.</p>
+<p>The ability to include nested groupcalls within a main groupcall is a powerful feature that allows for more complex call flows and routing strategies. It can be used, for example, to create more sophisticated call routing trees that can handle a wide range of call scenarios and use cases.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupcall1</span>            <span class="n">destinationA</span>        <span class="n">destinationB</span>        <span class="n">destinationC</span>
+    <span class="o">|-----</span> <span class="n">ring</span> <span class="o">----------&gt;|</span>                   <span class="o">|</span>       <span class="p">(</span><span class="n">groupcall</span> <span class="n">destination</span> <span class="n">linear</span><span class="p">)</span>
+    <span class="o">|-----</span> <span class="n">ring</span> <span class="o">------------------------------&gt;|</span>                   <span class="o">|</span>                         <span class="n">groupcall2</span>        <span class="n">destinationX</span>        <span class="n">destinationY</span>
+    <span class="o">|-----</span> <span class="n">ring</span> <span class="o">--------------------------------------------------&gt;|--</span> <span class="n">start</span> <span class="n">a</span> <span class="n">nested</span> <span class="n">groupcall</span><span class="o">--&gt;|</span>                 <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                   <span class="o">|</span>                                                  <span class="o">|-----</span> <span class="n">ring</span> <span class="o">-----&gt;|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                   <span class="o">|</span>                                                  <span class="o">|&lt;--</span> <span class="n">no</span> <span class="n">answer</span> <span class="o">---|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                   <span class="o">|</span>                                                  <span class="o">|-----</span> <span class="n">ring</span> <span class="o">-------------------------&gt;|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                   <span class="o">|</span>                                                  <span class="o">|&lt;--</span> <span class="n">answer</span> <span class="o">--------------------------|</span>
+    <span class="o">|&lt;----------------------------------------</span> <span class="n">inform</span> <span class="n">that</span> <span class="n">groupcall2</span> <span class="n">got</span> <span class="n">answered</span> <span class="n">call</span> <span class="o">----------|</span>
+    <span class="o">|-----</span> <span class="n">cancel</span> <span class="o">--------&gt;|</span>                   <span class="o">|</span>
+    <span class="o">|-----</span> <span class="n">cancel</span> <span class="o">----------------------------&gt;|</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="struct-call">
+<span id="call-struct-call"></span><h2>Struct Call<a class="headerlink" href="#struct-call" title="Link to this heading"></a></h2>
+<section id="call-struct-call-call">
+<span id="id1"></span><h3>Call<a class="headerlink" href="#call-struct-call-call" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: Call’s ID.</p></li>
+<li><p>flow_id: Call’s flow id.</p></li>
+<li><p><em>type</em>: Call’s type. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>master_call_id: Master call’s id. If the master_call_id set, it follows master call’s hangup.</p></li>
+<li><p>chained_call_ids: List of chained call ids. If the call hangs up, the chained call also will hangup.</p></li>
+<li><p>recording_id: Shows currently recording id.</p></li>
+<li><p>recording_ids: List of recording ids.</p></li>
+<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: Call’s status. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>action</em>: Call’s current action. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>direction</em>: Call’s direction. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-direction"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupby"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupreason"><span class="std std-ref">here</span></a>.</p></li>
+</ul>
+<section id="example">
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d9d32881-12fd-4b19-a6b2-6d5b6b6acf76&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;4553c074-c88d-49e5-9d47-5c01598ac099&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0db08d32-b7d7-470d-8bda-9feff0877077&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is Sungtae, nice to meet you. hahaha&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;tm_execute&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.785510878&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:23.414798&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.721000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:26.978000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="type">
+<span id="call-struct-call-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<p>Call’s type.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>flow</p></td>
+<td><p>Executing the call-flow</p></td>
+</tr>
+<tr class="row-odd"><td><p>conference</p></td>
+<td><p>Conference call.</p></td>
+</tr>
+<tr class="row-even"><td><p>sip-service</p></td>
+<td><p>sip-service call. Will execute the corresponding the pre-defined sip-service by the destination.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="status">
+<span id="call-struct-call-status"></span><h3>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h3>
+<p>Call’s status.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>dialing</p></td>
+<td><p>The call is created. We are dialing to the destination.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ringing</p></td>
+<td><p>The destination has confirmed that the call is ringng.</p></td>
+</tr>
+<tr class="row-even"><td><p>progressing</p></td>
+<td><p>The call has answered. The both endpoints are talking to each other.</p></td>
+</tr>
+<tr class="row-odd"><td><p>terminating</p></td>
+<td><p>The call is terminating.</p></td>
+</tr>
+<tr class="row-even"><td><p>canceling</p></td>
+<td><p>The call originator is canceling the call.</p></td>
+</tr>
+<tr class="row-odd"><td><p>hangup</p></td>
+<td><p>The call has been completed.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>state diagram</strong></p>
+<img alt="_images/call_struct_status.png" src="_images/call_struct_status.png" />
+</section>
+<section id="direction">
+<span id="call-struct-call-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Link to this heading"></a></h3>
+<p>Call’s direction.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Direction</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>incoming</p></td>
+<td><p>The call was coming from the outside of VoIPBIN.</p></td>
+</tr>
+<tr class="row-odd"><td><p>outgoing</p></td>
+<td><p>The call was generated by VoIPBIN.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="hangup-by">
+<span id="call-struct-call-hangupby"></span><h3>Hangup by<a class="headerlink" href="#hangup-by" title="Link to this heading"></a></h3>
+<p>The Hangup by shows which endpoint sent the hangup request first.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>hangup by</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>remote</p></td>
+<td><p>The remote end hangup the call first.</p></td>
+</tr>
+<tr class="row-odd"><td><p>local</p></td>
+<td><p>The local end hangup the call first.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="hangup-reason">
+<span id="call-struct-call-hangupreason"></span><h3>Hangup reason<a class="headerlink" href="#hangup-reason" title="Link to this heading"></a></h3>
+<p>Shows why the call was hungup.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>The call has ended after answer.</p></td>
+</tr>
+<tr class="row-odd"><td><p>failed</p></td>
+<td><p>The call attempt(signal) was not reached to the phone network.</p></td>
+</tr>
+<tr class="row-even"><td><p>busy</p></td>
+<td><p>The destination is on the line with another caller.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cancel</p></td>
+<td><p>Call was cancelled by the originator before it was answered.</p></td>
+</tr>
+<tr class="row-even"><td><p>timeout</p></td>
+<td><p>Call reached max call duration after it was answered.</p></td>
+</tr>
+<tr class="row-odd"><td><p>noanswer</p></td>
+<td><p>Destination didn’t answer until destination’s timeout.</p></td>
+</tr>
+<tr class="row-even"><td><p>dialout</p></td>
+<td><p>The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).</p></td>
+</tr>
+<tr class="row-odd"><td><p>amd</p></td>
+<td><p>Hangup caused by the action type amd. The call’s amd action result hung up the call.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="struct-groupcall">
+<span id="call-struct-groupcall"></span><h2>Struct Groupcall<a class="headerlink" href="#struct-groupcall" title="Link to this heading"></a></h2>
+<section id="call-struct-groupcall-groupcall">
+<span id="id2"></span><h3>Groupcall<a class="headerlink" href="#call-struct-groupcall-groupcall" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="o">...</span>
+        <span class="p">},</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;answer_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;answer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+       <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+       <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: Groupcall’s ID.</p></li>
+<li><p>customer_id: Customer’s ID</p></li>
+<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destinations</em>: List of destination addresses info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>ring_method</em>: Ring method. See detail <a class="reference internal" href="call_struct_groupcall.html#call-struct-groupcall-ring-method"><span class="std std-ref">here</span></a></p></li>
+<li><p><em>answer_method</em>: Answering method. See detail <a class="reference internal" href="call_struct_groupcall.html#call-struct-groupcall-answer-method"><span class="std std-ref">here</span></a></p></li>
+<li><p>answer_call_id: Represents answered call id.</p></li>
+<li><p>call_ids: List of created call ids.</p></li>
+</ul>
+<section id="id3">
+<h4>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;test11@test&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;test12@test&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;answer_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;answer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2023-04-21 15:33:28.569053&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="ring-method">
+<span id="call-struct-groupcall-ring-method"></span><h3>Ring method<a class="headerlink" href="#ring-method" title="Link to this heading"></a></h3>
+<p>Groupcall’s ringing method.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ring_all</p></td>
+<td><p>Make a call to the all destinations at once.</p></td>
+</tr>
+<tr class="row-odd"><td><p>linear</p></td>
+<td><p>Make a call to the destination one-by-one in a linear.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="answer-method">
+<span id="call-struct-groupcall-answer-method"></span><h3>Answer method<a class="headerlink" href="#answer-method" title="Link to this heading"></a></h3>
+<p>Call’s status.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>hangup_others</p></td>
+<td><p>Hang up the other calls.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="tutorial">
+<span id="call-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<section id="simple-outbound-call-with-tts">
+<h3>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading"></a></h3>
+<p>Making an outbound call with TTS(Text-to-Speech) action.
+When the destination answer the call, it will speak the given text message.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDcyNjM5MjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.py7AwXIO0ZNBWSS1PN-05L9oYEREjGgbkkE6CcVyuzw&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821028286521&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+821021656521&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye&quot;,
+                    &quot;gender&quot;: &quot;female&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="simple-outbound-call-with-media-file-play">
+<h3>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading"></a></h3>
+<p>Making an outbound call with media file play action.
+When the destination answer the call, it will play the given media file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821028286521&quot;
+    },
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;
+        }
+    ],
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_urls&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+                ]
+            }
+        }
+    ]
+}&#39;
+
+[
+    {
+        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,
+        &quot;user_id&quot;: 1,
+        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,
+        &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;name&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;name&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_create&quot;: &quot;2021-02-04 04:44:20.904662&quot;,
+        &quot;tm_update&quot;: &quot;&quot;,
+        &quot;tm_progressing&quot;: &quot;&quot;,
+        &quot;tm_ringing&quot;: &quot;&quot;,
+        &quot;tm_hangup&quot;: &quot;&quot;
+    }
+]
+</pre></div>
+</div>
+</section>
+<section id="simple-outbound-call-with-tts-and-connect">
+<h3>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading"></a></h3>
+<p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--data-raw &#39;{
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;
+    },
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;
+        }
+    ],
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;connect&quot;,
+            &quot;option&quot;: {
+                &quot;source&quot;: {
+                    &quot;type&quot;: &quot;tel&quot;,
+                    &quot;target&quot;: &quot;+821021656521&quot;
+                },
+                &quot;destinations&quot;: [
+                    {
+                        &quot;type&quot;: &quot;tel&quot;,
+                        &quot;target&quot;: &quot;+821043126521&quot;
+                    }
+                ]
+            }
+        }
+    ]
+}&#39;
+
+[
+    {
+        &quot;id&quot;: &quot;9f6265bc-6b59-4e80-a906-2679aca11455&quot;,
+        &quot;user_id&quot;: 1,
+        &quot;flow_id&quot;: &quot;d665fbc0-6dd8-44bc-99ea-2ae54bc59428&quot;,
+        &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;name&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;name&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_create&quot;: &quot;2021-02-06 09:52:49.941865&quot;,
+        &quot;tm_update&quot;: &quot;&quot;,
+        &quot;tm_progressing&quot;: &quot;&quot;,
+        &quot;tm_ringing&quot;: &quot;&quot;,
+        &quot;tm_hangup&quot;: &quot;&quot;
+    }
+]
+</pre></div>
+</div>
+</section>
+<section id="simple-outbound-call-with-talk-and-digits-send">
+<h3>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading"></a></h3>
+<p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This is dtmf send test call. Please wait.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_send&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;dtmfs&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+                <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">500</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you. DTMF send test has done.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d7520a58-0b07-4dd7-ab72-a4e2d1979ec0&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0f4bd9bc-9df5-4a5b-9465-2189822a3019&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;conf_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-02-08 03:59:33.281711&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="simple-outbound-call-with-branch">
+<h3>Simple outbound call with Branch<a class="headerlink" href="#simple-outbound-call-with-branch" title="Link to this heading"></a></h3>
+<p>Making an outbound call with brach. It will get the digits from the call and will execute the branch.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
+                <span class="o">|</span>
+                <span class="o">|</span>
+<span class="o">------------&gt;</span>  <span class="n">Talk</span><span class="p">(</span><span class="s2">&quot;Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;</span><span class="p">)</span>
+<span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>              <span class="n">Digit</span><span class="p">(</span><span class="n">DTMF</span><span class="p">)</span> <span class="n">receive</span>
+<span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>       <span class="o">-----------------------------------------------</span>
+<span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>     <span class="n">default</span>      <span class="s2">&quot;1&quot;</span>              <span class="s2">&quot;2&quot;</span>              <span class="s2">&quot;3&quot;</span>
+<span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>          <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>        <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>        <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>          <span class="n">Hangup</span>          <span class="n">Hangup</span>           <span class="n">Hangup</span>
+<span class="o">|</span>       <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>
+<span class="o">|</span>      <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="o">|</span>       <span class="o">|</span>
+<span class="o">----</span><span class="n">goto</span><span class="p">(</span><span class="n">loop</span> <span class="mi">2</span> <span class="n">times</span><span class="p">)</span>
+        <span class="o">|</span>
+        <span class="o">|</span>
+       <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="o">|</span>
+        <span class="o">|</span>
+       <span class="n">Hangup</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
+--data-raw &#39;{
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821028286521&quot;
+    },
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;
+        }
+    ],
+    &quot;actions&quot;: [
+        {
+            &quot;id&quot;: &quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;digits_receive&quot;,
+            &quot;option&quot;: {
+                &quot;duration&quot;: 5000,
+                &quot;length&quot;: 1
+            }
+        },
+        {
+            &quot;type&quot;: &quot;branch&quot;,
+            &quot;option&quot;: {
+                &quot;default_target_id&quot;: &quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;,
+                &quot;target_ids&quot;: {
+                    &quot;1&quot;: &quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;,
+                    &quot;2&quot;: &quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;,
+                    &quot;3&quot;: &quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;
+                }
+            }
+        },
+        {
+            &quot;id&quot;: &quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;hangup&quot;
+        },
+        {
+            &quot;id&quot;: &quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he&#39;\&#39;&#39;s dead. Mama, life had just begun, But now I&#39;\&#39;&#39;ve gone and thrown it all away.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;hangup&quot;
+        },
+        {
+            &quot;id&quot;: &quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Steve walks warily down the street. With his brim pulled way down low. Ain&#39;\&#39;&#39;t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;hangup&quot;
+        },
+        {
+            &quot;id&quot;: &quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;You didn&#39;\&#39;&#39;t choice correct number. Default selected.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;goto&quot;,
+            &quot;option&quot;: {
+                &quot;target_id&quot;: &quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;,
+                &quot;loop_count&quot;: 2
+            }
+        },
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Loop over. Hangup the call. Thank you, good bye.&quot;,
+                &quot;gender&quot;: &quot;female&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;hangup&quot;
+        }
+    ]
+}&#39;
+
+[
+    {
+        &quot;id&quot;: &quot;77517719-ffb9-4583-ba44-737ba991d685&quot;,
+        &quot;flow_id&quot;: &quot;c0827e56-41ef-4fa1-9da0-a8a36fbb76c4&quot;,
+        &quot;confbridge_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;action&quot;: {
+            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
+            &quot;type&quot;: &quot;&quot;
+        },
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_create&quot;: &quot;2022-02-24 02:08:14.469405&quot;,
+        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    }
+]
+</pre></div>
+</div>
+</section>
+<section id="get-call-list">
+<h3>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading"></a></h3>
+<p>Getting a list of calls.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;9a7857ca-73ba-4000-8101-c47d3b48f9d1&quot;,
+            &quot;user_id&quot;: 1,
+            &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;sip-service&quot;,
+            &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;chained_call_ids&quot;: [],
+            &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;recording_ids&quot;: [],
+            &quot;source&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;109&quot;,
+                &quot;name&quot;: &quot;109&quot;
+            },
+            &quot;destination&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;972595897084&quot;,
+                &quot;name&quot;: &quot;&quot;
+            },
+            &quot;status&quot;: &quot;hangup&quot;,
+            &quot;direction&quot;: &quot;incoming&quot;,
+            &quot;hangup_by&quot;: &quot;remote&quot;,
+            &quot;hangup_reason&quot;: &quot;normal&quot;,
+            &quot;tm_create&quot;: &quot;2021-02-06 09:47:10.018000&quot;,
+            &quot;tm_update&quot;: &quot;2021-02-06 09:48:14.630000&quot;,
+            &quot;tm_progressing&quot;: &quot;2021-02-06 09:47:10.626000&quot;,
+            &quot;tm_ringing&quot;: &quot;&quot;,
+            &quot;tm_hangup&quot;: &quot;2021-02-06 09:48:14.630000&quot;
+        },
+        ...
+    ],
+    &quot;next_page_token&quot;: &quot;2021-02-06 08:54:38.361000&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="get-specific-call">
+<h3>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading"></a></h3>
+<p>Getting a given call uuid’s call info.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+
+{
+    &quot;id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
+    &quot;user_id&quot;: 1,
+    &quot;flow_id&quot;: &quot;246aeabe-fab5-4a1b-8e98-852b50e89dd7&quot;,
+    &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;type&quot;: &quot;flow&quot;,
+    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;chained_call_ids&quot;: [],
+    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;recording_ids&quot;: [
+        &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;
+    ],
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821028286521&quot;,
+        &quot;name&quot;: &quot;&quot;
+    },
+    &quot;destination&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;name&quot;: &quot;&quot;
+    },
+    &quot;status&quot;: &quot;hangup&quot;,
+    &quot;direction&quot;: &quot;outgoing&quot;,
+    &quot;hangup_by&quot;: &quot;remote&quot;,
+    &quot;hangup_reason&quot;: &quot;normal&quot;,
+    &quot;tm_create&quot;: &quot;2021-01-29 03:17:54.349101&quot;,
+    &quot;tm_update&quot;: &quot;2021-01-29 03:18:22.131000&quot;,
+    &quot;tm_progressing&quot;: &quot;2021-01-29 03:18:07.810000&quot;,
+    &quot;tm_ringing&quot;: &quot;2021-01-29 03:17:55.392000&quot;,
+    &quot;tm_hangup&quot;: &quot;2021-01-29 03:18:22.131000&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="make-a-groupcall">
+<h3>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading"></a></h3>
+<p>Make a groupcall to the multiple destinations.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=eyJhbGcslkj&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821100000001&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;endpoint&quot;,
+                &quot;target&quot;: &quot;test11@test&quot;
+            },
+            {
+                &quot;type&quot;: &quot;endpoint&quot;,
+                &quot;target&quot;: &quot;test12@test&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye&quot;,
+                    &quot;gender&quot;: &quot;female&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+821028286521&quot;,
+        &quot;target_name&quot;: &quot;&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
+    },
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;endpoint&quot;,
+            &quot;target&quot;: &quot;test11@test&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        {
+            &quot;type&quot;: &quot;endpoint&quot;,
+            &quot;target&quot;: &quot;test12@test&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        }
+    ],
+    &quot;ring_method&quot;: &quot;&quot;,
+    &quot;answer_method&quot;: &quot;&quot;,
+    &quot;answer_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;call_ids&quot;: [
+        &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;,
+        &quot;2bcaff64-e05d-11ed-84a6-133172844032&quot;
+    ],
+    &quot;tm_create&quot;: &quot;2023-04-21 15:33:28.569053&quot;,
+    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="activeflow.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>Activeflow
+    </a>
+    <a class="float-right" href="message.html" title="Next">
+        Message <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Call</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#protocol">Protocol</a></li>
+<li><a class="reference internal" href="#pstn-phone-number-format">PSTN/Phone Number Format</a></li>
+<li><a class="reference internal" href="#extension-number-format">Extension Number Format</a></li>
+<li><a class="reference internal" href="#incoming-call">Incoming call</a></li>
+<li><a class="reference internal" href="#execution-of-call-flow-for-incoming-call">Execution of Call Flow for incoming call</a></li>
+<li><a class="reference internal" href="#outgoing-call">Outgoing call</a></li>
+<li><a class="reference internal" href="#execution-of-call-flow-for-outgoing-call">Execution of Call Flow for outgoing call</a></li>
+<li><a class="reference internal" href="#error-handling-and-termination">Error handling and Termination</a></li>
+<li><a class="reference internal" href="#call-concept">Call concept</a><ul>
+<li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs Voipbin Call Concept</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#transfer">Transfer</a><ul>
+<li><a class="reference internal" href="#blind-transfer">Blind Transfer</a></li>
+<li><a class="reference internal" href="#attended-transfer">Attended Transfer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#groupcall">Groupcall</a><ul>
+<li><a class="reference internal" href="#ringall">Ringall</a></li>
+<li><a class="reference internal" href="#linear">Linear</a></li>
+<li><a class="reference internal" href="#nested-groupcall">Nested groupcall</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#struct-call">Struct Call</a><ul>
+<li><a class="reference internal" href="#call-struct-call-call">Call</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#type">Type</a></li>
+<li><a class="reference internal" href="#status">Status</a></li>
+<li><a class="reference internal" href="#direction">Direction</a></li>
+<li><a class="reference internal" href="#hangup-by">Hangup by</a></li>
+<li><a class="reference internal" href="#hangup-reason">Hangup reason</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#struct-groupcall">Struct Groupcall</a><ul>
+<li><a class="reference internal" href="#call-struct-groupcall-groupcall">Groupcall</a><ul>
+<li><a class="reference internal" href="#id3">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ring-method">Ring method</a></li>
+<li><a class="reference internal" href="#answer-method">Answer method</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
+<li><a class="reference internal" href="#simple-outbound-call-with-media-file-play">Simple outbound call with media file play</a></li>
+<li><a class="reference internal" href="#simple-outbound-call-with-tts-and-connect">Simple outbound call with TTS and connect</a></li>
+<li><a class="reference internal" href="#simple-outbound-call-with-talk-and-digits-send">Simple outbound call with talk and digits_send</a></li>
+<li><a class="reference internal" href="#simple-outbound-call-with-branch">Simple outbound call with Branch</a></li>
+<li><a class="reference internal" href="#get-call-list">Get call list</a></li>
+<li><a class="reference internal" href="#get-specific-call">Get specific call</a></li>
+<li><a class="reference internal" href="#make-a-groupcall">Make a groupcall</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                <p style="display: none">
+                    <a class="text-light" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Wagtail Sphinx Theme 6.3.0
+                    </a>
+                </p>
+            </div>
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

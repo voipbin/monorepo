@@ -47,6 +47,7 @@ import (
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	provider "monorepo/bin-route-manager/models/provider"
 	route "monorepo/bin-route-manager/models/route"
+	account1 "monorepo/bin-storage-manager/models/account"
 	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -2890,6 +2891,81 @@ func (m *MockServiceHandler) RouteUpdate(ctx context.Context, a *agent.Agent, ro
 func (mr *MockServiceHandlerMockRecorder) RouteUpdate(ctx, a, routeID, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteUpdate", reflect.TypeOf((*MockServiceHandler)(nil).RouteUpdate), ctx, a, routeID, name, detail, providerID, priority, target)
+}
+
+// StorageAccountCreate mocks base method.
+func (m *MockServiceHandler) StorageAccountCreate(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*account1.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageAccountCreate", ctx, a, customerID)
+	ret0, _ := ret[0].(*account1.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageAccountCreate indicates an expected call of StorageAccountCreate.
+func (mr *MockServiceHandlerMockRecorder) StorageAccountCreate(ctx, a, customerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountCreate), ctx, a, customerID)
+}
+
+// StorageAccountDelete mocks base method.
+func (m *MockServiceHandler) StorageAccountDelete(ctx context.Context, a *agent.Agent, storageAccountID uuid.UUID) (*account1.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageAccountDelete", ctx, a, storageAccountID)
+	ret0, _ := ret[0].(*account1.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageAccountDelete indicates an expected call of StorageAccountDelete.
+func (mr *MockServiceHandlerMockRecorder) StorageAccountDelete(ctx, a, storageAccountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountDelete", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountDelete), ctx, a, storageAccountID)
+}
+
+// StorageAccountGet mocks base method.
+func (m *MockServiceHandler) StorageAccountGet(ctx context.Context, a *agent.Agent, storageAccountID uuid.UUID) (*account1.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageAccountGet", ctx, a, storageAccountID)
+	ret0, _ := ret[0].(*account1.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageAccountGet indicates an expected call of StorageAccountGet.
+func (mr *MockServiceHandlerMockRecorder) StorageAccountGet(ctx, a, storageAccountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountGet", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountGet), ctx, a, storageAccountID)
+}
+
+// StorageAccountGetByCustomerID mocks base method.
+func (m *MockServiceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *agent.Agent) (*account1.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageAccountGetByCustomerID", ctx, a)
+	ret0, _ := ret[0].(*account1.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageAccountGetByCustomerID indicates an expected call of StorageAccountGetByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) StorageAccountGetByCustomerID(ctx, a interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountGetByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountGetByCustomerID), ctx, a)
+}
+
+// StorageAccountGets mocks base method.
+func (m *MockServiceHandler) StorageAccountGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account1.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageAccountGets", ctx, a, size, token)
+	ret0, _ := ret[0].([]*account1.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageAccountGets indicates an expected call of StorageAccountGets.
+func (mr *MockServiceHandlerMockRecorder) StorageAccountGets(ctx, a, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountGets", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountGets), ctx, a, size, token)
 }
 
 // TagCreate mocks base method.
