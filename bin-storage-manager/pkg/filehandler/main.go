@@ -13,7 +13,9 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-storage-manager/models/file"
+	accounthandler "monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 
 	"cloud.google.com/go/storage"
@@ -52,12 +54,15 @@ type FileHandler interface {
 	DownloadURIGet(ctx context.Context, bucketName string, filepath string, expire time.Duration) (string, string, error)
 
 	IsExist(ctx context.Context, bucketName string, filepath string) bool
+
+	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
 }
 
 type fileHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	notifyHandler notifyhandler.NotifyHandler
-	db            dbhandler.DBHandler
+	utilHandler    utilhandler.UtilHandler
+	notifyHandler  notifyhandler.NotifyHandler
+	db             dbhandler.DBHandler
+	accountHandler accounthandler.AccountHandler
 
 	client *storage.Client
 
@@ -74,6 +79,8 @@ type fileHandler struct {
 func NewFileHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
+	accountHandler accounthandler.AccountHandler,
+
 	credentialPath string,
 	projectID string,
 	bucketMedia string,
@@ -103,11 +110,12 @@ func NewFileHandler(
 	}
 
 	h := &fileHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		notifyHandler: notifyHandler,
-		db:            db,
-		client:        client,
+		utilHandler:    utilhandler.NewUtilHandler(),
+		notifyHandler:  notifyHandler,
+		db:             db,
+		accountHandler: accountHandler,
 
+		client:      client,
 		projectID:   projectID,
 		bucketMedia: bucketMedia,
 		bucketTmp:   bucketTmp,

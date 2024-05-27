@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/redis/go-redis/v9"
 
+	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/models/file"
 )
 
@@ -27,6 +28,9 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	AccountSet(ctx context.Context, f *account.Account) error
+	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
 
 	FileSet(ctx context.Context, f *file.File) error
 	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)

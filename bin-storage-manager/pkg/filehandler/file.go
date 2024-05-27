@@ -46,6 +46,14 @@ func (h *fileHandler) Create(
 	}
 	log.WithField("attrs", attrs).Debugf("Found file. name: %s", attrs.Name)
 
+	// validate the account
+	a, err := h.accountHandler.ValidateFileInfoByCustomerID(ctx, customerID, 1, attrs.Size)
+	if err != nil {
+		log.Errorf("Could not pass the account validation. err: %v", err)
+		return nil, errors.Wrapf(err, "could not pass the account validation")
+	}
+	log.WithField("account", a).Debugf("Validated the account. account_id: %s", a.ID)
+
 	// generate destination filepath
 	id := h.utilHandler.UUIDCreate()
 	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, id)
@@ -72,14 +80,16 @@ func (h *fileHandler) Create(
 	f := &file.File{
 		ID:               id,
 		CustomerID:       customerID,
+		AccountID:        a.ID,
 		OwnerID:          ownerID,
 		ReferenceType:    referenceType,
 		ReferenceID:      referenceID,
 		Name:             name,
 		Detail:           detail,
-		Filename:         filename,
 		BucketName:       h.bucketMedia,
+		Filename:         filename,
 		Filepath:         dstFilepath,
+		Filesize:         attrs.Size,
 		URIBucket:        dstAttrs.MediaLink,
 		URIDownload:      downloadURI,
 		TMDownloadExpire: tmDownloadExpire,
@@ -100,9 +110,17 @@ func (h *fileHandler) Create(
 
 	h.notifyHandler.PublishEvent(ctx, file.EventTypeFileCreated, res)
 
+	// increase account's file info
+	_, err = h.accountHandler.IncreaseFileInfo(ctx, res.AccountID, 1, res.Filesize)
+	if err != nil {
+		log.Errorf("Could not increase account's file info. err: %v", err)
+		// we got error here, but just write the error message only.
+	}
+
 	return res, nil
 }
 
+// Get returns the file info
 func (h *fileHandler) Get(ctx context.Context, id uuid.UUID) (*file.File, error) {
 	res, err := h.db.FileGet(ctx, id)
 	if err != nil {
@@ -163,6 +181,12 @@ func (h *fileHandler) Delete(ctx context.Context, id uuid.UUID) (*file.File, err
 	}
 
 	h.notifyHandler.PublishEvent(ctx, file.EventTypeFileDeleted, res)
+
+	_, err = h.accountHandler.DecreaseFileInfo(ctx, res.AccountID, 1, res.Filesize)
+	if err != nil {
+		log.Errorf("Could not increase account's file info. err: %v", err)
+		// we got error here, but just write the error message only.
+	}
 
 	return res, nil
 }

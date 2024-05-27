@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
 )
 
@@ -30,10 +31,16 @@ type listenHandler struct {
 	utilHandler    utilhandler.UtilHandler
 	rabbitSock     rabbitmqhandler.Rabbit
 	storageHandler storagehandler.StorageHandler
+	accountHandler accounthandler.AccountHandler
 }
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+	// accounts
+	regV1AccountsGet = regexp.MustCompile(`/v1/accounts\?`)
+	regV1Accounts    = regexp.MustCompile("/v1/accounts$")
+	regV1AccountsID  = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 
 	// files
 	regV1FilesGet = regexp.MustCompile(`/v1/files\?`)
@@ -77,11 +84,13 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	storageHandler storagehandler.StorageHandler,
+	accountHandler accounthandler.AccountHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		utilHandler:    utilhandler.NewUtilHandler(),
 		rabbitSock:     rabbitSock,
 		storageHandler: storageHandler,
+		accountHandler: accountHandler,
 	}
 
 	return h
@@ -99,12 +108,12 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
@@ -140,6 +149,23 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	///////////////////////////////////////////////////////////////////////
 	// v1 /////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////
+
+	// accounts /////////////
+	case regV1Accounts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/accounts"
+		response, err = h.v1AccountsPost(ctx, m)
+
+	case regV1AccountsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/accounts"
+		response, err = h.v1AccountsGet(ctx, m)
+
+	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/accounts/<account-id>"
+		response, err = h.v1AccountsIDGet(ctx, m)
+
+	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/accounts/<account-id>"
+		response, err = h.v1AccountsIDDelete(ctx, m)
 
 	// files ////////////////
 	case regV1Files.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:

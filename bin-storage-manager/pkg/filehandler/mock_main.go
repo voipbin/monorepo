@@ -6,6 +6,7 @@ package filehandler
 
 import (
 	context "context"
+	customer "monorepo/bin-customer-manager/models/customer"
 	file "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 	time "time"
@@ -111,6 +112,20 @@ func (m *MockFileHandler) DownloadURIGet(ctx context.Context, bucketName, filepa
 func (mr *MockFileHandlerMockRecorder) DownloadURIGet(ctx, bucketName, filepath, expire interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadURIGet", reflect.TypeOf((*MockFileHandler)(nil).DownloadURIGet), ctx, bucketName, filepath, expire)
+}
+
+// EventCustomerDeleted mocks base method.
+func (m *MockFileHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCustomerDeleted", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCustomerDeleted indicates an expected call of EventCustomerDeleted.
+func (mr *MockFileHandlerMockRecorder) EventCustomerDeleted(ctx, cu interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerDeleted", reflect.TypeOf((*MockFileHandler)(nil).EventCustomerDeleted), ctx, cu)
 }
 
 // Get mocks base method.
