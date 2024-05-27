@@ -64,6 +64,7 @@ import (
 	rmprovider "monorepo/bin-route-manager/models/provider"
 	rmroute "monorepo/bin-route-manager/models/route"
 
+	smaccount "monorepo/bin-storage-manager/models/account"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	smfile "monorepo/bin-storage-manager/models/file"
 
@@ -785,6 +786,12 @@ type RequestHandler interface {
 	) (*rmroute.Route, error)
 	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 	RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
+
+	// storage-manager account
+	StorageV1AccountCreate(ctx context.Context, customerID uuid.UUID) (*smaccount.Account, error)
+	StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smaccount.Account, error)
+	StorageV1AccountGet(ctx context.Context, accountID uuid.UUID) (*smaccount.Account, error)
+	StorageV1AccountDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smaccount.Account, error)
 
 	// storage-manager recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)
