@@ -158,7 +158,7 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// docs
-	app.Static("/docs", "docsdev/build/html")
+	app.Static("/docs", "docsdev/build")
 
 	// CORS setting
 	// CORS for https://foo.com and https://github.com origins, allowing:

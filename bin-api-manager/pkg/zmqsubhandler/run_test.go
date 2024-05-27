@@ -164,7 +164,7 @@ func Test_recevieMessage_context_canceled(t *testing.T) {
 		{
 			"context has canceled while receiving the message",
 
-			10,
+			5,
 		},
 	}
 
