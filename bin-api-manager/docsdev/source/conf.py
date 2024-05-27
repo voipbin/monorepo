@@ -91,6 +91,7 @@ html_theme_options = dict(
     logo_url = "/",
     logo_width = 45,
 
+    github_url = "",
     header_links = ",".join([
         "Project|http://voipbin.net",
         "Admin|https://admin.voipbin.net",
