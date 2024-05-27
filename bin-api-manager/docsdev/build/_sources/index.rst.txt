@@ -9,7 +9,6 @@ Welcome to voipbin's documentation!
 .. toctree::
    :maxdepth: 5
 
-   glossary
    intro
    quickstart
    common
@@ -41,6 +40,7 @@ Welcome to voipbin's documentation!
    trunk
    billing_account
    transcribe
+   glossary
 
 
 Indices and tables

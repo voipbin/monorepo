@@ -21,7 +21,7 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'voipbin'
-copyright = '2020, Sungtae Kim'
+copyright = '2024, Sungtae Kim'
 author = 'Sungtae Kim'
 
 # The short X.Y version
