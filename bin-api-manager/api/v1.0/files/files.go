@@ -55,7 +55,7 @@ func filesPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	res, err := serviceHandler.FileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
+	res, err := serviceHandler.StorageFileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
@@ -111,7 +111,7 @@ func filesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get files
-	files, err := serviceHandler.FileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
+	files, err := serviceHandler.StorageFileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -164,7 +164,7 @@ func filesIDGET(c *gin.Context) {
 	log.Debug("Executing filesIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FileGet(c.Request.Context(), &a, id)
+	res, err := serviceHandler.StorageFileGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a file. err: %v", err)
 		c.AbortWithStatus(400)
@@ -207,7 +207,7 @@ func filesIDDELETE(c *gin.Context) {
 
 	// delete a file
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FileDelete(c.Request.Context(), &a, id)
+	res, err := serviceHandler.StorageFileDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the file. err: %v", err)
 		c.AbortWithStatus(400)

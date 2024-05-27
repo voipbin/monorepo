@@ -81,7 +81,7 @@ func Test_filesPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
 			req.Header.Add("Content-Type", writer.FormDataContentType())
 
-			mockSvc.EXPECT().FileCreate(req.Context(), &tt.agent, gomock.Any(), "", "", tt.filename).Return(tt.resFile, nil)
+			mockSvc.EXPECT().StorageFileCreate(req.Context(), &tt.agent, gomock.Any(), "", "", tt.filename).Return(tt.resFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -205,7 +205,7 @@ func Test_filesGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().FileGetsByOnwerID(req.Context(), &tt.agent, uint64(100), "").Return(tt.expectExt, nil)
+			mockSvc.EXPECT().StorageFileGetsByOnwerID(req.Context(), &tt.agent, uint64(100), "").Return(tt.expectExt, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -264,7 +264,7 @@ func Test_filesIDGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().FileGet(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().StorageFileGet(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -324,7 +324,7 @@ func Test_filesIDDELETE(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().FileDelete(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().StorageFileDelete(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
