@@ -188,24 +188,13 @@ func (h *accountHandler) ValidateFileInfoByCustomerID(ctx context.Context, custo
 		"filesize":    filesize,
 	})
 
-	// get account
-	filters := map[string]string{
-		"deleted":     "false",
-		"customer_id": customerID.String(),
-	}
-
-	tmps, err := h.Gets(ctx, "", 1, filters)
+	res, err := h.getByCustomerID(ctx, customerID)
 	if err != nil {
-		log.Errorf("Could not get account info. err: %v", err)
+		log.Errorf("Could not find account info. err: %v", err)
 		return nil, err
 	}
+	log.WithField("account", res).Debugf("Found account info. account_id: %s", res.ID)
 
-	if len(tmps) == 0 {
-		log.Errorf("Could not find account info. err: %v", err)
-		return nil, fmt.Errorf("could not find account info")
-	}
-
-	res := tmps[0]
 	if res.TotalFileSize+filesize > maxFileSize {
 		log.Debugf("Exceeded max total file size limit. total_file_size: %d", res.TotalFileSize)
 		return nil, fmt.Errorf("exceeded max total file size limit")
