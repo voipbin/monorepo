@@ -88,7 +88,7 @@ html_theme_options = dict(
     logo = "images/voipbin-high-resolution-logo-white-transparent.png",
     logo_alt = "voipbin",
     logo_height = 80,
-    logo_url = "/",
+    logo_url = "intro.html",
     logo_width = 45,
 
     github_url = "",
