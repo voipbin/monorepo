@@ -13,6 +13,8 @@
             <link rel="index" title="Index" href="genindex.html" />
             <link rel="search" title="Search" href="search.html" />
             <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="Transcribe" href="transcribe.html" />
+            <link rel="prev" title="Billing Account" href="billing_account.html" />
     </head>
 <body>
     <script type="text/javascript" src="_static/dist/blocking.js"></script>
@@ -69,7 +71,7 @@
     </form>
 </div><div class="site-toc">
     <nav class="toc mt-3" aria-label="Main menu">
-        <ul>
+        <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
@@ -100,6 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Storage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 </ul>
@@ -153,32 +156,158 @@
 <span id="storage-main"></span><h1>Storage<a class="headerlink" href="#storage" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="storage-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>The Storage API on VoIPBin is designed to help users manage their stored files and keep track of their storage usage. The API provides endpoints to handle file operations such as uploading, retrieving, and deleting files, as well as monitoring the overall storage usage. This allows users to efficiently manage their data within their allocated storage quota. The key components of the Storage API include:</p>
-<section id="file">
-<h3>File<a class="headerlink" href="#file" title="Link to this heading"></a></h3>
-<p>The Files API facilitates file management on the platform. It includes the following features.</p>
+<p>The Storage API on VoIPBin is designed to help users manage their stored files and monitor their storage usage. This feature allows users to efficiently oversee their data within their allocated storage quota.</p>
+<p>The API provides endpoints for various file operations, such as uploading, retrieving, and deleting files, as well as monitoring overall storage usage. These functionalities enable users to manage their data effectively.</p>
+<section id="file-management">
+<h3>File Management<a class="headerlink" href="#file-management" title="Link to this heading"></a></h3>
+<p>The Files API enables comprehensive file management on the platform. It includes the following features:</p>
 <ul class="simple">
-<li><p>Retrieve All Files: Fetch a list of all files stored by the authenticated user. This helps users view and manage their stored files easily.</p></li>
-<li><p>Upload a File: Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.</p></li>
-<li><p>Retrieve a Single File: Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content.</p></li>
-<li><p>Delete a File: Enables users to delete a specific file from the storage by its unique identifier. This helps in managing storage space by removing unnecessary files.</p></li>
+<li><p><strong>Retrieve All Files:</strong> Fetch a list of all files stored by the authenticated user. This helps users view and organize their stored files efficiently.</p></li>
+<li><p><strong>Upload a File:</strong> Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.</p></li>
+<li><p><strong>Retrieve a Single File:</strong> Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content, including the download URL.</p></li>
+<li><p><strong>Download a File:</strong> Download a file using the download URL.</p></li>
+<li><p><strong>Delete a File:</strong> Enables users to delete a specific file from the storage by its unique identifier. This helps manage storage space by removing unnecessary files.</p></li>
 </ul>
 </section>
+<section id="storage-account-management">
+<h3>Storage Account Management<a class="headerlink" href="#storage-account-management" title="Link to this heading"></a></h3>
+<p>The Storage Account API provides insights into the user’s storage usage. Users can retrieve current storage usage details, including:</p>
+<ul class="simple">
+<li><p>Total amount of stored file size.</p></li>
+<li><p>Count of stored files.</p></li>
+<li><p>Storage quota.</p></li>
+</ul>
+</section>
+<section id="quota">
+<h3>Quota<a class="headerlink" href="#quota" title="Link to this heading"></a></h3>
+<p>Each user has a storage quota, currently set at 1GB, to ensure fair usage and efficient resource allocation. The Storage API helps users keep track of their stored files and make informed decisions about their storage needs.</p>
+<p>By utilizing the Storage API, users can seamlessly manage their data and ensure optimal use of their allocated storage space.</p>
+</section>
+</section>
 <section id="account">
-<h3>Account<a class="headerlink" href="#account" title="Link to this heading"></a></h3>
-<p>The Storage Account API provides insights into the user’s storage usage. It includes the following endpoint:</p>
-<p>Retrieve Storage Account Details: Fetches the current storage usage details, including the total amount of stored file size, the count of files, and the storage quota. This endpoint helps users monitor and manage their storage utilization effectively.</p>
-<section id="limitation">
-<h4>Limitation<a class="headerlink" href="#limitation" title="Link to this heading"></a></h4>
-<p>Each user has a storage quota, currently set at 1GB, to ensure fair usage and manage resource allocation efficiently.
-By using the Storage API, users can seamlessly keep track of their stored files and make informed decisions about their storage needs.</p>
-<span class="target" id="storage-tutorial"><span id="storage-struct-file"></span><span id="storage-struct-account"></span></span></section>
+<span id="storage-struct-account"></span><h2>Account<a class="headerlink" href="#account" title="Link to this heading"></a></h2>
+<section id="storage-struct-account-account">
+<span id="id1"></span><h3>Account<a class="headerlink" href="#storage-struct-account-account" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;total_file_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;total_file_size&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: Account’s ID.</p></li>
+<li><p>customer_id: Customer’s ID.</p></li>
+<li><p>total_file_count: Total file count.</p></li>
+<li><p>total_file_size: Total file size(Byte).</p></li>
+</ul>
+<section id="example">
+<h4>example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1f8ccab9-1b64-11ef-8530-42010a7e5015&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;total_file_count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;total_file_size&quot;</span><span class="p">:</span> <span class="mi">221762</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-26 13:30:31.176034&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-27 07:55:17.016150&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="file">
+<span id="storage-struct-file"></span><h2>File<a class="headerlink" href="#file" title="Link to this heading"></a></h2>
+<section id="storage-struct-file-file">
+<span id="id2"></span><h3>File<a class="headerlink" href="#storage-struct-file-file" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;filesize&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;uri_download&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_download_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-27 07:55:16.515315&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: File’s ID.</p></li>
+<li><p>customer_id: Customer’s ID.</p></li>
+<li><p>owner_id: Owner(Agent)’s ID. If the owner does not exist, this will be empty.</p></li>
+<li><p>reference_type: Reference type.</p></li>
+<li><p>reference_id: Reference ID.</p></li>
+<li><p>name: File’s name.</p></li>
+<li><p>detail: File’s detail.</p></li>
+<li><p>filename: File’s filename.</p></li>
+<li><p>filesize: File’s size(Byte).</p></li>
+<li><p>uri_download: File’s download URI.</p></li>
+<li><p>tm_download_expire: File’s download expiration time.</p></li>
+</ul>
+<section id="id3">
+<h4>example<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0c0c305c-7a55-4395-85a8-ae4860f01393&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;62005165-7592-4ff7-9076-55bf491023f2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;Screenshot from 2024-05-26 21-58-51.png&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;filesize&quot;</span><span class="p">:</span> <span class="mi">110881</span><span class="p">,</span>
+    <span class="s2">&quot;uri_download&quot;</span><span class="p">:</span> <span class="s2">&quot;https://example.com/storage_url&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_download_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2034-05-25 07:55:16.115684&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-27 07:55:16.515315&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="type">
+<span id="storage-struct-file-reference-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Reference Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>none</p></td>
+<td><p>Has no reference information.</p></td>
+</tr>
+<tr class="row-odd"><td><p>recording</p></td>
+<td><p>Recording type</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
 </section>
 
 </main>
-                        
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="billing_account.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>Billing Account
+    </a>
+    <a class="float-right" href="transcribe.html" title="Next">
+        Transcribe <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
                     </div>
                     
                     <nav class="col-12 col-lg-3 pb-4">
@@ -187,11 +316,24 @@ By using the Storage API, users can seamlessly keep track of their stored files 
                             <ul>
 <li><a class="reference internal" href="#">Storage</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
-<li><a class="reference internal" href="#file">File</a></li>
-<li><a class="reference internal" href="#account">Account</a><ul>
-<li><a class="reference internal" href="#limitation">Limitation</a></li>
+<li><a class="reference internal" href="#file-management">File Management</a></li>
+<li><a class="reference internal" href="#storage-account-management">Storage Account Management</a></li>
+<li><a class="reference internal" href="#quota">Quota</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#account">Account</a><ul>
+<li><a class="reference internal" href="#storage-struct-account-account">Account</a><ul>
+<li><a class="reference internal" href="#example">example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#file">File</a><ul>
+<li><a class="reference internal" href="#storage-struct-file-file">File</a><ul>
+<li><a class="reference internal" href="#id3">example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#type">Type</a></li>
 </ul>
 </li>
 </ul>

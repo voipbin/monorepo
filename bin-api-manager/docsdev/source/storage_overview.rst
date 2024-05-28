@@ -2,27 +2,34 @@
 
 Overview
 ========
-The Storage API on VoIPBin is designed to help users manage their stored files and keep track of their storage usage. The API provides endpoints to handle file operations such as uploading, retrieving, and deleting files, as well as monitoring the overall storage usage. This allows users to efficiently manage their data within their allocated storage quota. The key components of the Storage API include:
+The Storage API on VoIPBin is designed to help users manage their stored files and monitor their storage usage. This feature allows users to efficiently oversee their data within their allocated storage quota.
 
-File
-----
-The Files API facilitates file management on the platform. It includes the following features.
+The API provides endpoints for various file operations, such as uploading, retrieving, and deleting files, as well as monitoring overall storage usage. These functionalities enable users to manage their data effectively.
 
-* Retrieve All Files: Fetch a list of all files stored by the authenticated user. This helps users view and manage their stored files easily.
+File Management
+---------------
+The Files API enables comprehensive file management on the platform. It includes the following features:
 
-* Upload a File: Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.
+* **Retrieve All Files:** Fetch a list of all files stored by the authenticated user. This helps users view and organize their stored files efficiently.
 
-* Retrieve a Single File: Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content.
+* **Upload a File:** Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.
 
-* Delete a File: Enables users to delete a specific file from the storage by its unique identifier. This helps in managing storage space by removing unnecessary files.
+* **Retrieve a Single File:** Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content, including the download URL.
 
-Account
--------
-The Storage Account API provides insights into the user's storage usage. It includes the following endpoint:
+* **Download a File:** Download a file using the download URL.
 
-Retrieve Storage Account Details: Fetches the current storage usage details, including the total amount of stored file size, the count of files, and the storage quota. This endpoint helps users monitor and manage their storage utilization effectively.
+* **Delete a File:** Enables users to delete a specific file from the storage by its unique identifier. This helps manage storage space by removing unnecessary files.
 
-Limitation
-+++++++++++
-Each user has a storage quota, currently set at 1GB, to ensure fair usage and manage resource allocation efficiently. 
-By using the Storage API, users can seamlessly keep track of their stored files and make informed decisions about their storage needs.
+Storage Account Management
+--------------------------
+The Storage Account API provides insights into the user's storage usage. Users can retrieve current storage usage details, including:
+
+* Total amount of stored file size.
+* Count of stored files.
+* Storage quota.
+
+Quota
+----------
+Each user has a storage quota, currently set at 1GB, to ensure fair usage and efficient resource allocation. The Storage API helps users keep track of their stored files and make informed decisions about their storage needs.
+
+By utilizing the Storage API, users can seamlessly manage their data and ensure optimal use of their allocated storage space.

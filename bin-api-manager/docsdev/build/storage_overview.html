@@ -100,6 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 </ul>
@@ -151,26 +152,32 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="storage-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>The Storage API on VoIPBin is designed to help users manage their stored files and keep track of their storage usage. The API provides endpoints to handle file operations such as uploading, retrieving, and deleting files, as well as monitoring the overall storage usage. This allows users to efficiently manage their data within their allocated storage quota. The key components of the Storage API include:</p>
-<section id="file">
-<h2>File<a class="headerlink" href="#file" title="Link to this heading"></a></h2>
-<p>The Files API facilitates file management on the platform. It includes the following features.</p>
+<p>The Storage API on VoIPBin is designed to help users manage their stored files and monitor their storage usage. This feature allows users to efficiently oversee their data within their allocated storage quota.</p>
+<p>The API provides endpoints for various file operations, such as uploading, retrieving, and deleting files, as well as monitoring overall storage usage. These functionalities enable users to manage their data effectively.</p>
+<section id="file-management">
+<h2>File Management<a class="headerlink" href="#file-management" title="Link to this heading"></a></h2>
+<p>The Files API enables comprehensive file management on the platform. It includes the following features:</p>
 <ul class="simple">
-<li><p>Retrieve All Files: Fetch a list of all files stored by the authenticated user. This helps users view and manage their stored files easily.</p></li>
-<li><p>Upload a File: Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.</p></li>
-<li><p>Retrieve a Single File: Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content.</p></li>
-<li><p>Delete a File: Enables users to delete a specific file from the storage by its unique identifier. This helps in managing storage space by removing unnecessary files.</p></li>
+<li><p><strong>Retrieve All Files:</strong> Fetch a list of all files stored by the authenticated user. This helps users view and organize their stored files efficiently.</p></li>
+<li><p><strong>Upload a File:</strong> Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.</p></li>
+<li><p><strong>Retrieve a Single File:</strong> Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content, including the download URL.</p></li>
+<li><p><strong>Download a File:</strong> Download a file using the download URL.</p></li>
+<li><p><strong>Delete a File:</strong> Enables users to delete a specific file from the storage by its unique identifier. This helps manage storage space by removing unnecessary files.</p></li>
 </ul>
 </section>
-<section id="account">
-<h2>Account<a class="headerlink" href="#account" title="Link to this heading"></a></h2>
-<p>The Storage Account API provides insights into the user’s storage usage. It includes the following endpoint:</p>
-<p>Retrieve Storage Account Details: Fetches the current storage usage details, including the total amount of stored file size, the count of files, and the storage quota. This endpoint helps users monitor and manage their storage utilization effectively.</p>
-<section id="limitation">
-<h3>Limitation<a class="headerlink" href="#limitation" title="Link to this heading"></a></h3>
-<p>Each user has a storage quota, currently set at 1GB, to ensure fair usage and manage resource allocation efficiently.
-By using the Storage API, users can seamlessly keep track of their stored files and make informed decisions about their storage needs.</p>
+<section id="storage-account-management">
+<h2>Storage Account Management<a class="headerlink" href="#storage-account-management" title="Link to this heading"></a></h2>
+<p>The Storage Account API provides insights into the user’s storage usage. Users can retrieve current storage usage details, including:</p>
+<ul class="simple">
+<li><p>Total amount of stored file size.</p></li>
+<li><p>Count of stored files.</p></li>
+<li><p>Storage quota.</p></li>
+</ul>
 </section>
+<section id="quota">
+<h2>Quota<a class="headerlink" href="#quota" title="Link to this heading"></a></h2>
+<p>Each user has a storage quota, currently set at 1GB, to ensure fair usage and efficient resource allocation. The Storage API helps users keep track of their stored files and make informed decisions about their storage needs.</p>
+<p>By utilizing the Storage API, users can seamlessly manage their data and ensure optimal use of their allocated storage space.</p>
 </section>
 </section>
 
@@ -183,11 +190,9 @@ By using the Storage API, users can seamlessly keep track of their stored files 
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
-<li><a class="reference internal" href="#file">File</a></li>
-<li><a class="reference internal" href="#account">Account</a><ul>
-<li><a class="reference internal" href="#limitation">Limitation</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#file-management">File Management</a></li>
+<li><a class="reference internal" href="#storage-account-management">Storage Account Management</a></li>
+<li><a class="reference internal" href="#quota">Quota</a></li>
 </ul>
 </li>
 </ul>
