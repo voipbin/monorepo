@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	maxFileSize = 1024 * 1024 * 1024 // 1GB per customer account
+	maxFileSize = 1024 * 1024 * 1024 * 10 // 10GB per customer account
 )
 
 // AccountHandler intreface for GCP bucket handler

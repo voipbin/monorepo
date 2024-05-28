@@ -30,6 +30,6 @@ The Storage Account API provides insights into the user's storage usage. Users c
 
 Quota
 ----------
-Each user has a storage quota, currently set at 1GB, to ensure fair usage and efficient resource allocation. The Storage API helps users keep track of their stored files and make informed decisions about their storage needs.
+Each user has a storage quota, currently set at 10GB, to ensure fair usage and efficient resource allocation. The Storage API helps users keep track of their stored files and make informed decisions about their storage needs.
 
 By utilizing the Storage API, users can seamlessly manage their data and ensure optimal use of their allocated storage space.
