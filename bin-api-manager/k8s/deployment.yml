@@ -68,7 +68,7 @@ spec:
               scheme: HTTPS
           resources:
             limits:
-              cpu: "10m"
+              cpu: "40m"
               memory: "40M"
           ports:
             - containerPort: 2112
