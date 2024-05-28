@@ -2,13 +2,15 @@
 <html class="no-js" lang="en">
 <head>
     <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-        <title>Index &mdash; voipbin  documentation</title>
+        <title>Overview &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=ea6a6c20" />
-            <link rel="index" title="Index" href="#" />
+            <link rel="index" title="Index" href="genindex.html" />
             <link rel="search" title="Search" href="search.html" />
             <link rel="top" title="voipbin  documentation" href="#" />
     </head>
@@ -121,7 +123,7 @@
                         <nav aria-label="breadcrumb">
     <ol class="breadcrumb m-0 p-0 bg-transparent">
         <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Index</li>
+        <li class="breadcrumb-item active" aria-current="page">Overview</li>
     </ol>
 </nav>
                     </div>
@@ -133,6 +135,10 @@
                             <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
                             <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
                         </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/storage_overview.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
                         
                     </div>
                 </header>
@@ -144,32 +150,55 @@
                 <div class="row">
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
-    <h1 id="index">Index</h1>
-    <div class="genindex-jumpbox">
-        <a href="#R"><strong>R</strong></a>
-            
-    </div>
-        <h2 id="R">R</h2>
-        <table class="indextable genindextable">
-            <tr>
-                    <td>
-                        <ul>
-                                <li>
-                                    
-        RFC
+    <section id="overview">
+<span id="storage-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>The Storage API on VoIPBin is designed to help users manage their stored files and monitor their storage usage. This feature allows users to efficiently oversee their data within their allocated storage quota.</p>
+<p>The API provides endpoints for various file operations, such as uploading, retrieving, and deleting files, as well as monitoring overall storage usage. These functionalities enable users to manage their data effectively.</p>
+<section id="file-management">
+<h2>File Management<a class="headerlink" href="#file-management" title="Link to this heading"></a></h2>
+<p>The Files API enables comprehensive file management on the platform. It includes the following features:</p>
+<ul class="simple">
+<li><p><strong>Retrieve All Files:</strong> Fetch a list of all files stored by the authenticated user. This helps users view and organize their stored files efficiently.</p></li>
+<li><p><strong>Upload a File:</strong> Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.</p></li>
+<li><p><strong>Retrieve a Single File:</strong> Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content, including the download URL.</p></li>
+<li><p><strong>Download a File:</strong> Download a file using the download URL.</p></li>
+<li><p><strong>Delete a File:</strong> Enables users to delete a specific file from the storage by its unique identifier. This helps manage storage space by removing unnecessary files.</p></li>
+</ul>
+</section>
+<section id="storage-account-management">
+<h2>Storage Account Management<a class="headerlink" href="#storage-account-management" title="Link to this heading"></a></h2>
+<p>The Storage Account API provides insights into the user’s storage usage. Users can retrieve current storage usage details, including:</p>
+<ul class="simple">
+<li><p>Total amount of stored file size.</p></li>
+<li><p>Count of stored files.</p></li>
+<li><p>Storage quota.</p></li>
+</ul>
+</section>
+<section id="quota">
+<h2>Quota<a class="headerlink" href="#quota" title="Link to this heading"></a></h2>
+<p>Each user has a storage quota, currently set at 1GB, to ensure fair usage and efficient resource allocation. The Storage API helps users keep track of their stored files and make informed decisions about their storage needs.</p>
+<p>By utilizing the Storage API, users can seamlessly manage their data and ensure optimal use of their allocated storage space.</p>
+</section>
+</section>
 
-                                        <ul>
-                                                <li><a href="glossary.html#index-0">RFC 2119</a>
-</li>
-                                        </ul></li>
-                        </ul>
-                    </td>
-            </tr>
-        </table>
-    
 </main>
                         
                     </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#file-management">File Management</a></li>
+<li><a class="reference internal" href="#storage-account-management">Storage Account Management</a></li>
+<li><a class="reference internal" href="#quota">Quota</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
                     
                 </div>
             </div>

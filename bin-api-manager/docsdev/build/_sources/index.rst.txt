@@ -39,6 +39,7 @@ Welcome to voipbin's documentation!
    websocket
    trunk
    billing_account
+   storage
    transcribe
    glossary
 

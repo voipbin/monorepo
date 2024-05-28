@@ -1,4 +1,4 @@
-package files
+package storage_files
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// filesPOST handles POST /files request.
+// storageFilesPOST handles POST /files request.
 // It creates a temp file and create a call with temp file.
 //
 //	@Summary		Make an outbound call
@@ -22,10 +22,10 @@ import (
 //	@Produce		json
 //	@Param			call	body		request.BodyCallsPOST	true	"The call detail"
 //	@Success		200		{object}	call.Call
-//	@Router			/v1.0/calls [post]
-func filesPOST(c *gin.Context) {
+//	@Router			/v1.0/storage_files [post]
+func storageFilesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "filesPOST",
+		"func":            "storageFilesPOST",
 		"request_address": c.ClientIP,
 	})
 
@@ -65,7 +65,7 @@ func filesPOST(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// filesGET handles GET /files request.
+// storageFilesGET handles GET /storage_files request.
 // It gets a list of files with the given info.
 //
 //	@Summary		Gets a list of files.
@@ -74,10 +74,10 @@ func filesPOST(c *gin.Context) {
 //	@Param			page_size	query		int		false	"The size of results. Max 100"
 //	@Param			page_token	query		string	false	"The token. tm_create"
 //	@Success		200			{object}	response.BodyFilesGET
-//	@Router			/v1.0/files [get]
-func filesGET(c *gin.Context) {
+//	@Router			/v1.0/storage_files [get]
+func storageFilesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "filesGET",
+		"func":            "storageFilesGET",
 		"request_address": c.ClientIP,
 	})
 
@@ -132,7 +132,7 @@ func filesGET(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// filesIDGET handles GET /files/{id} request.
+// storageFilesIDGET handles GET /storage_files/{id} request.
 // It returns detail file info.
 //
 //	@Summary		Returns detail file info.
@@ -140,10 +140,10 @@ func filesGET(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	path		string	true	"The ID of the file"
 //	@Success		200	{object}	file.File
-//	@Router			/v1.0/files/{id} [get]
-func filesIDGET(c *gin.Context) {
+//	@Router			/v1.0/storage_files/{id} [get]
+func storageFilesIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "filesIDGET",
+		"func":            "storageFilesIDGET",
 		"request_address": c.ClientIP,
 	})
 
@@ -174,7 +174,7 @@ func filesIDGET(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// filesIDDELETE handles DELETE /files/{id} request.
+// storageFilesIDDELETE handles DELETE /files/{id} request.
 // It deletes a exist file info.
 //
 //	@Summary		Delete a file.
@@ -182,10 +182,10 @@ func filesIDGET(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	query	string	true	"The file's id"
 //	@Success		200
-//	@Router			/v1.0/files/{id} [delete]
-func filesIDDELETE(c *gin.Context) {
+//	@Router			/v1.0/storage_files/{id} [delete]
+func storageFilesIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "filesIDDELETE",
+		"func":            "storageFilesIDDELETE",
 		"request_address": c.ClientIP,
 	})
 
@@ -203,7 +203,7 @@ func filesIDDELETE(c *gin.Context) {
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("file_id", id)
-	log.Debug("Executing filesIDDELETE.")
+	log.Debug("Executing storageFilesIDDELETE.")
 
 	// delete a file
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
