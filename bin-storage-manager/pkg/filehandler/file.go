@@ -58,6 +58,7 @@ func (h *fileHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 	dstFilepath := fmt.Sprintf("%s/%s", bucketDirectoryBin, id)
 
+	log.Debugf("Bucket move start")
 	// move the file from the tmp bucket to the new location
 	dstAttrs, err := h.bucketfileMove(ctx, bucketName, filepath, h.bucketMedia, dstFilepath)
 	if err != nil {
@@ -65,16 +66,20 @@ func (h *fileHandler) Create(
 		return nil, err
 	}
 	log.WithField("dst_attrs", dstAttrs).Debugf("Moved file. bucket_link: %s", dstAttrs.MediaLink)
+	log.Debugf("Bucket move end")
 
 	// get dowload uri
 	expireDuration := 3650 * 24 * time.Hour // valid for 10 years
 	tmExpire := time.Now().UTC().Add(expireDuration)
 	tmDownloadExpire := h.utilHandler.TimeGetCurTimeAdd(expireDuration)
+
+	log.Debugf("Generate gownload uri start")
 	downloadURI, err := h.bucketfileGenerateDownloadURI(h.bucketMedia, dstFilepath, tmExpire)
 	if err != nil {
 		log.Errorf("Could not generate download URI. err: %v", err)
 		return nil, err
 	}
+	log.Debugf("Generate gownload uri end")
 
 	// create db row
 	f := &file.File{
