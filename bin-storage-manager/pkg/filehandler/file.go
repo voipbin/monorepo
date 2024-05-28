@@ -37,6 +37,7 @@ func (h *fileHandler) Create(
 		"filepath":       filepath,
 	})
 
+	log.Debugf("bucketfileGetAttrs start.")
 	// check file does exist
 	// we are expecting all original files are located in the tmp bucket
 	attrs, err := h.bucketfileGetAttrs(ctx, bucketName, filepath)
@@ -45,6 +46,7 @@ func (h *fileHandler) Create(
 		return nil, errors.Wrapf(err, "file does not exist")
 	}
 	log.WithField("attrs", attrs).Debugf("Found file. name: %s", attrs.Name)
+	log.Debugf("bucketfileGetAttrs end.")
 
 	// validate the account
 	a, err := h.accountHandler.ValidateFileInfoByCustomerID(ctx, customerID, 1, attrs.Size)
