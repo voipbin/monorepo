@@ -141,6 +141,6 @@ $ docker run --rm -v /Users/sungtaekim/gitlab/voipbin/bin-manager/api-manager/do
 ```
 $ cd docsdev
 $ make html
-~/.venv/sphinx-wagtail-theme/bin/python3 make html
+$ ~/.venv/sphinx-wagtail-theme/bin/sphinx-build ./source ./build
 
 ```

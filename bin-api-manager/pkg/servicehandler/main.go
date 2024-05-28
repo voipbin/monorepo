@@ -380,12 +380,6 @@ type ServiceHandler interface {
 	ExtensionGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 
-	// file handlers
-	FileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error)
-	FileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
-	FileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
-	FileGetsByOnwerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
-
 	// flow handlers
 	FlowCreate(ctx context.Context, a *amagent.Agent, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
 	FlowDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error)
@@ -574,12 +568,18 @@ type ServiceHandler interface {
 		target string,
 	) (*rmroute.WebhookMessage, error)
 
-	// storage_account
+	// storage account
 	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error)
 	StorageAccountGet(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)
 	StorageAccountGetByCustomerID(ctx context.Context, a *amagent.Agent) (*smaccount.WebhookMessage, error)
 	StorageAccountGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.WebhookMessage, error)
 	StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)
+
+	// storage file handlers
+	StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error)
+	StorageFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	StorageFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	StorageFileGetsByOnwerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
 
 	// tag handlers
 	TagCreate(ctx context.Context, a *amagent.Agent, name string, detail string) (*tmtag.WebhookMessage, error)

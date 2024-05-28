@@ -1,4 +1,4 @@
-package files
+package storage_files
 
 import (
 	"bytes"
@@ -38,7 +38,7 @@ func Test_filesPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			"/v1.0/files",
+			"/v1.0/storage_files",
 			"testfile.txt",
 			&smfile.WebhookMessage{
 				ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
@@ -108,7 +108,7 @@ func Test_filesPOST_err(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			"/v1.0/files",
+			"/v1.0/storage_files",
 			"testfile.txt",
 			int(constMaxFileSize) + 1,
 			&smfile.WebhookMessage{
@@ -178,7 +178,7 @@ func Test_filesGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			"/v1.0/files?token_size=100",
+			"/v1.0/storage_files?token_size=100",
 			[]*smfile.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
@@ -236,7 +236,7 @@ func Test_filesIDGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			"/v1.0/files/e1eb02c2-1715-11ef-b15f-f3c445db0e34",
+			"/v1.0/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34",
 			&smfile.WebhookMessage{
 				ID: uuid.FromStringOrNil("e1eb02c2-1715-11ef-b15f-f3c445db0e34"),
 			},
@@ -296,7 +296,7 @@ func Test_filesIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			"/v1.0/files/22bad83e-1718-11ef-8e93-63a03937356b",
+			"/v1.0/storage_files/22bad83e-1718-11ef-8e93-63a03937356b",
 			&smfile.WebhookMessage{
 				ID: uuid.FromStringOrNil("22bad83e-1718-11ef-8e93-63a03937356b"),
 			},
