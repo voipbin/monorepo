@@ -63,8 +63,8 @@ example
 
 .. _storage-struct-file-reference-type:
 
-Type
-----
+Reference Type
+--------------
 
 ============== ==============================
 Reference Type       Description
