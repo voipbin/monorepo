@@ -267,7 +267,7 @@ func (h *handler) FileGets(ctx context.Context, token string, size uint64, filte
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "account_id", "owner_id":
+		case "id", "customer_id", "account_id", "owner_id", "reference_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
