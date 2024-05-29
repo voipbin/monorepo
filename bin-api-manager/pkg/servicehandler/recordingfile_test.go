@@ -9,9 +9,8 @@ import (
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -27,10 +26,11 @@ func Test_RecordingfileGet(t *testing.T) {
 
 		id uuid.UUID
 
-		responseRecording  *cmrecording.Recording
-		responseBucketFile *smbucketfile.BucketFile
+		responseRecording   *cmrecording.Recording
+		responseComressfile *smcompressfile.CompressFile
 
-		expectRes string
+		expectReferenceIDs []uuid.UUID
+		expectRes          string
 	}
 
 	tests := []test{
@@ -52,10 +52,13 @@ func Test_RecordingfileGet(t *testing.T) {
 				},
 				TMDelete: defaultTimestamp,
 			},
-			&smbucketfile.BucketFile{
+			&smcompressfile.CompressFile{
 				DownloadURI: "test.com/downloadlink.wav",
 			},
 
+			[]uuid.UUID{
+				uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
+			},
 			"test.com/downloadlink.wav",
 		},
 	}
@@ -75,7 +78,7 @@ func Test_RecordingfileGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().StorageV1RecordingGet(ctx, tt.responseRecording.ID, 300000).Return(tt.responseBucketFile, nil)
+			mockReq.EXPECT().StorageV1CompressfileCreate(ctx, tt.expectReferenceIDs, []uuid.UUID{}, 300000).Return(tt.responseComressfile, nil)
 
 			res, err := h.RecordingfileGet(ctx, tt.agent, tt.id)
 			if err != nil {

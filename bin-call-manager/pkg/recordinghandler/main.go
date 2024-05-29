@@ -41,6 +41,9 @@ type RecordingHandler interface {
 // list of const variables
 const (
 	ContextRecording = "call-record"
+
+	defaultDirectory  = "recording"
+	defaultBucketName = "voipbin-voip-media-bucket-europe-west4"
 )
 
 // recordingHandler structure for service handle
@@ -75,5 +78,10 @@ func NewRecordingHandler(
 func (h *recordingHandler) createRecordingName(referenceType recording.ReferenceType, referenceID string) string {
 	ts := h.utilHandler.TimeGetCurTimeRFC3339()
 	res := fmt.Sprintf("%s_%s_%s", referenceType, referenceID, ts)
+	return res
+}
+
+func (h *recordingHandler) getFilepath(filename string) string {
+	res := defaultDirectory + "/" + filename
 	return res
 }

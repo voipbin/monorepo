@@ -170,13 +170,12 @@ func Test_FileGets(t *testing.T) {
 				db:    dbTest,
 				cache: mockCache,
 			}
-
 			ctx := context.Background()
 
-			for _, flow := range tt.files {
+			for _, f := range tt.files {
 				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().FileSet(ctx, gomock.Any())
-				if err := h.FileCreate(ctx, &flow); err != nil {
+				if err := h.FileCreate(ctx, &f); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
@@ -276,8 +275,8 @@ func Test_FileDelete(t *testing.T) {
 			"normal",
 			&file.File{
 				ID:     uuid.FromStringOrNil("f435e9b2-13f3-11ef-b332-9374d7dca9d5"),
-				Name:   "test flow name",
-				Detail: "test flow detail",
+				Name:   "test file name",
+				Detail: "test file detail",
 			},
 		},
 	}

@@ -47,6 +47,9 @@ var (
 	regV1Files    = regexp.MustCompile("/v1/files$")
 	regV1FilesID  = regexp.MustCompile("/v1/files/" + regUUID + "$")
 
+	// compress
+	regV1Compressfiles = regexp.MustCompile("/v1/compressfiles$")
+
 	// recordings
 	regV1RecordingsID = regexp.MustCompile("/v1/recordings/(.*)")
 )
@@ -166,6 +169,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/accounts/<account-id>"
 		response, err = h.v1AccountsIDDelete(ctx, m)
+
+	// compressfiles
+	case regV1Compressfiles.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/compressfiles"
+		response, err = h.v1CompressfilesPost(ctx, m)
 
 	// files ////////////////
 	case regV1Files.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:

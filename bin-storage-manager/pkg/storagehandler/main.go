@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-storage-manager/models/bucketfile"
+	compressfile "monorepo/bin-storage-manager/models/compressfile"
 	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/filehandler"
 )
@@ -35,6 +36,8 @@ type StorageHandler interface {
 
 	RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)
 	RecordingDelete(ctx context.Context, id uuid.UUID) error
+
+	CompressfileCreate(ctx context.Context, referenceIDs []uuid.UUID, fileIDs []uuid.UUID) (*compressfile.CompressFile, error)
 }
 
 type storageHandler struct {

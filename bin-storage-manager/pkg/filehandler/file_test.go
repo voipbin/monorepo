@@ -13,66 +13,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// func Test_Create(t *testing.T) {
-
-// 	tests := []struct {
-// 		name string
-
-// 		customerID uuid.UUID
-// 		ownerID    uuid.UUID
-// 		fileName   string
-// 		detail     string
-// 		bucketName string
-// 		filepath   string
-
-// 		responseFile *file.File
-// 	}{
-// 		{
-// 			name: "normal",
-
-// 			customerID: uuid.FromStringOrNil("955fa98a-1530-11ef-94b7-cfc6e6161c56"),
-// 			ownerID:    uuid.FromStringOrNil("95abe08e-1530-11ef-8df3-2fd3ede5f2d7"),
-// 			fileName:   "test name",
-// 			detail:     "detail",
-// 			bucketName: "test_bucket",
-// 			filepath:   "test/file/path",
-
-// 			responseFile: &file.File{
-// 				ID: uuid.FromStringOrNil("95ebf6c4-1530-11ef-932d-037065591eab"),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			h := &fileHandler{
-// 				utilHandler:   mockUtil,
-// 				db:            mockDB,
-// 				notifyHandler: mockNotify,
-// 			}
-
-// 			ctx := context.Background()
-
-// 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFile)
-
-// 			res, err := h.Create(ctx, tt.customerID, tt.ownerID, tt.fileName, tt.detail, tt.bucketName, tt.filepath)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if !reflect.DeepEqual(res, tt.responseFile) {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseFile, res)
-// 			}
-// 		})
-// 	}
-// }
-
 func Test_Get(t *testing.T) {
 
 	tests := []struct {

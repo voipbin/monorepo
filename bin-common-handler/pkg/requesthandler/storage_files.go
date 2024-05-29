@@ -68,6 +68,46 @@ func (r *requestHandler) StorageV1FileCreate(
 	return &res, nil
 }
 
+// StorageV1FileCreateWithDelay sends a request to storage-manager
+// to creating a file with the given delay.
+// the request will be delievered after delay time.
+// it returns created file if it succeed.
+func (r *requestHandler) StorageV1FileCreateWithDelay(
+	ctx context.Context,
+	customerID uuid.UUID,
+	ownerID uuid.UUID,
+	referenceType smfile.ReferenceType,
+	referenceID uuid.UUID,
+	name string,
+	detail string,
+	filename string,
+	bucketName string,
+	filepath string,
+	delay int, // milliseconds
+) error {
+	uri := "/v1/files"
+
+	data := &smrequest.V1DataFilesPost{
+		CustomerID:    customerID,
+		OwnerID:       ownerID,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Name:          name,
+		Detail:        detail,
+		Filename:      filename,
+		BucketName:    bucketName,
+		Filepath:      filepath,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/files", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	return err
+}
+
 // StorageV1FileGets sends a request to storage-manager
 // to getting a list of files.
 // it returns file list of flows if it succeed.
