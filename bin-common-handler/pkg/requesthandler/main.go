@@ -809,8 +809,21 @@ type RequestHandler interface {
 		filename string,
 		bucketName string,
 		filepath string,
-		requestTimeout int,
+		requestTimeout int, // milliseconds
 	) (*smfile.File, error)
+	StorageV1FileCreateWithDelay(
+		ctx context.Context,
+		customerID uuid.UUID,
+		ownerID uuid.UUID,
+		referenceType smfile.ReferenceType,
+		referenceID uuid.UUID,
+		name string,
+		detail string,
+		filename string,
+		bucketName string,
+		filepath string,
+		delay int, // milliseconds
+	) error
 	StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
 	StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smfile.File, error)
 	StorageV1FileDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smfile.File, error)

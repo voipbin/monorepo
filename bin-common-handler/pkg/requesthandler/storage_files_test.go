@@ -92,6 +92,82 @@ func Test_StorageV1FileCreate(t *testing.T) {
 	}
 }
 
+func Test_StorageV1FileCreateWithDelay(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		ownerID       uuid.UUID
+		referenceType smfile.ReferenceType
+		referenceID   uuid.UUID
+		fileName      string
+		detail        string
+		filename      string
+		bucketName    string
+		filepath      string
+		delay         int
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectResult *smfile.File
+	}{
+		{
+			name: "normal",
+
+			customerID:    uuid.FromStringOrNil("785e19ca-1d91-11ef-8d6a-3bfa80d939d5"),
+			ownerID:       uuid.FromStringOrNil("78a2b97c-1d91-11ef-8897-bb58d4f1853d"),
+			referenceType: smfile.ReferenceTypeRecording,
+			referenceID:   uuid.FromStringOrNil("78d6f98a-1d91-11ef-80d5-937f9fac88bd"),
+			fileName:      "test name",
+			detail:        "test detail",
+			filename:      "test_filename.txt",
+			bucketName:    "test_bucket",
+			filepath:      "tmp/file/path",
+			delay:         5000,
+
+			expectTarget: "bin-manager.storage-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/files",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"785e19ca-1d91-11ef-8d6a-3bfa80d939d5","owner_id":"78a2b97c-1d91-11ef-8897-bb58d4f1853d","reference_type":"recording","reference_id":"78d6f98a-1d91-11ef-80d5-937f9fac88bd","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
+			},
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"790613d2-1d91-11ef-b443-1f88ddd0d95b"}`),
+			},
+			expectResult: &smfile.File{
+				ID: uuid.FromStringOrNil("790613d2-1d91-11ef-b443-1f88ddd0d95b"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+
+			err := reqHandler.StorageV1FileCreateWithDelay(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.delay)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_StorageV1FileGets(t *testing.T) {
 
 	tests := []struct {

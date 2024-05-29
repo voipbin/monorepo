@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	smfile "monorepo/bin-storage-manager/models/file"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -46,32 +46,27 @@ func (h *recordingHandler) storeRecordingFiles(r *recording.Recording) {
 		"recording": r,
 	})
 
-	// wait for file writing
-	// note: The asterisk runs the recording file move script in every minutes.
-	// so we have to wait for 2 mins to ensure that the file was moved to the bucket correctly.
-	// if anyone wants to change this wait time, please don't forget the change the crontab from the asterisks.
-	// asterisk-k8s-call, asterisk-k8s-conference
-	//
-	// # Set cron - recording move script
-	// /bin/mkdir -p /var/spool/asterisk/recording
-	// crontab -l | { cat; echo "* * * * * /cron_recording_move.sh"; } | crontab -
-	time.Sleep(time.Second * 120)
-
+	// store the each recording files
 	log.Debugf("Storing the recording files.")
-	for _, recordingFilename := range r.Filenames {
-		// store the each recording files
-		go func(filename string) {
-			log := log.WithField("filename", filename)
+	for _, filename := range r.Filenames {
+		log := log.WithField("filename", filename)
 
-			filepath := h.getFilepath(filename)
-			f, err := h.reqHandler.StorageV1FileCreate(context.Background(), r.CustomerID, uuid.Nil, smfile.ReferenceTypeRecording, r.ID, "", "", filename, defaultBucketName, filepath, 60000)
-			if err != nil {
-				log.Errorf("Could not store the recording correctly. err: %v", err)
-				return
-			}
-			log.WithField("file", f).Debugf("Stored recording correctly. storage_file_id: %s", f.ID)
+		// send delay request wait for file writing
+		// note: The asterisk runs the recording file move script in every minutes.
+		// so we have to wait for 2 mins to ensure that the file was moved to the bucket correctly.
+		// if anyone wants to change this wait time, please don't forget the change the crontab from the asterisks.
+		// asterisk-k8s-call, asterisk-k8s-conference
+		//
+		// # Set cron - recording move script
+		// /bin/mkdir -p /var/spool/asterisk/recording
+		// crontab -l | { cat; echo "* * * * * /cron_recording_move.sh"; } | crontab -
+		delay := requesthandler.DelayMinute * 2
 
-		}(recordingFilename)
+		filepath := h.getFilepath(filename)
+		if err := h.reqHandler.StorageV1FileCreateWithDelay(context.Background(), r.CustomerID, uuid.Nil, smfile.ReferenceTypeRecording, r.ID, "", "", filename, defaultBucketName, filepath, delay); err != nil {
+			log.Errorf("Could not send the request for the storing the recording correctly. err: %v", err)
+			return
+		}
 	}
 }
 

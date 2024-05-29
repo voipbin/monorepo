@@ -60,7 +60,8 @@ func Test_storeRecording(t *testing.T) {
 
 			for _, filename := range tt.recording.Filenames {
 				filepath := h.getFilepath(filename)
-				mockReq.EXPECT().StorageV1FileCreate(gomock.Any(),
+				mockReq.EXPECT().StorageV1FileCreateWithDelay(
+					gomock.Any(),
 					tt.recording.CustomerID,
 					uuid.Nil,
 					smfile.ReferenceTypeRecording,
@@ -70,13 +71,13 @@ func Test_storeRecording(t *testing.T) {
 					filename,
 					defaultBucketName,
 					filepath,
-					60000,
-				).Return(&smfile.File{}, nil)
+					requesthandler.DelayMinute*2,
+				).Return(nil)
 			}
 
 			h.storeRecordingFiles(tt.recording)
 
-			time.Sleep(time.Second * 121)
+			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }
@@ -137,7 +138,8 @@ func Test_Stopped(t *testing.T) {
 
 			for _, filename := range tt.responseRecording.Filenames {
 				filepath := h.getFilepath(filename)
-				mockReq.EXPECT().StorageV1FileCreate(gomock.Any(),
+				mockReq.EXPECT().StorageV1FileCreateWithDelay(
+					gomock.Any(),
 					tt.responseRecording.CustomerID,
 					uuid.Nil,
 					smfile.ReferenceTypeRecording,
@@ -147,8 +149,8 @@ func Test_Stopped(t *testing.T) {
 					filename,
 					defaultBucketName,
 					filepath,
-					60000,
-				).Return(&smfile.File{}, nil)
+					requesthandler.DelayMinute*2,
+				).Return(nil)
 			}
 
 			res, err := h.Stopped(ctx, tt.id)
@@ -156,7 +158,7 @@ func Test_Stopped(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			time.Sleep(time.Second * 121)
+			time.Sleep(time.Millisecond * 100)
 
 			if !reflect.DeepEqual(res, tt.responseRecording) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
