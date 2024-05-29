@@ -18,7 +18,7 @@ import (
 // creates a new file with given data and return the created file info.
 func (h *listenHandler) v1FilesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "v1FlowsPost",
+		"func":    "v1FilesPost",
 		"request": m,
 	})
 
@@ -28,7 +28,7 @@ func (h *listenHandler) v1FilesPost(ctx context.Context, m *rabbitmqhandler.Requ
 		return nil, err
 	}
 
-	// create flow
+	// create file
 	tmp, err := h.storageHandler.FileCreate(
 		ctx,
 		req.CustomerID,
@@ -81,7 +81,7 @@ func (h *listenHandler) v1FilesGet(ctx context.Context, m *rabbitmqhandler.Reque
 	// parse the filters
 	filters := h.utilHandler.URLParseFilters(u)
 
-	// gets the list of flows
+	// gets the list of files
 	tmp, err := h.storageHandler.FileGets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get files. err: %v", err)

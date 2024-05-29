@@ -35,7 +35,7 @@ type subscribeHandler struct {
 }
 
 var (
-	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameFlowManager)
+	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameStorageManager)
 
 	promEventProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -99,7 +99,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameFlowManager), false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameStorageManager), false, false, false, 10, h.processEventRun); errConsume != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}

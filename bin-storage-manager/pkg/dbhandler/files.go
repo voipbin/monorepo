@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	// select query for flow get
+	// select query for file get
 	fileSelect = `
 	select
 		id,
@@ -152,7 +152,7 @@ func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
 	return nil
 }
 
-// fileUpdateToCache gets the flow from the DB and update the cache.
+// fileUpdateToCache gets the file from the DB and update the cache.
 func (h *handler) fileUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.fileGetFromDB(ctx, id)
@@ -327,7 +327,7 @@ func (h *handler) FileUpdate(ctx context.Context, id uuid.UUID, name, detail str
 	return nil
 }
 
-// FileDelete deletes the given flow
+// FileDelete deletes the given file
 func (h *handler) FileDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
 	update storage_files set

@@ -41,7 +41,7 @@ var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for promet
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
 
 // args for database
-var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for flow-manager.")
+var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn.")
 
 // args for redis
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
@@ -163,7 +163,7 @@ func run(dbHandler dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, dbHandler)
 	fileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, *gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
 	storageHandler := storagehandler.NewStorageHandler(reqHandler, fileHandler, *gcpBucketMedia)
