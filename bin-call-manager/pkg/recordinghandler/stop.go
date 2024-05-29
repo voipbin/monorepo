@@ -47,7 +47,15 @@ func (h *recordingHandler) storeRecordingFiles(r *recording.Recording) {
 	})
 
 	// wait for file writing
-	time.Sleep(time.Second * 10)
+	// note: The asterisk runs the recording file move script in every minutes.
+	// so we have to wait for 2 mins to ensure that the file was moved to the bucket correctly.
+	// if anyone wants to change this wait time, please don't forget the change the crontab from the asterisks.
+	// asterisk-k8s-call, asterisk-k8s-conference
+	//
+	// # Set cron - recording move script
+	// /bin/mkdir -p /var/spool/asterisk/recording
+	// crontab -l | { cat; echo "* * * * * /cron_recording_move.sh"; } | crontab -
+	time.Sleep(time.Second * 120)
 
 	log.Debugf("Storing the recording files.")
 	for _, recordingFilename := range r.Filenames {

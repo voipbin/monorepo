@@ -8,160 +8,162 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	smfile "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 )
 
-// func Test_storeRecording(t *testing.T) {
+func Test_storeRecording(t *testing.T) {
 
-// 	tests := []struct {
-// 		name string
+	tests := []struct {
+		name string
 
-// 		recording *recording.Recording
+		recording *recording.Recording
 
-// 		responseRecording *recording.Recording
-// 	}{
-// 		{
-// 			name: "normal",
+		responseRecording *recording.Recording
+	}{
+		{
+			name: "normal",
 
-// 			recording: &recording.Recording{
-// 				ID:         uuid.FromStringOrNil("8bf246d8-1d54-11ef-bf58-6bc042955973"),
-// 				CustomerID: uuid.FromStringOrNil("8c80974e-1d54-11ef-929a-4fe8843edba5"),
-// 				Filenames: []string{
-// 					"call_2abd6900-3f33-4a9f-8241-7ca7a0050e15_2024-03-29T21:50:32Z_in.wav",
-// 					"call_2abd6900-3f33-4a9f-8241-7ca7a0050e15_2024-03-29T21:50:32Z_out.wav",
-// 				},
-// 			},
+			recording: &recording.Recording{
+				ID:         uuid.FromStringOrNil("8bf246d8-1d54-11ef-bf58-6bc042955973"),
+				CustomerID: uuid.FromStringOrNil("8c80974e-1d54-11ef-929a-4fe8843edba5"),
+				Filenames: []string{
+					"call_2abd6900-3f33-4a9f-8241-7ca7a0050e15_2024-03-29T21:50:32Z_in.wav",
+					"call_2abd6900-3f33-4a9f-8241-7ca7a0050e15_2024-03-29T21:50:32Z_out.wav",
+				},
+			},
 
-// 			responseRecording: &recording.Recording{
-// 				ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
-// 			},
-// 		},
-// 	}
+			responseRecording: &recording.Recording{
+				ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+			},
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-// 			h := &recordingHandler{
-// 				reqHandler: mockReq,
-// 				db:         mockDB,
-// 			}
+			h := &recordingHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
 
-// 			for _, filename := range tt.recording.Filenames {
-// 				filepath := h.getFilepath(filename)
-// 				mockReq.EXPECT().StorageV1FileCreate(gomock.Any(),
-// 					tt.recording.CustomerID,
-// 					uuid.Nil,
-// 					smfile.ReferenceTypeRecording,
-// 					tt.recording.ID,
-// 					"",
-// 					"",
-// 					filename,
-// 					defaultBucketName,
-// 					filepath,
-// 					60000,
-// 				).Return(&smfile.File{}, nil)
-// 			}
+			for _, filename := range tt.recording.Filenames {
+				filepath := h.getFilepath(filename)
+				mockReq.EXPECT().StorageV1FileCreate(gomock.Any(),
+					tt.recording.CustomerID,
+					uuid.Nil,
+					smfile.ReferenceTypeRecording,
+					tt.recording.ID,
+					"",
+					"",
+					filename,
+					defaultBucketName,
+					filepath,
+					60000,
+				).Return(&smfile.File{}, nil)
+			}
 
-// 			h.storeRecordingFiles(tt.recording)
+			h.storeRecordingFiles(tt.recording)
 
-// 			time.Sleep(time.Millisecond * 100)
-// 		})
-// 	}
-// }
+			time.Sleep(time.Second * 121)
+		})
+	}
+}
 
-// func Test_Stopped(t *testing.T) {
+func Test_Stopped(t *testing.T) {
 
-// 	tests := []struct {
-// 		name string
+	tests := []struct {
+		name string
 
-// 		id uuid.UUID
+		id uuid.UUID
 
-// 		responseRecording *recording.Recording
-// 	}{
-// 		{
-// 			name: "normal reference type call",
+		responseRecording *recording.Recording
+	}{
+		{
+			name: "normal reference type call",
 
-// 			id: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
+			id: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
 
-// 			responseRecording: &recording.Recording{
-// 				ID:            uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
-// 				ReferenceType: recording.ReferenceTypeCall,
-// 				ReferenceID:   uuid.FromStringOrNil("a89d0f2a-8ff2-11ed-98b5-a35c4608884b"),
-// 				AsteriskID:    "42:01:0a:a4:00:03",
-// 				ChannelIDs: []string{
-// 					"9ce319be-8ff1-11ed-a60d-e354dfcdff50",
-// 					"9d0b60c2-8ff1-11ed-aa1e-b31d5892bff8",
-// 				},
-// 				Filenames: []string{
-// 					"call_a89d0f2a-8ff2-11ed-98b5-a35c4608884b_2024-03-29T21:50:32Z_in.wav",
-// 					"call_a89d0f2a-8ff2-11ed-98b5-a35c4608884b_2024-03-29T21:50:32Z_out.wav",
-// 				},
-// 			},
-// 		},
-// 	}
+			responseRecording: &recording.Recording{
+				ID:            uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
+				ReferenceType: recording.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("a89d0f2a-8ff2-11ed-98b5-a35c4608884b"),
+				AsteriskID:    "42:01:0a:a4:00:03",
+				ChannelIDs: []string{
+					"9ce319be-8ff1-11ed-a60d-e354dfcdff50",
+					"9d0b60c2-8ff1-11ed-aa1e-b31d5892bff8",
+				},
+				Filenames: []string{
+					"call_a89d0f2a-8ff2-11ed-98b5-a35c4608884b_2024-03-29T21:50:32Z_in.wav",
+					"call_a89d0f2a-8ff2-11ed-98b5-a35c4608884b_2024-03-29T21:50:32Z_out.wav",
+				},
+			},
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-// 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-// 			h := &recordingHandler{
-// 				utilHandler:   mockUtil,
-// 				reqHandler:    mockReq,
-// 				db:            mockDB,
-// 				notifyHandler: mockNotify,
-// 			}
+			h := &recordingHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
 
-// 			ctx := context.Background()
+			ctx := context.Background()
 
-// 			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnded).Return(nil)
-// 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)
+			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnded).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)
 
-// 			for _, filename := range tt.responseRecording.Filenames {
-// 				filepath := h.getFilepath(filename)
-// 				mockReq.EXPECT().StorageV1FileCreate(gomock.Any(),
-// 					tt.responseRecording.CustomerID,
-// 					uuid.Nil,
-// 					smfile.ReferenceTypeRecording,
-// 					tt.responseRecording.ID,
-// 					"",
-// 					"",
-// 					filename,
-// 					defaultBucketName,
-// 					filepath,
-// 					60000,
-// 				).Return(&smfile.File{}, nil)
-// 			}
+			for _, filename := range tt.responseRecording.Filenames {
+				filepath := h.getFilepath(filename)
+				mockReq.EXPECT().StorageV1FileCreate(gomock.Any(),
+					tt.responseRecording.CustomerID,
+					uuid.Nil,
+					smfile.ReferenceTypeRecording,
+					tt.responseRecording.ID,
+					"",
+					"",
+					filename,
+					defaultBucketName,
+					filepath,
+					60000,
+				).Return(&smfile.File{}, nil)
+			}
 
-// 			res, err := h.Stopped(ctx, tt.id)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
+			res, err := h.Stopped(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 
-// 			time.Sleep(time.Second * 31)
+			time.Sleep(time.Second * 121)
 
-// 			if !reflect.DeepEqual(res, tt.responseRecording) {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
-// 			}
-// 		})
-// 	}
-// }
+			if !reflect.DeepEqual(res, tt.responseRecording) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
+			}
+		})
+	}
+}
 
 func Test_Stop_referenceTypeCall(t *testing.T) {
 
