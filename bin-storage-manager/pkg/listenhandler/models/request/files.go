@@ -8,7 +8,7 @@ import (
 
 // V1DataFilesPost is
 // v1 data type request struct for
-// /v1/flows POST
+// /v1/files POST
 type V1DataFilesPost struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 	OwnerID    uuid.UUID `json:"owner_id"`

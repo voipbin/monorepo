@@ -35,5 +35,6 @@ type ReferenceType string
 // list of reference types
 const (
 	ReferenceTypeNone      ReferenceType = ""
+	ReferenceTypeNormal    ReferenceType = "normal"
 	ReferenceTypeRecording ReferenceType = "recording"
 )

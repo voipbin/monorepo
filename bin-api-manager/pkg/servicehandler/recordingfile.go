@@ -34,7 +34,10 @@ func (h *serviceHandler) RecordingfileGet(ctx context.Context, a *amagent.Agent,
 
 	// get download url from storage-manager
 	log.Debugf("Getting recording file. recording: %s", id)
-	res, err := h.reqHandler.StorageV1RecordingGet(ctx, id, 300000)
+	referenceIDs := []uuid.UUID{
+		id,
+	}
+	res, err := h.reqHandler.StorageV1CompressfileCreate(ctx, referenceIDs, []uuid.UUID{}, 300000)
 	if err != nil {
 		log.Errorf("Could not get download url. err: %v", err)
 		return "", err

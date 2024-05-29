@@ -28,7 +28,7 @@ func (h *listenHandler) v1AccountsPost(ctx context.Context, m *rabbitmqhandler.R
 		return nil, err
 	}
 
-	// create flow
+	// create account
 	tmp, err := h.accountHandler.Create(
 		ctx,
 		req.CustomerID,
@@ -73,7 +73,7 @@ func (h *listenHandler) v1AccountsGet(ctx context.Context, m *rabbitmqhandler.Re
 	// parse the filters
 	filters := h.utilHandler.URLParseFilters(u)
 
-	// gets the list of flows
+	// gets the list of accounts
 	tmp, err := h.accountHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get accounts. err: %v", err)

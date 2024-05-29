@@ -61,6 +61,7 @@ import (
 	route "monorepo/bin-route-manager/models/route"
 	account1 "monorepo/bin-storage-manager/models/account"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	compress_file "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -4576,6 +4577,21 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1AccountGets(ctx, pageToken, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountGets), ctx, pageToken, pageSize, filters)
 }
 
+// StorageV1CompressfileCreate mocks base method.
+func (m *MockRequestHandler) StorageV1CompressfileCreate(ctx context.Context, referenceIDs, fileIDs []uuid.UUID, requestTimeout int) (*compress_file.CompressFile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1CompressfileCreate", ctx, referenceIDs, fileIDs, requestTimeout)
+	ret0, _ := ret[0].(*compress_file.CompressFile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1CompressfileCreate indicates an expected call of StorageV1CompressfileCreate.
+func (mr *MockRequestHandlerMockRecorder) StorageV1CompressfileCreate(ctx, referenceIDs, fileIDs, requestTimeout interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1CompressfileCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1CompressfileCreate), ctx, referenceIDs, fileIDs, requestTimeout)
+}
+
 // StorageV1FileCreate mocks base method.
 func (m *MockRequestHandler) StorageV1FileCreate(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, filename, bucketName, filepath string, requestTimeout int) (*file.File, error) {
 	m.ctrl.T.Helper()
@@ -4589,6 +4605,20 @@ func (m *MockRequestHandler) StorageV1FileCreate(ctx context.Context, customerID
 func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreate(ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, requestTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileCreate), ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, requestTimeout)
+}
+
+// StorageV1FileCreateWithDelay mocks base method.
+func (m *MockRequestHandler) StorageV1FileCreateWithDelay(ctx context.Context, customerID, ownerID uuid.UUID, referenceType file.ReferenceType, referenceID uuid.UUID, name, detail, filename, bucketName, filepath string, delay int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1FileCreateWithDelay", ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageV1FileCreateWithDelay indicates an expected call of StorageV1FileCreateWithDelay.
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileCreateWithDelay(ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, delay interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileCreateWithDelay", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileCreateWithDelay), ctx, customerID, ownerID, referenceType, referenceID, name, detail, filename, bucketName, filepath, delay)
 }
 
 // StorageV1FileDelete mocks base method.

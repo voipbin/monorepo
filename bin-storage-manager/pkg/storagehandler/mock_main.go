@@ -7,6 +7,7 @@ package storagehandler
 import (
 	context "context"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	compress_file "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
 	reflect "reflect"
 
@@ -35,6 +36,21 @@ func NewMockStorageHandler(ctrl *gomock.Controller) *MockStorageHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockStorageHandler) EXPECT() *MockStorageHandlerMockRecorder {
 	return m.recorder
+}
+
+// CompressfileCreate mocks base method.
+func (m *MockStorageHandler) CompressfileCreate(ctx context.Context, referenceIDs, fileIDs []uuid.UUID) (*compress_file.CompressFile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CompressfileCreate", ctx, referenceIDs, fileIDs)
+	ret0, _ := ret[0].(*compress_file.CompressFile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CompressfileCreate indicates an expected call of CompressfileCreate.
+func (mr *MockStorageHandlerMockRecorder) CompressfileCreate(ctx, referenceIDs, fileIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompressfileCreate", reflect.TypeOf((*MockStorageHandler)(nil).CompressfileCreate), ctx, referenceIDs, fileIDs)
 }
 
 // FileCreate mocks base method.
