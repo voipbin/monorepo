@@ -77,7 +77,7 @@ require (
 	github.com/prometheus/procfs v0.15.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	google.golang.org/genproto v0.0.0-20240521202816-d264139d666e // indirect
+	google.golang.org/genproto v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
