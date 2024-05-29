@@ -11,7 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func Test_v1CompressPost(t *testing.T) {
+func Test_v1CompressfilesPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -26,7 +26,7 @@ func Test_v1CompressPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &rabbitmqhandler.Request{
-				URI:      "/v1/compress",
+				URI:      "/v1/compressfiles",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_ids":["f2525e0e-1d6d-11ef-8d33-f3f47b464f43","25c5729e-1d6e-11ef-940b-0fa28944ca27"], "file_ids":["f27dacc6-1d6d-11ef-954e-73482b2c50cb","25e8ab92-1d6e-11ef-a6e2-8f552c006c72"]}`),
@@ -70,7 +70,7 @@ func Test_v1CompressPost(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().CompressCreate(gomock.Any(), tt.referenceIDs, tt.fileIDs).Return(tt.responseCompress, nil)
+			mockStorage.EXPECT().CompressfileCreate(gomock.Any(), tt.referenceIDs, tt.fileIDs).Return(tt.responseCompress, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

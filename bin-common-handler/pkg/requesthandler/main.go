@@ -66,6 +66,7 @@ import (
 
 	smaccount "monorepo/bin-storage-manager/models/account"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
@@ -792,6 +793,9 @@ type RequestHandler interface {
 	StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smaccount.Account, error)
 	StorageV1AccountGet(ctx context.Context, accountID uuid.UUID) (*smaccount.Account, error)
 	StorageV1AccountDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smaccount.Account, error)
+
+	// storage-manager compressfile
+	StorageV1CompressfileCreate(ctx context.Context, referenceIDs []uuid.UUID, fileIDs []uuid.UUID, requestTimeout int) (*smcompressfile.CompressFile, error)
 
 	// storage-manager recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)

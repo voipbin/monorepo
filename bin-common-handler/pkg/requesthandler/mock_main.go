@@ -61,6 +61,7 @@ import (
 	route "monorepo/bin-route-manager/models/route"
 	account1 "monorepo/bin-storage-manager/models/account"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	compress_file "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -4574,6 +4575,21 @@ func (m *MockRequestHandler) StorageV1AccountGets(ctx context.Context, pageToken
 func (mr *MockRequestHandlerMockRecorder) StorageV1AccountGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountGets), ctx, pageToken, pageSize, filters)
+}
+
+// StorageV1CompressfileCreate mocks base method.
+func (m *MockRequestHandler) StorageV1CompressfileCreate(ctx context.Context, referenceIDs, fileIDs []uuid.UUID, requestTimeout int) (*compress_file.CompressFile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1CompressfileCreate", ctx, referenceIDs, fileIDs, requestTimeout)
+	ret0, _ := ret[0].(*compress_file.CompressFile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1CompressfileCreate indicates an expected call of StorageV1CompressfileCreate.
+func (mr *MockRequestHandlerMockRecorder) StorageV1CompressfileCreate(ctx, referenceIDs, fileIDs, requestTimeout interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1CompressfileCreate", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1CompressfileCreate), ctx, referenceIDs, fileIDs, requestTimeout)
 }
 
 // StorageV1FileCreate mocks base method.

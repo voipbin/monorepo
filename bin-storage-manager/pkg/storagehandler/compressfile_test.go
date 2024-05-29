@@ -110,7 +110,7 @@ func Test_CompressCreate(t *testing.T) {
 			mockFile.EXPECT().DownloadURIGet(ctx, h.bucketNameMedia, tt.responseFilepath, time.Hour*24).Return("", tt.responseDownloadURI, nil)
 			mockUtil.EXPECT().TimeGetCurTimeAdd(24 * time.Hour).Return(tt.responseCurTimeAdd)
 
-			res, err := h.CompressCreate(ctx, tt.referenceIDs, tt.fileIDs)
+			res, err := h.CompressfileCreate(ctx, tt.referenceIDs, tt.fileIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -10,10 +10,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CompressCreate returns given compress file info
-func (h *storageHandler) CompressCreate(ctx context.Context, referenceIDs []uuid.UUID, fileIDs []uuid.UUID) (*compressfile.CompressFile, error) {
+// CompressfileCreate returns given compress file info
+func (h *storageHandler) CompressfileCreate(ctx context.Context, referenceIDs []uuid.UUID, fileIDs []uuid.UUID) (*compressfile.CompressFile, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "CompressCreate",
+		"func":          "CompressfileCreate",
 		"reference_ids": referenceIDs,
 		"file_ids":      fileIDs,
 	})

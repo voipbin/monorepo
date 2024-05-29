@@ -9,22 +9,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// v1CompressPost handles /v1/compress POST request
+// v1CompressfilesPost handles /v1/compressfiles POST request
 // creates a new compress with given data and return the created compress info.
-func (h *listenHandler) v1CompressPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CompressfilesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "v1CompressPost",
+		"func":    "v1CompressfilesPost",
 		"request": m,
 	})
 
-	var req request.V1DataCompressPost
+	var req request.V1DataCompressfilesPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 
 	// create compress
-	tmp, err := h.storageHandler.CompressCreate(ctx, req.ReferenceIDs, req.FileIDs)
+	tmp, err := h.storageHandler.CompressfileCreate(ctx, req.ReferenceIDs, req.FileIDs)
 	if err != nil {
 		log.Errorf("Could not create a new file. err: %v", err)
 		return nil, err

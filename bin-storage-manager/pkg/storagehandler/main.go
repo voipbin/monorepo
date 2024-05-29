@@ -37,7 +37,7 @@ type StorageHandler interface {
 	RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)
 	RecordingDelete(ctx context.Context, id uuid.UUID) error
 
-	CompressCreate(ctx context.Context, referenceIDs []uuid.UUID, fileIDs []uuid.UUID) (*compressfile.CompressFile, error)
+	CompressfileCreate(ctx context.Context, referenceIDs []uuid.UUID, fileIDs []uuid.UUID) (*compressfile.CompressFile, error)
 }
 
 type storageHandler struct {
