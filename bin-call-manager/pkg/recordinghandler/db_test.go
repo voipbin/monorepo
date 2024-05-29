@@ -9,11 +9,11 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
-	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
@@ -417,195 +417,6 @@ func Test_Gets(t *testing.T) {
 	}
 }
 
-func Test_Stop_referenceTypeCall(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id uuid.UUID
-
-		responseRecording *recording.Recording
-	}{
-		{
-			name: "normal",
-
-			id: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
-
-			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
-				ReferenceType: recording.ReferenceTypeCall,
-				AsteriskID:    "42:01:0a:a4:00:03",
-				ChannelIDs: []string{
-					"9ce319be-8ff1-11ed-a60d-e354dfcdff50",
-					"9d0b60c2-8ff1-11ed-aa1e-b31d5892bff8",
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &recordingHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-			for _, channelID := range tt.responseRecording.ChannelIDs {
-				mockReq.EXPECT().AstChannelHangup(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
-			}
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-
-			res, err := h.Stop(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.responseRecording) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, nil)
-			}
-		})
-	}
-}
-
-func Test_Stop_referenceTypeConference(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id uuid.UUID
-
-		responseRecording *recording.Recording
-
-		expectRecordingName string
-	}{
-		{
-			name: "normal",
-
-			id: uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
-
-			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
-				ReferenceType: recording.ReferenceTypeConfbridge,
-				AsteriskID:    "42:01:0a:a4:00:03",
-				RecordingName: "conference_f3eeac6a-90c2-11ed-9bad-9bc50d0bf273_2023-01-05T14:58:05Z",
-			},
-
-			expectRecordingName: "conference_f3eeac6a-90c2-11ed-9bad-9bc50d0bf273_2023-01-05T14:58:05Z_in",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &recordingHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.expectRecordingName).Return(nil)
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-
-			res, err := h.Stop(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.responseRecording, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
-			}
-		})
-	}
-}
-
-func Test_Stopped(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id uuid.UUID
-
-		responseRecording *recording.Recording
-	}{
-		{
-			name: "normal reference type call",
-
-			id: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
-
-			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
-				ReferenceType: recording.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("a89d0f2a-8ff2-11ed-98b5-a35c4608884b"),
-				AsteriskID:    "42:01:0a:a4:00:03",
-				ChannelIDs: []string{
-					"9ce319be-8ff1-11ed-a60d-e354dfcdff50",
-					"9d0b60c2-8ff1-11ed-aa1e-b31d5892bff8",
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &recordingHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnded).Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)
-
-			res, err := h.Stopped(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.responseRecording) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
-			}
-		})
-	}
-}
-
 func Test_Delete(t *testing.T) {
 
 	tests := []struct {
@@ -614,6 +425,8 @@ func Test_Delete(t *testing.T) {
 		recordingID uuid.UUID
 
 		responseRecording *recording.Recording
+		responseFiles     []smfile.File
+		expectFilers      map[string]string
 	}{
 		{
 			name: "normal",
@@ -622,6 +435,19 @@ func Test_Delete(t *testing.T) {
 
 			responseRecording: &recording.Recording{
 				ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+			},
+			responseFiles: []smfile.File{
+				{
+					ID: uuid.FromStringOrNil("24c0bcb0-1d5e-11ef-a361-a3671e0f4f3a"),
+				},
+				{
+					ID: uuid.FromStringOrNil("2aeb1392-1d5e-11ef-b320-cfcb1378a1ad"),
+				},
+			},
+			expectFilers: map[string]string{
+				"reference_type": string(smfile.ReferenceTypeRecording),
+				"reference_id":   "84df7daa-8eb9-11ed-b16e-4b8732219a4e",
+				"deleted":        "false",
 			},
 		},
 	}
@@ -643,8 +469,12 @@ func Test_Delete(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().RecordingDelete(ctx, tt.recordingID).Return(nil)
-			mockReq.EXPECT().StorageV1RecordingDelete(ctx, tt.recordingID).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
+
+			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilers).Return(tt.responseFiles, nil)
+			for _, f := range tt.responseFiles {
+				mockReq.EXPECT().StorageV1FileDelete(ctx, f.ID, 60000).Return(&smfile.File{}, nil)
+			}
 
 			res, err := h.Delete(ctx, tt.recordingID)
 			if err != nil {
@@ -656,6 +486,70 @@ func Test_Delete(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.responseRecording) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.responseRecording, res)
 			}
+		})
+	}
+}
+
+func Test_deleteRecordingFiles(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		recording *recording.Recording
+
+		responseRecording *recording.Recording
+
+		responseFiles []smfile.File
+
+		expectFilters map[string]string
+	}{
+		{
+			name: "normal",
+
+			recording: &recording.Recording{
+				ID: uuid.FromStringOrNil("1e8bcc64-1d5d-11ef-9738-7bc321400c35"),
+			},
+
+			responseRecording: &recording.Recording{
+				ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+			},
+
+			responseFiles: []smfile.File{
+				{
+					ID: uuid.FromStringOrNil("1f076c2a-1d5d-11ef-a4dd-bbf538c3b5b4"),
+				},
+				{
+					ID: uuid.FromStringOrNil("1f2f2954-1d5d-11ef-b10a-c3d4990f73b0"),
+				},
+			},
+			expectFilters: map[string]string{
+				"reference_type": string(smfile.ReferenceTypeRecording),
+				"reference_id":   "1e8bcc64-1d5d-11ef-9738-7bc321400c35",
+				"deleted":        "false",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &recordingHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilters).Return(tt.responseFiles, nil)
+			for _, f := range tt.responseFiles {
+				mockReq.EXPECT().StorageV1FileDelete(gomock.Any(), f.ID, 60000).Return(&smfile.File{}, nil)
+			}
+
+			h.deleteRecordingFiles(tt.recording)
 		})
 	}
 }

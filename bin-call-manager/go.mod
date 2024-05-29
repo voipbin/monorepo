@@ -72,6 +72,7 @@ require (
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24
+	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996
 )
 
@@ -87,7 +88,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	google.golang.org/genproto v0.0.0-20240521202816-d264139d666e // indirect
+	google.golang.org/genproto v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-chat-manager v0.0.0-20240313050741-a2ced5030a06 // indirect
@@ -97,7 +98,6 @@ require (
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
-	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
