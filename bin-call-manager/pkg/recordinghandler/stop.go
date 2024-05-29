@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/recording"
 	smfile "monorepo/bin-storage-manager/models/file"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -44,6 +45,9 @@ func (h *recordingHandler) storeRecordingFiles(r *recording.Recording) {
 		"func":      "storeRecordingFiles",
 		"recording": r,
 	})
+
+	// wait for file writing
+	time.Sleep(time.Second * 60)
 
 	for _, recordingFilename := range r.Filenames {
 		// store the each recording files
