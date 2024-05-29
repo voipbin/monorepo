@@ -47,8 +47,9 @@ func (h *recordingHandler) storeRecordingFiles(r *recording.Recording) {
 	})
 
 	// wait for file writing
-	time.Sleep(time.Second * 60)
+	time.Sleep(time.Second * 10)
 
+	log.Debugf("Storing the recording files.")
 	for _, recordingFilename := range r.Filenames {
 		// store the each recording files
 		go func(filename string) {
