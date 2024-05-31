@@ -202,7 +202,7 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("could not query. GetFromCache. err: %v", err)
+		return nil, fmt.Errorf("could not query. agentGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 
@@ -212,7 +212,7 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 
 	res, err := h.agentGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. GetFromCache. err: %v", err)
+		return nil, fmt.Errorf("dbhandler: Could not scan the row. agentGetFromDB. err: %v", err)
 	}
 
 	return res, nil
@@ -255,7 +255,7 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 	for k, v := range filters {
 		switch k {
 		case "customer_id":
-			q = fmt.Sprintf("%s and customer_id = ?", q)
+			q = fmt.Sprintf("%s and %s = ?", k, q)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
 
