@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-agent-manager/models/resource"
 	"monorepo/bin-agent-manager/pkg/cachehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -21,6 +22,7 @@ func Test_ResourceCreate(t *testing.T) {
 
 		responseCurTime string
 		expectRes       *resource.Resource
+		expectRes2      []byte
 	}{
 		{
 			name: "normal",
@@ -33,7 +35,6 @@ func Test_ResourceCreate(t *testing.T) {
 				Data: resource.Resource{
 					ID: uuid.FromStringOrNil("fa2138aa-1f64-11ef-a8ea-f79130b00ec8"),
 				},
-				// Data:          []byte(`{"id":"da160a64-1f63-11ef-84fb-a7d2e713626b"}`),
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -43,11 +44,22 @@ func Test_ResourceCreate(t *testing.T) {
 				AgentID:       uuid.FromStringOrNil("d99f3754-1f63-11ef-8636-2bd04a02e1e8"),
 				ReferenceType: "call",
 				ReferenceID:   uuid.FromStringOrNil("d9deef2a-1f63-11ef-a812-afe574b89b32"),
-				Data:          []byte(`{"id":"da160a64-1f63-11ef-84fb-a7d2e713626b"}`),
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      DefaultTimeStamp,
+				Data: map[string]interface{}{
+					"agent_id":       "00000000-0000-0000-0000-000000000000",
+					"customer_id":    "00000000-0000-0000-0000-000000000000",
+					"data":           nil,
+					"id":             "fa2138aa-1f64-11ef-a8ea-f79130b00ec8",
+					"reference_id":   "00000000-0000-0000-0000-000000000000",
+					"reference_type": "",
+					"tm_create":      "",
+					"tm_delete":      "",
+					"tm_update":      "",
+				},
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
+			expectRes2: []byte(`{"id":"d9321a20-1f63-11ef-bd92-57deb3f6cbbb","customer_id":"d970d81e-1f63-11ef-8010-5300df6ebd4a","agent_id":"d99f3754-1f63-11ef-8636-2bd04a02e1e8","reference_type":"call","reference_id":"d9deef2a-1f63-11ef-a812-afe574b89b32","data":{"agent_id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","data":null,"id":"fa2138aa-1f64-11ef-a8ea-f79130b00ec8","reference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","tm_create":"","tm_delete":"","tm_update":""},"tm_create":"2020-04-18 03:22:17.995000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 		},
 	}
 
@@ -78,12 +90,18 @@ func Test_ResourceCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			// if reflect.DeepEqual(tt.expectRes, res) == false {
-			// 	t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			// }
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
 
-			tmp, err := json.Marshal(res)
-			t.Errorf("tmp: %v", tmp)
+			res2, err := json.Marshal(res)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if string(res2) != string(tt.expectRes2) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes2, res2)
+			}
 		})
 	}
 }

@@ -57,7 +57,7 @@ func (h *handler) resourceGetFromRow(row *sql.Rows) (*resource.Resource, error) 
 		return nil, fmt.Errorf("could not scan the row. resourceGetFromRow. err: %v", err)
 	}
 
-	if errJson := json.Unmarshal(tmp, res.Data); errJson != nil {
+	if errJson := json.Unmarshal(tmp, &res.Data); errJson != nil {
 		return nil, errJson
 	}
 
