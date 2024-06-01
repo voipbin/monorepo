@@ -38,7 +38,6 @@ func (h *handler) resourceGetFromRow(row *sql.Rows) (*resource.Resource, error) 
 	res := &resource.Resource{}
 
 	tmp := []byte{}
-
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
@@ -47,7 +46,6 @@ func (h *handler) resourceGetFromRow(row *sql.Rows) (*resource.Resource, error) 
 		&res.ReferenceType,
 		&res.ReferenceID,
 
-		// &res.Data,
 		&tmp,
 
 		&res.TMCreate,
@@ -100,7 +98,6 @@ func (h *handler) ResourceCreate(ctx context.Context, a *resource.Resource) erro
 		a.ReferenceType,
 		a.ReferenceID.Bytes(),
 
-		// a.Data,
 		tmpData,
 
 		h.utilHandler.TimeGetCurTime(),
@@ -112,13 +109,13 @@ func (h *handler) ResourceCreate(ctx context.Context, a *resource.Resource) erro
 	}
 
 	// update the cache
-	_ = h.ResourceUpdateToCache(ctx, a.ID)
+	_ = h.resourceUpdateToCache(ctx, a.ID)
 
 	return nil
 }
 
-// ResourceUpdateToCache gets the agent from the DB and update the cache.
-func (h *handler) ResourceUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// resourceUpdateToCache gets the agent from the DB and update the cache.
+func (h *handler) resourceUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.resourceGetFromDB(ctx, id)
 	if err != nil {
@@ -214,7 +211,7 @@ func (h *handler) ResourceGets(ctx context.Context, size uint64, token string, f
 	for k, v := range filters {
 		switch k {
 		case "customer_id", "agent_id", "reference_id":
-			q = fmt.Sprintf("%s and %s = ?", k, q)
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
 
@@ -271,13 +268,13 @@ func (h *handler) ResourceDelete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// update the cache
-	_ = h.ResourceUpdateToCache(ctx, id)
+	_ = h.resourceUpdateToCache(ctx, id)
 
 	return nil
 }
 
-// ResourceSetData sets the agent's data.
-func (h *handler) ResourceSetData(ctx context.Context, id uuid.UUID, data []byte) error {
+// ResourceSetData sets the resource's data.
+func (h *handler) ResourceSetData(ctx context.Context, id uuid.UUID, data interface{}) error {
 	// prepare
 	q := `
 	update
@@ -288,13 +285,19 @@ func (h *handler) ResourceSetData(ctx context.Context, id uuid.UUID, data []byte
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, data, h.utilHandler.TimeGetCurTime(), id.Bytes())
+
+	tmp, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("could not marshal the data. ResourceSetData. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ResourceSetData. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.ResourceUpdateToCache(ctx, id)
+	_ = h.resourceUpdateToCache(ctx, id)
 
 	return nil
 }

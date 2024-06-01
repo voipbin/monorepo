@@ -255,7 +255,7 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 	for k, v := range filters {
 		switch k {
 		case "customer_id":
-			q = fmt.Sprintf("%s and %s = ?", k, q)
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())
 

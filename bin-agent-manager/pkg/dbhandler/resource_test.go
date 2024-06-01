@@ -105,3 +105,241 @@ func Test_ResourceCreate(t *testing.T) {
 		})
 	}
 }
+
+func Test_ResourceDelete(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent *resource.Resource
+
+		responseCurTime string
+		expectRes       *resource.Resource
+	}{
+		{
+			name: "normal",
+			agent: &resource.Resource{
+				ID: uuid.FromStringOrNil("a2f503e4-2023-11ef-b9fd-c71b1004898c"),
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: &resource.Resource{
+				ID:       uuid.FromStringOrNil("a2f503e4-2023-11ef-b9fd-c71b1004898c"),
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: "2020-04-18 03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ResourceSet(ctx, gomock.Any())
+			if err := h.ResourceCreate(ctx, tt.agent); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ResourceSet(ctx, gomock.Any())
+			if err := h.ResourceDelete(ctx, tt.agent.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ResourceGet(ctx, tt.agent.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ResourceSet(ctx, gomock.Any())
+			res, err := h.ResourceGet(ctx, tt.agent.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ResourceGets(t *testing.T) {
+
+	tests := []struct {
+		name      string
+		resources []*resource.Resource
+
+		size    uint64
+		filters map[string]string
+
+		responseCurTime string
+		expectRes       []*resource.Resource
+	}{
+		{
+			name: "normal",
+			resources: []*resource.Resource{
+				{
+					ID:         uuid.FromStringOrNil("050af7a0-2024-11ef-8340-034f821d1ba7"),
+					CustomerID: uuid.FromStringOrNil("04c0b898-2024-11ef-880d-7fcab3af32e5"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("0546ed78-2024-11ef-865e-7ba9fd7c71d4"),
+					CustomerID: uuid.FromStringOrNil("04c0b898-2024-11ef-880d-7fcab3af32e5"),
+				},
+			},
+
+			size: 2,
+			filters: map[string]string{
+				"customer_id": "04c0b898-2024-11ef-880d-7fcab3af32e5",
+				"deleted":     "false",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: []*resource.Resource{
+				{
+					ID:         uuid.FromStringOrNil("050af7a0-2024-11ef-8340-034f821d1ba7"),
+					CustomerID: uuid.FromStringOrNil("04c0b898-2024-11ef-880d-7fcab3af32e5"),
+					TMCreate:   "2020-04-18 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("0546ed78-2024-11ef-865e-7ba9fd7c71d4"),
+					CustomerID: uuid.FromStringOrNil("04c0b898-2024-11ef-880d-7fcab3af32e5"),
+					TMCreate:   "2020-04-18 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+			},
+		},
+		{
+			name:      "empty",
+			resources: []*resource.Resource{},
+
+			size: 2,
+			filters: map[string]string{
+				"reference_id": "864d6456-2024-11ef-a0ec-43a5d82b2024",
+				"deleted":      "false",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes:       []*resource.Resource{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockCache.EXPECT().ResourceSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			for _, u := range tt.resources {
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				if err := h.ResourceCreate(ctx, u); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			res, err := h.ResourceGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ResourceSetData(t *testing.T) {
+
+	tests := []struct {
+		name      string
+		resourcer *resource.Resource
+
+		id   uuid.UUID
+		data interface{}
+
+		responseCurTime string
+		expectRes       *resource.Resource
+	}{
+		{
+			name: "normal",
+			resourcer: &resource.Resource{
+				ID: uuid.FromStringOrNil("3631a22c-2027-11ef-b099-f789b8cecd24"),
+			},
+
+			data: map[string]interface{}{
+				"test": "test_data",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: &resource.Resource{
+				ID: uuid.FromStringOrNil("3631a22c-2027-11ef-b099-f789b8cecd24"),
+				Data: map[string]interface{}{
+					"test": "test_data",
+				},
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ResourceSet(ctx, gomock.Any())
+			if err := h.ResourceCreate(ctx, tt.resourcer); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ResourceSet(ctx, gomock.Any())
+			if err := h.ResourceSetData(ctx, tt.resourcer.ID, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ResourceGet(ctx, tt.resourcer.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ResourceSet(ctx, gomock.Any())
+			res, err := h.ResourceGet(ctx, tt.resourcer.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
