@@ -2,7 +2,6 @@ package resourcehandler
 
 import (
 	"context"
-	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/models/resource"
 
 	"github.com/gofrs/uuid"
@@ -77,34 +76,53 @@ func (h *resourceHandler) Create(
 		return nil, err
 	}
 
+	h.notifyHandler.PublishEvent(ctx, resource.EventTypeResourceCreated, res)
+
 	return res, nil
 }
 
-// Delete deletes the agent.
+// Delete deletes the resource.
 func (h *resourceHandler) Delete(ctx context.Context, id uuid.UUID) (*resource.Resource, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "Delete",
-		"agent_id": id,
+		"func":        "Delete",
+		"resource_id": id,
 	})
 
-	// check the agent is deletable
-	if id == agent.GuestAgentID {
-		return nil, errors.Errorf("agent is guest agent")
+	if errDelete := h.db.ResourceDelete(ctx, id); errDelete != nil {
+		log.Errorf("Could not delete the agent. err: %v", errDelete)
+		return nil, errors.Wrap(errDelete, "could not delete the agent")
 	}
 
-	onlyAdmin, err := h.isOnlyAdmin(ctx, id)
+	res, err := h.db.ResourceGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not check the agent is the only admin. erR: %v", err)
-		return nil, errors.Wrapf(err, "could not check the agent is the only admin")
-	} else if onlyAdmin {
-		return nil, errors.Errorf("the agent is the only admin")
+		log.Errorf("Could not get deleted resource info. err: %v", err)
+		return nil, errors.Wrapf(err, "Could not get deleted resource info.")
 	}
 
-	res, err := h.deleteForce(ctx, id)
-	if err != nil {
-		log.Errorf("Could not delete the agent. err: %v", err)
-		return nil, errors.Wrap(err, "could not delete the agent")
+	h.notifyHandler.PublishEvent(ctx, resource.EventTypeResourceDeleted, res)
+
+	return res, nil
+}
+
+// Delete deletes the resource.
+func (h *resourceHandler) UpdateData(ctx context.Context, id uuid.UUID, data interface{}) (*resource.Resource, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "UpdateData",
+		"resource_id": id,
+	})
+
+	if errSet := h.db.ResourceSetData(ctx, id, data); errSet != nil {
+		log.Errorf("Could not update the resource data. err: %v", errSet)
+		return nil, errSet
 	}
+
+	res, err := h.db.ResourceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted resource info. err: %v", err)
+		return nil, errors.Wrapf(err, "Could not get deleted resource info.")
+	}
+
+	h.notifyHandler.PublishEvent(ctx, resource.EventTypeResourceUpdated, res)
 
 	return res, nil
 }
