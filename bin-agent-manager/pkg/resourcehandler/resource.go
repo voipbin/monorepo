@@ -41,13 +41,7 @@ func (h *resourceHandler) Get(ctx context.Context, id uuid.UUID) (*resource.Reso
 }
 
 // Create creates a new resource.
-func (h *resourceHandler) Create(
-	ctx context.Context,
-	customerID uuid.UUID,
-	agentID uuid.UUID,
-	referenceType string,
-	data interface{},
-) (*resource.Resource, error) {
+func (h *resourceHandler) Create(ctx context.Context, customerID uuid.UUID, agentID uuid.UUID, referenceType resource.Type, data interface{}) (*resource.Resource, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,

@@ -318,6 +318,55 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 	return res, nil
 }
 
+// AgentGetsByCustomerIDAndAddress returns agents of the given customerID and address.
+// It filters agents by customerID, not deleted, and containing the given address.
+//
+// Parameters:
+// ctx (context.Context): The context for the operation.
+// customerID (uuid.UUID): The ID of the customer.
+// address (commonaddress.Address): The address to filter agents.
+//
+// Returns:
+// ([]*agent.Agent, error): A slice of agents that match the given criteria, and an error if any occurred.
+// If no agents match the criteria, an empty slice is returned and no error is returned.
+func (h *handler) AgentGetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address commonaddress.Address) ([]*agent.Agent, error) {
+
+	// prepare the SQL query
+	q := fmt.Sprintf(`%s 
+    where 
+        customer_id =?
+        and tm_delete >=?
+		and json_contains(
+			addresses, 
+			JSON_OBJECT('target',?)
+		)
+        and json_contains(
+            addresses, 
+            JSON_OBJECT('type',?)
+        )
+        `, agentSelect)
+
+	// execute the query
+	rows, err := h.db.Query(q, customerID.Bytes(), DefaultTimeStamp, address.Target, address.Type)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AgentGetsByCustomerIDAndAddress. err: %v", err)
+	}
+	defer rows.Close()
+
+	// process the rows
+	res := []*agent.Agent{}
+	for rows.Next() {
+		u, err := h.agentGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. AgentGetsByCustomerIDAndAddress. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // AgentGetByUsername returns agent of the given username.
 func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error) {
 

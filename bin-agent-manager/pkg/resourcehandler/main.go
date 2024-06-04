@@ -3,15 +3,20 @@ package resourcehandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package resourcehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	"monorepo/bin-agent-manager/models/resource"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
+
+	"github.com/gofrs/uuid"
 )
 
 // ResourceHandler interface
 type ResourceHandler interface {
+	Create(ctx context.Context, customerID uuid.UUID, agentID uuid.UUID, referenceType resource.Type, data interface{}) (*resource.Resource, error)
 	// Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	// Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	// Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error)

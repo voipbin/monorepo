@@ -8,6 +8,7 @@ import (
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
+	"monorepo/bin-agent-manager/pkg/resourcehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -46,6 +47,8 @@ type agentHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+
+	resourceHandler resourcehandler.ResourceHandler
 }
 
 // NewAgentHandler return AgentHandler interface

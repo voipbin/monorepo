@@ -6,8 +6,10 @@ package cachehandler
 
 import (
 	context "context"
+	address "monorepo/bin-agent-manager/models/address"
 	agent "monorepo/bin-agent-manager/models/agent"
 	resource "monorepo/bin-agent-manager/models/resource"
+	address0 "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -35,6 +37,49 @@ func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
+}
+
+// AddressDel mocks base method.
+func (m *MockCacheHandler) AddressDel(ctx context.Context, u *address.Address) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressDel", ctx, u)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressDel indicates an expected call of AddressDel.
+func (mr *MockCacheHandlerMockRecorder) AddressDel(ctx, u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressDel", reflect.TypeOf((*MockCacheHandler)(nil).AddressDel), ctx, u)
+}
+
+// AddressGetByCommonAddress mocks base method.
+func (m *MockCacheHandler) AddressGetByCommonAddress(ctx context.Context, u address0.Address) (*address.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressGetByCommonAddress", ctx, u)
+	ret0, _ := ret[0].(*address.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddressGetByCommonAddress indicates an expected call of AddressGetByCommonAddress.
+func (mr *MockCacheHandlerMockRecorder) AddressGetByCommonAddress(ctx, u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressGetByCommonAddress", reflect.TypeOf((*MockCacheHandler)(nil).AddressGetByCommonAddress), ctx, u)
+}
+
+// AddressSet mocks base method.
+func (m *MockCacheHandler) AddressSet(ctx context.Context, u *address.Address) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressSet", ctx, u)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressSet indicates an expected call of AddressSet.
+func (mr *MockCacheHandlerMockRecorder) AddressSet(ctx, u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressSet", reflect.TypeOf((*MockCacheHandler)(nil).AddressSet), ctx, u)
 }
 
 // AgentGet mocks base method.

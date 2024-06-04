@@ -5,6 +5,11 @@
 package resourcehandler
 
 import (
+	context "context"
+	resource "monorepo/bin-agent-manager/models/resource"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -29,4 +34,19 @@ func NewMockResourceHandler(ctrl *gomock.Controller) *MockResourceHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockResourceHandler) EXPECT() *MockResourceHandlerMockRecorder {
 	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockResourceHandler) Create(ctx context.Context, customerID, agentID uuid.UUID, referenceType resource.Type, data interface{}) (*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, agentID, referenceType, data)
+	ret0, _ := ret[0].(*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockResourceHandlerMockRecorder) Create(ctx, customerID, agentID, referenceType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockResourceHandler)(nil).Create), ctx, customerID, agentID, referenceType, data)
 }
