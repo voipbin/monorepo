@@ -8,10 +8,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-agent-manager/models/address"
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/models/resource"
-	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 type handler struct {
@@ -25,10 +23,6 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
-
-	AddressGetByCommonAddress(ctx context.Context, u commonaddress.Address) (*address.Address, error)
-	AddressSet(ctx context.Context, u *address.Address) error
-	AddressDel(ctx context.Context, u *address.Address) error
 
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentSet(ctx context.Context, u *agent.Agent) error
