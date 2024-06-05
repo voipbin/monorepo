@@ -338,16 +338,15 @@ func (h *handler) AgentGetsByCustomerIDAndAddress(ctx context.Context, customerI
         and tm_delete >=?
 		and json_contains(
 			addresses, 
-			JSON_OBJECT('target',?)
+			JSON_OBJECT(
+				'type', ?,
+				'target', ?
+			)
 		)
-        and json_contains(
-            addresses, 
-            JSON_OBJECT('type',?)
-        )
         `, agentSelect)
 
 	// execute the query
-	rows, err := h.db.Query(q, customerID.Bytes(), DefaultTimeStamp, address.Target, address.Type)
+	rows, err := h.db.Query(q, customerID.Bytes(), DefaultTimeStamp, address.Type, address.Target)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGetsByCustomerIDAndAddress. err: %v", err)
 	}

@@ -36,6 +36,15 @@ func (h *agentHandler) EventGroupcallCreated(ctx context.Context, c *cmgroupcall
 	return nil
 }
 
+// eventGroupcallCreatedHandleAgent handles the groupcall_created event for agents.
+// It updates the agent's status to ringing if the agent is available and part of the groupcall.
+//
+// Parameters:
+// ctx (context.Context): The context for the request.
+// c (*cmgroupcall.Groupcall): The groupcall object.
+//
+// Returns:
+// error: An error if any occurred during the operation, otherwise nil.
 func (h *agentHandler) eventGroupcallCreatedHandleAgent(ctx context.Context, c *cmgroupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "eventGroupcallCreatedHandleAgent",
@@ -79,6 +88,15 @@ func (h *agentHandler) eventGroupcallCreatedHandleAgent(ctx context.Context, c *
 	return nil
 }
 
+// eventGroupcallCreatedHandleResource handles the groupcall_created event for resources.
+// It creates a resource for each agent associated with the groupcall's address.
+//
+// Parameters:
+// ctx (context.Context): The context for the request.
+// c (*cmgroupcall.Groupcall): The groupcall object.
+//
+// Returns:
+// error: An error if any occurred during the operation, otherwise nil.
 func (h *agentHandler) eventGroupcallCreatedHandleResource(ctx context.Context, c *cmgroupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "eventGroupcallCreatedHandleResource",
@@ -88,7 +106,7 @@ func (h *agentHandler) eventGroupcallCreatedHandleResource(ctx context.Context, 
 
 	// Determine the address based on the call's direction
 	for _, addr := range c.Destinations {
-		if addr.Type != commonaddress.TypeExtension {
+		if addr.Type != commonaddress.TypeExtension && addr.Type != commonaddress.TypeTel {
 			continue
 		}
 
