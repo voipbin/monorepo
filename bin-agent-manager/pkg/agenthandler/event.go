@@ -120,7 +120,7 @@ func (h *agentHandler) eventGroupcallCreatedHandleResource(ctx context.Context, 
 		// Create a resource for each agent
 		for _, a := range ags {
 			log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
-			r, err := h.resourceHandler.Create(ctx, c.CustomerID, a.ID, resource.TypeCall, c)
+			r, err := h.resourceHandler.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeCall, c.ID, c)
 			if err != nil {
 				log.Errorf("Could not create the resource. err: %v", err)
 				continue
@@ -236,7 +236,7 @@ func (h *agentHandler) EventCallCreated(ctx context.Context, c *cmcall.Call) err
 	// Create a resource for each agent
 	for _, a := range ags {
 		log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
-		r, err := h.resourceHandler.Create(ctx, c.CustomerID, a.ID, resource.TypeCall, c)
+		r, err := h.resourceHandler.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeCall, c.ID, c)
 		if err != nil {
 			log.Errorf("Could not create the resource. err: %v", err)
 			continue

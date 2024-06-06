@@ -16,7 +16,7 @@ import (
 
 // ResourceHandler interface
 type ResourceHandler interface {
-	Create(ctx context.Context, customerID uuid.UUID, agentID uuid.UUID, referenceType resource.Type, data interface{}) (*resource.Resource, error)
+	Create(ctx context.Context, customerID uuid.UUID, ownerID uuid.UUID, referenceType resource.ReferenceType, referenceID uuid.UUID, data interface{}) (*resource.Resource, error)
 	// Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	// Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	// Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error)

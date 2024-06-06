@@ -37,16 +37,16 @@ func (m *MockResourceHandler) EXPECT() *MockResourceHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockResourceHandler) Create(ctx context.Context, customerID, agentID uuid.UUID, referenceType resource.Type, data interface{}) (*resource.Resource, error) {
+func (m *MockResourceHandler) Create(ctx context.Context, customerID, ownerID uuid.UUID, referenceType resource.ReferenceType, referenceID uuid.UUID, data interface{}) (*resource.Resource, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, agentID, referenceType, data)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, ownerID, referenceType, referenceID, data)
 	ret0, _ := ret[0].(*resource.Resource)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockResourceHandlerMockRecorder) Create(ctx, customerID, agentID, referenceType, data interface{}) *gomock.Call {
+func (mr *MockResourceHandlerMockRecorder) Create(ctx, customerID, ownerID, referenceType, referenceID, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockResourceHandler)(nil).Create), ctx, customerID, agentID, referenceType, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockResourceHandler)(nil).Create), ctx, customerID, ownerID, referenceType, referenceID, data)
 }

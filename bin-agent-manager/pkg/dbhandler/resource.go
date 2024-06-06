@@ -17,7 +17,7 @@ const (
 	select
 		id,
 		customer_id,
-		agent_id,
+		owner_id,
 	
 		reference_type,
 		reference_id,
@@ -41,7 +41,7 @@ func (h *handler) resourceGetFromRow(row *sql.Rows) (*resource.Resource, error) 
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-		&res.AgentID,
+		&res.OwnerID,
 
 		&res.ReferenceType,
 		&res.ReferenceID,
@@ -67,7 +67,7 @@ func (h *handler) ResourceCreate(ctx context.Context, a *resource.Resource) erro
 	q := `insert into agent_resources(
 		id,
 		customer_id,
-		agent_id,
+		owner_id,
 
 		reference_type,
 		reference_id,
@@ -93,7 +93,7 @@ func (h *handler) ResourceCreate(ctx context.Context, a *resource.Resource) erro
 	_, err = h.db.Exec(q,
 		a.ID.Bytes(),
 		a.CustomerID.Bytes(),
-		a.AgentID.Bytes(),
+		a.OwnerID.Bytes(),
 
 		a.ReferenceType,
 		a.ReferenceID.Bytes(),
@@ -210,7 +210,7 @@ func (h *handler) ResourceGets(ctx context.Context, size uint64, token string, f
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "agent_id", "reference_id":
+		case "customer_id", "owner_id", "reference_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

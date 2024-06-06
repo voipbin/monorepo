@@ -4,11 +4,11 @@ import "github.com/gofrs/uuid"
 
 // Resource defines
 type Resource struct {
-	ID            uuid.UUID `json:"id"`
-	CustomerID    uuid.UUID `json:"customer_id"`
-	AgentID       uuid.UUID `json:"agent_id"`
-	ReferenceType Type      `json:"reference_type"`
-	ReferenceID   uuid.UUID `json:"reference_id"`
+	ID            uuid.UUID     `json:"id"`
+	CustomerID    uuid.UUID     `json:"customer_id"`
+	OwnerID       uuid.UUID     `json:"owner_id"`
+	ReferenceType ReferenceType `json:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
 
 	Data interface{} `json:"data"`
 
@@ -17,10 +17,12 @@ type Resource struct {
 	TMDelete string `json:"tm_delete"` // Deleted timestamp.
 }
 
-type Type string
+// ReferenceType defines
+type ReferenceType string
 
+// list of Reference types
 const (
-	TypeCall             Type = "call"         // call-manager's call
-	TypeGroupcall        Type = "groupcall"    // call-manager's groupcall
-	TypeConversationType Type = "conversation" // conversation-manager's conversation
+	ReferenceTypeCall             ReferenceType = "call"         // call-manager's call
+	ReferenceTypeGroupcall        ReferenceType = "groupcall"    // call-manager's groupcall
+	ReferenceTypeConversationType ReferenceType = "conversation" // conversation-manager's conversation
 )
