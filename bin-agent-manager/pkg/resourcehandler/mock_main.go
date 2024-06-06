@@ -7,6 +7,7 @@ package resourcehandler
 import (
 	context "context"
 	resource "monorepo/bin-agent-manager/models/resource"
+	call "monorepo/bin-call-manager/models/call"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -49,4 +50,92 @@ func (m *MockResourceHandler) Create(ctx context.Context, customerID, ownerID uu
 func (mr *MockResourceHandlerMockRecorder) Create(ctx, customerID, ownerID, referenceType, referenceID, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockResourceHandler)(nil).Create), ctx, customerID, ownerID, referenceType, referenceID, data)
+}
+
+// Delete mocks base method.
+func (m *MockResourceHandler) Delete(ctx context.Context, id uuid.UUID) (*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockResourceHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockResourceHandler)(nil).Delete), ctx, id)
+}
+
+// EventCallDeleted mocks base method.
+func (m *MockResourceHandler) EventCallDeleted(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCallDeleted", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCallDeleted indicates an expected call of EventCallDeleted.
+func (mr *MockResourceHandlerMockRecorder) EventCallDeleted(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallDeleted", reflect.TypeOf((*MockResourceHandler)(nil).EventCallDeleted), ctx, c)
+}
+
+// EventCallUpdated mocks base method.
+func (m *MockResourceHandler) EventCallUpdated(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCallUpdated", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCallUpdated indicates an expected call of EventCallUpdated.
+func (mr *MockResourceHandlerMockRecorder) EventCallUpdated(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallUpdated", reflect.TypeOf((*MockResourceHandler)(nil).EventCallUpdated), ctx, c)
+}
+
+// Get mocks base method.
+func (m *MockResourceHandler) Get(ctx context.Context, id uuid.UUID) (*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockResourceHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockResourceHandler)(nil).Get), ctx, id)
+}
+
+// Gets mocks base method.
+func (m *MockResourceHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockResourceHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockResourceHandler)(nil).Gets), ctx, size, token, filters)
+}
+
+// UpdateData mocks base method.
+func (m *MockResourceHandler) UpdateData(ctx context.Context, id uuid.UUID, data interface{}) (*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateData", ctx, id, data)
+	ret0, _ := ret[0].(*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateData indicates an expected call of UpdateData.
+func (mr *MockResourceHandlerMockRecorder) UpdateData(ctx, id, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockResourceHandler)(nil).UpdateData), ctx, id, data)
 }

@@ -191,3 +191,115 @@ func Test_Create(t *testing.T) {
 		})
 	}
 }
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseResource *resource.Resource
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("583066d4-240e-11ef-80ae-b7c3af9b8a67"),
+
+			responseResource: &resource.Resource{
+				ID: uuid.FromStringOrNil("583066d4-240e-11ef-80ae-b7c3af9b8a67"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &resourceHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ResourceDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().ResourceGet(ctx, tt.id).Return(tt.responseResource, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, resource.EventTypeResourceDeleted, tt.responseResource)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseResource) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseResource, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateData(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id   uuid.UUID
+		data interface{}
+
+		responseResource *resource.Resource
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("b00d29be-240e-11ef-9b6c-5f97b9475ad3"),
+			data: map[string]interface{}{
+				"test": "test",
+			},
+
+			responseResource: &resource.Resource{
+				ID: uuid.FromStringOrNil("b00d29be-240e-11ef-9b6c-5f97b9475ad3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &resourceHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ResourceSetData(ctx, tt.id, tt.data).Return(nil)
+			mockDB.EXPECT().ResourceGet(ctx, tt.id).Return(tt.responseResource, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, resource.EventTypeResourceUpdated, tt.responseResource)
+
+			res, err := h.UpdateData(ctx, tt.id, tt.data)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseResource) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseResource, res)
+			}
+		})
+	}
+}

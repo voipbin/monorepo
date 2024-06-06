@@ -7,6 +7,7 @@ package agenthandler
 import (
 	context "context"
 	agent "monorepo/bin-agent-manager/models/agent"
+	call "monorepo/bin-call-manager/models/call"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	address "monorepo/bin-common-handler/models/address"
 	customer "monorepo/bin-customer-manager/models/customer"
@@ -67,6 +68,20 @@ func (m *MockAgentHandler) Delete(ctx context.Context, id uuid.UUID) (*agent.Age
 func (mr *MockAgentHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAgentHandler)(nil).Delete), ctx, id)
+}
+
+// EventCallCreated mocks base method.
+func (m *MockAgentHandler) EventCallCreated(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCallCreated", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCallCreated indicates an expected call of EventCallCreated.
+func (mr *MockAgentHandlerMockRecorder) EventCallCreated(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventCallCreated), ctx, c)
 }
 
 // EventCustomerDeleted mocks base method.

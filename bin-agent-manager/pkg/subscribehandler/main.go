@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -18,6 +19,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/pkg/agenthandler"
+	"monorepo/bin-agent-manager/pkg/resourcehandler"
 )
 
 // SubscribeHandler interface
@@ -31,7 +33,8 @@ type subscribeHandler struct {
 	subscribeQueue    string
 	subscribesTargets []string
 
-	agentHandler agenthandler.AgentHandler
+	agentHandler    agenthandler.AgentHandler
+	resourceHandler resourcehandler.ResourceHandler
 }
 
 var (
@@ -62,12 +65,14 @@ func NewSubscribeHandler(
 	subscribeQueue string,
 	subscribeTargets []string,
 	agentHandler agenthandler.AgentHandler,
+	resourceHandler resourcehandler.ResourceHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock:        rabbitSock,
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
 		agentHandler:      agentHandler,
+		resourceHandler:   resourceHandler,
 	}
 
 	return h
@@ -126,12 +131,32 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	switch {
 
 	//// call-manager
-	// groupcall
-	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmgroupcall.EventTypeGroupcallCreated)):
-		err = h.processEventCMGroupcallCreated(ctx, m)
+	case m.Publisher == string(commonoutline.ServiceNameCallManager):
+		switch m.Type {
 
-	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmgroupcall.EventTypeGroupcallProgressing)):
-		err = h.processEventCMGroupcallProgressing(ctx, m)
+		// groupcall
+		case string(cmgroupcall.EventTypeGroupcallCreated):
+			err = h.processEventCMGroupcallCreated(ctx, m)
+
+		case string(cmgroupcall.EventTypeGroupcallProgressing):
+			err = h.processEventCMGroupcallProgressing(ctx, m)
+
+		// call
+		case string(cmcall.EventTypeCallCreated):
+			err = h.processEventCMCallCreated(ctx, m)
+
+		case string(cmcall.EventTypeCallDeleted):
+			err = h.processEventCMCallDeleted(ctx, m)
+
+		case string(cmcall.EventTypeCallCanceling),
+			string(cmcall.EventTypeCallDialing),
+			string(cmcall.EventTypeCallHangup),
+			string(cmcall.EventTypeCallProgressing),
+			string(cmcall.EventTypeCallRinging),
+			string(cmcall.EventTypeCallTerminating),
+			string(cmcall.EventTypeCallUpdated):
+			err = h.processEventCMCallUpdated(ctx, m)
+		}
 
 	//// customer-manager
 	// customer

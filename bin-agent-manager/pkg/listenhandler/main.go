@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/pkg/agenthandler"
+	"monorepo/bin-agent-manager/pkg/resourcehandler"
 )
 
 // pagination parameters
@@ -31,10 +32,11 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	utilHandler utilhandler.UtilHandler
+	rabbitSock  rabbitmqhandler.Rabbit
 
-	agentHandler agenthandler.AgentHandler
-	utilHandler  utilhandler.UtilHandler
+	agentHandler    agenthandler.AgentHandler
+	resourceHandler resourcehandler.ResourceHandler
 }
 
 var (
@@ -87,12 +89,13 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler) ListenHandler {
+func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler, resourceHandler resourcehandler.ResourceHandler) ListenHandler {
 	h := &listenHandler{
-		rabbitSock: rabbitSock,
+		utilHandler: utilhandler.NewUtilHandler(),
+		rabbitSock:  rabbitSock,
 
-		agentHandler: agentHandler,
-		utilHandler:  utilhandler.NewUtilHandler(),
+		agentHandler:    agentHandler,
+		resourceHandler: resourceHandler,
 	}
 
 	return h
