@@ -59,8 +59,8 @@ var (
 	regV1Login = regexp.MustCompile("/v1/login$")
 
 	// resources
-	regV1Resources    = regexp.MustCompile("/v1/resources$")
 	regV1ResourcesGet = regexp.MustCompile(`/v1/resources\?(.*)$`)
+	regV1ResourcesID  = regexp.MustCompile("/v1/resources/" + regUUID + "$")
 )
 
 var (
@@ -230,6 +230,24 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Login.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1Login(ctx, m)
 		requestType = "/v1/login"
+
+	/////////////////
+	// resources
+	/////////////////
+	// GET /resources
+	case regV1ResourcesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ResourcesGet(ctx, m)
+		requestType = "/v1/resources"
+
+	// GET /resources/<resource-id>
+	case regV1ResourcesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ResourcesIDGet(ctx, m)
+		requestType = "/v1/resources/<resource-id>"
+
+	// DELETE /resources/<resource-id>
+	case regV1ResourcesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ResourcesIDDelete(ctx, m)
+		requestType = "/v1/resources/<resource-id>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
