@@ -7,7 +7,7 @@ create table agent_resources(
   reference_type varchar(255), --
   reference_id   binary(16), --
 
-  data text,
+  data json,
 
   tm_create datetime(6),
   tm_update datetime(6),
