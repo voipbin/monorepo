@@ -61,7 +61,7 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	golang.org/x/crypto v0.23.0
+	golang.org/x/crypto v0.24.0
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
@@ -74,11 +74,11 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.53.0 // indirect
-	github.com/prometheus/procfs v0.15.0 // indirect
+	github.com/prometheus/common v0.54.0 // indirect
+	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	google.golang.org/genproto v0.0.0-20240528184218-531527333157 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	google.golang.org/genproto v0.0.0-20240604185151-ef581f913117 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect

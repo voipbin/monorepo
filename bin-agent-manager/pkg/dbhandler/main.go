@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-agent-manager/models/resource"
 	"monorepo/bin-agent-manager/pkg/cachehandler"
 )
 
@@ -23,12 +24,19 @@ type DBHandler interface {
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error)
 	AgentGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error)
+	AgentGetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address commonaddress.Address) ([]*agent.Agent, error)
 	AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) error
 	AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
 	AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error
 	AgentSetPermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error
 	AgentSetStatus(ctx context.Context, id uuid.UUID, status agent.Status) error
 	AgentSetTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error
+
+	ResourceCreate(ctx context.Context, a *resource.Resource) error
+	ResourceGet(ctx context.Context, id uuid.UUID) (*resource.Resource, error)
+	ResourceGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*resource.Resource, error)
+	ResourceDelete(ctx context.Context, id uuid.UUID) error
+	ResourceSetData(ctx context.Context, id uuid.UUID, data interface{}) error
 }
 
 // handler database handler

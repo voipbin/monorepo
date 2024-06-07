@@ -6,8 +6,10 @@ import (
 	"context"
 	"regexp"
 
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
+	"monorepo/bin-agent-manager/pkg/resourcehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -39,6 +41,7 @@ type AgentHandler interface {
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
+	EventCallCreated(ctx context.Context, c *cmcall.Call) error
 }
 
 type agentHandler struct {
@@ -46,15 +49,18 @@ type agentHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+
+	resourceHandler resourcehandler.ResourceHandler
 }
 
 // NewAgentHandler return AgentHandler interface
-func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AgentHandler {
+func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, resourceHandler resourcehandler.ResourceHandler) AgentHandler {
 	return &agentHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    reqHandler,
-		db:            dbHandler,
-		notifyHandler: notifyHandler,
+		utilHandler:     utilhandler.NewUtilHandler(),
+		reqHandler:      reqHandler,
+		db:              dbHandler,
+		notifyHandler:   notifyHandler,
+		resourceHandler: resourceHandler,
 	}
 }
 

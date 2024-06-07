@@ -7,6 +7,7 @@ package cachehandler
 import (
 	context "context"
 	agent "monorepo/bin-agent-manager/models/agent"
+	resource "monorepo/bin-agent-manager/models/resource"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -77,4 +78,33 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// ResourceGet mocks base method.
+func (m *MockCacheHandler) ResourceGet(ctx context.Context, id uuid.UUID) (*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResourceGet", ctx, id)
+	ret0, _ := ret[0].(*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResourceGet indicates an expected call of ResourceGet.
+func (mr *MockCacheHandlerMockRecorder) ResourceGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceGet", reflect.TypeOf((*MockCacheHandler)(nil).ResourceGet), ctx, id)
+}
+
+// ResourceSet mocks base method.
+func (m *MockCacheHandler) ResourceSet(ctx context.Context, u *resource.Resource) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResourceSet", ctx, u)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResourceSet indicates an expected call of ResourceSet.
+func (mr *MockCacheHandlerMockRecorder) ResourceSet(ctx, u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceSet", reflect.TypeOf((*MockCacheHandler)(nil).ResourceSet), ctx, u)
 }
