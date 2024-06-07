@@ -161,7 +161,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 // AgentUpdateToCache gets the agent from the DB and update the cache.
 func (h *handler) AgentUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.agentGetFromDB(ctx, id)
+	res, err := h.agentGetFromDB(id)
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (h *handler) agentGetFromCache(ctx context.Context, id uuid.UUID) (*agent.A
 }
 
 // agentGetFromDB returns agent from the DB.
-func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+func (h *handler) agentGetFromDB(id uuid.UUID) (*agent.Agent, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", agentSelect)
@@ -225,7 +225,7 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 		return res, nil
 	}
 
-	res, err = h.agentGetFromDB(ctx, id)
+	res, err = h.agentGetFromDB(id)
 	if err != nil {
 		return nil, err
 	}

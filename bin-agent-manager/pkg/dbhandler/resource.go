@@ -117,7 +117,7 @@ func (h *handler) ResourceCreate(ctx context.Context, a *resource.Resource) erro
 // resourceUpdateToCache gets the agent from the DB and update the cache.
 func (h *handler) resourceUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.resourceGetFromDB(ctx, id)
+	res, err := h.resourceGetFromDB(id)
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func (h *handler) resourceGetFromCache(ctx context.Context, id uuid.UUID) (*reso
 }
 
 // resourceGetFromDB returns agent from the DB.
-func (h *handler) resourceGetFromDB(ctx context.Context, id uuid.UUID) (*resource.Resource, error) {
+func (h *handler) resourceGetFromDB(id uuid.UUID) (*resource.Resource, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", resourceSelect)
@@ -181,7 +181,7 @@ func (h *handler) ResourceGet(ctx context.Context, id uuid.UUID) (*resource.Reso
 		return res, nil
 	}
 
-	res, err = h.resourceGetFromDB(ctx, id)
+	res, err = h.resourceGetFromDB(id)
 	if err != nil {
 		return nil, err
 	}

@@ -57,6 +57,10 @@ var (
 
 	// login
 	regV1Login = regexp.MustCompile("/v1/login$")
+
+	// resources
+	regV1Resources    = regexp.MustCompile("/v1/resources$")
+	regV1ResourcesGet = regexp.MustCompile(`/v1/resources\?(.*)$`)
 )
 
 var (
