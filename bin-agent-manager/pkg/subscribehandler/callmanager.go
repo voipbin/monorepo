@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
@@ -49,6 +50,69 @@ func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Contex
 	if errEvent := h.agentHandler.EventGroupcallProgressing(ctx, groupcall); errEvent != nil {
 		log.Errorf("Could not handle the groupcall answered event. err: %v", errEvent)
 		return errors.Wrap(errEvent, "Could not handle the groupcall answered event.")
+	}
+
+	return nil
+}
+
+// processEventCMCallCreated handles the call-manager's call_created event.
+func (h *subscribeHandler) processEventCMCallCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCMCallCreated",
+		"event": m,
+	})
+
+	c := &cmcall.Call{}
+	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+
+	if errEvent := h.agentHandler.EventCallCreated(ctx, c); errEvent != nil {
+		log.Errorf("Could not handle the call_created event. err: %v", errEvent)
+		return errors.Wrap(errEvent, "Could not handle the call_created event.")
+	}
+
+	return nil
+}
+
+// processEventCMCallDeleted handles the call-manager's call_deleted event.
+func (h *subscribeHandler) processEventCMCallDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCMCallDeleted",
+		"event": m,
+	})
+
+	c := &cmcall.Call{}
+	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+
+	if errEvent := h.resourceHandler.EventCallDeleted(ctx, c); errEvent != nil {
+		log.Errorf("Could not handle the call_deleted event. err: %v", errEvent)
+		return errors.Wrap(errEvent, "Could not handle the call_deleted event.")
+	}
+
+	return nil
+}
+
+// processEventCMCallUpdated handles the call-manager's call_created event.
+func (h *subscribeHandler) processEventCMCallUpdated(ctx context.Context, m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCMCallUpdated",
+		"event": m,
+	})
+
+	c := &cmcall.Call{}
+	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+
+	if errEvent := h.resourceHandler.EventCallUpdated(ctx, c); errEvent != nil {
+		log.Errorf("Could not handle the call_updated event. err: %v", errEvent)
+		return errors.Wrap(errEvent, "Could not handle the call_updated event.")
 	}
 
 	return nil
