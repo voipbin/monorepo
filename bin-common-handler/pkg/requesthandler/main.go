@@ -81,6 +81,7 @@ import (
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	amresource "monorepo/bin-agent-manager/models/resource"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -124,8 +125,6 @@ var (
 	promRequestProcessTime *prometheus.HistogramVec
 	promEventCount         *prometheus.CounterVec
 )
-
-type resource string
 
 func initPrometheus(namespace string) {
 
@@ -233,6 +232,11 @@ type RequestHandler interface {
 
 	// agent-manager login
 	AgentV1Login(ctx context.Context, timeout int, username string, password string) (*amagent.Agent, error)
+
+	// agent-manager resource
+	AgentV1ResourceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amresource.Resource, error)
+	AgentV1ResourceGet(ctx context.Context, resourceID uuid.UUID) (*amresource.Resource, error)
+	AgentV1ResourceDelete(ctx context.Context, resourceID uuid.UUID) (*amresource.Resource, error)
 
 	// billing-manager account
 	BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]bmaccount.Account, error)

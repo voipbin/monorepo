@@ -77,7 +77,7 @@ func (r *requestHandler) AgentV1AgentCreate(
 func (r *requestHandler) AgentV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", agentID)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -200,7 +200,7 @@ func (r *requestHandler) AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, 
 func (r *requestHandler) AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodDelete, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodDelete, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -234,7 +234,7 @@ func (r *requestHandler) AgentV1AgentUpdateAddresses(ctx context.Context, id uui
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents/<agent-id>/addresses", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -269,7 +269,7 @@ func (r *requestHandler) AgentV1AgentUpdatePassword(ctx context.Context, timeout
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents", timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents/<agent-id>/password", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -305,7 +305,7 @@ func (r *requestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, n
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -339,7 +339,7 @@ func (r *requestHandler) AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.U
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents/<agent-id>/tag_ids", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -373,7 +373,7 @@ func (r *requestHandler) AgentV1AgentUpdateStatus(ctx context.Context, id uuid.U
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, "agent/agents/<agent-id>/status", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
