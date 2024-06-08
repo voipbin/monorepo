@@ -8,6 +8,7 @@ import (
 	context "context"
 	json "encoding/json"
 	agent "monorepo/bin-agent-manager/models/agent"
+	resource "monorepo/bin-agent-manager/models/resource"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	ari "monorepo/bin-call-manager/models/ari"
@@ -261,6 +262,51 @@ func (m *MockRequestHandler) AgentV1Login(ctx context.Context, timeout int, user
 func (mr *MockRequestHandlerMockRecorder) AgentV1Login(ctx, timeout, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1Login", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1Login), ctx, timeout, username, password)
+}
+
+// AgentV1ResourceDelete mocks base method.
+func (m *MockRequestHandler) AgentV1ResourceDelete(ctx context.Context, resourceID uuid.UUID) (*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1ResourceDelete", ctx, resourceID)
+	ret0, _ := ret[0].(*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentV1ResourceDelete indicates an expected call of AgentV1ResourceDelete.
+func (mr *MockRequestHandlerMockRecorder) AgentV1ResourceDelete(ctx, resourceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1ResourceDelete", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1ResourceDelete), ctx, resourceID)
+}
+
+// AgentV1ResourceGet mocks base method.
+func (m *MockRequestHandler) AgentV1ResourceGet(ctx context.Context, resourceID uuid.UUID) (*resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1ResourceGet", ctx, resourceID)
+	ret0, _ := ret[0].(*resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentV1ResourceGet indicates an expected call of AgentV1ResourceGet.
+func (mr *MockRequestHandlerMockRecorder) AgentV1ResourceGet(ctx, resourceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1ResourceGet", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1ResourceGet), ctx, resourceID)
+}
+
+// AgentV1ResourceGets mocks base method.
+func (m *MockRequestHandler) AgentV1ResourceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]resource.Resource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1ResourceGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]resource.Resource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentV1ResourceGets indicates an expected call of AgentV1ResourceGets.
+func (mr *MockRequestHandlerMockRecorder) AgentV1ResourceGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1ResourceGets", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1ResourceGets), ctx, pageToken, pageSize, filters)
 }
 
 // AstAMIRedirect mocks base method.

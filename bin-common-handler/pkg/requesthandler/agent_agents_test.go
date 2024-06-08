@@ -470,7 +470,7 @@ func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 	}
 }
 
-func Test_AMAgentDelete(t *testing.T) {
+func Test_AgentV1AgentDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
