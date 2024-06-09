@@ -175,7 +175,7 @@ func run(dbHandler dbhandler.DBHandler) error {
 	}
 
 	// run sbuscriber
-	if errSubs := runSubscribe(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), accountHandler, fileHandler); errSubs != nil {
+	if errSubs := runSubscribe(rabbitSock, string(commonoutline.QueueNameStorageSubscribe), accountHandler, fileHandler); errSubs != nil {
 		log.Errorf("Could not run the subscriber correctly. err: %v", errSubs)
 		return errSubs
 	}
