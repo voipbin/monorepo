@@ -30,8 +30,8 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	subscribeQueue    string
-	subscribesTargets []string
+	subscribeQueue   string
+	subscribeTargets []string
 
 	agentHandler    agenthandler.AgentHandler
 	resourceHandler resourcehandler.ResourceHandler
@@ -68,11 +68,11 @@ func NewSubscribeHandler(
 	resourceHandler resourcehandler.ResourceHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock:        rabbitSock,
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
-		agentHandler:      agentHandler,
-		resourceHandler:   resourceHandler,
+		rabbitSock:       rabbitSock,
+		subscribeQueue:   subscribeQueue,
+		subscribeTargets: subscribeTargets,
+		agentHandler:     agentHandler,
+		resourceHandler:  resourceHandler,
 	}
 
 	return h
@@ -80,9 +80,10 @@ func NewSubscribeHandler(
 
 func (h *subscribeHandler) Run() error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "run",
+		"func":              "run",
+		"subscribe_targets": h.subscribeTargets,
 	})
-	log.Info("Creating rabbitmq queue for listen.")
+	log.Info("Creating rabbitmq queue for subscribing.")
 
 	// declare the queue for subscribe
 	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
@@ -90,7 +91,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	for _, target := range h.subscribesTargets {
+	for _, target := range h.subscribeTargets {
 
 		// bind each targets
 		if errBind := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); errBind != nil {
