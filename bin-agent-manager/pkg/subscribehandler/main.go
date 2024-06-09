@@ -125,6 +125,7 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 		"message": m,
 	})
 	ctx := context.Background()
+	log.WithField("event", m).Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
 
 	var err error
 	start := time.Now()
