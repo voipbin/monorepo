@@ -161,7 +161,7 @@ func run(dbHandler dbhandler.DBHandler) {
 	}
 
 	// run sbuscriber
-	if errSubs := runSubscribe(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), flowHandler, activeflowHandler); errSubs != nil {
+	if errSubs := runSubscribe(rabbitSock, string(commonoutline.QueueNameFlowSubscribe), flowHandler, activeflowHandler); errSubs != nil {
 		log.Errorf("Could not run the subscriber correctly. err: %v", errSubs)
 		return
 	}

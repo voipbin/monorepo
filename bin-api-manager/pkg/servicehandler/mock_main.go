@@ -8,6 +8,7 @@ import (
 	context "context"
 	multipart "mime/multipart"
 	agent "monorepo/bin-agent-manager/models/agent"
+	resource "monorepo/bin-agent-manager/models/resource"
 	request "monorepo/bin-api-manager/api/models/request"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
@@ -216,6 +217,51 @@ func (m *MockServiceHandler) AgentGets(ctx context.Context, a *agent.Agent, size
 func (mr *MockServiceHandlerMockRecorder) AgentGets(ctx, a, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockServiceHandler)(nil).AgentGets), ctx, a, size, token, filters)
+}
+
+// AgentResourceDelete mocks base method.
+func (m *MockServiceHandler) AgentResourceDelete(ctx context.Context, a *agent.Agent, resourceID uuid.UUID) (*resource.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentResourceDelete", ctx, a, resourceID)
+	ret0, _ := ret[0].(*resource.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentResourceDelete indicates an expected call of AgentResourceDelete.
+func (mr *MockServiceHandlerMockRecorder) AgentResourceDelete(ctx, a, resourceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentResourceDelete", reflect.TypeOf((*MockServiceHandler)(nil).AgentResourceDelete), ctx, a, resourceID)
+}
+
+// AgentResourceGet mocks base method.
+func (m *MockServiceHandler) AgentResourceGet(ctx context.Context, a *agent.Agent, resourceID uuid.UUID) (*resource.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentResourceGet", ctx, a, resourceID)
+	ret0, _ := ret[0].(*resource.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentResourceGet indicates an expected call of AgentResourceGet.
+func (mr *MockServiceHandlerMockRecorder) AgentResourceGet(ctx, a, resourceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentResourceGet", reflect.TypeOf((*MockServiceHandler)(nil).AgentResourceGet), ctx, a, resourceID)
+}
+
+// AgentResourceGets mocks base method.
+func (m *MockServiceHandler) AgentResourceGets(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*resource.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentResourceGets", ctx, a, size, token, filters)
+	ret0, _ := ret[0].([]*resource.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentResourceGets indicates an expected call of AgentResourceGets.
+func (mr *MockServiceHandlerMockRecorder) AgentResourceGets(ctx, a, size, token, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentResourceGets", reflect.TypeOf((*MockServiceHandler)(nil).AgentResourceGets), ctx, a, size, token, filters)
 }
 
 // AgentUpdate mocks base method.
