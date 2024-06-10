@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"monorepo/bin-api-manager/api/v1.0/activeflows"
+	agentresources "monorepo/bin-api-manager/api/v1.0/agent_resources"
 	"monorepo/bin-api-manager/api/v1.0/agents"
 	availablenumbers "monorepo/bin-api-manager/api/v1.0/available_numbers"
 	"monorepo/bin-api-manager/api/v1.0/billingaccounts"
@@ -55,6 +56,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	// v1.0
 	activeflows.ApplyRoutes(v1)
 	agents.ApplyRoutes(v1)
+	agentresources.ApplyRoutes(v1)
 	availablenumbers.ApplyRoutes(v1)
 	billingaccounts.ApplyRoutes(v1)
 	billings.ApplyRoutes(v1)

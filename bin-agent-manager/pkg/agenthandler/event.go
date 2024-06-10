@@ -225,6 +225,7 @@ func (h *agentHandler) EventCallCreated(ctx context.Context, c *cmcall.Call) err
 	if c.Direction == cmcall.DirectionOutgoing {
 		addr = c.Destination
 	}
+	log.WithField("address", addr).Debugf("Found call address. address_type: %s, address_target: %s", addr.Type, addr.Target)
 
 	// Get agents associated with the call's address
 	ags, err := h.dbGetsByCustomerIDAndAddress(ctx, c.CustomerID, addr)
@@ -232,6 +233,7 @@ func (h *agentHandler) EventCallCreated(ctx context.Context, c *cmcall.Call) err
 		log.Errorf("Could not get agents info. err:  %v", err)
 		return errors.Wrapf(err, "could not get agents info. err: %v", err)
 	}
+	log.WithField("agents", ags).Debugf("Found agents informations. len: %d", len(ags))
 
 	// Create a resource for each agent
 	for _, a := range ags {

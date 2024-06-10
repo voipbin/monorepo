@@ -68,6 +68,7 @@ import (
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	amresource "monorepo/bin-agent-manager/models/resource"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -119,6 +120,11 @@ type ServiceHandler interface {
 
 	// auth handlers
 	AuthLogin(ctx context.Context, username, password string) (string, error)
+
+	// agent resources
+	AgentResourceGet(ctx context.Context, a *amagent.Agent, resourceID uuid.UUID) (*amresource.WebhookMessage, error)
+	AgentResourceGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*amresource.WebhookMessage, error)
+	AgentResourceDelete(ctx context.Context, a *amagent.Agent, resourceID uuid.UUID) (*amresource.WebhookMessage, error)
 
 	// available numbers
 	AvailableNumberGets(ctx context.Context, a *amagent.Agent, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
