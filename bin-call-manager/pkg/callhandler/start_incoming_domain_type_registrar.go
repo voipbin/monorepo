@@ -3,12 +3,13 @@ package callhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
+	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -296,44 +297,19 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 		"destination": destination,
 	})
 
-	// get extension info
-	filters := map[string]string{
-		"customer_id": customerID.String(),
-		"deleted":     "false",
-		"extension":   destination.Target,
-	}
-	tmps, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, "", 1, filters)
+	// get connect destination
+	connectDestination, err := h.getConnectDestinationAddressTypeExtension(ctx, customerID, destination)
 	if err != nil {
-		log.Errorf("Could not get extension info. err: %v", err)
+		log.Errorf("Could not get connect destination. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
 		return nil
 	}
-	if len(tmps) == 0 {
-		log.Errorf("The destination extension not found.")
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
-		return nil
-	}
-
-	ext := tmps[0]
-	connectDestination := commonaddress.Address{
-		Type:       commonaddress.TypeExtension,
-		Target:     tmps[0].ID.String(),
-		TargetName: tmps[0].Extension,
-	}
-	log.WithFields(logrus.Fields{
-		"extension":           ext,
-		"connect_destination": connectDestination,
-	}).Debugf("Found destination extension info. extension_id: %s", ext.ID)
-
-	// // create Destination
-	// tmpDestination := *destination
-	// tmpDestination.TargetName = tmpDestination.Target
 
 	// create tmp flow for connect
 	option := fmaction.OptionConnect{
 		Source: *source,
 		Destinations: []commonaddress.Address{
-			connectDestination,
+			*connectDestination,
 		},
 		EarlyMedia:  false,
 		RelayReason: false,
@@ -371,4 +347,61 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
 
 	return nil
+}
+
+// getConnectDestinationAddressTypeExtension returns destination for the connect
+func (h *callHandler) getConnectDestinationAddressTypeExtension(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) (*commonaddress.Address, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getConnectDestinationAddressTypeExtension",
+		"customer_id": customerID,
+		"destination": destination,
+	})
+
+	// validate destination target
+	var ext *rmextension.Extension = nil
+	extensionID := uuid.FromStringOrNil(destination.Target)
+	if extensionID != uuid.Nil {
+		log.Debugf("The destination target has valid uuid. target: %s", destination.Target)
+		tmp, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
+		if err != nil {
+			log.Errorf("Could not get extension info. err: %v", err)
+			return nil, err
+		}
+		log.WithField("extension", tmp).Debugf("Found extension info. extension_id: %v", tmp.ID)
+
+		if tmp.CustomerID != customerID {
+			log.Errorf("The extension has wrong customer id.")
+			return nil, fmt.Errorf("extension has wrong customer id")
+		}
+		ext = tmp
+	} else {
+		log.Debugf("The destination target has invalid uuid. target: %s", destination.Target)
+
+		// get extension info
+		filters := map[string]string{
+			"customer_id": customerID.String(),
+			"deleted":     "false",
+			"extension":   destination.Target,
+		}
+		tmps, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, "", 1, filters)
+		if err != nil {
+			log.Errorf("Could not get extension info. err: %v", err)
+			return nil, err
+		}
+		if len(tmps) == 0 {
+			log.Errorf("No destination extension not found.")
+			return nil, fmt.Errorf("no destination extension found")
+		}
+
+		ext = &tmps[0]
+	}
+	log.WithField("extension", ext).Debugf("Found extension info. extension_id: %s", ext.ID)
+
+	res := &commonaddress.Address{
+		Type:       commonaddress.TypeExtension,
+		Target:     ext.ID.String(),
+		TargetName: ext.Extension,
+	}
+
+	return res, nil
 }
