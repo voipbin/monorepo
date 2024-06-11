@@ -296,15 +296,44 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 		"destination": destination,
 	})
 
-	// create Destination
-	tmpDestination := *destination
-	tmpDestination.TargetName = tmpDestination.Target
+	// get extension info
+	filters := map[string]string{
+		"customer_id": customerID.String(),
+		"deleted":     "false",
+		"extension":   destination.Target,
+	}
+	tmps, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, "", 1, filters)
+	if err != nil {
+		log.Errorf("Could not get extension info. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
+	}
+	if len(tmps) == 0 {
+		log.Errorf("The destination extension not found.")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
+	}
+
+	ext := tmps[0]
+	connectDestination := commonaddress.Address{
+		Type:       commonaddress.TypeExtension,
+		Target:     tmps[0].ID.String(),
+		TargetName: tmps[0].Extension,
+	}
+	log.WithFields(logrus.Fields{
+		"extension":           ext,
+		"connect_destination": connectDestination,
+	}).Debugf("Found destination extension info. extension_id: %s", ext.ID)
+
+	// // create Destination
+	// tmpDestination := *destination
+	// tmpDestination.TargetName = tmpDestination.Target
 
 	// create tmp flow for connect
 	option := fmaction.OptionConnect{
 		Source: *source,
 		Destinations: []commonaddress.Address{
-			tmpDestination,
+			connectDestination,
 		},
 		EarlyMedia:  false,
 		RelayReason: false,

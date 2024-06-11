@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cfconference "monorepo/bin-conference-manager/models/conference"
+	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -338,11 +339,12 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 
 		responseSource      *commonaddress.Address
 		responseDestination *commonaddress.Address
+		responseExtensions  []rmextension.Extension
 		responseFlow        *fmflow.Flow
 
-		expectCustomerID   uuid.UUID
-		expectConferenceID uuid.UUID
-		expectActions      []fmaction.Action
+		expectCustomerID uuid.UUID
+		expectFilters    map[string]string
+		expectActions    []fmaction.Action
 	}{
 		{
 			name: "normal",
@@ -370,16 +372,26 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 				Type:   commonaddress.TypeExtension,
 				Target: "test-destination",
 			},
+			responseExtensions: []rmextension.Extension{
+				{
+					ID:        uuid.FromStringOrNil("eb145bae-2814-11ef-b5c9-fb53bd2bff02"),
+					Extension: "test-destination",
+				},
+			},
 			responseFlow: &fmflow.Flow{
 				ID: uuid.FromStringOrNil("531912e6-8a0d-4d9b-a03b-6760275bb0dd"),
 			},
 
-			expectCustomerID:   uuid.FromStringOrNil("49c42d3c-57eb-11ee-95a1-2778bda73d76"),
-			expectConferenceID: uuid.FromStringOrNil("99accfb7-c0dd-4a54-997d-dd18af7bc280"),
+			expectCustomerID: uuid.FromStringOrNil("49c42d3c-57eb-11ee-95a1-2778bda73d76"),
+			expectFilters: map[string]string{
+				"customer_id": "49c42d3c-57eb-11ee-95a1-2778bda73d76",
+				"deleted":     "false",
+				"extension":   "test-destination",
+			},
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"test-exten","name":"","detail":""},"destinations":[{"type":"extension","target":"test-destination","target_name":"test-destination","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
+					Option: []byte(`{"source":{"type":"extension","target":"test-exten","target_name":"test-exten","name":"","detail":""},"destinations":[{"type":"extension","target":"eb145bae-2814-11ef-b5c9-fb53bd2bff02","target_name":"test-destination","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
 				},
 			},
 		},
@@ -410,6 +422,8 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
+
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
 
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
 
