@@ -313,7 +313,7 @@ func Test_getDialDestinationsAddressTypeExtension(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.cusotmerID, tt.destination.Target).Return(tt.responseContacts, nil)
+			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.cusotmerID, tt.destination.TargetName).Return(tt.responseContacts, nil)
 			res, err := h.getDialDestinationsAddressTypeExtension(ctx, tt.cusotmerID, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
