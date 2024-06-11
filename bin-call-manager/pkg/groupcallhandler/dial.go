@@ -143,6 +143,7 @@ func (h *groupcallHandler) getDialDestinationsAddressTypeExtension(ctx context.C
 		log.Errorf("Could not get extension info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get extension info.")
 	}
+	log.WithField("contacts", contacts).Debugf("Found contacts info. len: %d", len(contacts))
 
 	res := []commonaddress.Address{}
 	for _, contact := range contacts {
