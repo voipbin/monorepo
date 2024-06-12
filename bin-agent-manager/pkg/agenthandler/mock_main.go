@@ -84,6 +84,20 @@ func (mr *MockAgentHandlerMockRecorder) EventCallCreated(ctx, c interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventCallCreated), ctx, c)
 }
 
+// EventCallUpdated mocks base method.
+func (m *MockAgentHandler) EventCallUpdated(ctx context.Context, c *call.Call) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCallUpdated", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCallUpdated indicates an expected call of EventCallUpdated.
+func (mr *MockAgentHandlerMockRecorder) EventCallUpdated(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallUpdated", reflect.TypeOf((*MockAgentHandler)(nil).EventCallUpdated), ctx, c)
+}
+
 // EventCustomerDeleted mocks base method.
 func (m *MockAgentHandler) EventCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
 	m.ctrl.T.Helper()
@@ -110,6 +124,20 @@ func (m *MockAgentHandler) EventGroupcallCreated(ctx context.Context, groupcall 
 func (mr *MockAgentHandlerMockRecorder) EventGroupcallCreated(ctx, groupcall interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallCreated), ctx, groupcall)
+}
+
+// EventGroupcallHangup mocks base method.
+func (m *MockAgentHandler) EventGroupcallHangup(ctx context.Context, groupcall *groupcall.Groupcall) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventGroupcallHangup", ctx, groupcall)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventGroupcallHangup indicates an expected call of EventGroupcallHangup.
+func (mr *MockAgentHandlerMockRecorder) EventGroupcallHangup(ctx, groupcall interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallHangup", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallHangup), ctx, groupcall)
 }
 
 // EventGroupcallProgressing mocks base method.

@@ -134,7 +134,25 @@ func (h *agentHandler) eventGroupcallCreatedHandleResource(ctx context.Context, 
 }
 
 // EventGroupcallProgressing handles the call-manager's groupcall_progressing event
-func (h *agentHandler) EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error {
+func (h *agentHandler) EventGroupcallProgressing(ctx context.Context, c *cmgroupcall.Groupcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "EventGroupcallProgressing",
+		"groupcall": c,
+	})
+
+	if errAgent := h.eventGroupcallProgressingHandleAgent(ctx, c); errAgent != nil {
+		log.Errorf("Could not handle the event from the agent handler.")
+	}
+
+	if errResource := h.eventGroupcallUpdatedHandleResource(ctx, c); errResource != nil {
+		log.Errorf("Could not handle the event from the resource handler.")
+	}
+
+	return nil
+}
+
+// EventGroupcallProgressing handles the call-manager's groupcall_progressing event
+func (h *agentHandler) eventGroupcallProgressingHandleAgent(ctx context.Context, groupcall *cmgroupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "EventGroupcallProgressing",
 		"groupcall": groupcall,
@@ -167,6 +185,65 @@ func (h *agentHandler) EventGroupcallProgressing(ctx context.Context, groupcall 
 			continue
 		}
 		log.WithField("agent", tmp).Debugf("Updated agent status to the busy. agent_id: %s", tmp.ID)
+	}
+
+	return nil
+}
+
+// EventGroupcallHangup handles the call-manager's groupcall_hangup event
+func (h *agentHandler) EventGroupcallHangup(ctx context.Context, groupcall *cmgroupcall.Groupcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "EventGroupcallHangup",
+		"groupcall": groupcall,
+	})
+
+	if errResource := h.eventGroupcallUpdatedHandleResource(ctx, groupcall); errResource != nil {
+		log.Errorf("Could not handle the event from the resource handler.")
+	}
+
+	return nil
+}
+
+// eventGroupcallUpdatedHandleResource handles the groupcall_(update) event for resources.
+// It creates a resource for each agent associated with the groupcall's address.
+//
+// Parameters:
+// ctx (context.Context): The context for the request.
+// c (*cmgroupcall.Groupcall): The groupcall object.
+//
+// Returns:
+// error: An error if any occurred during the operation, otherwise nil.
+func (h *agentHandler) eventGroupcallUpdatedHandleResource(ctx context.Context, c *cmgroupcall.Groupcall) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "eventGroupcallUpdatedHandleResource",
+		"groupcall": c,
+	})
+	log.Debugf("Updating resource for the groupcall. groupcall_id: %s", c.ID)
+
+	// get resources
+	filters := map[string]string{
+		"customer_id":    c.CustomerID.String(),
+		"reference_type": string(resource.ReferenceTypeGroupcall),
+		"reference_id":   c.ID.String(),
+		"deleted":        "false",
+	}
+
+	// get related resources
+	rs, err := h.resourceHandler.Gets(ctx, 100, "", filters)
+	if err != nil {
+		log.Errorf("Could not get resources. err: %v", err)
+		return nil
+	}
+
+	// update resources
+	for _, r := range rs {
+		log.WithField("resource", r).Debugf("Updating resource info. resource_id: %s", r.ID)
+		tmp, err := h.resourceHandler.UpdateData(ctx, r.ID, c)
+		if err != nil {
+			log.Errorf("Could not update the resource info. err: %v", err)
+			continue
+		}
+		log.WithField("resource", tmp).Debugf("Updated resource info. resource_id: %s", tmp.ID)
 	}
 
 	return nil
@@ -245,6 +322,51 @@ func (h *agentHandler) EventCallCreated(ctx context.Context, c *cmcall.Call) err
 			continue
 		}
 		log.WithField("resource", r).Debugf("Created resource. resource_id: %s", r.ID)
+	}
+
+	return nil
+}
+
+// EventCallUpdated handles the call-manager's call_(updated) event.
+// It creates a resource for each agent associated with the call's address.
+//
+// Parameters:
+// ctx (context.Context): The context for the request.
+// c (*cmcall.Call): The call object.
+//
+// Returns:
+// error: An error if any occurred during the operation, otherwise nil.
+func (h *agentHandler) EventCallUpdated(ctx context.Context, c *cmcall.Call) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "EventCallUpdated",
+		"call": c,
+	})
+	log.Debugf("Updating resource for the call. call_id: %s", c.ID)
+
+	// get resources
+	filters := map[string]string{
+		"customer_id":    c.CustomerID.String(),
+		"reference_type": string(resource.ReferenceTypeCall),
+		"reference_id":   c.ID.String(),
+		"deleted":        "false",
+	}
+
+	// get related resources
+	rs, err := h.resourceHandler.Gets(ctx, 100, "", filters)
+	if err != nil {
+		log.Errorf("Could not get resources. err: %v", err)
+		return nil
+	}
+
+	// update resources
+	for _, r := range rs {
+		log.WithField("resource", r).Debugf("Updating resource info. resource_id: %s", r.ID)
+		tmp, err := h.resourceHandler.UpdateData(ctx, r.ID, c)
+		if err != nil {
+			log.Errorf("Could not update the resource info. err: %v", err)
+			continue
+		}
+		log.WithField("resource", tmp).Debugf("Updated resource info. resource_id: %s", tmp.ID)
 	}
 
 	return nil

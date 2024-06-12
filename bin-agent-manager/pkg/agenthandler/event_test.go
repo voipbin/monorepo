@@ -17,7 +17,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-agent-manager/models/resource"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
+	"monorepo/bin-agent-manager/pkg/resourcehandler"
 )
 
 func Test_EventGroupcallCreated(t *testing.T) {
@@ -85,14 +87,18 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 	tests := []struct {
 		name string
 
-		groupcall     *cmgroupcall.Groupcall
-		responseAgent *agent.Agent
+		groupcall         *cmgroupcall.Groupcall
+		responseAgent     *agent.Agent
+		responseResources []*resource.Resource
+
+		expectFilters map[string]string
 	}{
 		{
 			name: "normal",
 
 			groupcall: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("59e5b918-ac3e-4381-9894-f611cadeab93"),
+				ID:         uuid.FromStringOrNil("59e5b918-ac3e-4381-9894-f611cadeab93"),
+				CustomerID: uuid.FromStringOrNil("2b0153e0-28e0-11ef-ac14-9b7259fa6ef3"),
 				Destinations: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeAgent,
@@ -103,6 +109,18 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 			responseAgent: &agent.Agent{
 				ID:     uuid.FromStringOrNil("e3eae3d0-8e4f-46a1-b6bd-5d36feae4749"),
 				Status: agent.StatusAvailable,
+			},
+			responseResources: []*resource.Resource{
+				{
+					ID: uuid.FromStringOrNil("6fc07d9e-28e0-11ef-b511-0716834ef197"),
+				},
+			},
+
+			expectFilters: map[string]string{
+				"customer_id":    "2b0153e0-28e0-11ef-ac14-9b7259fa6ef3",
+				"reference_type": string(resource.ReferenceTypeGroupcall),
+				"reference_id":   "59e5b918-ac3e-4381-9894-f611cadeab93",
+				"deleted":        "false",
 			},
 		},
 	}
@@ -115,11 +133,13 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockResource := resourcehandler.NewMockResourceHandler(mc)
 
 			h := &agentHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				resourceHandler: mockResource,
 			}
 			ctx := context.Background()
 
@@ -129,6 +149,11 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusBusy).Return(nil)
 				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
+			}
+
+			mockResource.EXPECT().Gets(ctx, uint64(100), "", tt.expectFilters).Return(tt.responseResources, nil)
+			for _, r := range tt.responseResources {
+				mockResource.EXPECT().UpdateData(ctx, r.ID, tt.groupcall).Return(&resource.Resource{}, nil)
 			}
 
 			if err := h.EventGroupcallProgressing(ctx, tt.groupcall); err != nil {
