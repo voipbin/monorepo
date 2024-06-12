@@ -31,6 +31,9 @@ func (h *subscribeHandler) processEventAgentManagerResourcePublished(m *rabbitmq
 	}
 	log = log.WithField("customer_id", r.CustomerID)
 
+	topic := h.createAgentTopic(r)
+	log.Debugf("Created agent topic. topic: %s", topic)
+
 	// create agent resource
 	tmp := resourceWebhookData{
 		Type: m.Type,
@@ -44,8 +47,6 @@ func (h *subscribeHandler) processEventAgentManagerResourcePublished(m *rabbitmq
 		return err
 	}
 	log.Debugf("Created data. data: %s", string(data))
-
-	topic := h.createAgentTopic(r)
 
 	if errPub := h.zmqpubHandler.Publish(topic, string(data)); errPub != nil {
 		log.Errorf("Could not publish the webhook. err: %v", errPub)
