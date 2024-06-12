@@ -18,6 +18,7 @@ type commonWebhookData struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 	AgentID    uuid.UUID `json:"agent_id"`
+	OwnerID    uuid.UUID `json:"owner_id"`
 }
 
 // processEventWebhookManagerWebhookPublished handles the webhook-manager's webhook_published event.

@@ -10,6 +10,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
+	amresource "monorepo/bin-agent-manager/models/resource"
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -130,6 +131,11 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	ctx := context.Background()
 
 	switch {
+
+	//// agent-managet
+	case m.Publisher == string(commonoutline.ServiceNameAgentManager) &&
+		(m.Type == string(amresource.EventTypeResourceCreated) || m.Type == string(amresource.EventTypeResourceUpdated) || m.Type == string(amresource.EventTypeResourceDeleted)):
+		err = h.processEventAgentManagerResourcePublished(m)
 
 	//// webhook-managet
 	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
