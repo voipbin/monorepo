@@ -116,6 +116,7 @@ func (h *agentHandler) eventGroupcallCreatedHandleResource(ctx context.Context, 
 			log.Errorf("Could not get agents info. err:  %v", err)
 			return errors.Wrapf(err, "could not get agents info. err: %v", err)
 		}
+		log.WithField("agents", ags).Debugf("Found agent list. len: %d", len(ags))
 
 		// Create a resource for each agent
 		for _, a := range ags {
