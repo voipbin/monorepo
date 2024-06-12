@@ -11,6 +11,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type resourceWebhookData struct {
+	Type string          `json:"type"`
+	Data json.RawMessage `json:"data,omitempty"`
+}
+
 // processEventAgentManagerResourcePublished handles the webhook-manager's webhook_published event.
 func (h *subscribeHandler) processEventAgentManagerResourcePublished(m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -26,8 +31,14 @@ func (h *subscribeHandler) processEventAgentManagerResourcePublished(m *rabbitmq
 	}
 	log = log.WithField("customer_id", r.CustomerID)
 
+	// create agent resource
+	tmp := resourceWebhookData{
+		Type: m.Type,
+		Data: m.Data,
+	}
+
 	// create the data
-	data, err := json.Marshal(r.Data)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return err
@@ -35,6 +46,7 @@ func (h *subscribeHandler) processEventAgentManagerResourcePublished(m *rabbitmq
 	log.Debugf("Created data. data: %s", string(data))
 
 	topic := h.createAgentTopic(r)
+
 	if errPub := h.zmqpubHandler.Publish(topic, string(data)); errPub != nil {
 		log.Errorf("Could not publish the webhook. err: %v", errPub)
 		return errPub
