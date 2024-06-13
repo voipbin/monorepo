@@ -22,8 +22,14 @@ func (h *agentHandler) EventWebhookPublished(ctx context.Context, w *whwebhook.W
 	})
 
 	// get type
-	data := Data{}
-	if errUnmarshal := json.Unmarshal([]byte(w.Data.(string)), &data); errUnmarshal != nil {
+	tmpData, err := json.Marshal(w.Data)
+	if err != nil {
+		return nil
+	}
+
+	// data := Data{}
+	data := whwebhook.Data{}
+	if errUnmarshal := json.Unmarshal([]byte(tmpData), &data); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the webhook event. err: %v", errUnmarshal)
 		return nil
 	}
@@ -35,7 +41,7 @@ func (h *agentHandler) EventWebhookPublished(ctx context.Context, w *whwebhook.W
 	////////////////////////////////////
 	case string(cmgroupcall.EventTypeGroupcallCreated):
 		tmp := cmgroupcall.Groupcall{}
-		if errUnmarshal := json.Unmarshal([]byte(w.Data.(string)), &tmp); errUnmarshal != nil {
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
 			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
 			return nil
 		}
@@ -43,7 +49,7 @@ func (h *agentHandler) EventWebhookPublished(ctx context.Context, w *whwebhook.W
 
 	case string(cmgroupcall.EventTypeGroupcallProgressing), string(cmgroupcall.EventTypeGroupcallHangup):
 		tmp := cmgroupcall.Groupcall{}
-		if errUnmarshal := json.Unmarshal([]byte(w.Data.(string)), &tmp); errUnmarshal != nil {
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
 			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
 			return nil
 		}
@@ -54,7 +60,7 @@ func (h *agentHandler) EventWebhookPublished(ctx context.Context, w *whwebhook.W
 	////////////////////////////////////
 	case string(cmcall.EventTypeCallCreated):
 		tmp := cmcall.Call{}
-		if errUnmarshal := json.Unmarshal([]byte(w.Data.(string)), &tmp); errUnmarshal != nil {
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
 			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
 			return nil
 		}
@@ -68,7 +74,7 @@ func (h *agentHandler) EventWebhookPublished(ctx context.Context, w *whwebhook.W
 		string(cmcall.EventTypeCallTerminating),
 		string(cmcall.EventTypeCallUpdated):
 		tmp := cmcall.Call{}
-		if errUnmarshal := json.Unmarshal([]byte(w.Data.(string)), &tmp); errUnmarshal != nil {
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
 			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
 			return nil
 		}
