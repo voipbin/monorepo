@@ -196,7 +196,7 @@ func Test_Start_ringall(t *testing.T) {
 			// create
 			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any()).Return(tt.expectGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallCreated, gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
 
 			// create chained call
 			for i, destination := range tt.expectCallDestinations {
@@ -305,7 +305,7 @@ func Test_Start_linear(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any()).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallCreated, gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.responseGroupcall)
 
 			if tt.destinations[0].Type == commonaddress.TypeAgent {
 				// todo: need to add the test

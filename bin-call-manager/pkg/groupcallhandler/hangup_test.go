@@ -221,7 +221,7 @@ func Test_Hangup(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.id, groupcall.StatusHangup).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
 
 			res, err := h.Hangup(ctx, tt.id)
 			if err != nil {
@@ -310,7 +310,7 @@ func Test_hangupRingMethodLinear_mastercall_has_invalid_status(t *testing.T) {
 			// hangup
 			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.groupcall.ID, groupcall.StatusHangup).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.groupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, tt.groupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.groupcall.CustomerID, groupcall.EventTypeGroupcallHangup, tt.groupcall)
 
 			res, err := h.hangupRingMethodLinear(ctx, tt.groupcall)
 			if err != nil {
@@ -386,7 +386,7 @@ func Test_hangupRingMethodLinear_groupcall_has_invalid_dialindex(t *testing.T) {
 			// hangup
 			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.groupcall.ID, groupcall.StatusHangup).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.groupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, tt.groupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.groupcall.CustomerID, groupcall.EventTypeGroupcallHangup, tt.groupcall)
 
 			res, err := h.hangupRingMethodLinear(ctx, tt.groupcall)
 			if err != nil {
@@ -444,7 +444,7 @@ func Test_HangupGroupcall(t *testing.T) {
 			// Hangup
 			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.responseGroupcall.ID, groupcall.StatusHangup).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.responseGroupcall.ID).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
 
 			res, err := h.HangupGroupcall(ctx, tt.id)
 			if err != nil {
@@ -502,7 +502,7 @@ func Test_HangupCall_Ringall(t *testing.T) {
 			// Hangup
 			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.responseGroupcall.ID, groupcall.StatusHangup).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.responseGroupcall.ID).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
 
 			res, err := h.HangupCall(ctx, tt.id)
 			if err != nil {
@@ -560,7 +560,7 @@ func Test_callHangupLinear(t *testing.T) {
 			// Hangup
 			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.responseGroupcall.ID, groupcall.StatusHangup).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.responseGroupcall.ID).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallHangup, tt.responseGroupcall)
 
 			res, err := h.HangupCall(ctx, tt.id)
 			if err != nil {
