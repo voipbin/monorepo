@@ -6,8 +6,8 @@ import (
 	"context"
 	"regexp"
 
-	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	whwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"monorepo/bin-agent-manager/pkg/resourcehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -40,10 +40,11 @@ type AgentHandler interface {
 
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
-	EventGroupcallHangup(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
+	// EventGroupcallHangup(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
-	EventCallCreated(ctx context.Context, c *cmcall.Call) error
-	EventCallUpdated(ctx context.Context, c *cmcall.Call) error
+	// EventCallCreated(ctx context.Context, c *cmcall.Call) error
+	// EventCallUpdated(ctx context.Context, c *cmcall.Call) error
+	EventWebhookPublished(ctx context.Context, w *whwebhook.Webhook) error
 }
 
 type agentHandler struct {

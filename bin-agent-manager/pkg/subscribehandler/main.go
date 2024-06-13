@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	whwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -144,26 +145,19 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 			err = h.processEventCMGroupcallProgressing(ctx, m)
 
 		// call
-		case string(cmcall.EventTypeCallCreated):
-			err = h.processEventCMCallCreated(ctx, m)
-
 		case string(cmcall.EventTypeCallDeleted):
 			err = h.processEventCMCallDeleted(ctx, m)
-
-		case string(cmcall.EventTypeCallCanceling),
-			string(cmcall.EventTypeCallDialing),
-			string(cmcall.EventTypeCallHangup),
-			string(cmcall.EventTypeCallProgressing),
-			string(cmcall.EventTypeCallRinging),
-			string(cmcall.EventTypeCallTerminating),
-			string(cmcall.EventTypeCallUpdated):
-			err = h.processEventCMCallUpdated(ctx, m)
 		}
 
 	//// customer-manager
 	// customer
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cmcustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCMCustomerDeleted(ctx, m)
+
+	//// webhook-manager
+	// webhook
+	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(whwebhook.EventTypeWebhookPublished)):
+		err = h.processEventWMWebhookPublished(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

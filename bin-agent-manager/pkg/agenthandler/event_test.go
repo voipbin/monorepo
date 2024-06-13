@@ -151,11 +151,6 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
 			}
 
-			mockResource.EXPECT().Gets(ctx, uint64(100), "", tt.expectFilters).Return(tt.responseResources, nil)
-			for _, r := range tt.responseResources {
-				mockResource.EXPECT().UpdateData(ctx, r.ID, tt.groupcall).Return(&resource.Resource{}, nil)
-			}
-
 			if err := h.EventGroupcallProgressing(ctx, tt.groupcall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

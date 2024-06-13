@@ -65,6 +65,7 @@ require (
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
+	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c
 )
 
 require (
@@ -99,5 +100,4 @@ require (
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
-	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
 )

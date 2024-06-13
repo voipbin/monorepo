@@ -174,6 +174,7 @@ func runSubscribe(
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameCustomerEvent),
+		string(commonoutline.QueueNameWebhookEvent),
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler, resourceHandler)
 
