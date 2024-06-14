@@ -7,7 +7,7 @@ package resourcehandler
 import (
 	context "context"
 	resource "monorepo/bin-agent-manager/models/resource"
-	call "monorepo/bin-call-manager/models/call"
+	webhook "monorepo/bin-webhook-manager/models/webhook"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -67,32 +67,18 @@ func (mr *MockResourceHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockResourceHandler)(nil).Delete), ctx, id)
 }
 
-// EventCallDeleted mocks base method.
-func (m *MockResourceHandler) EventCallDeleted(ctx context.Context, c *call.Call) error {
+// EventWebhookPublished mocks base method.
+func (m *MockResourceHandler) EventWebhookPublished(ctx context.Context, w *webhook.Webhook) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventCallDeleted", ctx, c)
+	ret := m.ctrl.Call(m, "EventWebhookPublished", ctx, w)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// EventCallDeleted indicates an expected call of EventCallDeleted.
-func (mr *MockResourceHandlerMockRecorder) EventCallDeleted(ctx, c interface{}) *gomock.Call {
+// EventWebhookPublished indicates an expected call of EventWebhookPublished.
+func (mr *MockResourceHandlerMockRecorder) EventWebhookPublished(ctx, w interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallDeleted", reflect.TypeOf((*MockResourceHandler)(nil).EventCallDeleted), ctx, c)
-}
-
-// EventCallUpdated mocks base method.
-func (m *MockResourceHandler) EventCallUpdated(ctx context.Context, c *call.Call) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventCallUpdated", ctx, c)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EventCallUpdated indicates an expected call of EventCallUpdated.
-func (mr *MockResourceHandlerMockRecorder) EventCallUpdated(ctx, c interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallUpdated", reflect.TypeOf((*MockResourceHandler)(nil).EventCallUpdated), ctx, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventWebhookPublished", reflect.TypeOf((*MockResourceHandler)(nil).EventWebhookPublished), ctx, w)
 }
 
 // Get mocks base method.

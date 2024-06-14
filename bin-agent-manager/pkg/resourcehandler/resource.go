@@ -144,6 +144,42 @@ func (h *resourceHandler) Delete(ctx context.Context, id uuid.UUID) (*resource.R
 	return res, nil
 }
 
+// deleteWithFilter deletes the resources of the given filter.
+//
+// Parameters:
+// ctx (context.Context): The context for the operation.
+// id (uuid.UUID): The unique identifier of the resource to delete.
+//
+// Returns:
+// (*resource.Resource, error): A pointer to the deleted resource and any error that occurred during the operation.
+// If the operation is successful, the error will be nil.
+// If the resource is not found, the error will be of type *sql.ErrNoRows.
+func (h *resourceHandler) deleteWithFilter(ctx context.Context, filters map[string]string) error {
+	// Create a logrus logger with fields for the function name and resource ID.
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "deleteWithFilter",
+		"filters": filters,
+	})
+
+	rs, err := h.Gets(ctx, 1000, "", filters)
+	if err != nil {
+		log.Errorf("Could not get resources. err: %v", err)
+		return errors.Wrapf(err, "could not get resources. err: %v", err)
+	}
+
+	for _, r := range rs {
+		// delete each resource
+		tmp, err := h.Delete(ctx, r.ID)
+		if err != nil {
+			log.Errorf("Could not delete the resource. err: %v", err)
+			continue
+		}
+		log.WithField("resource", tmp).Debugf("Deleted resource. resource_id: %s", tmp.ID)
+	}
+
+	return nil
+}
+
 // UpdateData updates the data of a resource in the database.
 //
 // Parameters:
@@ -184,4 +220,44 @@ func (h *resourceHandler) UpdateData(ctx context.Context, id uuid.UUID, data int
 
 	// Return the updated resource and nil error.
 	return res, nil
+}
+
+// updataDataWithFilter updates the data of a filtered resource
+//
+// Parameters:
+// ctx (context.Context): The context for the operation.
+// id (uuid.UUID): The unique identifier of the resource to update.
+// data (interface{}): The new data to be set for the resource.
+//
+// Returns:
+// (*resource.Resource, error): A pointer to the updated resource and any error that occurred during the operation.
+// If the operation is successful, the error will be nil.
+// If the resource is not found, the error will be of type *sql.ErrNoRows.
+func (h *resourceHandler) updataDataWithFilter(ctx context.Context, data interface{}, filters map[string]string) error {
+	// Create a logrus logger with fields for the function name and resource ID.
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "updataDataWithFilter",
+		"data":   data,
+		"filter": filters,
+	})
+
+	// get related resources
+	rs, err := h.Gets(ctx, 100, "", filters)
+	if err != nil {
+		log.Errorf("Could not get resources. err: %v", err)
+		return err
+	}
+
+	// update resources
+	for _, r := range rs {
+		log.WithField("resource", r).Debugf("Updating resource info. resource_id: %s", r.ID)
+		tmp, err := h.UpdateData(ctx, r.ID, data)
+		if err != nil {
+			log.Errorf("Could not update the resource info. err: %v", err)
+			continue
+		}
+		log.WithField("resource", tmp).Debugf("Updated resource info. resource_id: %s", tmp.ID)
+	}
+
+	return nil
 }

@@ -22,7 +22,9 @@ type ReferenceType string
 
 // list of Reference types
 const (
-	ReferenceTypeCall             ReferenceType = "call"         // call-manager's call
-	ReferenceTypeGroupcall        ReferenceType = "groupcall"    // call-manager's groupcall
-	ReferenceTypeConversationType ReferenceType = "conversation" // conversation-manager's conversation
+	ReferenceTypeCall            ReferenceType = "call"            // call-manager's call
+	ReferenceTypeGroupcall       ReferenceType = "groupcall"       // call-manager's groupcall
+	ReferenceTypeConversation    ReferenceType = "conversation"    // conversation-manager's conversation
+	ReferenceTypeChatroom        ReferenceType = "chatroom"        // chat-manager's chatroom
+	ReferenceTypeMessagechatroom ReferenceType = "messagechatroom" // chat-manager's messagechatroom
 )

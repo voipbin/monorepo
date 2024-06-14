@@ -23,10 +23,15 @@ func (h *subscribeHandler) processEventWMWebhookPublished(ctx context.Context, m
 		return err
 	}
 
-	if errEvent := h.agentHandler.EventWebhookPublished(ctx, wh); errEvent != nil {
+	if errEvent := h.resourceHandler.EventWebhookPublished(ctx, wh); errEvent != nil {
 		log.Errorf("Could not handle the webhook published event. err: %v", errEvent)
 		return errors.Wrap(errEvent, "Could not handle the webhook published event.")
 	}
+
+	// if errEvent := h.agentHandler.EventWebhookPublished(ctx, wh); errEvent != nil {
+	// 	log.Errorf("Could not handle the webhook published event. err: %v", errEvent)
+	// 	return errors.Wrap(errEvent, "Could not handle the webhook published event.")
+	// }
 
 	return nil
 }

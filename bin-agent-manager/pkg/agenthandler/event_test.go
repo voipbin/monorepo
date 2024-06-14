@@ -19,7 +19,6 @@ import (
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/models/resource"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
-	"monorepo/bin-agent-manager/pkg/resourcehandler"
 )
 
 func Test_EventGroupcallCreated(t *testing.T) {
@@ -133,13 +132,13 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockResource := resourcehandler.NewMockResourceHandler(mc)
+			// mockResource := resourcehandler.NewMockResourceHandler(mc)
 
 			h := &agentHandler{
-				reqHandler:      mockReq,
-				db:              mockDB,
-				notifyHandler:   mockNotify,
-				resourceHandler: mockResource,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				// resourceHandler: mockResource,
 			}
 			ctx := context.Background()
 

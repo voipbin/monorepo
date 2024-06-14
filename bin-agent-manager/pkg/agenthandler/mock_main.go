@@ -10,7 +10,6 @@ import (
 	groupcall "monorepo/bin-call-manager/models/groupcall"
 	address "monorepo/bin-common-handler/models/address"
 	customer "monorepo/bin-customer-manager/models/customer"
-	webhook "monorepo/bin-webhook-manager/models/webhook"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -112,20 +111,6 @@ func (mr *MockAgentHandlerMockRecorder) EventGroupcallProgressing(ctx, groupcall
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallProgressing", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallProgressing), ctx, groupcall)
 }
 
-// EventWebhookPublished mocks base method.
-func (m *MockAgentHandler) EventWebhookPublished(ctx context.Context, w *webhook.Webhook) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventWebhookPublished", ctx, w)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EventWebhookPublished indicates an expected call of EventWebhookPublished.
-func (mr *MockAgentHandlerMockRecorder) EventWebhookPublished(ctx, w interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventWebhookPublished", reflect.TypeOf((*MockAgentHandler)(nil).EventWebhookPublished), ctx, w)
-}
-
 // Get mocks base method.
 func (m *MockAgentHandler) Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
@@ -154,6 +139,21 @@ func (m *MockAgentHandler) Gets(ctx context.Context, size uint64, token string, 
 func (mr *MockAgentHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAgentHandler)(nil).Gets), ctx, size, token, filters)
+}
+
+// GetsByCustomerIDAndAddress mocks base method.
+func (m *MockAgentHandler) GetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr address.Address) ([]*agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetsByCustomerIDAndAddress", ctx, customerID, addr)
+	ret0, _ := ret[0].([]*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetsByCustomerIDAndAddress indicates an expected call of GetsByCustomerIDAndAddress.
+func (mr *MockAgentHandlerMockRecorder) GetsByCustomerIDAndAddress(ctx, customerID, addr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerIDAndAddress", reflect.TypeOf((*MockAgentHandler)(nil).GetsByCustomerIDAndAddress), ctx, customerID, addr)
 }
 
 // Login mocks base method.

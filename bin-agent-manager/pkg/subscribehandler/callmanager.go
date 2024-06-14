@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
@@ -55,23 +54,23 @@ func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Contex
 	return nil
 }
 
-// processEventCMCallDeleted handles the call-manager's call_deleted event.
-func (h *subscribeHandler) processEventCMCallDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMCallDeleted",
-		"event": m,
-	})
+// // processEventCMCallDeleted handles the call-manager's call_deleted event.
+// func (h *subscribeHandler) processEventCMCallDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":  "processEventCMCallDeleted",
+// 		"event": m,
+// 	})
 
-	c := &cmcall.Call{}
-	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {
-		log.Errorf("Could not unmarshal the data. err: %v", err)
-		return err
-	}
+// 	c := &cmcall.Call{}
+// 	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {
+// 		log.Errorf("Could not unmarshal the data. err: %v", err)
+// 		return err
+// 	}
 
-	if errEvent := h.resourceHandler.EventCallDeleted(ctx, c); errEvent != nil {
-		log.Errorf("Could not handle the call_deleted event. err: %v", errEvent)
-		return errors.Wrap(errEvent, "Could not handle the call_deleted event.")
-	}
+// 	if errEvent := h.resourceHandler.EventCallDeleted(ctx, c); errEvent != nil {
+// 		log.Errorf("Could not handle the call_deleted event. err: %v", errEvent)
+// 		return errors.Wrap(errEvent, "Could not handle the call_deleted event.")
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

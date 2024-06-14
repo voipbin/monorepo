@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -144,9 +143,9 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 		case string(cmgroupcall.EventTypeGroupcallProgressing):
 			err = h.processEventCMGroupcallProgressing(ctx, m)
 
-		// call
-		case string(cmcall.EventTypeCallDeleted):
-			err = h.processEventCMCallDeleted(ctx, m)
+			// // call
+			// case string(cmcall.EventTypeCallDeleted):
+			// 	err = h.processEventCMCallDeleted(ctx, m)
 		}
 
 	//// customer-manager
