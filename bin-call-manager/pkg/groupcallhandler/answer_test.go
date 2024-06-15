@@ -58,7 +58,7 @@ func Test_AnswerCall(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.groupcallID, tt.answerCallID).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			if errAnswer := h.AnswerCall(ctx, tt.groupcallID, tt.answerCallID); errAnswer != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errAnswer)
@@ -138,7 +138,7 @@ func Test_AnswerGroupcall(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallSetAnswerGroupcallID(ctx, tt.groupcallID, tt.answerGroupcallID).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			if tt.responseGroupcall.MasterGroupcallID != uuid.Nil {
 				mockReq.EXPECT().CallV1GroupcallUpdateAnswerGroupcallID(ctx, tt.responseGroupcall.MasterCallID, tt.responseGroupcall.ID).Return(&groupcall.Groupcall{}, nil)

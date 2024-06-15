@@ -86,7 +86,7 @@ func (h *groupcallHandler) Hangup(ctx context.Context, id uuid.UUID) (*groupcall
 		log.Errorf("Could not update the groupcall status. err: %v", err)
 		return nil, errors.Wrap(err, "could not hangup the groupcall")
 	}
-	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, groupcall.EventTypeGroupcallHangup, res)
 
 	if res.MasterGroupcallID != uuid.Nil {
 		log.Debugf("Groupcall has master groupcall id. master_groupcall_id: %s", res.MasterGroupcallID)

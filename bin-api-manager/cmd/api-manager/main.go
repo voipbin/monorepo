@@ -126,14 +126,15 @@ func runSubscribe(
 	zmqHandler zmqpubhandler.ZMQPubHandler,
 ) error {
 
-	queuNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
+	queueNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameWebhookEvent),
+		string(commonoutline.QueueNameAgentEvent),
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
-		queuNamePod,
+		queueNamePod,
 		subscribeTargets,
 
 		zmqHandler,

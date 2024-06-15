@@ -2,91 +2,157 @@ package resourcehandler
 
 import (
 	"context"
-	"monorepo/bin-agent-manager/models/resource"
+	"encoding/json"
 	cmcall "monorepo/bin-call-manager/models/call"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
+	whwebhook "monorepo/bin-webhook-manager/models/webhook"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
-// EventCallDeleted handles the call-manager's call_deleted event.
-// It creates a resource for each agent associated with the call's address.
-//
-// Parameters:
-// ctx (context.Context): The context for the request.
-// c (*cmcall.Call): The call object.
-//
-// Returns:
-// error: An error if any occurred during the operation, otherwise nil.
-func (h *resourceHandler) EventCallDeleted(ctx context.Context, c *cmcall.Call) error {
+// EventWebhookPublished handles the webhook-manager's webhook_published event
+func (h *resourceHandler) EventWebhookPublished(ctx context.Context, w *whwebhook.Webhook) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "EventCallDeleted",
-		"call": c,
+		"func":    "EventWebhookPublished",
+		"webhook": w,
 	})
-	log.Debugf("Deleting resource for the call. call_id: %s", c.ID)
 
-	// gets the resources
-	filters := map[string]string{
-		"reference_type": string(resource.ReferenceTypeCall),
-		"reference_id":   c.ID.String(),
-		"deleted":        "false",
-	}
-	rs, err := h.Gets(ctx, 1000, "", filters)
+	// get type
+	tmpData, err := json.Marshal(w.Data)
 	if err != nil {
-		log.Errorf("Could not get resources. err: %v", err)
-		return errors.Wrapf(err, "could not get resources. err: %v", err)
+		return nil
 	}
 
-	for _, r := range rs {
-		// delete each resource
-		tmp, err := h.Delete(ctx, r.ID)
-		if err != nil {
-			log.Errorf("Could not delete the resource. err: %v", err)
-			continue
+	data := whwebhook.Data{}
+	if errUnmarshal := json.Unmarshal([]byte(tmpData), &data); errUnmarshal != nil {
+		log.Errorf("Could not unmarshal the webhook event. err: %v", errUnmarshal)
+		return nil
+	}
+
+	switch data.Type {
+
+	////////////////////////////////////
+	// groupcall
+	////////////////////////////////////
+	case string(cmgroupcall.EventTypeGroupcallCreated):
+		tmp := cmgroupcall.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
 		}
-		log.WithField("resource", tmp).Debugf("Deleted resource. resource_id: %s", tmp.ID)
-	}
+		return h.eventWebhookGroupcallCreated(ctx, &tmp)
 
-	return nil
-}
-
-// EventCallUpdated handles the call-manager's call_deleted event.
-// It creates a resource for each agent associated with the call's address.
-//
-// Parameters:
-// ctx (context.Context): The context for the request.
-// c (*cmcall.Call): The call object.
-//
-// Returns:
-// error: An error if any occurred during the operation, otherwise nil.
-func (h *resourceHandler) EventCallUpdated(ctx context.Context, c *cmcall.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "EventCallUpdated",
-		"call": c,
-	})
-	log.Debugf("Updating resource for the call. call_id: %s", c.ID)
-
-	// gets the resources
-	filters := map[string]string{
-		"reference_type": string(resource.ReferenceTypeCall),
-		"reference_id":   c.ID.String(),
-		"deleted":        "false",
-	}
-	rs, err := h.Gets(ctx, 1000, "", filters)
-	if err != nil {
-		log.Errorf("Could not get resources. err: %v", err)
-		return errors.Wrapf(err, "could not get resources. err: %v", err)
-	}
-
-	for _, r := range rs {
-		// delete each resource
-		tmp, err := h.UpdateData(ctx, r.ID, c)
-		if err != nil {
-			log.Errorf("Could not delete the resource. err: %v", err)
-			continue
+	case string(cmgroupcall.EventTypeGroupcallProgressing), string(cmgroupcall.EventTypeGroupcallHangup):
+		tmp := cmgroupcall.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
 		}
-		log.WithField("resource", tmp).Debugf("Deleted resource. resource_id: %s", tmp.ID)
-	}
+		return h.eventWebhookGroupcallUpdated(ctx, &tmp)
 
-	return nil
+	case string(cmgroupcall.EventTypeGroupcallDeleted):
+		tmp := cmgroupcall.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookGroupcallDeleted(ctx, &tmp)
+
+	////////////////////////////////////
+	// call
+	////////////////////////////////////
+	case string(cmcall.EventTypeCallCreated):
+		tmp := cmcall.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookCallCreated(ctx, &tmp)
+
+	case string(cmcall.EventTypeCallCanceling),
+		string(cmcall.EventTypeCallDialing),
+		string(cmcall.EventTypeCallHangup),
+		string(cmcall.EventTypeCallProgressing),
+		string(cmcall.EventTypeCallRinging),
+		string(cmcall.EventTypeCallTerminating),
+		string(cmcall.EventTypeCallUpdated):
+		tmp := cmcall.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookCallUpdated(ctx, &tmp)
+
+	case string(cmcall.EventTypeCallDeleted):
+		tmp := cmcall.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookCallDeleted(ctx, &tmp)
+
+	////////////////////////////////////
+	// chatroom
+	////////////////////////////////////
+	case string(chatchatroom.EventTypeChatroomCreated):
+		tmp := chatchatroom.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookChatroomCreated(ctx, &tmp)
+
+	case string(chatchatroom.EventTypeChatroomUpdated):
+		tmp := chatchatroom.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookChatroomUpdated(ctx, &tmp)
+
+	case string(chatchatroom.EventTypeChatroomDeleted):
+		tmp := chatchatroom.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookChatroomDeleted(ctx, &tmp)
+
+	////////////////////////////////////
+	// messagechatroom
+	////////////////////////////////////
+	case string(chatmessagechatroom.EventTypeMessagechatroomCreated):
+		tmp := chatmessagechatroom.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookMessagechatroomCreated(ctx, &tmp)
+
+	case string(chatmessagechatroom.EventTypeMessagechatroomUpdated):
+		tmp := chatmessagechatroom.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookMessagechatroomUpdated(ctx, &tmp)
+
+	case string(chatmessagechatroom.EventTypeMessagechatroomDeleted):
+		tmp := chatmessagechatroom.WebhookMessage{}
+		if errUnmarshal := json.Unmarshal([]byte(data.Data), &tmp); errUnmarshal != nil {
+			log.Errorf("Could not unmarshal the webhook data. err: %v", errUnmarshal)
+			return nil
+		}
+		return h.eventWebhookMessagechatroomDeleted(ctx, &tmp)
+
+	////////////////////////////////////
+	// unsupported event
+	////////////////////////////////////
+	default:
+		// log.Errorf("Unknown webhook event type. type: %s", data.Type)
+		//
+		return nil
+	}
 }

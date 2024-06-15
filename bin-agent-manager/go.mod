@@ -63,8 +63,10 @@ require (
 	github.com/smotes/purse v1.0.1
 	golang.org/x/crypto v0.24.0
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
+	monorepo/bin-chat-manager v0.0.0-20240313050741-a2ced5030a06
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
+	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c
 )
 
 require (
@@ -78,11 +80,10 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
-	google.golang.org/genproto v0.0.0-20240604185151-ef581f913117 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	google.golang.org/genproto v0.0.0-20240610135401-a8a62080eff3 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
-	monorepo/bin-chat-manager v0.0.0-20240313050741-a2ced5030a06 // indirect
 	monorepo/bin-chatbot-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
@@ -99,5 +100,4 @@ require (
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
-	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
 )

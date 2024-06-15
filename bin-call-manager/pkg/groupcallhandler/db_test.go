@@ -129,7 +129,7 @@ func Test_Create(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.expectGroupcall.ID).Return(tt.expectGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
 
 			res, err := h.Create(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.callIDs, tt.groupcallIDs, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
 			if err != nil {
@@ -300,7 +300,7 @@ func Test_UpdateAnswerCallID(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.id, tt.callID).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			res, err := h.UpdateAnswerCallID(ctx, tt.id, tt.callID)
 			if err != nil {
@@ -357,7 +357,7 @@ func Test_UpdateAnswerGroupcallID(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallSetAnswerGroupcallID(ctx, tt.id, tt.groupcallID).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			res, err := h.UpdateAnswerGroupcallID(ctx, tt.id, tt.groupcallID)
 			if err != nil {
@@ -410,7 +410,7 @@ func Test_dbDelete(t *testing.T) {
 
 			mockDB.EXPECT().GroupcallDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallDeleted, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallDeleted, tt.responseGroupcall)
 
 			res, err := h.dbDelete(ctx, tt.id)
 			if err != nil {
