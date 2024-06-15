@@ -6,10 +6,8 @@ import (
 	"context"
 	"regexp"
 
-	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
-	"monorepo/bin-agent-manager/pkg/resourcehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -30,6 +28,7 @@ type AgentHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error)
+	GetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr commonaddress.Address) ([]*agent.Agent, error)
 	Login(ctx context.Context, username, password string) (*agent.Agent, error)
 	UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)
@@ -41,7 +40,6 @@ type AgentHandler interface {
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
-	EventCallCreated(ctx context.Context, c *cmcall.Call) error
 }
 
 type agentHandler struct {
@@ -49,18 +47,15 @@ type agentHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
-
-	resourceHandler resourcehandler.ResourceHandler
 }
 
 // NewAgentHandler return AgentHandler interface
-func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, resourceHandler resourcehandler.ResourceHandler) AgentHandler {
+func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AgentHandler {
 	return &agentHandler{
-		utilHandler:     utilhandler.NewUtilHandler(),
-		reqHandler:      reqHandler,
-		db:              dbHandler,
-		notifyHandler:   notifyHandler,
-		resourceHandler: resourceHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    reqHandler,
+		db:            dbHandler,
+		notifyHandler: notifyHandler,
 	}
 }
 

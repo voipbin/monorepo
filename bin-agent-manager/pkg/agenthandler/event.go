@@ -3,7 +3,6 @@ package agenthandler
 import (
 	"context"
 
-	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -15,39 +14,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-agent-manager/models/resource"
 )
 
 // EventGroupcallCreated handles the call-manager's groupcall_created event
 func (h *agentHandler) EventGroupcallCreated(ctx context.Context, c *cmgroupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "EventGroupcallCreated",
-		"groupcall": c,
-	})
-
-	if errAgent := h.eventGroupcallCreatedHandleAgent(ctx, c); errAgent != nil {
-		log.Errorf("Could not handle the event from the agent handler.")
-	}
-
-	if errResource := h.eventGroupcallCreatedHandleResource(ctx, c); errResource != nil {
-		log.Errorf("Could not handle the event from the resource handler.")
-	}
-
-	return nil
-}
-
-// eventGroupcallCreatedHandleAgent handles the groupcall_created event for agents.
-// It updates the agent's status to ringing if the agent is available and part of the groupcall.
-//
-// Parameters:
-// ctx (context.Context): The context for the request.
-// c (*cmgroupcall.Groupcall): The groupcall object.
-//
-// Returns:
-// error: An error if any occurred during the operation, otherwise nil.
-func (h *agentHandler) eventGroupcallCreatedHandleAgent(ctx context.Context, c *cmgroupcall.Groupcall) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "eventGroupcallCreatedHandleAgent",
 		"groupcall": c,
 	})
 	log.Debugf("Creating resource for the groupcall. groupcall_id: %s", c.ID)
@@ -88,58 +60,14 @@ func (h *agentHandler) eventGroupcallCreatedHandleAgent(ctx context.Context, c *
 	return nil
 }
 
-// eventGroupcallCreatedHandleResource handles the groupcall_created event for resources.
-// It creates a resource for each agent associated with the groupcall's address.
-//
-// Parameters:
-// ctx (context.Context): The context for the request.
-// c (*cmgroupcall.Groupcall): The groupcall object.
-//
-// Returns:
-// error: An error if any occurred during the operation, otherwise nil.
-func (h *agentHandler) eventGroupcallCreatedHandleResource(ctx context.Context, c *cmgroupcall.Groupcall) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "eventGroupcallCreatedHandleResource",
-		"groupcall": c,
-	})
-	log.Debugf("Creating resource for the groupcall. groupcall_id: %s", c.ID)
-
-	// Determine the address based on the call's direction
-	for _, addr := range c.Destinations {
-		if addr.Type != commonaddress.TypeExtension && addr.Type != commonaddress.TypeTel {
-			continue
-		}
-
-		// Get agents associated with the call's address
-		ags, err := h.dbGetsByCustomerIDAndAddress(ctx, c.CustomerID, addr)
-		if err != nil {
-			log.Errorf("Could not get agents info. err:  %v", err)
-			return errors.Wrapf(err, "could not get agents info. err: %v", err)
-		}
-
-		// Create a resource for each agent
-		for _, a := range ags {
-			log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
-			r, err := h.resourceHandler.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeCall, c.ID, c)
-			if err != nil {
-				log.Errorf("Could not create the resource. err: %v", err)
-				continue
-			}
-			log.WithField("resource", r).Debugf("Created resource. resource_id: %s", r.ID)
-		}
-	}
-
-	return nil
-}
-
 // EventGroupcallProgressing handles the call-manager's groupcall_progressing event
-func (h *agentHandler) EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error {
+func (h *agentHandler) EventGroupcallProgressing(ctx context.Context, c *cmgroupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "EventGroupcallProgressing",
-		"groupcall": groupcall,
+		"groupcall": c,
 	})
 
-	for _, destination := range groupcall.Destinations {
+	for _, destination := range c.Destinations {
 		if destination.Type != commonaddress.TypeAgent {
 			// nothing to do
 			continue
@@ -199,51 +127,6 @@ func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.
 			continue
 		}
 		log.WithField("agent", tmp).Debugf("Deleted agent info. agent_id: %s", tmp.ID)
-	}
-
-	return nil
-}
-
-// EventCallCreated handles the call-manager's call_created event.
-// It creates a resource for each agent associated with the call's address.
-//
-// Parameters:
-// ctx (context.Context): The context for the request.
-// c (*cmcall.Call): The call object.
-//
-// Returns:
-// error: An error if any occurred during the operation, otherwise nil.
-func (h *agentHandler) EventCallCreated(ctx context.Context, c *cmcall.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "EventCallCreated",
-		"call": c,
-	})
-	log.Debugf("Creating resource for the call. call_id: %s", c.ID)
-
-	// Determine the address based on the call's direction
-	addr := c.Source
-	if c.Direction == cmcall.DirectionOutgoing {
-		addr = c.Destination
-	}
-	log.WithField("address", addr).Debugf("Found call address. address_type: %s, address_target: %s", addr.Type, addr.Target)
-
-	// Get agents associated with the call's address
-	ags, err := h.dbGetsByCustomerIDAndAddress(ctx, c.CustomerID, addr)
-	if err != nil {
-		log.Errorf("Could not get agents info. err:  %v", err)
-		return errors.Wrapf(err, "could not get agents info. err: %v", err)
-	}
-	log.WithField("agents", ags).Debugf("Found agents informations. len: %d", len(ags))
-
-	// Create a resource for each agent
-	for _, a := range ags {
-		log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
-		r, err := h.resourceHandler.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeCall, c.ID, c)
-		if err != nil {
-			log.Errorf("Could not create the resource. err: %v", err)
-			continue
-		}
-		log.WithField("resource", r).Debugf("Created resource. resource_id: %s", r.ID)
 	}
 
 	return nil

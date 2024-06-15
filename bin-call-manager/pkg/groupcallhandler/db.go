@@ -77,7 +77,7 @@ func (h *groupcallHandler) Create(
 		log.Errorf("Could not get created groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get created groupcall info.")
 	}
-	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallCreated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, groupcall.EventTypeGroupcallCreated, res)
 	log.WithField("groupcall", res).Debugf("Created a new groupcall. groupcall_id: %s", res.ID)
 
 	return res, nil
@@ -127,7 +127,7 @@ func (h *groupcallHandler) UpdateAnswerCallID(ctx context.Context, id uuid.UUID,
 		log.Errorf("Could not get updated groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get updated groupcall info.")
 	}
-	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, groupcall.EventTypeGroupcallProgressing, res)
 
 	return res, nil
 }
@@ -150,7 +150,7 @@ func (h *groupcallHandler) UpdateAnswerGroupcallID(ctx context.Context, id uuid.
 		log.Errorf("Could not get updated groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get updated groupcall info.")
 	}
-	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, groupcall.EventTypeGroupcallProgressing, res)
 
 	return res, nil
 }
@@ -172,7 +172,7 @@ func (h *groupcallHandler) dbDelete(ctx context.Context, id uuid.UUID) (*groupca
 		log.Errorf("Could not get deleted groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get deleted groupcall info.")
 	}
-	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallDeleted, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, groupcall.EventTypeGroupcallDeleted, res)
 
 	return res, nil
 }

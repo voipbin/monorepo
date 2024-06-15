@@ -30,33 +30,6 @@ func (h *agentHandler) dbGets(ctx context.Context, size uint64, token string, fi
 	return res, nil
 }
 
-// dbGetsByCustomerIDAndAddress retrieves a list of agents based on the provided customer ID and address.
-// It uses the provided context for cancellation and timeout.
-//
-// Parameters:
-// ctx (context.Context): The context for the operation.
-// customerID (uuid.UUID): The ID of the customer.
-// addr (commonaddress.Address): The address to filter agents by.
-//
-// Returns:
-// ([]*agent.Agent, error): A slice of pointers to agent.Agent structs representing the retrieved agents,
-// and an error if any occurred during the operation. If no agents are found, an empty slice is returned.
-func (h *agentHandler) dbGetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr commonaddress.Address) ([]*agent.Agent, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "dbGetsByCustomerIDAndAddress",
-		"customer_id": customerID,
-		"address":     addr,
-	})
-
-	res, err := h.db.AgentGetsByCustomerIDAndAddress(ctx, customerID, addr)
-	if err != nil {
-		log.Errorf("Could not get agents info. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // dbGet returns agent info.
 func (h *agentHandler) dbGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{

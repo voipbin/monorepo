@@ -138,8 +138,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
-	resourceHandler := resourcehandler.NewResourceHandler(reqHandler, db, notifyHandler)
-	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler, resourceHandler)
+	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
+	resourceHandler := resourcehandler.NewResourceHandler(reqHandler, db, notifyHandler, agentHandler)
 
 	if err := runListen(rabbitSock, agentHandler, resourceHandler); err != nil {
 		return err
@@ -174,6 +174,7 @@ func runSubscribe(
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameCustomerEvent),
+		string(commonoutline.QueueNameWebhookEvent),
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler, resourceHandler)
 

@@ -67,7 +67,7 @@ func Test_Delete(t *testing.T) {
 			// dbDelete
 			mockDB.EXPECT().GroupcallDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallDeleted, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallDeleted, tt.responseGroupcall)
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {

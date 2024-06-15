@@ -4,12 +4,13 @@ package resourcehandler
 
 import (
 	"context"
-	cmcall "monorepo/bin-call-manager/models/call"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	whwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"monorepo/bin-agent-manager/models/resource"
+	"monorepo/bin-agent-manager/pkg/agenthandler"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
@@ -23,8 +24,7 @@ type ResourceHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*resource.Resource, error)
 	UpdateData(ctx context.Context, id uuid.UUID, data interface{}) (*resource.Resource, error)
 
-	EventCallDeleted(ctx context.Context, c *cmcall.Call) error
-	EventCallUpdated(ctx context.Context, c *cmcall.Call) error
+	EventWebhookPublished(ctx context.Context, w *whwebhook.Webhook) error
 }
 
 type resourceHandler struct {
@@ -32,14 +32,18 @@ type resourceHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+
+	agentHandler agenthandler.AgentHandler
 }
 
 // NewResourceHandler return ResourceHandler interface
-func NewResourceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) ResourceHandler {
+func NewResourceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, agentHandler agenthandler.AgentHandler) ResourceHandler {
 	return &resourceHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyHandler: notifyHandler,
+
+		agentHandler: agentHandler,
 	}
 }
