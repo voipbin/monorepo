@@ -6,6 +6,8 @@ import "github.com/gofrs/uuid"
 type Recording struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	OwnerType  OwnerType `json:"owner_type"`
+	OwnerID    uuid.UUID `json:"owner_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -25,6 +27,14 @@ type Recording struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+// OwnerType defines
+type OwnerType string
+
+// list of owner types
+const (
+	OwnerTypeAgent OwnerType = "agent" // the owner id is agent's id.
+)
 
 // ReferenceType type
 type ReferenceType string

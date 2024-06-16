@@ -20,6 +20,8 @@ type Call struct {
 	// identity
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	OwnerType  OwnerType `json:"owner_type"`
+	OwnerID    uuid.UUID `json:"owner_id"`
 
 	ChannelID string `json:"channel_id"`
 	BridgeID  string `json:"bridge_id"` // call bridge id
@@ -66,6 +68,14 @@ type Call struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+// OwnerType defines
+type OwnerType string
+
+// list of owner types
+const (
+	OwnerTypeAgent OwnerType = "agent" // the owner id is agent's id.
+)
 
 // Type type
 type Type string

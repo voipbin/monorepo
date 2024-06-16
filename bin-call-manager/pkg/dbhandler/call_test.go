@@ -37,6 +37,8 @@ func Test_CallCreate(t *testing.T) {
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
 				CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				OwnerType:  call.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("7277e05c-2bf8-11ef-a54d-dfe525b51ec5"),
 
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
@@ -89,8 +91,11 @@ func Test_CallCreate(t *testing.T) {
 			"2020-04-18T03:22:17.995000",
 
 			&call.Call{
-				ID:           uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
-				CustomerID:   uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
+				CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				OwnerType:  call.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("7277e05c-2bf8-11ef-a54d-dfe525b51ec5"),
+
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
 				FlowID:       uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),

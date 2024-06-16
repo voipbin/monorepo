@@ -18,6 +18,8 @@ const (
 	select
 		id,
 		customer_id,
+		owner_type,
+		owner_id,
 
 		reference_type,
 		reference_id,
@@ -51,6 +53,8 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.OwnerType,
+		&res.OwnerID,
 
 		&res.ReferenceType,
 		&res.ReferenceID,
@@ -101,6 +105,8 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	q := `insert into recordings(
 		id,
 		customer_id,
+		owner_type,
+		owner_id,
 
 		reference_type,
 		reference_id,
@@ -121,7 +127,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		tm_delete
 
 	) values(
-		?, ?,
+		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?,
 		?, ?,
@@ -142,6 +148,8 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
+		c.OwnerType,
+		c.OwnerID.Bytes(),
 
 		c.ReferenceType,
 		c.ReferenceID.Bytes(),

@@ -21,6 +21,8 @@ const (
 	select
 		id,
 		customer_id,
+		owner_type,
+        owner_id,
 
 		status,
 		flow_id,
@@ -63,6 +65,8 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.OwnerType,
+		&res.OwnerID,
 
 		&res.Status,
 		&res.FlowID,
@@ -133,11 +137,13 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 }
 
 // GroupcallCreate sets groupcall.
-func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall) error {
+func (h *handler) GroupcallCreate(ctx context.Context, c *groupcall.Groupcall) error {
 
 	q := `insert into groupcalls(
 		id,
 		customer_id,
+		owner_type,
+        owner_id,
 
 		status,
 		flow_id,
@@ -165,7 +171,7 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		tm_update,
 		tm_delete
 	) values(
-		?, ?,
+		?, ?, ?, ?,
 		?, ?,
 		?, ?,
 		?, ?,
@@ -176,63 +182,65 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		?, ?, ?
 		)`
 
-	if data.Source == nil {
-		data.Source = &commonaddress.Address{}
+	if c.Source == nil {
+		c.Source = &commonaddress.Address{}
 	}
-	tmpSource, err := json.Marshal(data.Source)
+	tmpSource, err := json.Marshal(c.Source)
 	if err != nil {
 		return errors.Wrap(err, "could not marshal the source. GroupcallCreate.")
 	}
 
-	if data.Destinations == nil {
-		data.Destinations = []commonaddress.Address{}
+	if c.Destinations == nil {
+		c.Destinations = []commonaddress.Address{}
 	}
-	tmpDestinations, err := json.Marshal(data.Destinations)
+	tmpDestinations, err := json.Marshal(c.Destinations)
 	if err != nil {
 		return errors.Wrap(err, "could not marshal the destinations. GroupcallCreate.")
 	}
 
-	if data.CallIDs == nil {
-		data.CallIDs = []uuid.UUID{}
+	if c.CallIDs == nil {
+		c.CallIDs = []uuid.UUID{}
 	}
-	tmpCallIDs, err := json.Marshal(data.CallIDs)
+	tmpCallIDs, err := json.Marshal(c.CallIDs)
 	if err != nil {
 		return errors.Wrap(err, "could not marshal the call_ids. GroupcallCreate.")
 	}
 
-	if data.GroupcallIDs == nil {
-		data.GroupcallIDs = []uuid.UUID{}
+	if c.GroupcallIDs == nil {
+		c.GroupcallIDs = []uuid.UUID{}
 	}
-	tmpGroupcallIDs, err := json.Marshal(data.GroupcallIDs)
+	tmpGroupcallIDs, err := json.Marshal(c.GroupcallIDs)
 	if err != nil {
 		return errors.Wrap(err, "could not marshal the groupcall_ids. GroupcallCreate.")
 	}
 
 	_, err = h.db.Exec(q,
-		data.ID.Bytes(),
-		data.CustomerID.Bytes(),
+		c.ID.Bytes(),
+		c.CustomerID.Bytes(),
+		c.OwnerType,
+		c.OwnerID.Bytes(),
 
-		data.Status,
-		data.FlowID.Bytes(),
+		c.Status,
+		c.FlowID.Bytes(),
 
 		tmpSource,
 		tmpDestinations,
 
-		data.MasterCallID.Bytes(),
-		data.MasterGroupcallID.Bytes(),
+		c.MasterCallID.Bytes(),
+		c.MasterGroupcallID.Bytes(),
 
-		data.RingMethod,
-		data.AnswerMethod,
+		c.RingMethod,
+		c.AnswerMethod,
 
-		data.AnswerCallID.Bytes(),
+		c.AnswerCallID.Bytes(),
 		tmpCallIDs,
 
-		data.AnswerGroupcallID.Bytes(),
+		c.AnswerGroupcallID.Bytes(),
 		tmpGroupcallIDs,
 
-		data.CallCount,
-		data.GroupcallCount,
-		data.DialIndex,
+		c.CallCount,
+		c.GroupcallCount,
+		c.DialIndex,
 
 		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
@@ -243,7 +251,7 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 	}
 
 	// update the cache
-	_ = h.groupcallUpdateToCache(ctx, data.ID)
+	_ = h.groupcallUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -286,7 +294,7 @@ func (h *handler) GroupcallGets(ctx context.Context, size uint64, token string, 
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "flow_id", "master_call_id", "master_groupcall_id", "answer_call_id", "answer_groupcall_id":
+		case "customer_id", "owner_id", "flow_id", "master_call_id", "master_groupcall_id", "answer_call_id", "answer_groupcall_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

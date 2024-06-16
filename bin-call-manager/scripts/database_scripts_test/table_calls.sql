@@ -2,6 +2,8 @@ create table calls(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
+  owner_type        varchar(255), -- owner type
+  owner_id          binary(16),   -- owner id
 
   channel_id        varchar(255), -- channel id
   bridge_id         varchar(255), -- call bridge id
@@ -57,12 +59,13 @@ create table calls(
   primary key(id)
 );
 
+create index idx_calls_customer_id on calls(customer_id);
+create index idx_calls_owner_id on calls(owner_id);
 create index idx_calls_channelid on calls(channel_id);
 create index idx_calls_flowid on calls(flow_id);
 create index idx_calls_create on calls(tm_create);
 create index idx_calls_hangup on calls(tm_hangup);
 create index idx_calls_source_target on calls(source_target);
 create index idx_calls_destination_target on calls(destination_target);
-create index idx_calls_customer_id on calls(customer_id);
 create index idx_calls_external_media_id on calls(external_media_id);
 create index idx_calls_groupcall_id on calls(groupcall_id);
