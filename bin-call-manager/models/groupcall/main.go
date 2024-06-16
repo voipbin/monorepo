@@ -46,6 +46,7 @@ type OwnerType string
 
 // list of owner types
 const (
+	OnwerTypeNone  OwnerType = ""
 	OwnerTypeAgent OwnerType = "agent" // the owner id is agent's id.
 )
 

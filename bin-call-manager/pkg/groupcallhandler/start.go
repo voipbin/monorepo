@@ -18,6 +18,8 @@ func (h *groupcallHandler) Start(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
+	ownerType groupcall.OwnerType,
+	ownerID uuid.UUID,
 	flowID uuid.UUID,
 	source *commonaddress.Address,
 	destinations []commonaddress.Address,
@@ -30,6 +32,8 @@ func (h *groupcallHandler) Start(
 		"func":                "Start",
 		"id":                  id,
 		"customer_id":         customerID,
+		"owner_type":          ownerType,
+		"owner_id":            ownerID,
 		"flow_id":             flowID,
 		"source":              source,
 		"destinations":        destinations,
@@ -57,10 +61,10 @@ func (h *groupcallHandler) Start(
 
 	switch ringMethod {
 	case groupcall.RingMethodRingAll:
-		return h.startRingall(ctx, id, customerID, source, destinations, flowID, masterCallID, masterGroupcallID, answerMethod)
+		return h.startRingall(ctx, id, customerID, ownerType, ownerID, source, destinations, flowID, masterCallID, masterGroupcallID, answerMethod)
 
 	case groupcall.RingMethodLinear:
-		return h.startLinear(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, answerMethod)
+		return h.startLinear(ctx, id, customerID, ownerType, ownerID, flowID, source, destinations, masterCallID, masterGroupcallID, answerMethod)
 
 	default:
 		log.Errorf("Unsupported ring method. ring_method: %s", ringMethod)
@@ -73,6 +77,8 @@ func (h *groupcallHandler) startRingall(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
+	ownerType groupcall.OwnerType,
+	ownerID uuid.UUID,
 	source *commonaddress.Address,
 	destinations []commonaddress.Address,
 	flowID uuid.UUID,
@@ -84,6 +90,8 @@ func (h *groupcallHandler) startRingall(
 		"func":                "startRingall",
 		"id":                  id,
 		"customer_id":         customerID,
+		"owner_type":          ownerType,
+		"owner_id":            ownerID,
 		"flow_id":             flowID,
 		"source":              source,
 		"destinations":        destinations,
@@ -113,7 +121,7 @@ func (h *groupcallHandler) startRingall(
 	// create groupcall
 	// we need to create groupcall earlier than the call. because if we create a call first, it is possible to hangup/answer the call before the create a groupcall
 	// if that is happen, we will loose the groupcall control.
-	res, err := h.Create(ctx, id, customerID, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod)
+	res, err := h.Create(ctx, id, customerID, ownerType, ownerID, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod)
 	if err != nil {
 		log.Errorf("Could not create groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create groupcall.")
@@ -156,6 +164,8 @@ func (h *groupcallHandler) startLinear(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
+	ownerType groupcall.OwnerType,
+	ownerID uuid.UUID,
 	flowID uuid.UUID,
 	source *commonaddress.Address,
 	destinations []commonaddress.Address,
@@ -167,6 +177,8 @@ func (h *groupcallHandler) startLinear(
 		"func":                "startLinear",
 		"id":                  id,
 		"customer_id":         customerID,
+		"owner_type":          ownerType,
+		"owner_id":            ownerID,
 		"flow_id":             flowID,
 		"source":              source,
 		"destinations":        destinations,
@@ -193,7 +205,7 @@ func (h *groupcallHandler) startLinear(
 	// create groupcall
 	// we need to create groupcall earlier than the call. because if we create a call first, it is possible to hangup/answer the call before the create a groupcall
 	// if that is happen, we will loose the groupcall control.
-	res, err := h.Create(ctx, id, customerID, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodLinear, answerMethod)
+	res, err := h.Create(ctx, id, customerID, ownerType, ownerID, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodLinear, answerMethod)
 	if err != nil {
 		log.Errorf("Could not create groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create groupcall.")

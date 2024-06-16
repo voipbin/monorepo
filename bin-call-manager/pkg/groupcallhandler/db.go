@@ -17,6 +17,8 @@ func (h *groupcallHandler) Create(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
+	ownerType groupcall.OwnerType,
+	ownerID uuid.UUID,
 	flowID uuid.UUID,
 	source *commonaddress.Address,
 	destinations []commonaddress.Address,
@@ -31,6 +33,8 @@ func (h *groupcallHandler) Create(
 		"func":           "Create",
 		"id":             id,
 		"customer_id":    customerID,
+		"owner_type":     ownerType,
+		"owner_id":       ownerID,
 		"source":         source,
 		"destinations":   destinations,
 		"call_ids":       callIDs,
@@ -43,6 +47,8 @@ func (h *groupcallHandler) Create(
 	tmp := &groupcall.Groupcall{
 		ID:         id,
 		CustomerID: customerID,
+		OwnerType:  ownerType,
+		OwnerID:    ownerID,
 
 		Status: groupcall.StatusProgressing,
 		FlowID: flowID,
