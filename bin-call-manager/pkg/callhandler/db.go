@@ -23,6 +23,8 @@ func (h *callHandler) Create(
 
 	id uuid.UUID,
 	customerID uuid.UUID,
+	ownerType call.OwnerType,
+	ownerID uuid.UUID,
 
 	channelID string,
 	bridgeID string,
@@ -61,6 +63,8 @@ func (h *callHandler) Create(
 	c := &call.Call{
 		ID:         callID,
 		CustomerID: customerID,
+		OwnerType:  ownerType,
+		OwnerID:    ownerID,
 
 		ChannelID:    channelID,
 		BridgeID:     bridgeID,

@@ -14,6 +14,8 @@ import (
 type V1DataGroupcallsPost struct {
 	ID                uuid.UUID               `json:"id,omitempty"`
 	CustomerID        uuid.UUID               `json:"customer_id,omitempty"`
+	OwnerType         groupcall.OwnerType     `json:"owner_type,omitempty"`
+	OwnerID           uuid.UUID               `json:"owner_id,omitempty"`
 	FlowID            uuid.UUID               `json:"flow_id,omitempty"`
 	Source            commonaddress.Address   `json:"source,omitempty"`
 	Destinations      []commonaddress.Address `json:"destinations,omitempty"`

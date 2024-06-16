@@ -15,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
 )
@@ -141,7 +142,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, call.OwnerTypeNone, uuid.Nil, f.ID, source, destination)
 
 	return nil
 }
@@ -214,7 +215,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeConference(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, cf.CustomerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, call.OwnerTypeNone, uuid.Nil, f.ID, source, destination)
 
 	return nil
 }
@@ -275,7 +276,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeTel(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, call.OwnerTypeNone, uuid.Nil, f.ID, source, destination)
 
 	return nil
 }
@@ -344,7 +345,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, call.OwnerTypeNone, uuid.Nil, f.ID, source, destination)
 
 	return nil
 }

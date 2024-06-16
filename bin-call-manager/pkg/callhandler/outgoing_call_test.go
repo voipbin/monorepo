@@ -37,6 +37,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 		id             uuid.UUID
 		customerID     uuid.UUID
+		ownerType      call.OwnerType
+		ownerID        uuid.UUID
 		flowID         uuid.UUID
 		activeflowID   uuid.UUID
 		masterCallID   uuid.UUID
@@ -59,6 +61,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			id:           uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 			customerID:   uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+			ownerType:    call.OwnerTypeAgent,
+			ownerID:      uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
 			flowID:       uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 			activeflowID: uuid.FromStringOrNil("679f0eb2-8c21-41a6-876d-9d778b1b0167"),
 			masterCallID: uuid.FromStringOrNil("5935ff8a-8c8f-11ec-b26a-3fee169eaf45"),
@@ -86,6 +90,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			expectCall: &call.Call{
 				ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				OwnerType:  call.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
 				ChannelID:  "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
 				FlowID:     uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 				Type:       call.TypeFlow,
@@ -180,7 +186,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -199,6 +205,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 		id             uuid.UUID
 		customerID     uuid.UUID
+		ownerType      call.OwnerType
+		ownerID        uuid.UUID
 		flowID         uuid.UUID
 		activeflowID   uuid.UUID
 		masterCallID   uuid.UUID
@@ -224,6 +232,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			id:           uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 			customerID:   uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+			ownerType:    call.OwnerTypeAgent,
+			ownerID:      uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
 			flowID:       uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
 			activeflowID: uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
 			masterCallID: uuid.FromStringOrNil("61c0fe66-8c8f-11ec-873a-ff90a846a02f"),
@@ -261,6 +271,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			expectCall: &call.Call{
 				ID:             uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 				CustomerID:     uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+				OwnerType:      call.OwnerTypeAgent,
+				OwnerID:        uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
 				ChannelID:      "d948969e-5de3-11ed-94f5-137ec429b6b6",
 				FlowID:         uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
 				ActiveFlowID:   uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
@@ -365,7 +377,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

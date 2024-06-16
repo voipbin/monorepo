@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
 )
@@ -103,7 +104,7 @@ func (h *callHandler) startIncomingDomainTypeTrunkDestinationTypeTel(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, call.OwnerTypeNone, uuid.Nil, f.ID, source, destination)
 
 	return nil
 }

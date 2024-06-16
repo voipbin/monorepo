@@ -60,6 +60,8 @@ type CallHandler interface {
 	CreateCallsOutgoing(
 		ctx context.Context,
 		customerID uuid.UUID,
+		ownerType call.OwnerType,
+		ownerID uuid.UUID,
 		flowID uuid.UUID,
 		masterCallID uuid.UUID,
 		source commonaddress.Address,
@@ -71,6 +73,8 @@ type CallHandler interface {
 		ctx context.Context,
 		id uuid.UUID,
 		customerID uuid.UUID,
+		ownerType call.OwnerType,
+		ownerID uuid.UUID,
 		flowID uuid.UUID,
 		activeflowID uuid.UUID,
 		masterCallID uuid.UUID,
