@@ -38,8 +38,8 @@ const (
 func (h *callHandler) CreateCallsOutgoing(
 	ctx context.Context,
 	customerID uuid.UUID,
-	OwnerType call.OwnerType,
-	OwnerID uuid.UUID,
+	ownerType call.OwnerType,
+	ownerID uuid.UUID,
 	flowID uuid.UUID,
 	masterCallID uuid.UUID,
 	source commonaddress.Address,
@@ -50,8 +50,8 @@ func (h *callHandler) CreateCallsOutgoing(
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CreateCallsOutgoing",
 		"customer_id":     customerID,
-		"owner_type":      OwnerType,
-		"owner_id":        OwnerID,
+		"owner_type":      ownerType,
+		"owner_id":        ownerID,
 		"flow_id":         flowID,
 		"master_call_id":  masterCallID,
 		"source":          source,
@@ -65,7 +65,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, OwnerType, OwnerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, ownerType, ownerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -75,7 +75,7 @@ func (h *callHandler) CreateCallsOutgoing(
 			resCalls = append(resCalls, c)
 
 		case h.groupcallHandler.IsGroupcallTypeAddress(&destination):
-			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, OwnerType, OwnerID, flowID, masterCallID, &source, &destination)
+			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, ownerType, ownerID, flowID, masterCallID, &source, &destination)
 			if err != nil {
 				log.Errorf("Could not create outgoing groupcall. err: %v", err)
 				continue
