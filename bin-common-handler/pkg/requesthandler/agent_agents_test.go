@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -136,9 +137,8 @@ func Test_AgentV1AgentGet(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents/7ab80df4-4c72-11ec-b095-17146a0e7e4c",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/agents/7ab80df4-4c72-11ec-b095-17146a0e7e4c",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -165,6 +165,73 @@ func Test_AgentV1AgentGet(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentGet(ctx, tt.agentID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AgentV1AgentGetByCustomerIDAndAddress(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		timeout    int
+		customerID uuid.UUID
+		addr       commonaddress.Address
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     *amagent.Agent
+	}{
+		{
+			name: "normal",
+
+			timeout:    3000,
+			customerID: uuid.FromStringOrNil("f68aa290-2d96-11ef-8fda-2b4b95e0d496"),
+			addr: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+123456789",
+			},
+
+			expectTarget: "bin-manager.agent-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/agents/get_by_customer_id_address",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"f68aa290-2d96-11ef-8fda-2b4b95e0d496","address":{"type":"tel","target":"+123456789","target_name":"","name":"","detail":""}}`),
+			},
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"f79ca5ca-2d96-11ef-8405-bf28df182f51"}`),
+			},
+			expectRes: &amagent.Agent{
+				ID: uuid.FromStringOrNil("f79ca5ca-2d96-11ef-8405-bf28df182f51"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, tt.timeout, tt.customerID, tt.addr)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -203,9 +270,8 @@ func Test_AgentV1AgentGets(t *testing.T) {
 			"/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -230,9 +296,8 @@ func Test_AgentV1AgentGets(t *testing.T) {
 			"/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -302,9 +367,8 @@ func Test_AgentV1AgentGetsByTagIDs(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=ef626c46-4e78-11ec-bb14-6fbde14856d4",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=ef626c46-4e78-11ec-bb14-6fbde14856d4",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -328,9 +392,8 @@ func Test_AgentV1AgentGetsByTagIDs(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=36a057ee-4e79-11ec-a0c6-5fc332a14527,36c77248-4e79-11ec-8aa9-93ecdefec6c9",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=36a057ee-4e79-11ec-a0c6-5fc332a14527,36c77248-4e79-11ec-8aa9-93ecdefec6c9",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -398,9 +461,8 @@ func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=a23822ac-4e79-11ec-935d-335a1fd132e8&status=available",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=a23822ac-4e79-11ec-935d-335a1fd132e8&status=available",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -425,9 +487,8 @@ func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=bcde4bea-4e79-11ec-bbc2-4b92f6f04b6a,bd0786ea-4e79-11ec-8ecc-3bc59c72be3b&status=available",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=bcde4bea-4e79-11ec-bbc2-4b92f6f04b6a,bd0786ea-4e79-11ec-8ecc-3bc59c72be3b&status=available",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -490,9 +551,8 @@ func Test_AgentV1AgentDelete(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/agents/f4b44b28-4e79-11ec-be3c-73450ec23a51",
-				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: "application/json",
+				URI:    "/v1/agents/f4b44b28-4e79-11ec-be3c-73450ec23a51",
+				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 
 			&rabbitmqhandler.Response{

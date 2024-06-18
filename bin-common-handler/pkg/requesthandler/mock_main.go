@@ -144,6 +144,21 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGet(ctx, agentID interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGet", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGet), ctx, agentID)
 }
 
+// AgentV1AgentGetByCustomerIDAndAddress mocks base method.
+func (m *MockRequestHandler) AgentV1AgentGetByCustomerIDAndAddress(ctx context.Context, timeout int, customerID uuid.UUID, addr address.Address) (*agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1AgentGetByCustomerIDAndAddress", ctx, timeout, customerID, addr)
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentV1AgentGetByCustomerIDAndAddress indicates an expected call of AgentV1AgentGetByCustomerIDAndAddress.
+func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGetByCustomerIDAndAddress(ctx, timeout, customerID, addr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGetByCustomerIDAndAddress", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGetByCustomerIDAndAddress), ctx, timeout, customerID, addr)
+}
+
 // AgentV1AgentGets mocks base method.
 func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
