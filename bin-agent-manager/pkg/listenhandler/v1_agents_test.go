@@ -1213,3 +1213,70 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseAgent *agent.Agent
+
+		expectCustomerID uuid.UUID
+		expectAddress    *commonaddress.Address
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
+				URI:      "/v1/agents/get_by_customer_id_address",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"e30eaa4a-2d91-11ef-88e9-bf9e5d130578","address":{"type":"extension","target":"f27b2198-2d91-11ef-9b01-93e01658c814"}}`),
+			},
+
+			responseAgent: &agent.Agent{
+				ID: uuid.FromStringOrNil("f2a28abc-2d91-11ef-823f-b37d45f6968f"),
+			},
+
+			expectCustomerID: uuid.FromStringOrNil("e30eaa4a-2d91-11ef-88e9-bf9e5d130578"),
+			expectAddress: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "f27b2198-2d91-11ef-9b01-93e01658c814",
+			},
+
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"f2a28abc-2d91-11ef-823f-b37d45f6968f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
+
+			mockAgent.EXPECT().GetByCustomerIDAndAddress(gomock.Any(), tt.expectCustomerID, tt.expectAddress).Return(tt.responseAgent, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
