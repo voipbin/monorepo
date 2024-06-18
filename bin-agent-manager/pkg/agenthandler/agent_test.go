@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -320,6 +321,61 @@ func Test_UpdateStatus(t *testing.T) {
 	}
 }
 
+func Test_GetByCustomerIDAndAddress(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		address    *commonaddress.Address
+
+		responseAgent *agent.Agent
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("d3aab1b0-2d88-11ef-ba6a-afc97b6c3b32"),
+			address: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "d4116ac2-2d88-11ef-9795-8393fdf24d82",
+			},
+
+			responseAgent: &agent.Agent{
+				ID: uuid.FromStringOrNil("d3eaf9d2-2d88-11ef-9997-7bea6cbbf856"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.customerID, tt.address).Return(tt.responseAgent, nil)
+
+			res, err := h.GetByCustomerIDAndAddress(ctx, tt.customerID, tt.address)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseAgent) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", res, tt.responseAgent)
+			}
+		})
+	}
+}
+
 func Test_isOnlyAdmin(t *testing.T) {
 
 	tests := []struct {
@@ -445,6 +501,80 @@ func Test_isOnlyAdmin(t *testing.T) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 
+		})
+	}
+}
+
+func Test_UpdateAddresses(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id        uuid.UUID
+		addresses []commonaddress.Address
+
+		responseAgent     *agent.Agent
+		responseExtension *rmextension.Extension
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+			addresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71",
+				},
+			},
+
+			responseAgent: &agent.Agent{
+				ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+				CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+			},
+			responseExtension: &rmextension.Extension{
+				ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
+				CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			for _, addr := range tt.addresses {
+				switch addr.Type {
+				case commonaddress.TypeExtension:
+					mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, uuid.FromStringOrNil(addr.Target)).Return(tt.responseExtension, nil)
+				}
+
+				mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.responseAgent.CustomerID, &addr).Return(nil, nil)
+			}
+			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.addresses).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
+
+			res, err := h.UpdateAddresses(ctx, tt.id, tt.addresses)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseAgent) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", res, tt.responseAgent)
+			}
 		})
 	}
 }

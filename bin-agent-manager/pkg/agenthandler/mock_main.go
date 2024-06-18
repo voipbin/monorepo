@@ -126,6 +126,21 @@ func (mr *MockAgentHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAgentHandler)(nil).Get), ctx, id)
 }
 
+// GetByCustomerIDAndAddress mocks base method.
+func (m *MockAgentHandler) GetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr *address.Address) (*agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByCustomerIDAndAddress", ctx, customerID, addr)
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByCustomerIDAndAddress indicates an expected call of GetByCustomerIDAndAddress.
+func (mr *MockAgentHandlerMockRecorder) GetByCustomerIDAndAddress(ctx, customerID, addr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCustomerIDAndAddress", reflect.TypeOf((*MockAgentHandler)(nil).GetByCustomerIDAndAddress), ctx, customerID, addr)
+}
+
 // Gets mocks base method.
 func (m *MockAgentHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
@@ -139,21 +154,6 @@ func (m *MockAgentHandler) Gets(ctx context.Context, size uint64, token string, 
 func (mr *MockAgentHandlerMockRecorder) Gets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAgentHandler)(nil).Gets), ctx, size, token, filters)
-}
-
-// GetsByCustomerIDAndAddress mocks base method.
-func (m *MockAgentHandler) GetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr address.Address) ([]*agent.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerIDAndAddress", ctx, customerID, addr)
-	ret0, _ := ret[0].([]*agent.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByCustomerIDAndAddress indicates an expected call of GetsByCustomerIDAndAddress.
-func (mr *MockAgentHandlerMockRecorder) GetsByCustomerIDAndAddress(ctx, customerID, addr interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerIDAndAddress", reflect.TypeOf((*MockAgentHandler)(nil).GetsByCustomerIDAndAddress), ctx, customerID, addr)
 }
 
 // Login mocks base method.

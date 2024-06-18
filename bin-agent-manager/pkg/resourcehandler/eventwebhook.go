@@ -7,7 +7,6 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -21,31 +20,31 @@ func (h *resourceHandler) eventWebhookCallCreated(ctx context.Context, c *cmcall
 	})
 	log.Debugf("Creating resource for the call. call_id: %s", c.ID)
 
-	// Determine the address based on the call's direction
-	addr := c.Source
-	if c.Direction == cmcall.DirectionOutgoing {
-		addr = c.Destination
-	}
-	log.WithField("address", addr).Debugf("Found call address. address_type: %s, address_target: %s", addr.Type, addr.Target)
+	// // Determine the address based on the call's direction
+	// addr := c.Source
+	// if c.Direction == cmcall.DirectionOutgoing {
+	// 	addr = c.Destination
+	// }
+	// log.WithField("address", addr).Debugf("Found call address. address_type: %s, address_target: %s", addr.Type, addr.Target)
 
-	// Get agents associated with the call's address
-	ags, err := h.agentHandler.GetsByCustomerIDAndAddress(ctx, c.CustomerID, addr)
-	if err != nil {
-		log.Errorf("Could not get agents info. err:  %v", err)
-		return errors.Wrapf(err, "could not get agents info. err: %v", err)
-	}
-	log.WithField("agents", ags).Debugf("Found agents informations. len: %d", len(ags))
+	// // Get agents associated with the call's address
+	// ags, err := h.agentHandler.GetByCustomerIDAndAddress(ctx, c.CustomerID, addr)
+	// if err != nil {
+	// 	log.Errorf("Could not get agents info. err:  %v", err)
+	// 	return errors.Wrapf(err, "could not get agents info. err: %v", err)
+	// }
+	// log.WithField("agents", ags).Debugf("Found agents informations. len: %d", len(ags))
 
-	// Create a resource for each agent
-	for _, a := range ags {
-		log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
-		r, err := h.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeCall, c.ID, c)
-		if err != nil {
-			log.Errorf("Could not create the resource. err: %v", err)
-			continue
-		}
-		log.WithField("resource", r).Debugf("Created resource. resource_id: %s", r.ID)
-	}
+	// // Create a resource for each agent
+	// for _, a := range ags {
+	// 	log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
+	// 	r, err := h.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeCall, c.ID, c)
+	// 	if err != nil {
+	// 		log.Errorf("Could not create the resource. err: %v", err)
+	// 		continue
+	// 	}
+	// 	log.WithField("resource", r).Debugf("Created resource. resource_id: %s", r.ID)
+	// }
 
 	return nil
 }
@@ -96,31 +95,31 @@ func (h *resourceHandler) eventWebhookGroupcallCreated(ctx context.Context, c *c
 	})
 	log.Debugf("Creating resource for the groupcall. groupcall_id: %s", c.ID)
 
-	// Determine the address based on the call's direction
-	for _, addr := range c.Destinations {
-		if addr.Type != commonaddress.TypeExtension && addr.Type != commonaddress.TypeTel {
-			continue
-		}
+	// // Determine the address based on the call's direction
+	// for _, addr := range c.Destinations {
+	// 	if addr.Type != commonaddress.TypeExtension && addr.Type != commonaddress.TypeTel {
+	// 		continue
+	// 	}
 
-		// Get agents associated with the call's address
-		ags, err := h.agentHandler.GetsByCustomerIDAndAddress(ctx, c.CustomerID, addr)
-		if err != nil {
-			log.Errorf("Could not get agents info. err:  %v", err)
-			return errors.Wrapf(err, "could not get agents info. err: %v", err)
-		}
-		log.WithField("agents", ags).Debugf("Found agent list. len: %d", len(ags))
+	// 	// Get agents associated with the call's address
+	// 	ags, err := h.agentHandler.GetByCustomerIDAndAddress(ctx, c.CustomerID, addr)
+	// 	if err != nil {
+	// 		log.Errorf("Could not get agents info. err:  %v", err)
+	// 		return errors.Wrapf(err, "could not get agents info. err: %v", err)
+	// 	}
+	// 	log.WithField("agents", ags).Debugf("Found agent list. len: %d", len(ags))
 
-		// Create a resource for each agent
-		for _, a := range ags {
-			log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
-			r, err := h.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeGroupcall, c.ID, c)
-			if err != nil {
-				log.Errorf("Could not create the resource. err: %v", err)
-				continue
-			}
-			log.WithField("resource", r).Debugf("Created resource. resource_id: %s", r.ID)
-		}
-	}
+	// 	// Create a resource for each agent
+	// 	for _, a := range ags {
+	// 		log.Debugf("Creating resource for the agent. agent_id: %s", a.ID)
+	// 		r, err := h.Create(ctx, c.CustomerID, a.ID, resource.ReferenceTypeGroupcall, c.ID, c)
+	// 		if err != nil {
+	// 			log.Errorf("Could not create the resource. err: %v", err)
+	// 			continue
+	// 		}
+	// 		log.WithField("resource", r).Debugf("Created resource. resource_id: %s", r.ID)
+	// 	}
+	// }
 
 	return nil
 }

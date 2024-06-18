@@ -21,6 +21,14 @@ type V1DataAgentsPost struct {
 	Addresses  []commonaddress.Address `json:"addresses"`
 }
 
+// V1DataAgentsGetByCustomerIDAddressPost is
+// v1 data type request struct for
+// /v1/agents/get_by_customer_id_address POST
+type V1DataAgentsGetByCustomerIDAddressPost struct {
+	CustomerID uuid.UUID             `json:"customer_id"`
+	Address    commonaddress.Address `json:"address"`
+}
+
 // V1DataAgentsUsernameLoginPost is
 // v1 data type request struct for
 // /v1/agents/<username>/login POST

@@ -318,7 +318,7 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 	return res, nil
 }
 
-// AgentGetsByCustomerIDAndAddress returns agents of the given customerID and address.
+// AgentGetByCustomerIDAndAddress returns agent of the given customerID and address.
 // It filters agents by customerID, not deleted, and containing the given address.
 //
 // Parameters:
@@ -329,7 +329,7 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 // Returns:
 // ([]*agent.Agent, error): A slice of agents that match the given criteria, and an error if any occurred.
 // If no agents match the criteria, an empty slice is returned and no error is returned.
-func (h *handler) AgentGetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address commonaddress.Address) ([]*agent.Agent, error) {
+func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address *commonaddress.Address) (*agent.Agent, error) {
 
 	// prepare the SQL query
 	q := fmt.Sprintf(`%s 
@@ -346,21 +346,19 @@ func (h *handler) AgentGetsByCustomerIDAndAddress(ctx context.Context, customerI
         `, agentSelect)
 
 	// execute the query
-	rows, err := h.db.Query(q, customerID.Bytes(), DefaultTimeStamp, address.Type, address.Target)
+	row, err := h.db.Query(q, customerID.Bytes(), DefaultTimeStamp, address.Type, address.Target)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. AgentGetsByCustomerIDAndAddress. err: %v", err)
 	}
-	defer rows.Close()
+	defer row.Close()
 
-	// process the rows
-	res := []*agent.Agent{}
-	for rows.Next() {
-		u, err := h.agentGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. AgentGetsByCustomerIDAndAddress. err: %v", err)
-		}
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
 
-		res = append(res, u)
+	res, err := h.agentGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("dbhandler: Could not scan the row. agentGetFromDB. err: %v", err)
 	}
 
 	return res, nil
