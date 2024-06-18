@@ -45,15 +45,16 @@ var (
 
 	// v1
 	// agents
-	regV1Agents              = regexp.MustCompile("/v1/agents$")
-	regV1AgentsGet           = regexp.MustCompile(`/v1/agents\?(.*)$`)
-	regV1AgentsUsernameLogin = regexp.MustCompile("/v1/agents/" + regAny + "/login$")
-	regV1AgentsID            = regexp.MustCompile("/v1/agents/" + regUUID + "$")
-	regV1AgentsIDAddresses   = regexp.MustCompile("/v1/agents/" + regUUID + "/addresses$")
-	regV1AgentsIDTagIDs      = regexp.MustCompile("/v1/agents/" + regUUID + "/tag_ids$")
-	regV1AgentsIDStatus      = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
-	regV1AgentsIDPassword    = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
-	regV1AgentsIDPermission  = regexp.MustCompile("/v1/agents/" + regUUID + "/permission$")
+	regV1Agents                     = regexp.MustCompile("/v1/agents$")
+	regV1AgentsGet                  = regexp.MustCompile(`/v1/agents\?(.*)$`)
+	regV1AgentsUsernameLogin        = regexp.MustCompile("/v1/agents/" + regAny + "/login$")
+	regV1AgentsID                   = regexp.MustCompile("/v1/agents/" + regUUID + "$")
+	regV1AgentsIDAddresses          = regexp.MustCompile("/v1/agents/" + regUUID + "/addresses$")
+	regV1AgentsIDTagIDs             = regexp.MustCompile("/v1/agents/" + regUUID + "/tag_ids$")
+	regV1AgentsIDStatus             = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
+	regV1AgentsIDPassword           = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
+	regV1AgentsIDPermission         = regexp.MustCompile("/v1/agents/" + regUUID + "/permission$")
+	regV1AgentsGetCustomerIDAddress = regexp.MustCompile("/v1/agents/get_by_customer_id_address$")
 
 	// login
 	regV1Login = regexp.MustCompile("/v1/login$")
@@ -222,6 +223,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1AgentsIDPermission.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDPermissionPut(ctx, m)
 		requestType = "/v1/agents/<agent-id>/permission"
+
+	// POST /agents/get_by_customer_id_address
+	case regV1AgentsGetCustomerIDAddress.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1AgentsGetByCustomerIDAddressPost(ctx, m)
+		requestType = "/v1/agents/get_by_customer_id_address"
 
 	////////////
 	// login

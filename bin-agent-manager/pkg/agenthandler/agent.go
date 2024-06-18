@@ -31,7 +31,7 @@ func (h *agentHandler) Gets(ctx context.Context, size uint64, token string, filt
 	return res, nil
 }
 
-// GetsByCustomerIDAndAddress retrieves a list of agents based on the provided customer ID and address.
+// GetByCustomerIDAndAddress retrieves a list of agents based on the provided customer ID and address.
 // It uses the provided context for cancellation and timeout.
 //
 // Parameters:
@@ -42,14 +42,14 @@ func (h *agentHandler) Gets(ctx context.Context, size uint64, token string, filt
 // Returns:
 // ([]*agent.Agent, error): A slice of pointers to agent.Agent structs representing the retrieved agents,
 // and an error if any occurred during the operation. If no agents are found, an empty slice is returned.
-func (h *agentHandler) GetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr commonaddress.Address) ([]*agent.Agent, error) {
+func (h *agentHandler) GetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerIDAndAddress",
+		"func":        "GetByCustomerIDAndAddress",
 		"customer_id": customerID,
 		"address":     addr,
 	})
 
-	res, err := h.db.AgentGetsByCustomerIDAndAddress(ctx, customerID, addr)
+	res, err := h.db.AgentGetByCustomerIDAndAddress(ctx, customerID, addr)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
@@ -303,10 +303,63 @@ func (h *agentHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []
 // UpdateAddresses updates the agent's addresses.
 func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "UpdateAddresses",
-		"agent_id": id,
+		"func":      "UpdateAddresses",
+		"agent_id":  id,
+		"addresses": addresses,
 	})
 	log.Debug("Updating the agent's addresses.")
+
+	// get agent
+	a, err := h.dbGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the agent. err: %v", err)
+		return nil, errors.Wrap(err, "could not get the agent")
+	}
+	log.WithField("agent", a).Debugf("Found agent info. agent_id: %s", a.ID)
+
+	// validate the addresses
+	for _, address := range addresses {
+		// validate address
+		switch address.Type {
+		case commonaddress.TypeExtension:
+			extensionID := uuid.FromStringOrNil(address.Target)
+			if extensionID == uuid.Nil {
+				return nil, errors.Errorf("invalid extension id")
+			}
+
+			tmp, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
+			if err != nil {
+				log.Errorf("Could not get extension info. err: %v", err)
+				return nil, errors.Wrap(err, "could not get extension info")
+			}
+
+			if tmp.CustomerID != a.CustomerID {
+				log.Errorf("Wrong customer info.")
+				return nil, errors.Errorf("wrong customer info")
+			}
+
+		case commonaddress.TypeTel, commonaddress.TypeSIP:
+			// validate tel/sip
+			if len(address.Target) == 0 {
+				return nil, errors.Errorf("invalid target")
+			}
+
+		default:
+			return nil, errors.Errorf("unknown address type")
+		}
+
+		// check if the address is already assigned to the other agent
+		ag, err := h.GetByCustomerIDAndAddress(ctx, a.CustomerID, &address)
+		if err != nil {
+			log.Errorf("Could not get agent info of the address. err: %v", err)
+			return nil, errors.Wrap(err, "could not get agent info of the address")
+		}
+
+		if ag != nil && ag.ID != a.ID {
+			log.Errorf("The address is already assigned to the other agent. agent_id: %s", ag.ID)
+			return nil, errors.Wrapf(err, "the address is already assigned to the other agent")
+		}
+	}
 
 	res, err := h.dbUpdateAddresses(ctx, id, addresses)
 	if err != nil {

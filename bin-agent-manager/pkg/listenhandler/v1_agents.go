@@ -182,6 +182,50 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *rabbitmq
 	return res, nil
 }
 
+// processV1AgentsGetByCustomerIDAddressPost handles Post /v1/agents/get_by_customer_id_address request
+func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1AgentsGetCustomerIDAddressPost",
+	})
+	log.Debug("Executing processV1AgentsGetCustomerIDAddressPost.")
+
+	var reqData request.V1DataAgentsGetByCustomerIDAddressPost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	log = log.WithFields(logrus.Fields{
+		"customer_id": reqData.CustomerID,
+		"address":     reqData.Address,
+	})
+	log.Debug("Getting an agent.")
+
+	// create an agent
+	tmp, err := h.agentHandler.GetByCustomerIDAndAddress(
+		ctx,
+		reqData.CustomerID,
+		&reqData.Address,
+	)
+	if err != nil {
+		log.Errorf("Could not create an agent info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1AgentsUsernameLogin handles Post /v1/agents/<agent_username>/login request
 func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")

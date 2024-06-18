@@ -81,6 +81,21 @@ func (mr *MockDBHandlerMockRecorder) AgentGet(ctx, id interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGet", reflect.TypeOf((*MockDBHandler)(nil).AgentGet), ctx, id)
 }
 
+// AgentGetByCustomerIDAndAddress mocks base method.
+func (m *MockDBHandler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address *address.Address) (*agent.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentGetByCustomerIDAndAddress", ctx, customerID, address)
+	ret0, _ := ret[0].(*agent.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentGetByCustomerIDAndAddress indicates an expected call of AgentGetByCustomerIDAndAddress.
+func (mr *MockDBHandlerMockRecorder) AgentGetByCustomerIDAndAddress(ctx, customerID, address interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGetByCustomerIDAndAddress", reflect.TypeOf((*MockDBHandler)(nil).AgentGetByCustomerIDAndAddress), ctx, customerID, address)
+}
+
 // AgentGetByUsername mocks base method.
 func (m *MockDBHandler) AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
@@ -109,21 +124,6 @@ func (m *MockDBHandler) AgentGets(ctx context.Context, size uint64, token string
 func (mr *MockDBHandlerMockRecorder) AgentGets(ctx, size, token, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockDBHandler)(nil).AgentGets), ctx, size, token, filters)
-}
-
-// AgentGetsByCustomerIDAndAddress mocks base method.
-func (m *MockDBHandler) AgentGetsByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address address.Address) ([]*agent.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentGetsByCustomerIDAndAddress", ctx, customerID, address)
-	ret0, _ := ret[0].([]*agent.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentGetsByCustomerIDAndAddress indicates an expected call of AgentGetsByCustomerIDAndAddress.
-func (mr *MockDBHandlerMockRecorder) AgentGetsByCustomerIDAndAddress(ctx, customerID, address interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGetsByCustomerIDAndAddress", reflect.TypeOf((*MockDBHandler)(nil).AgentGetsByCustomerIDAndAddress), ctx, customerID, address)
 }
 
 // AgentSetAddresses mocks base method.
