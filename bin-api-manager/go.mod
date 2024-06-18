@@ -79,13 +79,13 @@ require (
 
 require (
 	cloud.google.com/go/storage v1.42.0
-	github.com/gorilla/websocket v1.5.2
+	github.com/gorilla/websocket v1.5.3
 	github.com/pebbe/zmq4 v1.2.11
 	github.com/pion/rtp v1.8.6
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
-	google.golang.org/api v0.183.0
+	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
+	google.golang.org/api v0.185.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
@@ -111,7 +111,7 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.114.0 // indirect
+	cloud.google.com/go v0.115.0 // indirect
 	cloud.google.com/go/auth v0.5.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
@@ -170,9 +170,9 @@ require (
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	google.golang.org/genproto v0.0.0-20240610135401-a8a62080eff3 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240610135401-a8a62080eff3 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240610135401-a8a62080eff3 // indirect
+	google.golang.org/genproto v0.0.0-20240617180043-68d350f18fd4 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240617180043-68d350f18fd4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240617180043-68d350f18fd4 // indirect
 	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
