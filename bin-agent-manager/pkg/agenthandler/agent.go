@@ -357,7 +357,7 @@ func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addres
 
 		if ag != nil && ag.ID != a.ID {
 			log.Errorf("The address is already assigned to the other agent. agent_id: %s", ag.ID)
-			return nil, errors.Wrapf(err, "the address is already assigned to the other agent")
+			return nil, errors.Errorf("the address is already assigned to the other agent")
 		}
 	}
 
