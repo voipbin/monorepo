@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-common-handler/models/address"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -77,7 +78,41 @@ func (r *requestHandler) AgentV1AgentCreate(
 func (r *requestHandler) AgentV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", agentID)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res amagent.Agent
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// AgentV1AgentGet sends a request to agent-manager
+// to getting an agent.
+// it returns an agent if it succeed.
+func (r *requestHandler) AgentV1AgentGetByCustomerIDAndAddress(ctx context.Context, timeout int, customerID uuid.UUID, addr commonaddress.Address) (*amagent.Agent, error) {
+	uri := "/v1/agents/get_by_customer_id_address"
+
+	data := &amrequest.V1DataAgentsGetByCustomerIDAddressPost{
+		CustomerID: customerID,
+		Address:    addr,
+	}
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPost, "agent/agents/get_by_customer_id_address", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -105,7 +140,7 @@ func (r *requestHandler) AgentV1AgentGets(ctx context.Context, pageToken string,
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -140,7 +175,7 @@ func (r *requestHandler) AgentV1AgentGetsByTagIDs(ctx context.Context, customerI
 
 	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s", customerID, tagStr)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -175,7 +210,7 @@ func (r *requestHandler) AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, 
 
 	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s&status=%s", customerID, tagStr, status)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -200,7 +235,7 @@ func (r *requestHandler) AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, 
 func (r *requestHandler) AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodDelete, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodDelete, "agent/agents/<agent-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

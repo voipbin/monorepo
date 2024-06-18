@@ -221,6 +221,7 @@ type RequestHandler interface {
 		addresses []commonaddress.Address,
 	) (*amagent.Agent, error)
 	AgentV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error)
+	AgentV1AgentGetByCustomerIDAndAddress(ctx context.Context, timeout int, customerID uuid.UUID, addr commonaddress.Address) (*amagent.Agent, error)
 	AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amagent.Agent, error)
 	AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error)
 	AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error)
