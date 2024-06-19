@@ -202,18 +202,18 @@ func (mr *MockCallHandlerMockRecorder) ChainedCallIDRemove(ctx, id, chainedCallI
 }
 
 // CreateCallOutgoing mocks base method.
-func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID uuid.UUID, ownerType call.OwnerType, ownerID, flowID, activeflowID, masterCallID, groupcallID uuid.UUID, source, destination address.Address, earlyExecution, connect bool) (*call.Call, error) {
+func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID, groupcallID uuid.UUID, source, destination address.Address, earlyExecution, connect bool) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, customerID, ownerType, ownerID, flowID, activeflowID, masterCallID, groupcallID, source, destination, earlyExecution, connect)
+	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, customerID, flowID, activeflowID, masterCallID, groupcallID, source, destination, earlyExecution, connect)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCallOutgoing indicates an expected call of CreateCallOutgoing.
-func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, customerID, ownerType, ownerID, flowID, activeflowID, masterCallID, groupcallID, source, destination, earlyExecution, connect interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, customerID, flowID, activeflowID, masterCallID, groupcallID, source, destination, earlyExecution, connect interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, customerID, ownerType, ownerID, flowID, activeflowID, masterCallID, groupcallID, source, destination, earlyExecution, connect)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, customerID, flowID, activeflowID, masterCallID, groupcallID, source, destination, earlyExecution, connect)
 }
 
 // CreateCallsOutgoing mocks base method.

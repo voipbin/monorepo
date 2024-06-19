@@ -65,7 +65,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, ownerType, ownerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -97,8 +97,6 @@ func (h *callHandler) CreateCallOutgoing(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
-	ownerType call.OwnerType,
-	ownerID uuid.UUID,
 	flowID uuid.UUID,
 	activeflowID uuid.UUID,
 	masterCallID uuid.UUID,
@@ -112,8 +110,6 @@ func (h *callHandler) CreateCallOutgoing(
 		"funcs":                         "CreateCallOutgoing",
 		"id":                            id,
 		"customer_id":                   customerID,
-		"owner_type":                    ownerType,
-		"owner_id":                      ownerID,
 		"flow":                          flowID,
 		"activeflow_id":                 activeflowID,
 		"master_call_id":                masterCallID,
@@ -180,6 +176,16 @@ func (h *callHandler) CreateCallOutgoing(
 	data := map[call.DataType]string{
 		call.DataTypeEarlyExecution:            strconv.FormatBool(earlyExecution),
 		call.DataTypeExecuteNextMasterOnHangup: strconv.FormatBool(executeNextMasterOnHangup),
+	}
+
+	// get owner info
+	ownerType := call.OwnerTypeNone
+	ownerID := uuid.Nil
+	owner, err := h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, destination)
+	if err == nil {
+		log.WithField("agent", owner).Debugf("Found owner info. owner_type: %s, owner_id: %s", call.OwnerTypeAgent, ownerID)
+		ownerType = call.OwnerTypeAgent
+		ownerID = owner.ID
 	}
 
 	// create a call

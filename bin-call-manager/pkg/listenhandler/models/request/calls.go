@@ -33,8 +33,6 @@ type V1DataCallsIDPost struct {
 	FlowID         uuid.UUID             `json:"flow_id,omitempty"`
 	ActiveflosID   uuid.UUID             `json:"activeflow_id,omitempty"`
 	CustomerID     uuid.UUID             `json:"customer_id,omitempty"`
-	OwnerType      call.OwnerType        `json:"owner_type,omitempty"`
-	OwnerID        uuid.UUID             `json:"owner_id,omitempty"`
 	MasterCallID   uuid.UUID             `json:"master_call_id,omitempty"`
 	Source         commonaddress.Address `json:"source,omitempty"`
 	Destination    commonaddress.Address `json:"destination,omitempty"`

@@ -97,3 +97,11 @@ func NewGroupcallHandler(
 
 	return h
 }
+
+func getKeys(m map[uuid.UUID]*commonaddress.Address) []uuid.UUID {
+	keys := make([]uuid.UUID, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}

@@ -295,8 +295,6 @@ func Test_processV1CallsIDPost(t *testing.T) {
 
 		callID       uuid.UUID
 		customerID   uuid.UUID
-		ownerType    call.OwnerType
-		ownerID      uuid.UUID
 		flowID       uuid.UUID
 		activeflowID uuid.UUID
 		masterCallID uuid.UUID
@@ -317,13 +315,11 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "owner_type": "agent", "owner_id": "49414f78-2bff-11ef-a0a9-1725ec454247", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "bf88a888-ddab-435b-8ae1-1eb8a3072230", "master_call_id": "11b1b1fa-8c93-11ec-9597-2320d5458176"}`),
+				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "bf88a888-ddab-435b-8ae1-1eb8a3072230", "master_call_id": "11b1b1fa-8c93-11ec-9597-2320d5458176"}`),
 			},
 
 			callID:       uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 			customerID:   uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
-			ownerType:    call.OwnerTypeAgent,
-			ownerID:      uuid.FromStringOrNil("49414f78-2bff-11ef-a0a9-1725ec454247"),
 			flowID:       uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
 			activeflowID: uuid.FromStringOrNil("bf88a888-ddab-435b-8ae1-1eb8a3072230"),
 			masterCallID: uuid.FromStringOrNil("11b1b1fa-8c93-11ec-9597-2320d5458176"),
@@ -349,13 +345,11 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "ffeda266-7f50-11ec-8089-df3388aef0cc", "owner_type": "agent", "owner_id": "49b90518-2bff-11ef-858c-1383fd05ebc7", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "2e9f9862-9803-47f0-8f40-66f1522ef7f3", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {"type":"tel","target":"+821100000001"}, "groupcall_id":"266c6cce-bae2-11ed-afd7-ebef79165c1f","early_execution": true, "connect": true}`),
+				Data:     []byte(`{"customer_id": "ffeda266-7f50-11ec-8089-df3388aef0cc", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "2e9f9862-9803-47f0-8f40-66f1522ef7f3", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {"type":"tel","target":"+821100000001"}, "groupcall_id":"266c6cce-bae2-11ed-afd7-ebef79165c1f","early_execution": true, "connect": true}`),
 			},
 
 			callID:       uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
 			customerID:   uuid.FromStringOrNil("ffeda266-7f50-11ec-8089-df3388aef0cc"),
-			ownerType:    call.OwnerTypeAgent,
-			ownerID:      uuid.FromStringOrNil("49b90518-2bff-11ef-858c-1383fd05ebc7"),
 			flowID:       uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
 			activeflowID: uuid.FromStringOrNil("2e9f9862-9803-47f0-8f40-66f1522ef7f3"),
 			masterCallID: uuid.Nil,
@@ -409,7 +403,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

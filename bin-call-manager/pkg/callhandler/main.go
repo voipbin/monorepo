@@ -73,8 +73,6 @@ type CallHandler interface {
 		ctx context.Context,
 		id uuid.UUID,
 		customerID uuid.UUID,
-		ownerType call.OwnerType,
-		ownerID uuid.UUID,
 		flowID uuid.UUID,
 		activeflowID uuid.UUID,
 		masterCallID uuid.UUID,
