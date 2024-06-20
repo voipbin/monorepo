@@ -101,6 +101,11 @@ func (h *groupcallHandler) startRingall(
 	})
 	log.Debugf("Starting the groupcall service.")
 
+	if len(destinations) == 1 {
+		// single destination
+		// res, err := h.....
+	}
+
 	mapGroupcalls := map[uuid.UUID]*commonaddress.Address{}
 	mapCalls := map[uuid.UUID]*commonaddress.Address{}
 
@@ -334,13 +339,149 @@ func (h *groupcallHandler) dialChainedGroupcall(
 		return nil, fmt.Errorf("unsupported address type")
 	}
 
+	// get destinatino owner
+	ownerType := groupcall.OnwerTypeNone
+	ownerID := uuid.Nil
+	owner, err := h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, *destination)
+	if err == nil && owner != nil {
+		ownerType = groupcall.OwnerTypeAgent
+		ownerID = owner.ID
+	}
+
 	// create chained groupcall
+	tmpGroupcallID := h.utilHandler.UUIDCreate()
+	res, err := h.Create(ctx, id, customerID, ownerType, ownerID, flowID, source, []commonaddress.Address{*destination}, []uuid.UUID{}, []uuid.UUID{tmpGroupcallID}, masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod)
+	if err != nil {
+		log.Errorf("Could not create groupcall. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create groupcall.")
+	}
+
 	res, err := h.reqHandler.CallV1GroupcallCreate(ctx, id, customerID, flowID, *source, dialDestinations, masterCallID, masterGroupcallID, ringMethod, groupcall.AnswerMethodHangupOthers)
 	if err != nil {
 		log.Errorf("Could not create chained groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "could not create chained groupcall info")
 	}
 	log.WithField("chained_groupcall", res).Debugf("Created chained groupcall info. chained_groupcall_id: %s", res.ID)
+
+	return res, nil
+}
+
+func (h *groupcallHandler) startRingallWithDestination(
+	ctx context.Context,
+	id uuid.UUID,
+	customerID uuid.UUID,
+	flowID uuid.UUID,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+	masterCallID uuid.UUID,
+	masterGroupcallID uuid.UUID,
+	answerMethod groupcall.AnswerMethod,
+) (*groupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                "dialChaingedGroupcalls",
+		"customer_id":         customerID,
+		"flow_id":             flowID,
+		"source":              source,
+		"destinations":        destination,
+		"master_call_id":      masterCallID,
+		"master_groupcall_id": masterGroupcallID,
+	})
+
+	if id == uuid.Nil {
+		// the id is nil. Create a new id
+		id = h.utilHandler.UUIDCreate()
+		log = log.WithField("id", id)
+		log.Debugf("The id is invalid. Generate a new id. id: %s", id)
+	}
+
+	// get dial destinations and ring method
+	var dialDestinations []commonaddress.Address
+	var ringMethod groupcall.RingMethod
+	var err error
+	switch destination.Type {
+	case commonaddress.TypeAgent:
+		// get destinations
+		dialDestinations, ringMethod, err = h.getDialDestinationsAddressAndRingMethodTypeAgent(ctx, customerID, destination)
+		if err != nil {
+			log.Errorf("Could not get destination addresss. err: %v", err)
+			return nil, errors.Wrap(err, "could not get destination addresses")
+		}
+
+	case commonaddress.TypeExtension:
+		// get destinations
+		dialDestinations, err = h.getDialDestinationsAddressTypeExtension(ctx, customerID, destination)
+		ringMethod = groupcall.RingMethodRingAll
+		if err != nil {
+			log.Errorf("Could not get destination address. err: %v", err)
+			return nil, errors.Wrap(err, "could not get destination addresses")
+		}
+
+	case commonaddress.TypeSIP, commonaddress.TypeTel:
+		log.Debugf("Normal address type.")
+		// this is ok
+
+	default:
+		log.Errorf("Unsupported address type. address_type: %s", destination.Type)
+		return nil, fmt.Errorf("unsupported address type")
+	}
+
+	mapGroupcalls := map[uuid.UUID]*commonaddress.Address{}
+	mapCalls := map[uuid.UUID]*commonaddress.Address{}
+	for _, dialDestination := range dialDestinations {
+		tmpID := h.utilHandler.UUIDCreate()
+		if h.IsGroupcallTypeAddress(&dialDestination) {
+			mapGroupcalls[tmpID] = &dialDestination
+		} else {
+			mapCalls[tmpID] = &dialDestination
+		}
+	}
+
+	// get destinatinon owner
+	ownerType := groupcall.OnwerTypeNone
+	ownerID := uuid.Nil
+	owner, err := h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, *destination)
+	if err == nil && owner != nil {
+		ownerType = groupcall.OwnerTypeAgent
+		ownerID = owner.ID
+	}
+
+	// create groupcall
+	callIDs := getKeys(mapCalls)
+	groupcallIDs := getKeys(mapGroupcalls)
+	res, err := h.Create(ctx, id, customerID, ownerType, ownerID, flowID, source, []commonaddress.Address{*destination}, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod)
+	if err != nil {
+		log.Errorf("Could not create groupcall. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create groupcall.")
+	}
+
+	// create chained groupcall
+	for chainedGroupcallID, destination := range mapGroupcalls {
+		go func(groupcallID uuid.UUID, destination *commonaddress.Address) {
+			// create subgroupcalls
+			tmp, err := h.dialChainedGroupcall(ctx, groupcallID, customerID, flowID, source, destination, masterCallID, id)
+			if err != nil {
+				log.WithField("dial_destination", destination).Errorf("Could not create the chained groupcall info. err: %v", err)
+				_, _ = h.HangupGroupcall(ctx, id)
+				return
+			}
+			log.WithField("chained_groupcall", tmp).Debugf("Created chained groupcall info. chained_groupcall_id: %s", tmp.ID)
+		}(chainedGroupcallID, destination)
+	}
+
+	// create chained calls
+	for chainedCallID, destination := range mapCalls {
+
+		go func(callID uuid.UUID, destination *commonaddress.Address) {
+			// we don't allow to add the connect option for groupcall
+			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, id, false, false)
+			if err != nil {
+				log.WithField("dial_destination", destination).Errorf("Could not create a chained call. err: %v", err)
+				_, _ = h.HangupCall(ctx, id)
+				return
+			}
+			log.WithField("chained_call", tmp).Debugf("Created chained call info. chanined_call_id: %s", tmp.ID)
+		}(chainedCallID, destination)
+	}
 
 	return res, nil
 }
