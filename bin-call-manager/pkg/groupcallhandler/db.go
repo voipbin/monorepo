@@ -38,6 +38,7 @@ func (h *groupcallHandler) Create(
 		"source":         source,
 		"destinations":   destinations,
 		"call_ids":       callIDs,
+		"groupcall_ids":  groupcallIDs,
 		"master_call_id": masterCallID,
 		"ring_method":    ringMethod,
 		"answer_method":  answerMethod,

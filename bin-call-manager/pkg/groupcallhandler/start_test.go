@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	agagent "monorepo/bin-agent-manager/models/agent"
+	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -38,8 +39,10 @@ func Test_Start_ringall(t *testing.T) {
 		ringMethod        groupcall.RingMethod
 		answerMethod      groupcall.AnswerMethod
 
-		responseUUIDs []uuid.UUID
-		responseCall  *call.Call
+		responseUUIDs     []uuid.UUID
+		responseAgent     *agagent.Agent
+		responseExtension *rmextension.Extension
+		responseCall      *call.Call
 
 		expectGroupcall             *groupcall.Groupcall
 		expectCallIDs               []uuid.UUID
@@ -72,6 +75,10 @@ func Test_Start_ringall(t *testing.T) {
 
 			responseUUIDs: []uuid.UUID{
 				uuid.FromStringOrNil("b521af3c-bbe7-11ed-910d-673d428424ab"),
+			},
+			responseAgent: &agagent.Agent{
+				ID:         uuid.FromStringOrNil("98fcf9ca-2c01-11ef-a404-cbad07804e20"),
+				CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
 			},
 
 			expectGroupcall: &groupcall.Groupcall{
@@ -128,7 +135,7 @@ func Test_Start_ringall(t *testing.T) {
 			destinations: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeAgent,
-					Target: "ff7d7da7-1a35-4ed4-a085-f3c15723b9d6",
+					Target: "997e5a1a-2c01-11ef-a85e-4713a1f9259c",
 				},
 			},
 			masterCallID:      uuid.FromStringOrNil("41e86dbc-bbe7-11ed-b8e6-9b0e694bbd6a"),
@@ -138,6 +145,16 @@ func Test_Start_ringall(t *testing.T) {
 
 			responseUUIDs: []uuid.UUID{
 				uuid.FromStringOrNil("c77bbfba-3856-4188-84a3-d735612dcc7d"),
+			},
+			responseAgent: &agagent.Agent{
+				ID:         uuid.FromStringOrNil("997e5a1a-2c01-11ef-a85e-4713a1f9259c"),
+				CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+				Addresses: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000002",
+					},
+				},
 			},
 
 			expectGroupcall: &groupcall.Groupcall{
@@ -154,28 +171,28 @@ func Test_Start_ringall(t *testing.T) {
 				Destinations: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeAgent,
-						Target: "ff7d7da7-1a35-4ed4-a085-f3c15723b9d6",
+						Target: "997e5a1a-2c01-11ef-a85e-4713a1f9259c",
 					},
 				},
 				MasterCallID:      uuid.FromStringOrNil("41e86dbc-bbe7-11ed-b8e6-9b0e694bbd6a"),
 				MasterGroupcallID: uuid.FromStringOrNil("df82ebde-e468-11ed-b9c0-a3de9b27d448"),
 				RingMethod:        groupcall.RingMethodRingAll,
 				AnswerMethod:      groupcall.AnswerMethodHangupOthers,
-				CallIDs:           []uuid.UUID{},
-				GroupcallIDs: []uuid.UUID{
+				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("c77bbfba-3856-4188-84a3-d735612dcc7d"),
 				},
-				CallCount:      0,
-				GroupcallCount: 1,
+				GroupcallIDs:   []uuid.UUID{},
+				CallCount:      1,
+				GroupcallCount: 0,
 				DialIndex:      0,
 			},
-			expectGroupcallIDs: []uuid.UUID{
+			expectCallIDs: []uuid.UUID{
 				uuid.FromStringOrNil("c77bbfba-3856-4188-84a3-d735612dcc7d"),
 			},
-			expectGroupcallDestinations: []*commonaddress.Address{
+			expectCallDestinations: []*commonaddress.Address{
 				{
-					Type:   commonaddress.TypeAgent,
-					Target: "ff7d7da7-1a35-4ed4-a085-f3c15723b9d6",
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000002",
 				},
 			},
 		},
@@ -202,6 +219,27 @@ func Test_Start_ringall(t *testing.T) {
 			for _, id := range tt.responseUUIDs {
 				mockUtil.EXPECT().UUIDCreate().Return(id)
 			}
+
+			// getDialAddressesAndRingMethod
+			if tt.destinations[0].Type == commonaddress.TypeAgent {
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
+			} else if tt.destinations[0].Type == commonaddress.TypeExtension {
+				mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.customerID, tt.destinations[0].Target).Return(tt.responseAgent, nil)
+			}
+
+			// getAddressOwner
+			if tt.destinations[0].Type == commonaddress.TypeAgent {
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
+			} else {
+				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destinations[0]).Return(tt.responseAgent, nil)
+			}
+
+			// if
+
+			// if tt.destinations[0].Target == string(groupcall.OwnerTypeAgent) {
+
+			// 	// mockReq.EXPECT().AgentV1AgentGet(ctx, tt.)
+			// }
 
 			// create
 			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall).Return(nil)
