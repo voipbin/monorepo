@@ -399,8 +399,6 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 		name string
 
 		customerID   uuid.UUID
-		ownerType    call.OwnerType
-		ownerID      uuid.UUID
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
 		source       *commonaddress.Address
@@ -412,8 +410,6 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			name: "normal",
 
 			customerID:   uuid.FromStringOrNil("e9a6c252-b5c4-11ed-8431-0f528880d39a"),
-			ownerType:    call.OwnerTypeAgent,
-			ownerID:      uuid.FromStringOrNil("8f3d4d30-2c02-11ef-8f57-87c7c8b530c0"),
 			flowID:       uuid.FromStringOrNil("e9ebb18c-b5c4-11ed-9775-cf1b5f3ac127"),
 			masterCallID: uuid.FromStringOrNil("7ca3f4f7-a5c3-4df3-8a8a-a008ac2380be"),
 			source: &commonaddress.Address{
@@ -457,9 +453,9 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, groupcall.OwnerType(tt.ownerType), tt.ownerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
 
-			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
+			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -477,8 +473,6 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 		name string
 
 		customerID   uuid.UUID
-		ownerType    call.OwnerType
-		ownerID      uuid.UUID
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
 		source       *commonaddress.Address
@@ -490,8 +484,6 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 			name: "agent ring method ring linear",
 
 			customerID:   uuid.FromStringOrNil("f5979302-e274-11ed-8e02-f7e891b8718e"),
-			ownerType:    call.OwnerTypeAgent,
-			ownerID:      uuid.FromStringOrNil("8f7d399a-2c02-11ef-99fb-db9ebe2050d5"),
 			flowID:       uuid.FromStringOrNil("f5cfdd2a-e274-11ed-a8cb-eb89c814da27"),
 			masterCallID: uuid.FromStringOrNil("f5fc5972-e274-11ed-999b-2743d4d4b02a"),
 			source: &commonaddress.Address{
@@ -535,9 +527,9 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, groupcall.OwnerType(tt.ownerType), tt.ownerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
 
-			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
+			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

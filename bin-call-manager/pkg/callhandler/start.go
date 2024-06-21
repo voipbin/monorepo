@@ -541,3 +541,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	}
 
 }
+
+func (h *callHandler) getOwner(ctx context.Context, customerID uuid.UUID, address *commonaddress.Address) (call.OwnerType, uuid.UUID, error) {
+
+}

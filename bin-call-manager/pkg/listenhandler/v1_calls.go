@@ -115,7 +115,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 		return simpleResponse(400), nil
 	}
 
-	calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.OwnerType, req.OwnerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.Connect)
+	calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.Connect)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil

@@ -27,8 +27,6 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 
 		expectID                uuid.UUID
 		expectCustomerID        uuid.UUID
-		expectOwnerType         groupcall.OwnerType
-		expectOwnerID           uuid.UUID
 		expectSource            *commonaddress.Address
 		expectDestinations      []commonaddress.Address
 		expectFlowID            uuid.UUID
@@ -47,7 +45,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 				URI:      "/v1/groupcalls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"114c466e-e46a-11ed-9034-5fd743781da6","customer_id":"dabd81b0-bb3f-11ed-8542-3bb36342932e","owner_type":"agent","owner_id":"156896a4-2c02-11ef-90dc-5f000c9b260f","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"flow_id":"db049be0-bb3f-11ed-901a-eff2e3b25b21","master_call_id":"db3ccfc4-bb3f-11ed-bb95-238737bb066d","master_groupcall_id":"1184419a-e46a-11ed-971d-5b09d31146cf","ring_method":"ring_all","answer_method":"hangup_others"}`),
+				Data:     []byte(`{"id":"114c466e-e46a-11ed-9034-5fd743781da6","customer_id":"dabd81b0-bb3f-11ed-8542-3bb36342932e","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"flow_id":"db049be0-bb3f-11ed-901a-eff2e3b25b21","master_call_id":"db3ccfc4-bb3f-11ed-bb95-238737bb066d","master_groupcall_id":"1184419a-e46a-11ed-971d-5b09d31146cf","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
 
 			responseGroupcall: &groupcall.Groupcall{
@@ -56,8 +54,6 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 
 			expectID:         uuid.FromStringOrNil("114c466e-e46a-11ed-9034-5fd743781da6"),
 			expectCustomerID: uuid.FromStringOrNil("dabd81b0-bb3f-11ed-8542-3bb36342932e"),
-			expectOwnerType:  groupcall.OwnerTypeAgent,
-			expectOwnerID:    uuid.FromStringOrNil("156896a4-2c02-11ef-90dc-5f000c9b260f"),
 			expectSource: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
@@ -105,8 +101,6 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 				gomock.Any(),
 				tt.expectID,
 				tt.expectCustomerID,
-				tt.expectOwnerType,
-				tt.expectOwnerID,
 				tt.expectFlowID,
 				tt.expectSource,
 				tt.expectDestinations,

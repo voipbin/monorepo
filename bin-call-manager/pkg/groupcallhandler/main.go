@@ -33,8 +33,6 @@ type GroupcallHandler interface {
 		ctx context.Context,
 		id uuid.UUID,
 		customerID uuid.UUID,
-		ownerType groupcall.OwnerType,
-		ownerID uuid.UUID,
 		flowID uuid.UUID,
 		source *commonaddress.Address,
 		destinations []commonaddress.Address,

@@ -139,7 +139,7 @@ func (h *groupcallHandler) getDialAddressesAndRingMethod(ctx context.Context, cu
 	})
 
 	var resDialDestinations []commonaddress.Address
-	resRingMethod := groupcall.RingMethodRingAll
+	var resRingMethod groupcall.RingMethod
 	var err error
 	switch destination.Type {
 	case commonaddress.TypeAgent:

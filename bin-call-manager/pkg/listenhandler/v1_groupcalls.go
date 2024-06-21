@@ -81,8 +81,6 @@ func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *rabbitmq
 		ctx,
 		req.ID,
 		req.CustomerID,
-		req.OwnerType,
-		req.OwnerID,
 		req.FlowID,
 		&req.Source,
 		req.Destinations,

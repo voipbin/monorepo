@@ -29,8 +29,6 @@ func Test_Start_ringall(t *testing.T) {
 
 		id                uuid.UUID
 		customerID        uuid.UUID
-		ownerType         groupcall.OwnerType
-		ownerID           uuid.UUID
 		flowID            uuid.UUID
 		source            *commonaddress.Address
 		destinations      []commonaddress.Address
@@ -55,8 +53,6 @@ func Test_Start_ringall(t *testing.T) {
 
 			id:         uuid.FromStringOrNil("df3b830c-e468-11ed-adc8-bb725367b1c4"),
 			customerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
-			ownerType:  groupcall.OwnerTypeAgent,
-			ownerID:    uuid.FromStringOrNil("98fcf9ca-2c01-11ef-a404-cbad07804e20"),
 			flowID:     uuid.FromStringOrNil("40e71e72-bbe7-11ed-9334-a7afb83b403e"),
 			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -125,8 +121,6 @@ func Test_Start_ringall(t *testing.T) {
 
 			id:         uuid.FromStringOrNil("0bdd8a4b-6b49-45d9-b4e2-7f0c5e792519"),
 			customerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
-			ownerType:  groupcall.OwnerTypeAgent,
-			ownerID:    uuid.FromStringOrNil("997e5a1a-2c01-11ef-a85e-4713a1f9259c"),
 			flowID:     uuid.FromStringOrNil("ad291cc4-f37a-4438-be8d-53b3c61ca40d"),
 			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -234,13 +228,6 @@ func Test_Start_ringall(t *testing.T) {
 				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destinations[0]).Return(tt.responseAgent, nil)
 			}
 
-			// if
-
-			// if tt.destinations[0].Target == string(groupcall.OwnerTypeAgent) {
-
-			// 	// mockReq.EXPECT().AgentV1AgentGet(ctx, tt.)
-			// }
-
 			// create
 			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any()).Return(tt.expectGroupcall, nil)
@@ -261,7 +248,7 @@ func Test_Start_ringall(t *testing.T) {
 				mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.expectGroupcallIDs[i], tt.customerID, tt.flowID, *tt.source, gomock.Any(), tt.masterCallID, tt.expectGroupcall.ID, ringMethod, groupcall.AnswerMethodHangupOthers).Return(&groupcall.Groupcall{}, nil)
 			}
 
-			res, err := h.Start(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
+			res, err := h.Start(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -282,8 +269,6 @@ func Test_Start_linear(t *testing.T) {
 
 		id                uuid.UUID
 		customerID        uuid.UUID
-		ownerType         groupcall.OwnerType
-		ownerID           uuid.UUID
 		flowID            uuid.UUID
 		source            *commonaddress.Address
 		destinations      []commonaddress.Address
@@ -301,8 +286,6 @@ func Test_Start_linear(t *testing.T) {
 
 			id:         uuid.FromStringOrNil("12d4525c-e469-11ed-91fc-2b73eae10785"),
 			customerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
-			ownerType:  groupcall.OwnerTypeAgent,
-			ownerID:    uuid.FromStringOrNil("d3aa3c18-2c01-11ef-b2b8-6b004bb8dd0b"),
 			flowID:     uuid.FromStringOrNil("40e71e72-bbe7-11ed-9334-a7afb83b403e"),
 			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -365,7 +348,7 @@ func Test_Start_linear(t *testing.T) {
 				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &tt.destinations[0], tt.responseGroupcall.ID, false, false).Return(&call.Call{}, nil)
 			}
 
-			res, err := h.Start(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, groupcall.RingMethodLinear, tt.answerMethod)
+			res, err := h.Start(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, groupcall.RingMethodLinear, tt.answerMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

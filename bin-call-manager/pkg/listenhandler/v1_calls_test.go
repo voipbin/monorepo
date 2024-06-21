@@ -422,8 +422,6 @@ func Test_processV1CallsPost(t *testing.T) {
 		name string
 
 		customerID     uuid.UUID
-		ownerType      call.OwnerType
-		ownerID        uuid.UUID
 		flowID         uuid.UUID
 		masterCallID   uuid.UUID
 		source         commonaddress.Address
@@ -443,8 +441,6 @@ func Test_processV1CallsPost(t *testing.T) {
 
 			customerID:   uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
 			flowID:       uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
-			ownerType:    call.OwnerTypeAgent,
-			ownerID:      uuid.FromStringOrNil("705556a4-2bff-11ef-ad2b-3358935b1074"),
 			masterCallID: uuid.Nil,
 			source: commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
@@ -487,8 +483,6 @@ func Test_processV1CallsPost(t *testing.T) {
 			name: "empty",
 
 			customerID:     uuid.FromStringOrNil("34e72f78-7f51-11ec-a83b-cfc69cd4a641"),
-			ownerType:      call.OwnerTypeAgent,
-			ownerID:        uuid.FromStringOrNil("71145ca2-2bff-11ef-868b-17bb55414f44"),
 			flowID:         uuid.FromStringOrNil("78fd1276-f3a8-11ea-9734-6735e73fd720"),
 			masterCallID:   uuid.FromStringOrNil("a1c63272-8c91-11ec-8ee7-8b50458d3214"),
 			source:         commonaddress.Address{},
@@ -534,7 +528,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

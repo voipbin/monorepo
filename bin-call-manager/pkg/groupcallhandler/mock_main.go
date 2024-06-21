@@ -186,18 +186,18 @@ func (mr *MockGroupcallHandlerMockRecorder) IsGroupcallTypeAddress(destination i
 }
 
 // Start mocks base method.
-func (m *MockGroupcallHandler) Start(ctx context.Context, id, customerID uuid.UUID, ownerType groupcall.OwnerType, ownerID, flowID uuid.UUID, source *address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.Groupcall, error) {
+func (m *MockGroupcallHandler) Start(ctx context.Context, id, customerID, flowID uuid.UUID, source *address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, ownerType, ownerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
+	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockGroupcallHandlerMockRecorder) Start(ctx, id, customerID, ownerType, ownerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod interface{}) *gomock.Call {
+func (mr *MockGroupcallHandlerMockRecorder) Start(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockGroupcallHandler)(nil).Start), ctx, id, customerID, ownerType, ownerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockGroupcallHandler)(nil).Start), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
 }
 
 // UpdateAnswerCallID mocks base method.
