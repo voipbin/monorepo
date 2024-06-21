@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -218,6 +219,8 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseConference.CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
+
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
@@ -400,6 +403,9 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
 			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
+
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseNumbers[0].CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
+
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseUUIDCall).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
@@ -675,6 +681,98 @@ func Test_Start_ContextJoinCall(t *testing.T) {
 
 			if err := h.Start(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_getAddressOwner(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		address    *commonaddress.Address
+
+		responseAgent *amagent.Agent
+
+		expectAgentID      uuid.UUID
+		expectResOwnerType call.OwnerType
+		expectResOwnerID   uuid.UUID
+	}{
+		{
+			name: "normal - address type is agent",
+
+			customerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+			address: &commonaddress.Address{
+				Type:   commonaddress.TypeAgent,
+				Target: "91a56bc6-2fd5-11ef-b664-bf13af632f01",
+			},
+
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
+				CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+			},
+
+			expectAgentID:      uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
+			expectResOwnerType: call.OwnerTypeAgent,
+			expectResOwnerID:   uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
+		},
+		{
+			name: "normal - address type is not agent",
+
+			customerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+			address: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+123456789",
+			},
+
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
+				CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+			},
+
+			expectResOwnerType: call.OwnerTypeAgent,
+			expectResOwnerID:   uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &callHandler{
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+			ctx := context.Background()
+
+			if tt.expectAgentID != uuid.Nil {
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
+			} else {
+				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, *tt.address).Return(tt.responseAgent, nil)
+			}
+
+			resOwnerType, resOwnerID, err := h.getAddressOwner(ctx, tt.customerID, tt.address)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if resOwnerType != tt.expectResOwnerType {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectResOwnerType, resOwnerType)
+			}
+			if resOwnerID != tt.expectResOwnerID {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectResOwnerID, resOwnerID)
 			}
 		})
 	}

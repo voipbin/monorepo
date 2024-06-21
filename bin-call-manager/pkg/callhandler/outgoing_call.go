@@ -38,8 +38,6 @@ const (
 func (h *callHandler) CreateCallsOutgoing(
 	ctx context.Context,
 	customerID uuid.UUID,
-	ownerType call.OwnerType,
-	ownerID uuid.UUID,
 	flowID uuid.UUID,
 	masterCallID uuid.UUID,
 	source commonaddress.Address,
@@ -50,8 +48,6 @@ func (h *callHandler) CreateCallsOutgoing(
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CreateCallsOutgoing",
 		"customer_id":     customerID,
-		"owner_type":      ownerType,
-		"owner_id":        ownerID,
 		"flow_id":         flowID,
 		"master_call_id":  masterCallID,
 		"source":          source,

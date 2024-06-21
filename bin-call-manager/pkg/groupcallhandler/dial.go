@@ -7,7 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"monorepo/bin-agent-manager/models/agent"
+	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -228,7 +228,7 @@ func (h *groupcallHandler) getDialDestinationsAddressAndRingMethodTypeAgent(ctx 
 	}
 
 	ringMethod := groupcall.RingMethodRingAll
-	if ag.RingMethod == agent.RingMethodLinear {
+	if ag.RingMethod == amagent.RingMethodLinear {
 		ringMethod = groupcall.RingMethodLinear
 	}
 
@@ -243,7 +243,7 @@ func (h *groupcallHandler) getAddressOwner(ctx context.Context, customerID uuid.
 		"address":     addr,
 	})
 
-	var tmp *agent.Agent
+	var tmp *amagent.Agent
 	var err error
 
 	if addr.Type == commonaddress.TypeAgent {

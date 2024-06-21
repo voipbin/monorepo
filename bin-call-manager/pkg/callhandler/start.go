@@ -8,6 +8,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	rmroute "monorepo/bin-route-manager/models/route"
@@ -399,7 +400,7 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, cf.CustomerID, call.OwnerTypeNone, uuid.Nil, cf.FlowID, source, destination)
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, cf.FlowID, source, destination)
 
 	return nil
 }
@@ -441,18 +442,16 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 	log.WithField("number", numb).Infof("Found number info. number_id: %s", numb.ID)
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, numb.CustomerID, call.OwnerTypeNone, uuid.Nil, numb.CallFlowID, source, destination)
+	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination)
 	return nil
 }
 
 // startCallTypeFlow handles flow calltype start.
-func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel, customerID uuid.UUID, ownerType call.OwnerType, ownerID uuid.UUID, flowID uuid.UUID, source *commonaddress.Address, destination *commonaddress.Address) {
+func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel, customerID uuid.UUID, flowID uuid.UUID, source *commonaddress.Address, destination *commonaddress.Address) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "startCallTypeFlow",
 		"channel":     cn,
 		"customer_id": customerID,
-		"owner_type":  ownerType,
-		"owner_id":    ownerID,
 		"flow_id":     flowID,
 		"source":      source,
 		"destination": destination,
@@ -474,6 +473,13 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
 		return
+	}
+
+	// ownerType := call.OwnerTypeNone
+	// ownerID := uuid.Nil
+	ownerType, ownerID, err := h.getAddressOwner(ctx, customerID, source)
+	if err != nil {
+		log.Errorf("Could not get the address owner. err: %v", err)
 	}
 
 	// create activeflow
@@ -542,6 +548,40 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 
 }
 
-func (h *callHandler) getOwner(ctx context.Context, customerID uuid.UUID, address *commonaddress.Address) (call.OwnerType, uuid.UUID, error) {
+// getAddressOwner returns the given address's owner
+func (h *callHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (call.OwnerType, uuid.UUID, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getAddressOwner",
+		"customer_id": customerID,
+		"address":     addr,
+	})
 
+	var tmp *amagent.Agent
+	var err error
+
+	if addr.Type == commonaddress.TypeAgent {
+		id := uuid.FromStringOrNil(addr.Target)
+		tmp, err = h.reqHandler.AgentV1AgentGet(ctx, id)
+		if err != nil {
+			log.Errorf("Could not get owner info. err: %v", err)
+			return call.OwnerTypeNone, uuid.Nil, err
+		}
+	} else {
+		tmp, err = h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, *addr)
+		if err != nil {
+			log.Errorf("Could not get agent info. err: %v", err)
+			return call.OwnerTypeNone, uuid.Nil, nil
+		}
+	}
+
+	if tmp == nil {
+		return call.OwnerTypeNone, uuid.Nil, nil
+	}
+
+	if tmp.CustomerID != customerID {
+		log.Errorf("The customer id is not valid.")
+		return call.OwnerTypeNone, uuid.Nil, err
+	}
+
+	return call.OwnerTypeAgent, tmp.ID, nil
 }
