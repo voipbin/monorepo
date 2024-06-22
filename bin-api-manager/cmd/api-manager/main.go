@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"io/fs"
 	"os"
 	"time"
 
@@ -101,11 +100,11 @@ func init() {
 	flag.Parse()
 
 	// write ssl file
-	if errWrite := os.WriteFile(constPrikeyFilename, []byte(*sslKey), fs.ModeAppend); errWrite != nil {
+	if errWrite := writeFile(constPrikeyFilename, *sslKey); errWrite != nil {
 		log.Errorf("Could not write ssl prikey file: %v", errWrite)
 		return
 	}
-	if errWrite := os.WriteFile(constCertFilename, []byte(*sslCert), fs.ModeAppend); errWrite != nil {
+	if errWrite := writeFile(constCertFilename, *sslCert); errWrite != nil {
 		log.Errorf("Could not write ssl cert file: %v", errWrite)
 		return
 	}
@@ -116,6 +115,31 @@ func init() {
 
 	// init middleware
 	middleware.Init(*jwtKey)
+}
+
+func writeFile(filename string, data string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "writeFile",
+		"filename": filename,
+	})
+
+	// Create or open the file
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Errorf("Could not create a file. err: %v", err)
+		return err
+	}
+	defer file.Close()
+
+	// Write the string data to the file
+	_, err = file.WriteString(data)
+	if err != nil {
+		log.Errorf("Could not write the data. err: %v", err)
+		return err
+	}
+
+	return nil
+
 }
 
 func run(
