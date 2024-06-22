@@ -1462,6 +1462,8 @@ commands:
             cd << parameters.source-directory >>/k8s
             sed -i -e "s/\${AUTHTOKEN_MESSAGEBIRD}/$CC_AUTHTOKEN_MESSAGEBIRD/g" ./*
             sed -i -e "s/\${AUTHTOKEN_OPENAI}/$CC_AUTHTOKEN_OPENAI/g" ./*
+            sed -i -e "s/\${SSL_PRIKEY_API}/$CC_SSL_PRIKEY_API/g" ./*
+            sed -i -e "s/\${SSL_CERT_API}/$CC_SSL_CERT_API/g" ./*
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 
