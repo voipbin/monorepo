@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"io"
-	"os"
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -35,8 +33,8 @@ import (
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
 
-var sslKey = flag.String("ssl_private", "", "Private key string for ssl connection.")
-var sslCert = flag.String("ssl_cert", "", "Cert key string for ssl connection.")
+var sslKey = flag.String("ssl_private", "./etc/ssl/privkey.pem", "Private key file for ssl connection.")
+var sslCert = flag.String("ssl_cert", "./etc/ssl/cert.pem", "Cert key file for ssl connection.")
 
 var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
 
@@ -51,11 +49,6 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
 var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
 var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name for tmp storage")
-
-const (
-	constPrikeyFilename = "/tmp/prikey.pem"
-	constCertFilename   = "/tmp/cert.pem"
-)
 
 //	@title			VoIPBIN project API
 //	@version		3.1.0
@@ -103,81 +96,8 @@ func init() {
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
 
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "init",
-		"ssl_key":        *sslKey,
-		"ssl_cert":       *sslCert,
-		"jwt_key":        *jwtKey,
-		"rabbit_addr":    *rabbitAddr,
-		"redis_addr":     *redisAddr,
-		"redis_password": *redisPassword,
-	})
-	log.Debug("Initiating...")
-
-	// write ssl file
-	if errWrite := writeFile(constPrikeyFilename, *sslKey); errWrite != nil {
-		log.Errorf("Could not write ssl prikey file: %v", errWrite)
-		return
-	}
-	_ = readFile(constPrikeyFilename)
-
-	if errWrite := writeFile(constCertFilename, *sslCert); errWrite != nil {
-		log.Errorf("Could not write ssl cert file: %v", errWrite)
-		return
-	}
-	_ = readFile(constCertFilename)
-
 	// init middleware
 	middleware.Init(*jwtKey)
-}
-
-func writeFile(filename string, data string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "writeFile",
-		"filename": filename,
-	})
-
-	// Create or open the file
-	file, err := os.Create(filename)
-	if err != nil {
-		log.Errorf("Could not create a file. err: %v", err)
-		return err
-	}
-	defer file.Close()
-
-	// Write the string data to the file
-	_, err = file.WriteString(data)
-	if err != nil {
-		log.Errorf("Could not write the data. err: %v", err)
-		return err
-	}
-
-	return nil
-}
-
-func readFile(filename string) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "readFile",
-		"filename": filename,
-	})
-
-	// Open the file
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Errorf("Could not open the file. err: %v", err)
-		return err
-	}
-	defer file.Close()
-
-	// Create or open the data
-	data, err := io.ReadAll(file)
-	if err != nil {
-		log.Errorf("Could not create a file. err: %v", err)
-		return err
-	}
-	log.Debugf("Read data. data: %s", string(data))
-
-	return nil
 }
 
 func run(
@@ -269,7 +189,7 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	api.ApplyRoutes(app)
 
 	logrus.Debug("Starting the api service.")
-	if errAppRun := app.RunTLS(":443", constCertFilename, constPrikeyFilename); errAppRun != nil {
+	if errAppRun := app.RunTLS(":443", *sslCert, *sslKey); errAppRun != nil {
 		log.Errorf("The api service ended with error. err: %v", errAppRun)
 	}
 }

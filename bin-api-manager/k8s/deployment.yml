@@ -52,7 +52,7 @@ spec:
             - '-jwt_key'
             - 'voipbin'
             - '-ssl_private'
-            - '${SSL_PRIKEY_API}'
+            - '${SSL_PRIVKEY_API}'
             - '-ssl_cert'
             - '${SSL_CERT_API}'
             - '-gcp_credential'
