@@ -28,6 +28,8 @@ func Test_Create(t *testing.T) {
 
 		id         uuid.UUID
 		customerID uuid.UUID
+		ownerType  call.OwnerType
+		ownerID    uuid.UUID
 
 		asteriskID   string
 		channelID    string
@@ -62,6 +64,8 @@ func Test_Create(t *testing.T) {
 
 			uuid.FromStringOrNil("db8e0052-5d15-11ed-afd1-f3139883b1f4"),
 			uuid.FromStringOrNil("dc375314-5d15-11ed-afd7-b3f36cf2d4a6"),
+			call.OwnerTypeAgent,
+			uuid.FromStringOrNil("812ff854-2bfe-11ef-9d3d-6fe5b3e2de92"),
 
 			"3e:50:6b:43:bb:30",
 			"dc88e2e2-5d15-11ed-bd52-f3db2e20c793",
@@ -110,6 +114,8 @@ func Test_Create(t *testing.T) {
 			&call.Call{
 				ID:         uuid.FromStringOrNil("db8e0052-5d15-11ed-afd1-f3139883b1f4"),
 				CustomerID: uuid.FromStringOrNil("dc375314-5d15-11ed-afd7-b3f36cf2d4a6"),
+				OwnerType:  call.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("812ff854-2bfe-11ef-9d3d-6fe5b3e2de92"),
 
 				ChannelID: "dc88e2e2-5d15-11ed-bd52-f3db2e20c793",
 				BridgeID:  "dcb241dc-5d15-11ed-9aa3-23e3fffa7037",
@@ -208,6 +214,8 @@ func Test_Create(t *testing.T) {
 
 				tt.id,
 				tt.customerID,
+				tt.ownerType,
+				tt.ownerID,
 
 				tt.channelID,
 				tt.bridgeID,

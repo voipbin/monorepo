@@ -16,6 +16,8 @@ type V1DataRecordingsGET struct {
 // v1 data type request struct for
 // /v1/recordings POST
 type V1DataRecordingsPost struct {
+	OwnerType     recording.OwnerType     `json:"owner_type,omitempty"`
+	OwnerID       uuid.UUID               `json:"owner_id,omitempty"`
 	ReferenceType recording.ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID               `json:"reference_id,omitempty"`
 	Format        recording.Format        `json:"format,omitempty"`         // default wav

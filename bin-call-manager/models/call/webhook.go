@@ -13,8 +13,11 @@ import (
 // WebhookMessage defines
 type WebhookMessage struct {
 	// identity
-	ID           uuid.UUID `json:"id"`
-	CustomerID   uuid.UUID `json:"customer_id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	OwnerType  OwnerType `json:"owner_type"`
+	OwnerID    uuid.UUID `json:"owner_id"`
+
 	FlowID       uuid.UUID `json:"flow_id"` // flow id
 	ActiveflowID uuid.UUID `json:"activeflow_id"`
 	Type         Type      `json:"type"` // call type
@@ -52,8 +55,11 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:           h.ID,
-		CustomerID:   h.CustomerID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+		OwnerType:  h.OwnerType,
+		OwnerID:    h.OwnerID,
+
 		FlowID:       h.FlowID,
 		ActiveflowID: h.ActiveFlowID,
 		Type:         h.Type,

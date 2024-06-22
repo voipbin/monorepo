@@ -10,6 +10,8 @@ import (
 type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	OwnerType  OwnerType `json:"owner_type"`
+	OwnerID    uuid.UUID `json:"owner_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -29,6 +31,8 @@ func (h *Recording) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:         h.ID,
 		CustomerID: h.CustomerID,
+		OwnerType:  h.OwnerType,
+		OwnerID:    h.OwnerID,
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,

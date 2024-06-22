@@ -12,6 +12,8 @@ import (
 type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	OwnerType  OwnerType `json:"owner_type"`
+	OwnerID    uuid.UUID `json:"owner_id"`
 
 	Status Status    `json:"status"`
 	FlowID uuid.UUID `json:"flow_id"`
@@ -46,6 +48,8 @@ func (h *Groupcall) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:         h.ID,
 		CustomerID: h.CustomerID,
+		OwnerType:  h.OwnerType,
+		OwnerID:    h.OwnerID,
 
 		Status: h.Status,
 		FlowID: h.FlowID,

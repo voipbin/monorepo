@@ -7,7 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
-	"monorepo/bin-agent-manager/models/agent"
+	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -130,6 +130,45 @@ func (h *groupcallHandler) dialNextDestinationCall(ctx context.Context, gc *grou
 	return res, nil
 }
 
+// getDialAddressesAndRingMethod returns the dial address and ring method of the given destination.
+func (h *groupcallHandler) getDialAddressesAndRingMethod(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]commonaddress.Address, groupcall.RingMethod, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getDialDestinationsAddressAndRingMethod",
+		"customer_id": customerID,
+		"destination": destination,
+	})
+
+	var resDialDestinations []commonaddress.Address
+	var resRingMethod groupcall.RingMethod
+	var err error
+	switch destination.Type {
+	case commonaddress.TypeAgent:
+		resDialDestinations, resRingMethod, err = h.getDialDestinationsAddressAndRingMethodTypeAgent(ctx, customerID, destination)
+		if err != nil {
+			log.Errorf("Could not get dial destination. err: %v", err)
+			return nil, groupcall.RingMethodNone, errors.Wrap(err, "could not get dial destination")
+		}
+
+	case commonaddress.TypeExtension:
+		resRingMethod = groupcall.RingMethodRingAll
+		resDialDestinations, err = h.getDialDestinationsAddressTypeExtension(ctx, customerID, destination)
+		if err != nil {
+			log.Errorf("Could not get dial destinations. err: %v", err)
+			return nil, groupcall.RingMethodNone, errors.Wrap(err, "could not get dial destination")
+		}
+
+	case commonaddress.TypeTel, commonaddress.TypeSIP:
+		resDialDestinations = []commonaddress.Address{*destination}
+		resRingMethod = groupcall.RingMethodRingAll
+
+	default:
+		log.Errorf("Unsupported address type. address_type: %s", destination.Type)
+		return nil, groupcall.RingMethodNone, fmt.Errorf("unsupported address type")
+	}
+
+	return resDialDestinations, resRingMethod, nil
+}
+
 // getDialDestinationsAddressTypeExtension returns destinations for address type extension.
 func (h *groupcallHandler) getDialDestinationsAddressTypeExtension(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]commonaddress.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -189,9 +228,47 @@ func (h *groupcallHandler) getDialDestinationsAddressAndRingMethodTypeAgent(ctx 
 	}
 
 	ringMethod := groupcall.RingMethodRingAll
-	if ag.RingMethod == agent.RingMethodLinear {
+	if ag.RingMethod == amagent.RingMethodLinear {
 		ringMethod = groupcall.RingMethodLinear
 	}
 
 	return ag.Addresses, ringMethod, nil
+}
+
+// getAddressOwner returns owner's type and id.
+func (h *groupcallHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (groupcall.OwnerType, uuid.UUID, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getAddressOwner",
+		"customer_id": customerID,
+		"address":     addr,
+	})
+
+	var tmp *amagent.Agent
+	var err error
+
+	if addr.Type == commonaddress.TypeAgent {
+		id := uuid.FromStringOrNil(addr.Target)
+		tmp, err = h.reqHandler.AgentV1AgentGet(ctx, id)
+		if err != nil {
+			log.Errorf("Could not get owner info. err: %v", err)
+			return groupcall.OwnerTypeNone, uuid.Nil, err
+		}
+	} else {
+		tmp, err = h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, *addr)
+		if err != nil {
+			log.Errorf("Could not get agent info. err: %v", err)
+			return groupcall.OwnerTypeNone, uuid.Nil, nil
+		}
+	}
+
+	if tmp == nil {
+		return groupcall.OwnerTypeNone, uuid.Nil, nil
+	}
+
+	if tmp.CustomerID != customerID {
+		log.Errorf("The customer id is not valid.")
+		return groupcall.OwnerTypeNone, uuid.Nil, err
+	}
+
+	return groupcall.OwnerTypeAgent, tmp.ID, nil
 }

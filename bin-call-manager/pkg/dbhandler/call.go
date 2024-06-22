@@ -24,6 +24,8 @@ const (
 	select
 		id,
 		customer_id,
+		owner_type,
+		owner_id,
 
 		channel_id,
 		bridge_id,
@@ -83,6 +85,8 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.OwnerType,
+		&res.OwnerID,
 
 		&res.ChannelID,
 		&res.BridgeID,
@@ -207,6 +211,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	q := `insert into calls(
 		id,
 		customer_id,
+		owner_type,
+        owner_id,
 
 		channel_id,
 		bridge_id,
@@ -249,7 +255,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		tm_ringing,
 		tm_hangup
 	) values(
-		?, ?,
+		?, ?, ?, ?,
 		?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
@@ -305,6 +311,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
+		c.OwnerType,
+		c.OwnerID.Bytes(),
 
 		c.ChannelID,
 		c.BridgeID,
@@ -419,7 +427,7 @@ func (h *handler) CallGets(ctx context.Context, size uint64, token string, filte
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id", "flow_id", "active_flow_id", "confbridge_id", "master_call_id", "recording_id", "external_media_id", "groupcall_id", "dialroute_id":
+		case "customer_id", "owner_id", "flow_id", "active_flow_id", "confbridge_id", "master_call_id", "recording_id", "external_media_id", "groupcall_id", "dialroute_id":
 			q = fmt.Sprintf("%s and %s = ?", q, k)
 			tmp := uuid.FromStringOrNil(v)
 			values = append(values, tmp.Bytes())

@@ -30,8 +30,11 @@ func Test_RecordingCreate(t *testing.T) {
 		{
 			"have all",
 			&recording.Recording{
-				ID:            uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				CustomerID:    uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
+				CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				OwnerType:  recording.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
+
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:        recording.StatusRecording,
@@ -55,8 +58,11 @@ func Test_RecordingCreate(t *testing.T) {
 			"2020-04-18 03:22:17.995000",
 
 			&recording.Recording{
-				ID:            uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				CustomerID:    uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
+				CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				OwnerType:  recording.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
+
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
 				Status:        recording.StatusRecording,

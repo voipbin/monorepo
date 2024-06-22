@@ -86,6 +86,8 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 	tmp := &recording.Recording{
 		ID:         id,
 		CustomerID: c.CustomerID,
+		OwnerType:  recording.OwnerTypeNone,
+		OwnerID:    uuid.Nil,
 
 		ReferenceType: recording.ReferenceTypeCall,
 		ReferenceID:   c.ID,

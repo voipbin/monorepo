@@ -46,6 +46,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 		connect        bool
 
 		responseActiveflow  *fmactiveflow.Activeflow
+		responseAgent       *amagent.Agent
 		responseUUIDChannel uuid.UUID
 
 		expectDialrouteTarget string
@@ -80,12 +81,18 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 					ID: fmaction.IDStart,
 				},
 			},
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+			},
 			responseUUIDChannel: uuid.FromStringOrNil("80d67b3a-5f3b-11ed-a709-0f2943ef0184"),
 
 			expectDialrouteTarget: "",
 			expectCall: &call.Call{
 				ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				OwnerType:  call.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
 				ChannelID:  "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
 				FlowID:     uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 				Type:       call.TypeFlow,
@@ -157,6 +164,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
@@ -209,6 +217,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseRoutes      []rmroute.Route
+		responseAgent       *amagent.Agent
 		responseUUIDChannel uuid.UUID
 		responseProvider    *rmprovider.Provider
 
@@ -252,6 +261,9 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 					ProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
 				},
 			},
+			responseAgent: &amagent.Agent{
+				ID: uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+			},
 			responseUUIDChannel: uuid.FromStringOrNil("d948969e-5de3-11ed-94f5-137ec429b6b6"),
 			responseProvider: &rmprovider.Provider{
 				Hostname: "sip.telnyx.com",
@@ -261,6 +273,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			expectCall: &call.Call{
 				ID:             uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 				CustomerID:     uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+				OwnerType:      call.OwnerTypeAgent,
+				OwnerID:        uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
 				ChannelID:      "d948969e-5de3-11ed-94f5-137ec429b6b6",
 				FlowID:         uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
 				ActiveFlowID:   uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
@@ -339,6 +353,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
