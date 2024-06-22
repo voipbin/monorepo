@@ -238,7 +238,7 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	api.ApplyRoutes(app)
 
 	logrus.Debug("Starting the api service.")
-	if errAppRun := app.RunTLS(":443", *sslCertBase64, *sslPrivkeyBase64); errAppRun != nil {
+	if errAppRun := app.RunTLS(":443", constSSLCertFilename, constSSLPrivFilename); errAppRun != nil {
 		log.Errorf("The api service ended with error. err: %v", errAppRun)
 	}
 }
