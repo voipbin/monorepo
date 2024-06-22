@@ -174,14 +174,11 @@ func (h *callHandler) CreateCallOutgoing(
 		call.DataTypeExecuteNextMasterOnHangup: strconv.FormatBool(executeNextMasterOnHangup),
 	}
 
-	// get owner info
-	ownerType := call.OwnerTypeNone
-	ownerID := uuid.Nil
-	owner, err := h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, destination)
-	if err == nil {
-		log.WithField("agent", owner).Debugf("Found owner info. owner_type: %s, owner_id: %s", call.OwnerTypeAgent, ownerID)
-		ownerType = call.OwnerTypeAgent
-		ownerID = owner.ID
+	// get address owner info
+	ownerType, ownerID, err := h.getAddressOwner(ctx, customerID, &destination)
+	if err != nil {
+		// we could not find owner info, but just write the log here.
+		log.Errorf("Could not get address owner info. err: %v", err)
 	}
 
 	// create a call

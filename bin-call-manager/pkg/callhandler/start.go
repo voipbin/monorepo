@@ -578,10 +578,5 @@ func (h *callHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID,
 		return call.OwnerTypeNone, uuid.Nil, nil
 	}
 
-	if tmp.CustomerID != customerID {
-		log.Errorf("The customer id is not valid.")
-		return call.OwnerTypeNone, uuid.Nil, err
-	}
-
 	return call.OwnerTypeAgent, tmp.ID, nil
 }
