@@ -98,6 +98,10 @@ func main() {
 func init() {
 	flag.Parse()
 
+	// init log
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "init",
 		"ssl_key":        *sslKey,
@@ -118,10 +122,6 @@ func init() {
 		log.Errorf("Could not write ssl cert file: %v", errWrite)
 		return
 	}
-
-	// init log
-	logrus.SetFormatter(joonix.NewFormatter())
-	logrus.SetLevel(logrus.DebugLevel)
 
 	// init middleware
 	middleware.Init(*jwtKey)
