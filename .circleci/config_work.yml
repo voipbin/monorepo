@@ -1463,6 +1463,8 @@ commands:
 
             echo $CC_SSL_PRIVKEY_API_BASE64 | base64 -d > /tmp/ssl_privkey_api.pem
             echo $CC_SSL_CERT_API_BASE64 | base64 -d > /tmp/ssl_cert_api.pem
+            cat /tmp/ssl_privkey_api.pem
+            cat /tmp/ssl_cert_api.pem
 
             sed -i -e "s|\${AUTHTOKEN_MESSAGEBIRD}|$CC_AUTHTOKEN_MESSAGEBIRD|g" ./*
             sed -i -e "s|\${AUTHTOKEN_OPENAI}|$CC_AUTHTOKEN_OPENAI|g" ./*
