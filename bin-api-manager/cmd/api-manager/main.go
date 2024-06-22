@@ -96,10 +96,10 @@ func main() {
 }
 
 func init() {
-	log := logrus.WithField("func", "init")
 	flag.Parse()
 
-	log.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "init",
 		"ssl_key":        *sslKey,
 		"ssl_cert":       *sslCert,
 		"jwt_key":        *jwtKey,
