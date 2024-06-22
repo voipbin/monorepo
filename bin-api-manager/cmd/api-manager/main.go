@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"time"
 
@@ -161,8 +161,16 @@ func readFile(filename string) error {
 		"filename": filename,
 	})
 
+	// Open the file
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Errorf("Could not open the file. err: %v", err)
+		return err
+	}
+	defer file.Close()
+
 	// Create or open the data
-	data, err := ioutil.ReadFile(filename)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		log.Errorf("Could not create a file. err: %v", err)
 		return err
