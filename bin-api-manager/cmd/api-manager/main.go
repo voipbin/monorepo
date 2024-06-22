@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -118,10 +119,13 @@ func init() {
 		log.Errorf("Could not write ssl prikey file: %v", errWrite)
 		return
 	}
+	_ = readFile(constPrikeyFilename)
+
 	if errWrite := writeFile(constCertFilename, *sslCert); errWrite != nil {
 		log.Errorf("Could not write ssl cert file: %v", errWrite)
 		return
 	}
+	_ = readFile(constCertFilename)
 
 	// init middleware
 	middleware.Init(*jwtKey)
@@ -149,7 +153,23 @@ func writeFile(filename string, data string) error {
 	}
 
 	return nil
+}
 
+func readFile(filename string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "readFile",
+		"filename": filename,
+	})
+
+	// Create or open the data
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Errorf("Could not create a file. err: %v", err)
+		return err
+	}
+	log.Debugf("Read data. data: %s", string(data))
+
+	return nil
 }
 
 func run(
