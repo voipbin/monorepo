@@ -99,6 +99,16 @@ func init() {
 	log := logrus.WithField("func", "init")
 	flag.Parse()
 
+	log.WithFields(logrus.Fields{
+		"ssl_key":        *sslKey,
+		"ssl_cert":       *sslCert,
+		"jwt_key":        *jwtKey,
+		"rabbit_addr":    *rabbitAddr,
+		"redis_addr":     *redisAddr,
+		"redis_password": *redisPassword,
+	})
+	log.Debug("Initiating...")
+
 	// write ssl file
 	if errWrite := writeFile(constPrikeyFilename, *sslKey); errWrite != nil {
 		log.Errorf("Could not write ssl prikey file: %v", errWrite)
