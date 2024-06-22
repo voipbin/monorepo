@@ -97,11 +97,18 @@ func main() {
 }
 
 func init() {
+	log := logrus.WithField("func", "init")
 	flag.Parse()
 
 	// write ssl file
-	os.WriteFile(constPrikeyFilename, []byte(*sslKey), fs.ModeAppend)
-	os.WriteFile(constCertFilename, []byte(*sslCert), fs.ModeAppend)
+	if errWrite := os.WriteFile(constPrikeyFilename, []byte(*sslKey), fs.ModeAppend); errWrite != nil {
+		log.Errorf("Could not write ssl prikey file: %v", errWrite)
+		return
+	}
+	if errWrite := os.WriteFile(constCertFilename, []byte(*sslCert), fs.ModeAppend); errWrite != nil {
+		log.Errorf("Could not write ssl cert file: %v", errWrite)
+		return
+	}
 
 	// init log
 	logrus.SetFormatter(joonix.NewFormatter())
