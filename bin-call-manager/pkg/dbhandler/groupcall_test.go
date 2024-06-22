@@ -32,6 +32,8 @@ func Test_GroupcallCreate(t *testing.T) {
 			data: &groupcall.Groupcall{
 				ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
 				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				OwnerType:  groupcall.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("bbc99a3e-2bf8-11ef-b744-db67144792ae"),
 
 				Status: groupcall.StatusProgressing,
 				FlowID: uuid.FromStringOrNil("53cc3b24-0af3-4500-9764-1aa421ddbba3"),
@@ -73,6 +75,8 @@ func Test_GroupcallCreate(t *testing.T) {
 			expectRes: &groupcall.Groupcall{
 				ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
 				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				OwnerType:  groupcall.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("bbc99a3e-2bf8-11ef-b744-db67144792ae"),
 
 				Status: groupcall.StatusProgressing,
 				FlowID: uuid.FromStringOrNil("53cc3b24-0af3-4500-9764-1aa421ddbba3"),

@@ -2,6 +2,8 @@ create table recordings(
   -- identity
   id                binary(16),     -- recording's id(name)
   customer_id       binary(16),     -- customer id
+  owner_type        varchar(255),   -- owner type
+  owner_id          binary(16),     -- owner id
 
   reference_type    varchar(16),    -- reference type. call, conference, ...
   reference_id      binary(16),     -- referenced id. call-id, conference-id
@@ -28,5 +30,6 @@ create table recordings(
 
 create index idx_recordings_tm_start on recordings(tm_start);
 create index idx_recordings_customer_id on recordings(customer_id);
+create index idx_recordings_owner_id on recordings(owner_id);
 create index idx_recordings_reference_id on recordings(reference_id);
 create index idx_recordings_recording_name on recordings(recording_name);

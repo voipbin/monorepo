@@ -24,6 +24,8 @@ func Test_Create(t *testing.T) {
 
 		id                uuid.UUID
 		customerID        uuid.UUID
+		ownerType         groupcall.OwnerType
+		ownerID           uuid.UUID
 		flowID            uuid.UUID
 		source            *commonaddress.Address
 		destinations      []commonaddress.Address
@@ -41,6 +43,8 @@ func Test_Create(t *testing.T) {
 
 			id:         uuid.FromStringOrNil("708d695e-e457-11ed-a7eb-dfe8cc1bbd99"),
 			customerID: uuid.FromStringOrNil("c345ddd8-bb27-11ed-812c-df4f74c7c1a1"),
+			ownerType:  groupcall.OwnerTypeAgent,
+			ownerID:    uuid.FromStringOrNil("88177492-2c00-11ef-b655-af61ed389cee"),
 			flowID:     uuid.FromStringOrNil("9aa1067e-e4bc-4ec0-8251-75b266330514"),
 			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -72,6 +76,8 @@ func Test_Create(t *testing.T) {
 			expectGroupcall: &groupcall.Groupcall{
 				ID:         uuid.FromStringOrNil("708d695e-e457-11ed-a7eb-dfe8cc1bbd99"),
 				CustomerID: uuid.FromStringOrNil("c345ddd8-bb27-11ed-812c-df4f74c7c1a1"),
+				OwnerType:  groupcall.OwnerTypeAgent,
+				OwnerID:    uuid.FromStringOrNil("88177492-2c00-11ef-b655-af61ed389cee"),
 				Status:     groupcall.StatusProgressing,
 				FlowID:     uuid.FromStringOrNil("9aa1067e-e4bc-4ec0-8251-75b266330514"),
 				Source: &commonaddress.Address{
@@ -131,7 +137,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().GroupcallGet(ctx, tt.expectGroupcall.ID).Return(tt.expectGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
 
-			res, err := h.Create(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.callIDs, tt.groupcallIDs, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.source, tt.destinations, tt.callIDs, tt.groupcallIDs, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

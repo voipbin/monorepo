@@ -424,3 +424,91 @@ func Test_getDialDestinationsAddressAndRingMethodTypeAgent(t *testing.T) {
 		})
 	}
 }
+
+func Test_getAddressOwner(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		address    *commonaddress.Address
+
+		responseAgent *amagent.Agent
+
+		expectAgentID      uuid.UUID
+		expectResOwnerType groupcall.OwnerType
+		expectResOwnerID   uuid.UUID
+	}{
+		{
+			name: "normal - address type is agent",
+
+			customerID: uuid.FromStringOrNil("8e1a8f84-2fd7-11ef-a27d-ab76183e2c6b"),
+			address: &commonaddress.Address{
+				Type:   commonaddress.TypeAgent,
+				Target: "8e3b890a-2fd7-11ef-b442-133f59be8b36",
+			},
+
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
+				CustomerID: uuid.FromStringOrNil("8e1a8f84-2fd7-11ef-a27d-ab76183e2c6b"),
+			},
+
+			expectAgentID:      uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
+			expectResOwnerType: groupcall.OwnerTypeAgent,
+			expectResOwnerID:   uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
+		},
+		{
+			name: "normal - address type is not agent",
+
+			customerID: uuid.FromStringOrNil("8e5ddef6-2fd7-11ef-82a7-235a64789cf8"),
+			address: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+123456789",
+			},
+
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("8e7f4af0-2fd7-11ef-9c3a-53f59238b991"),
+				CustomerID: uuid.FromStringOrNil("8e5ddef6-2fd7-11ef-82a7-235a64789cf8"),
+			},
+
+			expectResOwnerType: groupcall.OwnerTypeAgent,
+			expectResOwnerID:   uuid.FromStringOrNil("8e7f4af0-2fd7-11ef-9c3a-53f59238b991"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &groupcallHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+			ctx := context.Background()
+
+			if tt.expectAgentID != uuid.Nil {
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
+			} else {
+				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, *tt.address).Return(tt.responseAgent, nil)
+			}
+
+			resOwnerType, resOwnerID, err := h.getAddressOwner(ctx, tt.customerID, tt.address)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if resOwnerType != tt.expectResOwnerType {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectResOwnerType, resOwnerType)
+			}
+			if resOwnerID != tt.expectResOwnerID {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectResOwnerID, resOwnerID)
+			}
+		})
+	}
+}

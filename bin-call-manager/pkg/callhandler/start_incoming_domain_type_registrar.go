@@ -26,14 +26,18 @@ func (h *callHandler) startIncomingDomainTypeRegistrar(ctx context.Context, cn *
 		"channel_id": cn.ID,
 	})
 
-	// get default source/destination info
-	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeExtension)
-	source.TargetName = source.Target
-	destination := h.channelHandler.AddressGetDestinationWithoutSpecificType(cn)
-
 	// get customer
 	tmpCustomerID := strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainRegistrarSuffix)
 	customerID := uuid.FromStringOrNil(tmpCustomerID)
+
+	// get default source/destination info
+	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeExtension)
+	tmpSource, err := h.parseAddressTypeExtension(ctx, customerID, source)
+	if err == nil {
+		log.Debugf("Found address.")
+		source = tmpSource
+	}
+	destination := h.channelHandler.AddressGetDestinationWithoutSpecificType(cn)
 
 	log = log.WithFields(logrus.Fields{
 		"customer_id": customerID,
@@ -298,7 +302,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 	})
 
 	// get connect destination
-	connectDestination, err := h.getConnectDestinationAddressTypeExtension(ctx, customerID, destination)
+	connectDestination, err := h.parseAddressTypeExtension(ctx, customerID, destination)
 	if err != nil {
 		log.Errorf("Could not get connect destination. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
@@ -349,19 +353,19 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 	return nil
 }
 
-// getConnectDestinationAddressTypeExtension returns destination for the connect
-func (h *callHandler) getConnectDestinationAddressTypeExtension(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) (*commonaddress.Address, error) {
+// parseAddressTypeExtension parse the given address for Extension type.
+func (h *callHandler) parseAddressTypeExtension(ctx context.Context, customerID uuid.UUID, address *commonaddress.Address) (*commonaddress.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "getConnectDestinationAddressTypeExtension",
+		"func":        "parseAddressTypeExtension",
 		"customer_id": customerID,
-		"destination": destination,
+		"address":     address,
 	})
 
 	// validate destination target
 	var ext *rmextension.Extension = nil
-	extensionID := uuid.FromStringOrNil(destination.Target)
+	extensionID := uuid.FromStringOrNil(address.Target)
 	if extensionID != uuid.Nil {
-		log.Debugf("The destination target has valid uuid. target: %s", destination.Target)
+		log.Debugf("The destination target has valid uuid. target: %s", address.Target)
 		tmp, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
 		if err != nil {
 			log.Errorf("Could not get extension info. err: %v", err)
@@ -375,13 +379,13 @@ func (h *callHandler) getConnectDestinationAddressTypeExtension(ctx context.Cont
 		}
 		ext = tmp
 	} else {
-		log.Debugf("The destination target has invalid uuid. target: %s", destination.Target)
+		log.Debugf("The destination target has invalid uuid. target: %s", address.Target)
 
 		// get extension info
 		filters := map[string]string{
 			"customer_id": customerID.String(),
 			"deleted":     "false",
-			"extension":   destination.Target,
+			"extension":   address.Target,
 		}
 		tmps, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, "", 1, filters)
 		if err != nil {

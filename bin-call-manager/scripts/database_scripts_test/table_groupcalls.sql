@@ -2,6 +2,8 @@ create table groupcalls(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
+  owner_type        varchar(255), -- owner type
+  owner_id          binary(16),   -- owner id
 
   status    varchar(16),
   flow_id   binary(16),
@@ -34,3 +36,4 @@ create table groupcalls(
 );
 
 create index idx_groupcalls_customer_id on groupcalls(customer_id);
+create index idx_groupcalls_owner_id on groupcalls(owner_id);

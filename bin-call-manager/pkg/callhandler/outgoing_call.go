@@ -174,12 +174,21 @@ func (h *callHandler) CreateCallOutgoing(
 		call.DataTypeExecuteNextMasterOnHangup: strconv.FormatBool(executeNextMasterOnHangup),
 	}
 
+	// get address owner info
+	ownerType, ownerID, err := h.getAddressOwner(ctx, customerID, &destination)
+	if err != nil {
+		// we could not find owner info, but just write the log here.
+		log.Errorf("Could not get address owner info. err: %v", err)
+	}
+
 	// create a call
 	res, err := h.Create(
 		ctx,
 
 		id,
 		customerID,
+		ownerType,
+		ownerID,
 
 		channelID,
 		"",
