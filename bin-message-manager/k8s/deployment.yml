@@ -35,7 +35,7 @@ spec:
             - '-redis_db'
             - '1'
             - '-authtoken_messagebird'
-            - '$AUTHTOKEN_MESSAGEBIRD'
+            - '${AUTHTOKEN_MESSAGEBIRD}'
           ports:
             - name: metrics
               protocol: "TCP"
