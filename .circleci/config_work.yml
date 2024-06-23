@@ -1464,6 +1464,8 @@ commands:
             sed -i -e "s|\${AUTHTOKEN_OPENAI}|$CC_AUTHTOKEN_OPENAI|g" ./*
             sed -i -e "s|\${SSL_PRIVKEY_API_BASE64}|$CC_SSL_PRIVKEY_API_BASE64|g" ./*
             sed -i -e "s|\${SSL_CERT_API_BASE64}|$CC_SSL_CERT_API_BASE64|g" ./*
+            sed -i -e "s|\${SSL_PRIVKEY_HOOK_BASE64}|$CC_SSL_PRIVKEY_HOOK_BASE64|g" ./*
+            sed -i -e "s|\${SSL_CERT_HOOK_BASE64}|$CC_SSL_CERT_HOOK_BASE64|g" ./*
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 
