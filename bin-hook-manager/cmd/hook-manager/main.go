@@ -30,9 +30,6 @@ var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "da
 var sslPrivkeyBase64 = flag.String("ssl_private_base64", "", "Base64 encoded private key for ssl connection.")
 var sslCertBase64 = flag.String("ssl_cert_base64", "", "Base64 encoded cert key for ssl connection.")
 
-// var sslKey = flag.String("ssl_private", "./etc/ssl/prikey.pem", "Private key file for ssl connection.")
-// var sslCert = flag.String("ssl_cert", "./etc/ssl/cert.pem", "Cert key file for ssl connection.")
-
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 
 const (
