@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -33,8 +35,8 @@ import (
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
 
-var sslKey = flag.String("ssl_private", "./etc/ssl/prikey.pem", "Private key file for ssl connection.")
-var sslCert = flag.String("ssl_cert", "./etc/ssl/cert.pem", "Cert key file for ssl connection.")
+var sslPrivkeyBase64 = flag.String("ssl_private_base64", "", "Base64 encoded private key for ssl connection.")
+var sslCertBase64 = flag.String("ssl_cert_base64", "", "Base64 encoded cert key for ssl connection.")
 
 var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
 
@@ -49,6 +51,11 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
 var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
 var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name for tmp storage")
+
+const (
+	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
+	constSSLCertFilename = "/tmp/ssl_cert.pem"
+)
 
 //	@title			VoIPBIN project API
 //	@version		3.1.0
@@ -98,6 +105,48 @@ func init() {
 
 	// init middleware
 	middleware.Init(*jwtKey)
+
+	// init ssl
+	if errWrite := writeBase64(constSSLCertFilename, *sslCertBase64); errWrite != nil {
+		logrus.Errorf("Could not write the ssl cert file.")
+		return
+	}
+
+	if errWrite := writeBase64(constSSLPrivFilename, *sslPrivkeyBase64); errWrite != nil {
+		logrus.Errorf("Could not write the ssl private key file.")
+		return
+	}
+
+}
+
+func writeBase64(filename string, data string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "writeBase64",
+		"filename": filename,
+		"data":     data,
+	})
+
+	// Create or open the file
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Errorf("Could not create a file. err: %v", err)
+		return err
+	}
+	defer file.Close()
+
+	tmp, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		log.Fatalf("Error decoding Base64 string: %v", err)
+	}
+
+	// Write the string data to the file
+	_, err = file.Write(tmp)
+	if err != nil {
+		log.Errorf("Could not write to file. err: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 func run(
@@ -189,7 +238,7 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	api.ApplyRoutes(app)
 
 	logrus.Debug("Starting the api service.")
-	if errAppRun := app.RunTLS(":443", *sslCert, *sslKey); errAppRun != nil {
+	if errAppRun := app.RunTLS(":443", constSSLCertFilename, constSSLPrivFilename); errAppRun != nil {
 		log.Errorf("The api service ended with error. err: %v", errAppRun)
 	}
 }
