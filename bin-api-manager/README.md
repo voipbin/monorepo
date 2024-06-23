@@ -6,38 +6,34 @@ API manager for Restful APIs to access from the public internet.
 Usage of ./api-manager:
   -dsn string
         database dsn (default "testid:testpassword@tcp(127.0.0.1:3306)/test")
+  -gcp_bucket_name string
+        the gcp bucket name for tmp storage (default "bucket")
+  -gcp_credential string
+        the GCP credential file path (default "./credential.json")
+  -gcp_project_id string
+        the gcp project id (default "project")
   -jwt_key string
         key string for jwt hashing (default "voipbin")
   -rabbit_addr string
         rabbitmq service address. (default "amqp://guest:guest@localhost:5672")
-  -rabbit_exchange_delay string
-        rabbitmq exchange name for delayed messaging. (default "bin-manager.delay")
-  -rabbit_queue_request_call string
-        rabbitmq queue name for call request (default "bin-manager.call-manager.request")
-  -rabbit_queue_request_flow string
-        rabbitmq queue name for flow request (default "bin-manager.flow-manager.request")
-  -rabbit_queue_request_number string
-        rabbitmq queue name for number request (default "bin-manager.number-manager.request")
-  -rabbit_queue_request_registrar string
-        rabbitmq queue name for registrar request (default "bin-manager.registrar-manager.request")
-  -rabbit_queue_request_storage string
-        rabbitmq queue name for storage request (default "bin-manager.storage-manager.request")
-  -rabbit_queue_request_transcode string
-        rabbitmq queue name for transcode request (default "bin-manager.transcode-manager.request")
   -redis_addr string
         redis address. (default "127.0.0.1:6379")
   -redis_db int
         redis database. (default 1)
   -redis_password string
         redis password
-  -ssl_cert string
-        Cert key file for ssl connection. (default "./etc/ssl/cert.pem")
-  -ssl_private string
-        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")
+  -ssl_cert_base64 string
+        Base64 encoded cert key for ssl connection.
+  -ssl_private_base64 string
+        Base64 encoded private key for ssl connection.
 ```
 
 # SSL
-* See detial at `./etc/ssl`.
+The app needs the base64 encrypted ssl certificate to enable the SSL connection.
+To generate base64 encoded certificates, you need to run this command.
+```
+$ cat <your cert file> | base64 -w 0
+```
 
 # Example
 ```
