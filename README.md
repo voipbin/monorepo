@@ -4,6 +4,10 @@ This repository serves as a monorepo for all VoIPbin backend services.
 
 It provides a centralized location for managing and developing various backend components that power the VoIPbin platform.
 
+# Demo
+* https://admin.voipbin.net/ : Console admin page.
+* https://talk.voipbin.net/ : Simple voipbin agent page.
+ 
 # Features
 
 ## Core Services
@@ -20,24 +24,9 @@ It provides a centralized location for managing and developing various backend c
 * Scalability and Reliability: The architecture is designed to handle a high volume of calls and ensure platform reliability.
 * Security: Security measures are likely implemented within these services to protect user data and ensure call privacy.
 
-
 ## Additional Considerations
 This is a general overview, and the specific functionalities offered by each service might vary depending on VoIPbin's features.
 VoIPbin likely offers APIs that developers can integrate with to leverage these backend services in their applications.
-
-
-# Namespace
-This voipbin monorepo has many sub repositories with multiple namespaces.
-
-* bin-*: bin-manager projects.
-* square-*: square-manager projects.
-* voip-*: voip based projects.
-* infra-* infrastructure projects.
-
-# Update all project
-```
-$ ls -d */ | xargs -I {} bash -c "cd '{}' && go get -u ./... && go mod vendor && go generate ./... && go test ./..."
-```
 
 # Merge existing projects
 The monorepo concist of many sub projects. Most of projects were merged from the existing projects using the following command.
@@ -66,4 +55,6 @@ The voipbin uses the environment variables for the k8s deployment.
 # Links
 * http://voipbin.net/ : Voipbin project page
 * https://api.voipbin.net/docs/ : Voipbin API documentation
-* https://admin.voipbin.net/ : Console admin page
+* https://admin.voipbin.net/ : Console admin page.
+* https://talk.voipbin.net/ : Simple voipbin agent page.
+  
