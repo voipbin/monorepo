@@ -34,6 +34,9 @@ type numberHandlerTwilio struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
 
+	sid   string
+	token string
+
 	requestExternal requestexternal.RequestExternal
 }
 
@@ -57,13 +60,17 @@ func init() {
 }
 
 // NewNumberHandler returns new service handler
-func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler) NumberHandlerTwilio {
+func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, sid string, token string) NumberHandlerTwilio {
 
 	reqExternal := requestexternal.NewRequestExternal()
 
 	h := &numberHandlerTwilio{
-		reqHandler:      r,
-		db:              db,
+		reqHandler: r,
+		db:         db,
+
+		sid:   sid,
+		token: token,
+
 		requestExternal: reqExternal,
 	}
 
