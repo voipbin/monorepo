@@ -50,6 +50,13 @@ The voipbin uses the environment variables for the k8s deployment.
     CC_SSL_CERT_API_BASE64: Base64 encoded SSL cert for api server.
     CC_SSL_PRIVKEY_HOOK_BASE64: Base64 encoded SSL Privkey for event hook server.
     CC_SSL_CERT_HOOK_BASE64: Base64 encoded SSL cert for event hook server.
+
+    CC_TWILIO_SID: Twilio's SID
+    CC_TWILIO_TOKEN: Twilio's token
+
+    CC_TELNYX_CONNECTION_ID: Telnyx's connection id
+    CC_TELNYX_PROFILE_ID: Telnyx's profile id
+    CC_TELNYX_TOKEN: Telnyx's token
 ```
 
 # Links

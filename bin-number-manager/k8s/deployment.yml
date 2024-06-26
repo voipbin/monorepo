@@ -34,6 +34,16 @@ spec:
             - '10.164.15.220:6379'
             - '-redis_db'
             - '1'
+            - '-twilio_sid'
+            - '${TWILIO_SID}'
+            - '-twilio_token'
+            - '${TWILIO_TOKEN}'
+            - '-telnyx_connection_id'
+            - '${TELNYX_CONNECTION_ID}'
+            - '-telnyx_profile_id'
+            - '${TELNYX_PROFILE_ID}'
+            - '-telnyx_token'
+            - '${TELNYX_TOKEN}'
           ports:
             - name: metrics
               protocol: "TCP"

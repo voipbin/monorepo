@@ -144,13 +144,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	ctx := context.Background()
 
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":      "processRequest",
 		"uri":       m.URI,
 		"method":    m.Method,
 		"data_type": m.DataType,
 		"data":      m.Data,
-	}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
+	})
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()
 	switch {
@@ -209,7 +210,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		logrus.WithFields(logrus.Fields{
+		log.WithFields(logrus.Fields{
 			"uri":    m.URI,
 			"method": m.Method,
 		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
@@ -222,7 +223,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// default error handler
 	if err != nil {
-		logrus.WithFields(
+		log.WithFields(
 			logrus.Fields{
 				"uri":    m.URI,
 				"method": m.Method,
@@ -232,7 +233,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		err = nil
 	}
 
-	logrus.WithFields(
+	log.WithFields(
 		logrus.Fields{
 			"response": response,
 		},

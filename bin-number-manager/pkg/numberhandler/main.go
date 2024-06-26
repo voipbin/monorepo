@@ -71,10 +71,13 @@ func init() {
 }
 
 // NewNumberHandler returns new service handler
-func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) NumberHandler {
-
-	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(r, db)
-	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(r, db)
+func NewNumberHandler(
+	r requesthandler.RequestHandler,
+	db dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	nHandlerTelnyx numberhandlertelnyx.NumberHandlerTelnyx,
+	nHandlerTwilio numberhandlertwilio.NumberHandlerTwilio,
+) NumberHandler {
 
 	h := &numberHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
