@@ -1,189 +1,174 @@
 package requestexternal
 
-import (
-	"reflect"
-	"testing"
-	"time"
+// func TestTelnyxAvailableNumberGets(t *testing.T) {
+// 	mc := gomock.NewController(t)
+// 	defer mc.Finish()
 
-	"github.com/golang/mock/gomock"
+// 	h := requestExternal{}
 
-	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
-)
+// 	tests := []struct {
+// 		name               string
+// 		country            string
+// 		locality           string
+// 		administrativeArea string
+// 		limit              int
+// 	}{
+// 		{
+// 			"normal us",
+// 			"us",
+// 			"",
+// 			"",
+// 			1,
+// 		},
+// 		{
+// 			"multiple numbers us",
+// 			"us",
+// 			"",
+// 			"",
+// 			3,
+// 		},
+// 	}
 
-const (
-	testToken     = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
-	testProfileID = "40017f8e-49bd-4f16-9e3d-ef103f916228"
-)
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
 
-func TestTelnyxAvailableNumberGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// 			res, err := h.TelnyxAvailableNumberGets(testToken, tt.country, tt.locality, tt.administrativeArea, uint(tt.limit))
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-	h := requestExternal{}
+// 			if len(res) != tt.limit {
+// 				t.Errorf("Wrong match. expect: %d, got: %d", tt.limit, len(res))
+// 			}
 
-	tests := []struct {
-		name               string
-		country            string
-		locality           string
-		administrativeArea string
-		limit              int
-	}{
-		{
-			"normal us",
-			"us",
-			"",
-			"",
-			1,
-		},
-		{
-			"multiple numbers us",
-			"us",
-			"",
-			"",
-			3,
-		},
-	}
+// 			time.Sleep(time.Second * 1)
+// 		})
+// 	}
+// }
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+// func Test_TelnyxPhoneNumbersIDGet(t *testing.T) {
 
-			res, err := h.TelnyxAvailableNumberGets(testToken, tt.country, tt.locality, tt.administrativeArea, uint(tt.limit))
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 	tests := []struct {
+// 		name      string
+// 		id        string
+// 		expectRes *telnyx.PhoneNumber
+// 	}{
+// 		{
+// 			"normal us number",
+// 			"1748688147379652251",
+// 			&telnyx.PhoneNumber{
+// 				ID:          "1748688147379652251",
+// 				RecordType:  "phone_number",
+// 				PhoneNumber: "+14703298699",
+// 				Status:      "active",
+// 				Tags: []string{
+// 					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
+// 					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
+// 				},
+// 				ConnectionID:          "2054833017033065613",
+// 				ConnectionName:        "voipbin prod",
+// 				CustomerReference:     "",
+// 				ExternalPin:           "",
+// 				T38FaxGatewayEnabled:  true,
+// 				PurchasedAt:           "2021-10-16T17:31:11Z",
+// 				BillingGroupID:        "",
+// 				EmergencyEnabled:      false,
+// 				EmergencyAddressID:    "",
+// 				EmergencyStatus:       "disabled",
+// 				CallForwardingEnabled: true,
+// 				CNAMListingEnabled:    false,
+// 				CallRecordingEnabled:  false,
+// 				PhoneNumberType:       "local",
+// 				MessagingProfileID:    testProfileID,
+// 				MessagingProfileName:  "voipbin production",
+// 				NumberBlockID:         "",
+// 				CreatedAt:             "2021-10-16T17:31:11.737Z",
+// 				NumberLevelRouting:    "disabled",
+// 			},
+// 		},
+// 	}
 
-			if len(res) != tt.limit {
-				t.Errorf("Wrong match. expect: %d, got: %d", tt.limit, len(res))
-			}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			time.Sleep(time.Second * 1)
-		})
-	}
-}
+// 			h := requestExternal{}
 
-func Test_TelnyxPhoneNumbersIDGet(t *testing.T) {
+// 			res, err := h.TelnyxPhoneNumbersIDGet(testToken, tt.id)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-	tests := []struct {
-		name      string
-		id        string
-		expectRes *telnyx.PhoneNumber
-	}{
-		{
-			"normal us number",
-			"1748688147379652251",
-			&telnyx.PhoneNumber{
-				ID:          "1748688147379652251",
-				RecordType:  "phone_number",
-				PhoneNumber: "+14703298699",
-				Status:      "active",
-				Tags: []string{
-					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
-					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
-				},
-				ConnectionID:          "2054833017033065613",
-				ConnectionName:        "voipbin prod",
-				CustomerReference:     "",
-				ExternalPin:           "",
-				T38FaxGatewayEnabled:  true,
-				PurchasedAt:           "2021-10-16T17:31:11Z",
-				BillingGroupID:        "",
-				EmergencyEnabled:      false,
-				EmergencyAddressID:    "",
-				EmergencyStatus:       "disabled",
-				CallForwardingEnabled: true,
-				CNAMListingEnabled:    false,
-				CallRecordingEnabled:  false,
-				PhoneNumberType:       "local",
-				MessagingProfileID:    testProfileID,
-				MessagingProfileName:  "voipbin production",
-				NumberBlockID:         "",
-				CreatedAt:             "2021-10-16T17:31:11.737Z",
-				NumberLevelRouting:    "disabled",
-			},
-		},
-	}
+// 			tt.expectRes.UpdatedAt = res.UpdatedAt
+// 			if !reflect.DeepEqual(tt.expectRes, res) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// func Test_TelnyxPhoneNumbersGetByNumber(t *testing.T) {
 
-			h := requestExternal{}
+// 	tests := []struct {
+// 		name      string
+// 		number    string
+// 		expectRes *telnyx.PhoneNumber
+// 	}{
+// 		{
+// 			"normal us number",
+// 			"14703298699",
+// 			&telnyx.PhoneNumber{
+// 				ID:          "1748688147379652251",
+// 				RecordType:  "phone_number",
+// 				PhoneNumber: "+14703298699",
+// 				Status:      "active",
+// 				Tags: []string{
+// 					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
+// 					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
+// 				},
+// 				ConnectionID:          "2054833017033065613",
+// 				ConnectionName:        "voipbin prod",
+// 				CustomerReference:     "",
+// 				ExternalPin:           "",
+// 				T38FaxGatewayEnabled:  true,
+// 				PurchasedAt:           "2021-10-16T17:31:11Z",
+// 				BillingGroupID:        "",
+// 				EmergencyEnabled:      false,
+// 				EmergencyAddressID:    "",
+// 				EmergencyStatus:       "disabled",
+// 				CallForwardingEnabled: true,
+// 				CNAMListingEnabled:    false,
+// 				CallRecordingEnabled:  false,
+// 				PhoneNumberType:       "local",
+// 				MessagingProfileID:    testProfileID,
+// 				MessagingProfileName:  "voipbin production",
+// 				NumberBlockID:         "",
+// 				CreatedAt:             "2021-10-16T17:31:11.737Z",
+// 				NumberLevelRouting:    "disabled",
+// 			},
+// 		},
+// 	}
 
-			res, err := h.TelnyxPhoneNumbersIDGet(testToken, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			tt.expectRes.UpdatedAt = res.UpdatedAt
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			h := requestExternal{}
 
-func Test_TelnyxPhoneNumbersGetByNumber(t *testing.T) {
+// 			res, err := h.TelnyxPhoneNumbersGetByNumber(testToken, tt.number)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-	tests := []struct {
-		name      string
-		number    string
-		expectRes *telnyx.PhoneNumber
-	}{
-		{
-			"normal us number",
-			"14703298699",
-			&telnyx.PhoneNumber{
-				ID:          "1748688147379652251",
-				RecordType:  "phone_number",
-				PhoneNumber: "+14703298699",
-				Status:      "active",
-				Tags: []string{
-					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
-					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
-				},
-				ConnectionID:          "2054833017033065613",
-				ConnectionName:        "voipbin prod",
-				CustomerReference:     "",
-				ExternalPin:           "",
-				T38FaxGatewayEnabled:  true,
-				PurchasedAt:           "2021-10-16T17:31:11Z",
-				BillingGroupID:        "",
-				EmergencyEnabled:      false,
-				EmergencyAddressID:    "",
-				EmergencyStatus:       "disabled",
-				CallForwardingEnabled: true,
-				CNAMListingEnabled:    false,
-				CallRecordingEnabled:  false,
-				PhoneNumberType:       "local",
-				MessagingProfileID:    testProfileID,
-				MessagingProfileName:  "voipbin production",
-				NumberBlockID:         "",
-				CreatedAt:             "2021-10-16T17:31:11.737Z",
-				NumberLevelRouting:    "disabled",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			h := requestExternal{}
-
-			res, err := h.TelnyxPhoneNumbersGetByNumber(testToken, tt.number)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			tt.expectRes.UpdatedAt = res.UpdatedAt
-			if reflect.DeepEqual(tt.expectRes, res) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			tt.expectRes.UpdatedAt = res.UpdatedAt
+// 			if reflect.DeepEqual(tt.expectRes, res) != true {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }
 
 // // Number creation/delete test
 // // Careful!!! this test does actually create the number and delete
@@ -200,7 +185,7 @@ func Test_TelnyxPhoneNumbersGetByNumber(t *testing.T) {
 // 		{
 // 			name: "normal",
 
-// 			token: "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM",
+// 			token: "",
 // 		},
 // 	}
 
@@ -238,78 +223,78 @@ func Test_TelnyxPhoneNumbersGetByNumber(t *testing.T) {
 // 	}
 // }
 
-func Test_TelnyxPhoneNumbersIDUpdate(t *testing.T) {
+// func Test_TelnyxPhoneNumbersIDUpdate(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		id   string
-		data map[string]interface{}
+// 		id   string
+// 		data map[string]interface{}
 
-		expectRes *telnyx.PhoneNumber
-	}{
-		{
-			name: "normal",
+// 		expectRes *telnyx.PhoneNumber
+// 	}{
+// 		{
+// 			name: "normal",
 
-			id: "1748688147379652251",
-			data: map[string]interface{}{
-				"tags": []string{
-					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
-					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
-				},
-			},
+// 			id: "1748688147379652251",
+// 			data: map[string]interface{}{
+// 				"tags": []string{
+// 					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
+// 					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
+// 				},
+// 			},
 
-			expectRes: &telnyx.PhoneNumber{
-				ID:          "1748688147379652251",
-				RecordType:  "phone_number",
-				PhoneNumber: "+14703298699",
-				Status:      "active",
-				Tags: []string{
-					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
-					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
-				},
-				ConnectionID:          "2054833017033065613",
-				ConnectionName:        "voipbin prod",
-				CustomerReference:     "",
-				ExternalPin:           "",
-				T38FaxGatewayEnabled:  true,
-				PurchasedAt:           "2021-10-16T17:31:11Z",
-				BillingGroupID:        "",
-				EmergencyEnabled:      false,
-				EmergencyAddressID:    "",
-				EmergencyStatus:       "disabled",
-				CallForwardingEnabled: true,
-				CNAMListingEnabled:    false,
-				CallRecordingEnabled:  false,
-				PhoneNumberType:       "local",
-				MessagingProfileID:    testProfileID,
-				MessagingProfileName:  "voipbin production",
-				NumberBlockID:         "",
-				CreatedAt:             "2021-10-16T17:31:11.737Z",
-				NumberLevelRouting:    "disabled",
-			},
-		},
-	}
+// 			expectRes: &telnyx.PhoneNumber{
+// 				ID:          "1748688147379652251",
+// 				RecordType:  "phone_number",
+// 				PhoneNumber: "+14703298699",
+// 				Status:      "active",
+// 				Tags: []string{
+// 					"CustomerID_5e4a0680-804e-11ec-8477-2fea5968d85b",
+// 					"NumberID_12f3058e-2eb8-11ec-bd0a-bf95e97c5f5c",
+// 				},
+// 				ConnectionID:          "2054833017033065613",
+// 				ConnectionName:        "voipbin prod",
+// 				CustomerReference:     "",
+// 				ExternalPin:           "",
+// 				T38FaxGatewayEnabled:  true,
+// 				PurchasedAt:           "2021-10-16T17:31:11Z",
+// 				BillingGroupID:        "",
+// 				EmergencyEnabled:      false,
+// 				EmergencyAddressID:    "",
+// 				EmergencyStatus:       "disabled",
+// 				CallForwardingEnabled: true,
+// 				CNAMListingEnabled:    false,
+// 				CallRecordingEnabled:  false,
+// 				PhoneNumberType:       "local",
+// 				MessagingProfileID:    testProfileID,
+// 				MessagingProfileName:  "voipbin production",
+// 				NumberBlockID:         "",
+// 				CreatedAt:             "2021-10-16T17:31:11.737Z",
+// 				NumberLevelRouting:    "disabled",
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			h := requestExternal{}
+// 			h := requestExternal{}
 
-			res, err := h.TelnyxPhoneNumbersIDUpdate(testToken, tt.id, tt.data)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			res, err := h.TelnyxPhoneNumbersIDUpdate(testToken, tt.id, tt.data)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			res.UpdatedAt = ""
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			res.UpdatedAt = ""
+// 			if !reflect.DeepEqual(tt.expectRes, res) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }
 
 // func Test_tmp(t *testing.T) {
 

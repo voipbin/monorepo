@@ -16,12 +16,6 @@ import (
 	"monorepo/bin-number-manager/pkg/requestexternal"
 )
 
-//nolint:unused,varcheck,deadcode	// reserved
-const (
-	twilioSID   string = "AC3300cb9426b78c9ce48db86a755166f0"
-	twilioToken string = "58c603e14220f52553be7769b209f423"
-)
-
 // NumberHandlerTwilio is interface for service handle
 type NumberHandlerTwilio interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
