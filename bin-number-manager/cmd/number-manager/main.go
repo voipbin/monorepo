@@ -23,6 +23,8 @@ import (
 	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/listenhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
+	"monorepo/bin-number-manager/pkg/numberhandlertelnyx"
+	"monorepo/bin-number-manager/pkg/numberhandlertwilio"
 	"monorepo/bin-number-manager/pkg/subscribehandler"
 )
 
@@ -46,6 +48,15 @@ var argDBDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/tes
 var argRedisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var argRedisPassword = flag.String("redis_password", "", "redis password")
 var argRedisDB = flag.Int("redis_db", 1, "redis database.")
+
+// args for twilio
+var argTwilioSID = flag.String("twilio_sid", "", "twilio's sid.")
+var argTwilioToken = flag.String("twilio_token", "", "twilio's token.")
+
+// args for telnyx
+var argTelnyxConnectionID = flag.String("telnyx_connection_id", "", "telnyx's connection id.")
+var argTelnyxProfileID = flag.String("telnyx_profile_id", "", "telnyx's profile id.")
+var argTelnyxToken = flag.String("telnyx_token", "", "telnyx's token.")
 
 func main() {
 	log := logrus.WithField("func", "main")
@@ -134,7 +145,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
-	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler)
+
+	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(reqHandler, db, *argTelnyxConnectionID, *argTelnyxProfileID, *argTelnyxToken)
+	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(reqHandler, db, *argTwilioSID, *argTwilioToken)
+
+	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, nHandlerTelnyx, nHandlerTwilio)
 
 	if err := runListen(rabbitSock, numberHandler); err != nil {
 		return err

@@ -16,12 +16,6 @@ import (
 	"monorepo/bin-number-manager/pkg/requestexternal"
 )
 
-//nolint:unused,varcheck,deadcode	// reserved
-const (
-	twilioSID   string = "AC3300cb9426b78c9ce48db86a755166f0"
-	twilioToken string = "58c603e14220f52553be7769b209f423"
-)
-
 // NumberHandlerTwilio is interface for service handle
 type NumberHandlerTwilio interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
@@ -33,6 +27,9 @@ type NumberHandlerTwilio interface {
 type numberHandlerTwilio struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
+
+	sid   string
+	token string
 
 	requestExternal requestexternal.RequestExternal
 }
@@ -57,13 +54,17 @@ func init() {
 }
 
 // NewNumberHandler returns new service handler
-func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler) NumberHandlerTwilio {
+func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, sid string, token string) NumberHandlerTwilio {
 
 	reqExternal := requestexternal.NewRequestExternal()
 
 	h := &numberHandlerTwilio{
-		reqHandler:      r,
-		db:              db,
+		reqHandler: r,
+		db:         db,
+
+		sid:   sid,
+		token: token,
+
 		requestExternal: reqExternal,
 	}
 

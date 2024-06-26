@@ -16,13 +16,6 @@ import (
 	"monorepo/bin-number-manager/pkg/requestexternal"
 )
 
-// telnyx
-const (
-	defaultToken              string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
-	defaultConnectionID       string = "2054833017033065613"
-	defaultMessagingProfileID string = "40017f8e-49bd-4f16-9e3d-ef103f916228"
-)
-
 // NumberHandlerTelnyx is interface for service handle
 type NumberHandlerTelnyx interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
@@ -35,6 +28,10 @@ type NumberHandlerTelnyx interface {
 type numberHandlerTelnyx struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
+
+	connectionID string
+	profileID    string
+	token        string
 
 	requestExternal requestexternal.RequestExternal
 }
@@ -59,13 +56,18 @@ func init() {
 }
 
 // NewNumberHandler returns new service handler
-func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler) NumberHandlerTelnyx {
+func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, connectionID string, profileID string, token string) NumberHandlerTelnyx {
 
 	reqExternal := requestexternal.NewRequestExternal()
 
 	h := &numberHandlerTelnyx{
-		reqHandler:      r,
-		db:              db,
+		reqHandler: r,
+		db:         db,
+
+		connectionID: connectionID,
+		profileID:    profileID,
+		token:        token,
+
 		requestExternal: reqExternal,
 	}
 

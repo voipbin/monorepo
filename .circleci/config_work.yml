@@ -1466,6 +1466,11 @@ commands:
             sed -i -e "s|\${SSL_CERT_API_BASE64}|$CC_SSL_CERT_API_BASE64|g" ./*
             sed -i -e "s|\${SSL_PRIVKEY_HOOK_BASE64}|$CC_SSL_PRIVKEY_HOOK_BASE64|g" ./*
             sed -i -e "s|\${SSL_CERT_HOOK_BASE64}|$CC_SSL_CERT_HOOK_BASE64|g" ./*
+            sed -i -e "s|\${TWILIO_SID}|$CC_TWILIO_SID|g" ./*
+            sed -i -e "s|\${TWILIO_TOKEN}|$CC_TWILIO_TOKEN|g" ./*
+            sed -i -e "s|\${TELNYX_CONNECTION_ID}|$CC_TELNYX_CONNECTION_ID|g" ./*
+            sed -i -e "s|\${TELNYX_PROFILE_ID}|$CC_TELNYX_PROFILE_ID|g" ./*
+            sed -i -e "s|\${TELNYX_TOKEN}|$CC_TELNYX_TOKEN|g" ./*
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 
