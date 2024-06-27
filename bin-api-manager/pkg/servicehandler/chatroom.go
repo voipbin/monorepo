@@ -14,15 +14,14 @@ import (
 )
 
 // chatroomGet validates the chatroom's ownership and returns the chatroom info.
-func (h *serviceHandler) chatroomGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchatroom.Chatroom, error) {
+func (h *serviceHandler) chatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "chatroomGet",
-		"customer_id": a.CustomerID,
-		"chatroom_id": id,
+		"chatroom_id": chatroomID,
 	})
 
 	// send request
-	res, err := h.reqHandler.ChatV1ChatroomGet(ctx, id)
+	res, err := h.reqHandler.ChatV1ChatroomGet(ctx, chatroomID)
 	if err != nil {
 		log.Errorf("Could not get the chatroom info. err: %v", err)
 		return nil, err
@@ -68,6 +67,32 @@ func (h *serviceHandler) ChatroomGetsByOwnerID(ctx context.Context, a *amagent.A
 		"deleted":  "false",
 		"owner_id": owner.ID.String(),
 	}
+
+	res, err := h.chatroomGetsByFilters(ctx, size, token, filters)
+	if err != nil {
+		log.Errorf("Could not get chatrooms list. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// chatroomGetsByFilters gets the list of chatrooms of the given filters.
+// It returns list of chatrooms if it succeed.
+func (h *serviceHandler) chatroomGetsByFilters(ctx context.Context, size uint64, token string, filters map[string]string) ([]*chatchatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "chatroomGetsByFilters",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
+	})
+	log.Debug("Getting a chatrooms.")
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// get chatrooms
 	tmps, err := h.reqHandler.ChatV1ChatroomGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
@@ -128,7 +153,7 @@ func (h *serviceHandler) ChatroomGet(ctx context.Context, a *amagent.Agent, id u
 	log.Debug("Getting a chatroom.")
 
 	// get chat
-	tmp, err := h.chatroomGet(ctx, a, id)
+	tmp, err := h.chatroomGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chatroom info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroom info. err: %v", err)
@@ -155,7 +180,7 @@ func (h *serviceHandler) ChatroomUpdateBasicInfo(ctx context.Context, a *amagent
 	log.Debug("Updating the chatroom.")
 
 	// get chat
-	c, err := h.chatroomGet(ctx, a, id)
+	c, err := h.chatroomGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
@@ -186,7 +211,7 @@ func (h *serviceHandler) ChatroomDelete(ctx context.Context, a *amagent.Agent, i
 	log.Debug("Deleting a chat.")
 
 	// get chat
-	cr, err := h.chatroomGet(ctx, a, id)
+	cr, err := h.chatroomGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
