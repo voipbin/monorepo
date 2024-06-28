@@ -185,9 +185,9 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *rabbitmq
 // processV1AgentsGetByCustomerIDAddressPost handles Post /v1/agents/get_by_customer_id_address request
 func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1AgentsGetCustomerIDAddressPost",
+		"func": "processV1AgentsGetByCustomerIDAddressPost",
 	})
-	log.Debug("Executing processV1AgentsGetCustomerIDAddressPost.")
+	log.Debug("Executing processV1AgentsGetByCustomerIDAddressPost.")
 
 	var reqData request.V1DataAgentsGetByCustomerIDAddressPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {

@@ -17,7 +17,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-agent-manager/models/resource"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
@@ -86,11 +85,8 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 	tests := []struct {
 		name string
 
-		groupcall         *cmgroupcall.Groupcall
-		responseAgent     *agent.Agent
-		responseResources []*resource.Resource
-
-		expectFilters map[string]string
+		groupcall     *cmgroupcall.Groupcall
+		responseAgent *agent.Agent
 	}{
 		{
 			name: "normal",
@@ -108,18 +104,6 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 			responseAgent: &agent.Agent{
 				ID:     uuid.FromStringOrNil("e3eae3d0-8e4f-46a1-b6bd-5d36feae4749"),
 				Status: agent.StatusAvailable,
-			},
-			responseResources: []*resource.Resource{
-				{
-					ID: uuid.FromStringOrNil("6fc07d9e-28e0-11ef-b511-0716834ef197"),
-				},
-			},
-
-			expectFilters: map[string]string{
-				"customer_id":    "2b0153e0-28e0-11ef-ac14-9b7259fa6ef3",
-				"reference_type": string(resource.ReferenceTypeGroupcall),
-				"reference_id":   "59e5b918-ac3e-4381-9894-f611cadeab93",
-				"deleted":        "false",
 			},
 		},
 	}
