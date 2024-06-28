@@ -16,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// chatroommessageGet validates the chatroommessage's ownership and returns the chatroommessage info.
+// chatroommessageGet gets the chatroommessage info.
 func (h *serviceHandler) chatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.Messagechatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "chatroommessageGet",
@@ -76,10 +76,15 @@ func (h *serviceHandler) ChatroommessageCreate(ctx context.Context, a *amagent.A
 	log.Debug("Creating the chatroom message.")
 
 	// get chatroom info
-	cr, err := h.chatroomGet(ctx, a, chatroomID)
+	cr, err := h.chatroomGet(ctx, chatroomID)
 	if err != nil {
 		log.Errorf("Could not get chatroom info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, cr.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	// create chatmessage
@@ -131,14 +136,14 @@ func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, a 
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	tmp, err := h.chatroomGet(ctx, a, chatroomID)
+	tmp, err := h.chatroomGet(ctx, chatroomID)
 	if err != nil {
 		log.Errorf("Could not get owner info. err: %v", err)
 		return nil, err
 	}
 	log.WithField("chatroom", tmp).Debugf("Found chatroom info. chatroom_id: %s", chatroomID)
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -148,6 +153,31 @@ func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, a 
 		"deleted":     "false",
 		"chatroom_id": chatroomID.String(),
 	}
+
+	res, err := h.chatroommessageGetsWithFilters(ctx, size, token, filters)
+	if err != nil {
+		log.Errorf("Could not get chatroom messages. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ChatroommessageGetsWithFilters gets the list of chatroommessages of the given filters.
+// It returns list of chatroommessages if it succeed.
+func (h *serviceHandler) chatroommessageGetsWithFilters(ctx context.Context, size uint64, token string, filters map[string]string) ([]*chatmessagechatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "ChatroommessageGetsWithFilters",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
+	})
+	log.Debug("Getting a chatroommessages.")
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	tmps, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chatroommessages info from the chat-manager. err: %v", err)

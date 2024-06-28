@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// chatroomGet validates the chatroom's ownership and returns the chatroom info.
+// chatroomGet returns the chatroom info.
 func (h *serviceHandler) chatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "chatroomGet",
@@ -222,13 +222,30 @@ func (h *serviceHandler) ChatroomDelete(ctx context.Context, a *amagent.Agent, i
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ChatV1ChatroomDelete(ctx, id)
+	tmp, err := h.chatroomDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the chatroom. err: %v", err)
 		return nil, err
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// chatroomDelete deletes the chatroom.
+func (h *serviceHandler) chatroomDelete(ctx context.Context, id uuid.UUID) (*chatchatroom.Chatroom, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chatroomDelete",
+		"chatroom_id": id,
+	})
+	log.Debug("Deleting a chat.")
+
+	res, err := h.reqHandler.ChatV1ChatroomDelete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete the chatroom. err: %v", err)
+		return nil, err
+	}
+
 	return res, nil
 }
 
