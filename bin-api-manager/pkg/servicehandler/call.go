@@ -58,7 +58,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *amagent.Agent, flowI
 	})
 	log.Debug("Creating a new call.")
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, nil, fmt.Errorf("user has no permission")
 	}
 
@@ -126,7 +126,7 @@ func (h *serviceHandler) CallGet(ctx context.Context, a *amagent.Agent, callID u
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -151,7 +151,7 @@ func (h *serviceHandler) CallGets(ctx context.Context, a *amagent.Agent, size ui
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -160,6 +160,30 @@ func (h *serviceHandler) CallGets(ctx context.Context, a *amagent.Agent, size ui
 	filters := map[string]string{
 		"customer_id": a.CustomerID.String(),
 		"deleted":     "false", // we don't need deleted items
+	}
+
+	res, err := h.callGetsByFilters(ctx, size, token, filters)
+	if err != nil {
+		log.Errorf("Could not get calls info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// callGetsByFilters sends a request to call-manager
+// to getting a list of calls.
+// it returns list of calls if it succeed.
+func (h *serviceHandler) callGetsByFilters(ctx context.Context, size uint64, token string, filters map[string]string) ([]*cmcall.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "callGetsByFilters",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
+	})
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get calls
@@ -202,6 +226,24 @@ func (h *serviceHandler) CallDelete(ctx context.Context, a *amagent.Agent, callI
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
+	res, err := h.callDelete(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not delete call info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// callDelete sends a request to call-manager
+// to delete the call.
+// it returns call if it succeed.
+func (h *serviceHandler) callDelete(ctx context.Context, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "callDelete",
+		"call_id": callID,
+	})
+
 	// send request
 	tmp, err := h.reqHandler.CallV1CallDelete(ctx, callID)
 	if err != nil {
@@ -234,7 +276,7 @@ func (h *serviceHandler) CallHangup(ctx context.Context, a *amagent.Agent, callI
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -271,7 +313,7 @@ func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID 
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -303,7 +345,7 @@ func (h *serviceHandler) CallHoldOn(ctx context.Context, a *amagent.Agent, callI
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -335,7 +377,7 @@ func (h *serviceHandler) CallHoldOff(ctx context.Context, a *amagent.Agent, call
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -367,7 +409,7 @@ func (h *serviceHandler) CallMuteOn(ctx context.Context, a *amagent.Agent, callI
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -399,7 +441,7 @@ func (h *serviceHandler) CallMuteOff(ctx context.Context, a *amagent.Agent, call
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -431,7 +473,7 @@ func (h *serviceHandler) CallMOHOn(ctx context.Context, a *amagent.Agent, callID
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -463,7 +505,7 @@ func (h *serviceHandler) CallMOHOff(ctx context.Context, a *amagent.Agent, callI
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -495,7 +537,7 @@ func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *amagent.Agent, ca
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}
@@ -527,7 +569,7 @@ func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *amagent.Agent, c
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}

@@ -120,8 +120,9 @@ func Test_ChatroommessageCreate(t *testing.T) {
 			},
 
 			responseChatroom: &chatchatroom.Chatroom{
-				ID:     uuid.FromStringOrNil("e59dcafa-bbf6-11ee-914f-ab362a70a1cf"),
-				ChatID: uuid.FromStringOrNil("2fabac6a-bbf8-11ee-9e21-53afa17d17cb"),
+				ID:         uuid.FromStringOrNil("e59dcafa-bbf6-11ee-914f-ab362a70a1cf"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				ChatID:     uuid.FromStringOrNil("2fabac6a-bbf8-11ee-9e21-53afa17d17cb"),
 			},
 			responseMessagechat: &chatmessagechat.Messagechat{
 				ID: uuid.FromStringOrNil("2fe4994e-bbf8-11ee-ba94-137f44f6810a"),
