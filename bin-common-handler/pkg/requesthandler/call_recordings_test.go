@@ -275,7 +275,7 @@ func Test_CallV1RecordingStart(t *testing.T) {
 				URI:      "/v1/recordings",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type":"call","reference_id":"a49bea54-90ce-11ed-9bfb-67a5f5309240","format":"wav","end_of_silence":10000,"end_of_key":"#","duration":100000}`),
+				Data:     []byte(`{"owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"a49bea54-90ce-11ed-9bfb-67a5f5309240","format":"wav","end_of_silence":10000,"end_of_key":"#","duration":100000}`),
 			},
 			&cmrecording.Recording{
 				ID: uuid.FromStringOrNil("a4d5b57c-90ce-11ed-a125-b38f2f6766f4"),

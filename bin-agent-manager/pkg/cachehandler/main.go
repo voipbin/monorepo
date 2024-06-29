@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-agent-manager/models/resource"
 )
 
 type handler struct {
@@ -26,9 +25,6 @@ type CacheHandler interface {
 
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentSet(ctx context.Context, u *agent.Agent) error
-
-	ResourceGet(ctx context.Context, id uuid.UUID) (*resource.Resource, error)
-	ResourceSet(ctx context.Context, u *resource.Resource) error
 }
 
 // NewHandler creates DBHandler

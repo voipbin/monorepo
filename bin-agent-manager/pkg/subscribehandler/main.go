@@ -13,13 +13,11 @@ import (
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
-	whwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/pkg/agenthandler"
-	"monorepo/bin-agent-manager/pkg/resourcehandler"
 )
 
 // SubscribeHandler interface
@@ -33,8 +31,7 @@ type subscribeHandler struct {
 	subscribeQueue   string
 	subscribeTargets []string
 
-	agentHandler    agenthandler.AgentHandler
-	resourceHandler resourcehandler.ResourceHandler
+	agentHandler agenthandler.AgentHandler
 }
 
 var (
@@ -65,14 +62,12 @@ func NewSubscribeHandler(
 	subscribeQueue string,
 	subscribeTargets []string,
 	agentHandler agenthandler.AgentHandler,
-	resourceHandler resourcehandler.ResourceHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock:       rabbitSock,
 		subscribeQueue:   subscribeQueue,
 		subscribeTargets: subscribeTargets,
 		agentHandler:     agentHandler,
-		resourceHandler:  resourceHandler,
 	}
 
 	return h
@@ -142,21 +137,12 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 		case string(cmgroupcall.EventTypeGroupcallProgressing):
 			err = h.processEventCMGroupcallProgressing(ctx, m)
-
-			// // call
-			// case string(cmcall.EventTypeCallDeleted):
-			// 	err = h.processEventCMCallDeleted(ctx, m)
 		}
 
 	//// customer-manager
 	// customer
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cmcustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCMCustomerDeleted(ctx, m)
-
-	//// webhook-manager
-	// webhook
-	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(whwebhook.EventTypeWebhookPublished)):
-		err = h.processEventWMWebhookPublished(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

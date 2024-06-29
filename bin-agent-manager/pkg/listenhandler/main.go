@@ -17,7 +17,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/pkg/agenthandler"
-	"monorepo/bin-agent-manager/pkg/resourcehandler"
 )
 
 // pagination parameters
@@ -35,8 +34,7 @@ type listenHandler struct {
 	utilHandler utilhandler.UtilHandler
 	rabbitSock  rabbitmqhandler.Rabbit
 
-	agentHandler    agenthandler.AgentHandler
-	resourceHandler resourcehandler.ResourceHandler
+	agentHandler agenthandler.AgentHandler
 }
 
 var (
@@ -58,10 +56,6 @@ var (
 
 	// login
 	regV1Login = regexp.MustCompile("/v1/login$")
-
-	// resources
-	regV1ResourcesGet = regexp.MustCompile(`/v1/resources\?(.*)$`)
-	regV1ResourcesID  = regexp.MustCompile("/v1/resources/" + regUUID + "$")
 )
 
 var (
@@ -94,13 +88,12 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler, resourceHandler resourcehandler.ResourceHandler) ListenHandler {
+func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler) ListenHandler {
 	h := &listenHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
 		rabbitSock:  rabbitSock,
 
-		agentHandler:    agentHandler,
-		resourceHandler: resourceHandler,
+		agentHandler: agentHandler,
 	}
 
 	return h
@@ -236,24 +229,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Login.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1Login(ctx, m)
 		requestType = "/v1/login"
-
-	/////////////////
-	// resources
-	/////////////////
-	// GET /resources
-	case regV1ResourcesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ResourcesGet(ctx, m)
-		requestType = "/v1/resources"
-
-	// GET /resources/<resource-id>
-	case regV1ResourcesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ResourcesIDGet(ctx, m)
-		requestType = "/v1/resources/<resource-id>"
-
-	// DELETE /resources/<resource-id>
-	case regV1ResourcesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1ResourcesIDDelete(ctx, m)
-		requestType = "/v1/resources/<resource-id>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

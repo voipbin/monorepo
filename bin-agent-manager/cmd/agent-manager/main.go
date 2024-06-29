@@ -23,7 +23,6 @@ import (
 	"monorepo/bin-agent-manager/pkg/cachehandler"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 	"monorepo/bin-agent-manager/pkg/listenhandler"
-	"monorepo/bin-agent-manager/pkg/resourcehandler"
 	"monorepo/bin-agent-manager/pkg/subscribehandler"
 )
 
@@ -139,13 +138,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
 	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
-	resourceHandler := resourcehandler.NewResourceHandler(reqHandler, db, notifyHandler, agentHandler)
 
-	if err := runListen(rabbitSock, agentHandler, resourceHandler); err != nil {
+	if err := runListen(rabbitSock, agentHandler); err != nil {
 		return err
 	}
 
-	if err := runSubscribe(rabbitSock, agentHandler, resourceHandler); err != nil {
+	if err := runSubscribe(rabbitSock, agentHandler); err != nil {
 		return err
 	}
 
@@ -153,8 +151,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler, resourceHandler resourcehandler.ResourceHandler) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, agentHandler, resourceHandler)
+func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler) error {
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, agentHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameAgentRequest), string(commonoutline.QueueNameDelay)); err != nil {
@@ -168,7 +166,6 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.Agen
 func runSubscribe(
 	rabbitSock rabbitmqhandler.Rabbit,
 	agentHandler agenthandler.AgentHandler,
-	resourceHandler resourcehandler.ResourceHandler,
 ) error {
 
 	subscribeTargets := []string{
@@ -176,7 +173,7 @@ func runSubscribe(
 		string(commonoutline.QueueNameCustomerEvent),
 		string(commonoutline.QueueNameWebhookEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler, resourceHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {
