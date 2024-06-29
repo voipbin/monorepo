@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-agent-manager/models/resource"
 )
 
 // getSerialize returns cached serialized info.
@@ -72,48 +71,6 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 // The agent ID is used as the unique identifier for each agent.
 func (h *handler) AgentSet(ctx context.Context, u *agent.Agent) error {
 	key := fmt.Sprintf("agent:agent:%d", u.ID)
-
-	if err := h.setSerialize(ctx, key, u); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ResourceGet retrieves the cached resource information associated with the given ID.
-// It uses the ID as the cache key.
-//
-// Parameters:
-// ctx (context.Context): The context for the operation.
-// id (uuid.UUID): The ID of the resource for which to retrieve the information.
-//
-// Returns:
-// (*resource.Resource, error): A pointer to the retrieved resource information and any error encountered during the operation.
-// If the resource information is not found in the cache, nil is returned for the resource and an error is returned.
-func (h *handler) ResourceGet(ctx context.Context, id uuid.UUID) (*resource.Resource, error) {
-	key := fmt.Sprintf("agent:resource:%d", id)
-
-	var res resource.Resource
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// ResourceSet sets the resource info into the cache.
-//
-// Parameters:
-// ctx (context.Context): The context for the operation.
-// u (resource.Resource): The resource information to be set in the cache.
-//
-// Returns:
-// error: An error if the operation fails, nil otherwise.
-//
-// Note: The resource information is stored in the cache using the format "agent:resource:<id>".
-// The resource ID is used as the unique identifier for each resource.
-func (h *handler) ResourceSet(ctx context.Context, u *resource.Resource) error {
-	key := fmt.Sprintf("agent:resource:%d", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {
 		return err

@@ -7,7 +7,6 @@ package dbhandler
 import (
 	context "context"
 	agent "monorepo/bin-agent-manager/models/agent"
-	resource "monorepo/bin-agent-manager/models/resource"
 	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
 
@@ -208,76 +207,4 @@ func (m *MockDBHandler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tags [
 func (mr *MockDBHandlerMockRecorder) AgentSetTagIDs(ctx, id, tags interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentSetTagIDs", reflect.TypeOf((*MockDBHandler)(nil).AgentSetTagIDs), ctx, id, tags)
-}
-
-// ResourceCreate mocks base method.
-func (m *MockDBHandler) ResourceCreate(ctx context.Context, a *resource.Resource) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResourceCreate", ctx, a)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResourceCreate indicates an expected call of ResourceCreate.
-func (mr *MockDBHandlerMockRecorder) ResourceCreate(ctx, a interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceCreate", reflect.TypeOf((*MockDBHandler)(nil).ResourceCreate), ctx, a)
-}
-
-// ResourceDelete mocks base method.
-func (m *MockDBHandler) ResourceDelete(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResourceDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResourceDelete indicates an expected call of ResourceDelete.
-func (mr *MockDBHandlerMockRecorder) ResourceDelete(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceDelete", reflect.TypeOf((*MockDBHandler)(nil).ResourceDelete), ctx, id)
-}
-
-// ResourceGet mocks base method.
-func (m *MockDBHandler) ResourceGet(ctx context.Context, id uuid.UUID) (*resource.Resource, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResourceGet", ctx, id)
-	ret0, _ := ret[0].(*resource.Resource)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ResourceGet indicates an expected call of ResourceGet.
-func (mr *MockDBHandlerMockRecorder) ResourceGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceGet", reflect.TypeOf((*MockDBHandler)(nil).ResourceGet), ctx, id)
-}
-
-// ResourceGets mocks base method.
-func (m *MockDBHandler) ResourceGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*resource.Resource, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResourceGets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*resource.Resource)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ResourceGets indicates an expected call of ResourceGets.
-func (mr *MockDBHandlerMockRecorder) ResourceGets(ctx, size, token, filters interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceGets", reflect.TypeOf((*MockDBHandler)(nil).ResourceGets), ctx, size, token, filters)
-}
-
-// ResourceSetData mocks base method.
-func (m *MockDBHandler) ResourceSetData(ctx context.Context, id uuid.UUID, data interface{}) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResourceSetData", ctx, id, data)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResourceSetData indicates an expected call of ResourceSetData.
-func (mr *MockDBHandlerMockRecorder) ResourceSetData(ctx, id, data interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceSetData", reflect.TypeOf((*MockDBHandler)(nil).ResourceSetData), ctx, id, data)
 }
