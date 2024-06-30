@@ -359,7 +359,7 @@ func (h *chatHandler) RemoveParticipantID(ctx context.Context, id uuid.UUID, par
 	// update the each chatrooms
 	chatroomID := uuid.Nil
 	for _, cr := range chatrooms {
-		if cr.OwnerID == participantID {
+		if cr.RoomOwnerID == participantID {
 			chatroomID = cr.ID
 		}
 

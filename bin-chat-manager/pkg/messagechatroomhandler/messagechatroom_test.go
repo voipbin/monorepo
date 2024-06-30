@@ -177,7 +177,7 @@ func Test_Create(t *testing.T) {
 			expectMessagechatroom: &messagechatroom.Messagechatroom{
 				ID:            uuid.FromStringOrNil("68922a7a-daae-11ee-8e4d-6fbcd4b11b39"),
 				CustomerID:    uuid.FromStringOrNil("65ac45e2-32b3-11ed-b720-973a629c7807"),
-				AgentID:       uuid.FromStringOrNil("0698e5d4-daae-11ee-be05-cb7440513a2f"),
+				OwnerID:       uuid.FromStringOrNil("0698e5d4-daae-11ee-be05-cb7440513a2f"),
 				ChatroomID:    uuid.FromStringOrNil("65d8b7e4-32b3-11ed-8846-97d903739f2c"),
 				MessagechatID: uuid.FromStringOrNil("662ecbfc-32b3-11ed-ae98-a71aa0c6ca99"),
 				Source: &commonaddress.Address{

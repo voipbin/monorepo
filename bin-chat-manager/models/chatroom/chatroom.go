@@ -10,12 +10,13 @@ import (
 type Chatroom struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
-	AgentID    uuid.UUID `json:"agent_id"`
+	OwnerType  OwnerType `json:"owner_type"` //
+	OwnerID    uuid.UUID `json:"owner_id"`   //
 
 	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`
 
-	OwnerID        uuid.UUID   `json:"onwer_id"`        // chatroom's owner agnet id.
+	RoomOwnerID    uuid.UUID   `json:"room_owner_id"`   // chatroom's owner agnet id.
 	ParticipantIDs []uuid.UUID `json:"participant_ids"` // list of participated agent ids
 
 	Name   string `json:"name"`
@@ -25,6 +26,15 @@ type Chatroom struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+// OnwerType defines
+type OwnerType string
+
+// list of onwer types
+const (
+	OwnerTypeNone  OwnerType = ""
+	OwnerTypeAgent OwnerType = "agent"
+)
 
 // Type define
 type Type string

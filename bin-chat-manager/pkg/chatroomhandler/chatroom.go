@@ -71,10 +71,10 @@ func (h *chatroomHandler) Create(
 	tmp := &chatroom.Chatroom{
 		ID:             id,
 		CustomerID:     customerID,
-		AgentID:        agentID,
+		OwnerID:        agentID,
 		Type:           chatroomType,
 		ChatID:         chatID,
-		OwnerID:        ownerID,
+		RoomOwnerID:    ownerID,
 		ParticipantIDs: participantIDs,
 		Name:           name,
 		Detail:         detail,

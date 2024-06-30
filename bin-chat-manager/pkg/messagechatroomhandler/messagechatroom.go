@@ -70,7 +70,7 @@ func (h *messagechatroomHandler) Create(
 	tmp := &messagechatroom.Messagechatroom{
 		ID:         id,
 		CustomerID: customerID,
-		AgentID:    agentID,
+		OwnerID:    agentID,
 
 		ChatroomID:    chatroomID,
 		MessagechatID: messagechatID,

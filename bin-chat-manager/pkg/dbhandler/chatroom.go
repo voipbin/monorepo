@@ -45,12 +45,12 @@ func (h *handler) chatroomGetFromRow(row *sql.Rows) (*chatroom.Chatroom, error) 
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-		&res.AgentID,
+		&res.OwnerID,
 
 		&res.Type,
 		&res.ChatID,
 
-		&res.OwnerID,
+		&res.RoomOwnerID,
 		&participantIDs,
 
 		&res.Name,
@@ -111,12 +111,12 @@ func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) erro
 	_, err = stmt.ExecContext(ctx,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
-		c.AgentID.Bytes(),
+		c.OwnerID.Bytes(),
 
 		c.Type,
 		c.ChatID.Bytes(),
 
-		c.OwnerID.Bytes(),
+		c.RoomOwnerID.Bytes(),
 		participantIDs,
 
 		c.Name,

@@ -102,7 +102,7 @@ func (h *messagechatHandler) Create(
 		tmp, err := h.messagechatroomHandler.Create(
 			ctx,
 			res.CustomerID,
-			cr.AgentID,
+			cr.OwnerID,
 			cr.ID,
 			res.ID,
 			res.Source,

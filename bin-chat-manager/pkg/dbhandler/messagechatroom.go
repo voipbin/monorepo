@@ -48,7 +48,7 @@ func (h *handler) messagechatroomGetFromRow(row *sql.Rows) (*messagechatroom.Mes
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-		&res.AgentID,
+		&res.OwnerID,
 
 		&res.ChatroomID,
 		&res.MessagechatID,
@@ -127,7 +127,7 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 	_, err = stmt.ExecContext(ctx,
 		m.ID.Bytes(),
 		m.CustomerID.Bytes(),
-		m.AgentID.Bytes(),
+		m.OwnerID.Bytes(),
 
 		m.ChatroomID.Bytes(),
 		m.MessagechatID.Bytes(),
