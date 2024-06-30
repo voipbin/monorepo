@@ -625,6 +625,8 @@ github.com/sashabaranov/go-openai v1.25.0 h1:3h3DtJ55zQJqc+BR4y/iTcPhLk4pewJpyO+
 github.com/sashabaranov/go-openai v1.25.0/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/sashabaranov/go-openai v1.26.1 h1:B5plrmc/r7hKgYX69oT2VSt5w0O6u9BJYTjB8lNCesI=
 github.com/sashabaranov/go-openai v1.26.1/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
+github.com/sashabaranov/go-openai v1.26.2 h1:cVlQa3gn3eYqNXRW03pPlpy6zLG52EU4g0FrWXc0EFI=
+github.com/sashabaranov/go-openai v1.26.2/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/sirupsen/logrus v1.9.0/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=

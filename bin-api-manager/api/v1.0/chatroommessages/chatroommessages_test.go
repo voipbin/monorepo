@@ -140,7 +140,7 @@ func Test_chatmessagesGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"6402aab8-389b-11ed-b537-57de22d7f36f","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"6402aab8-389b-11ed-b537-57de22d7f36f","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -167,7 +167,7 @@ func Test_chatmessagesGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"d54e7a4a-389f-11ed-9891-97fc0cc84808","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"d575e648-389f-11ed-b67b-5b8f49688d39","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"d6687bb0-389f-11ed-94c7-5b68300fcff9","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"d54e7a4a-389f-11ed-9891-97fc0cc84808","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"d575e648-389f-11ed-b67b-5b8f49688d39","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"d6687bb0-389f-11ed-94c7-5b68300fcff9","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -230,7 +230,7 @@ func Test_chatroommessagesIDGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("0e2aab86-38a0-11ed-895e-c3af9cdbb491"),
 			},
 
-			`{"id":"0e2aab86-38a0-11ed-895e-c3af9cdbb491","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"0e2aab86-38a0-11ed-895e-c3af9cdbb491","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -293,7 +293,7 @@ func Test_chatroommessagesIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("72c7cdee-38a0-11ed-a3b4-737e737b5977"),
 			},
 
-			`{"id":"72c7cdee-38a0-11ed-a3b4-737e737b5977","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"72c7cdee-38a0-11ed-a3b4-737e737b5977","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 

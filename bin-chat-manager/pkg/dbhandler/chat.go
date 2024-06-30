@@ -348,8 +348,8 @@ func (h *handler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ChatUpdateOwnerID updates the chat's owner_id.
-func (h *handler) ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) error {
+// ChatUpdateRoomOwnerID updates the chat's owner_id.
+func (h *handler) ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) error {
 	q := `
 	update chats set
 		room_owner_id = ?,
@@ -359,7 +359,7 @@ func (h *handler) ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, roomOwner
 	`
 
 	if _, err := h.db.Exec(q, roomOwnerID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ChatUpdateOwnerID. err: %v", err)
+		return fmt.Errorf("could not execute the query. ChatUpdateRoomOwnerID. err: %v", err)
 	}
 
 	// set to the cache

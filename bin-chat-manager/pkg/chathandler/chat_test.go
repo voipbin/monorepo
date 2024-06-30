@@ -356,7 +356,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_UpdateOwnerID(t *testing.T) {
+func Test_UpdateRoomOwnerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -395,11 +395,11 @@ func Test_UpdateOwnerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatUpdateOwnerID(ctx, tt.id, tt.ownerID).Return(nil)
+			mockDB.EXPECT().ChatUpdateRoomOwnerID(ctx, tt.id, tt.ownerID).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			res, err := h.UpdateOwnerID(ctx, tt.id, tt.ownerID)
+			res, err := h.UpdateRoomOwnerID(ctx, tt.id, tt.ownerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

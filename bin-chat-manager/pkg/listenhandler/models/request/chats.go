@@ -14,7 +14,6 @@ type V1DataChatsPost struct {
 	Type       chat.Type `json:"type"`
 
 	RoomOwnerID    uuid.UUID   `json:"room_owner_id"`
-	OwnerID        uuid.UUID   `json:"owner_id"`
 	ParticipantIDs []uuid.UUID `json:"participant_ids"`
 
 	Name   string `json:"name"`
@@ -36,9 +35,9 @@ type V1DataChatsIDParticipantIDsPost struct {
 	ParticipantID uuid.UUID `json:"participant_id"`
 }
 
-// V1DataChatsIDOwnerIDPut is
+// V1DataChatsIDRoomOwnerIDPut is
 // v1 data type request struct for
-// /v1/chats/{id}/owner_id PUT
-type V1DataChatsIDOwnerIDPut struct {
-	OwnerID uuid.UUID `json:"owner_id"`
+// /v1/chats/{id}/room_owner_id PUT
+type V1DataChatsIDRoomOwnerIDPut struct {
+	RoomOwnerID uuid.UUID `json:"room_owner_id"`
 }

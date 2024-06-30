@@ -21,7 +21,7 @@ func (r *requestHandler) ChatV1ChatCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	chatType chatchat.Type,
-	ownerID uuid.UUID,
+	roomOwnerID uuid.UUID,
 	participantIDs []uuid.UUID,
 	name string,
 	detail string,
@@ -31,7 +31,7 @@ func (r *requestHandler) ChatV1ChatCreate(
 	data := &chatrequest.V1DataChatsPost{
 		CustomerID:     customerID,
 		Type:           chatType,
-		OwnerID:        ownerID,
+		RoomOwnerID:    roomOwnerID,
 		ParticipantIDs: participantIDs,
 		Name:           name,
 		Detail:         detail,
@@ -173,13 +173,13 @@ func (r *requestHandler) ChatV1ChatUpdateBasicInfo(ctx context.Context, id uuid.
 	return &res, nil
 }
 
-// ChatV1ChatUpdateOwnerID sends a request to chat-manager
+// ChatV1ChatUpdateRoomOwnerID sends a request to chat-manager
 // to update the chat's owner id.
-func (r *requestHandler) ChatV1ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chatchat.Chat, error) {
-	uri := fmt.Sprintf("/v1/chats/%s/owner_id", id)
+func (r *requestHandler) ChatV1ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) (*chatchat.Chat, error) {
+	uri := fmt.Sprintf("/v1/chats/%s/room_owner_id", id)
 
-	data := &chatrequest.V1DataChatsIDOwnerIDPut{
-		OwnerID: ownerID,
+	data := &chatrequest.V1DataChatsIDRoomOwnerIDPut{
+		RoomOwnerID: roomOwnerID,
 	}
 
 	m, err := json.Marshal(data)
@@ -187,7 +187,7 @@ func (r *requestHandler) ChatV1ChatUpdateOwnerID(ctx context.Context, id uuid.UU
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPut, "chat/chats", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPut, "chat/chats/<chat-id>/room_owner_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

@@ -16,7 +16,7 @@ type WebhookMessage struct {
 	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`
 
-	RoomOwnerID    uuid.UUID   `json:"roomowner_id"`    // owned agent id
+	RoomOwnerID    uuid.UUID   `json:"room_owner_id"`   // owned agent id
 	ParticipantIDs []uuid.UUID `json:"participant_ids"` // list of participated ids(agent ids)
 
 	Name   string `json:"name"`

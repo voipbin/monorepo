@@ -13,7 +13,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	chats.GET("/:id", chatsIDGET)
 	chats.PUT("/:id", chatsIDPUT)
 
-	chats.PUT("/:id/owner_id", chatsIDOwnerIDPUT)
+	chats.PUT("/:id/room_owner_id", chatsIDRoomOwnerIDPUT)
 	chats.POST("/:id/participant_ids", chatsIDParticipantIDsPOST)
 	chats.DELETE("/:id/participant_ids/:participant_id", chatsIDParticipantIDsIDDELETE)
 }

@@ -317,7 +317,7 @@ func Test_ChatDelete(t *testing.T) {
 	}
 }
 
-func Test_ChatUpdateOwnerID(t *testing.T) {
+func Test_ChatUpdateRoomOwnerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -366,7 +366,7 @@ func Test_ChatUpdateOwnerID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
-			if err := h.ChatUpdateOwnerID(ctx, tt.id, tt.ownerID); err != nil {
+			if err := h.ChatUpdateRoomOwnerID(ctx, tt.id, tt.ownerID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

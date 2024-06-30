@@ -409,14 +409,14 @@ func Test_v1ChatsIDPut(t *testing.T) {
 	}
 }
 
-func Test_v1ChatsIDOwnerIDPut(t *testing.T) {
+func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
 		request *rabbitmqhandler.Request
 
-		chatID  uuid.UUID
-		ownerID uuid.UUID
+		chatID      uuid.UUID
+		roomOwnerID uuid.UUID
 
 		responseChat *chat.Chat
 
@@ -425,10 +425,10 @@ func Test_v1ChatsIDOwnerIDPut(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/chats/b3f5c700-31f0-11ed-b1a2-bb3854582a08/owner_id",
+				URI:      "/v1/chats/b3f5c700-31f0-11ed-b1a2-bb3854582a08/room_owner_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_id": "b45cd102-31f0-11ed-9cd9-3fa1a0f883ef"}`),
+				Data:     []byte(`{"room_owner_id": "b45cd102-31f0-11ed-9cd9-3fa1a0f883ef"}`),
 			},
 
 			uuid.FromStringOrNil("b3f5c700-31f0-11ed-b1a2-bb3854582a08"),
@@ -463,7 +463,7 @@ func Test_v1ChatsIDOwnerIDPut(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().UpdateOwnerID(gomock.Any(), tt.chatID, tt.ownerID).Return(tt.responseChat, nil)
+			mockChat.EXPECT().UpdateRoomOwnerID(gomock.Any(), tt.chatID, tt.roomOwnerID).Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

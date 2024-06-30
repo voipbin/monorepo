@@ -136,7 +136,7 @@ func Test_chatsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"370254c4-38a4-11ed-b2a5-37ed1141a85e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"370254c4-38a4-11ed-b2a5-37ed1141a85e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -162,7 +162,7 @@ func Test_chatsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"37280f2a-38a4-11ed-86cf-43452b441d43","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"37505e8a-38a4-11ed-b987-bb8a17321104","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"3775e664-38a4-11ed-82d4-e30616d2700c","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"37280f2a-38a4-11ed-86cf-43452b441d43","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"37505e8a-38a4-11ed-b987-bb8a17321104","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"3775e664-38a4-11ed-82d4-e30616d2700c","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -225,7 +225,7 @@ func Test_chatsIDGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("66f4fc5e-38a4-11ed-9898-4fe958a93f32"),
 			},
 
-			`{"id":"66f4fc5e-38a4-11ed-9898-4fe958a93f32","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"66f4fc5e-38a4-11ed-9898-4fe958a93f32","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -288,7 +288,7 @@ func Test_chatsIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("bb04bc12-38a4-11ed-83a7-2f3469ac49d8"),
 			},
 
-			`{"id":"bb04bc12-38a4-11ed-83a7-2f3469ac49d8","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"bb04bc12-38a4-11ed-83a7-2f3469ac49d8","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -358,7 +358,7 @@ func Test_chatsIDPUT(t *testing.T) {
 				ID: uuid.FromStringOrNil("493c3ece-38a5-11ed-a068-3b268867512b"),
 			},
 
-			`{"id":"493c3ece-38a5-11ed-a068-3b268867512b","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"493c3ece-38a5-11ed-a068-3b268867512b","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -402,7 +402,7 @@ func Test_chatsIDPUT(t *testing.T) {
 	}
 }
 
-func Test_chatsIDOwnerIDPUT(t *testing.T) {
+func Test_chatsIDRoomOwnerIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -411,7 +411,7 @@ func Test_chatsIDOwnerIDPUT(t *testing.T) {
 		reqQuery string
 		chatID   uuid.UUID
 
-		reqBody request.BodyChatsIDOwnerIDPUT
+		reqBody request.BodyChatsIDRoomOwnerIDPUT
 
 		responseChat *chatchat.WebhookMessage
 
@@ -423,18 +423,18 @@ func Test_chatsIDOwnerIDPUT(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			"/v1.0/chats/71e7f444-38a5-11ed-ada5-7b100414c281/owner_id",
+			"/v1.0/chats/71e7f444-38a5-11ed-ada5-7b100414c281/room_owner_id",
 			uuid.FromStringOrNil("71e7f444-38a5-11ed-ada5-7b100414c281"),
 
-			request.BodyChatsIDOwnerIDPUT{
-				OwnerID: uuid.FromStringOrNil("720f35a4-38a5-11ed-8d75-b7dc3e2589d1"),
+			request.BodyChatsIDRoomOwnerIDPUT{
+				RoomOwnerID: uuid.FromStringOrNil("720f35a4-38a5-11ed-8d75-b7dc3e2589d1"),
 			},
 
 			&chatchat.WebhookMessage{
 				ID: uuid.FromStringOrNil("71e7f444-38a5-11ed-ada5-7b100414c281"),
 			},
 
-			`{"id":"71e7f444-38a5-11ed-ada5-7b100414c281","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"71e7f444-38a5-11ed-ada5-7b100414c281","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -464,7 +464,7 @@ func Test_chatsIDOwnerIDPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ChatUpdateOwnerID(req.Context(), &tt.agent, tt.chatID, tt.reqBody.OwnerID).Return(tt.responseChat, nil)
+			mockSvc.EXPECT().ChatUpdateRoomOwnerID(req.Context(), &tt.agent, tt.chatID, tt.reqBody.RoomOwnerID).Return(tt.responseChat, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -510,7 +510,7 @@ func Test_chatsIDParticipantIDsPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("9e543ff6-38a5-11ed-9e73-6f0b324904e7"),
 			},
 
-			`{"id":"9e543ff6-38a5-11ed-9e73-6f0b324904e7","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"9e543ff6-38a5-11ed-9e73-6f0b324904e7","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -582,7 +582,7 @@ func Test_chatsIDParticipantIDsIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("c8a77ab6-38a5-11ed-b33f-137843123dff"),
 			},
 
-			`{"id":"c8a77ab6-38a5-11ed-b33f-137843123dff","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"c8a77ab6-38a5-11ed-b33f-137843123dff","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 

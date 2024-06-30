@@ -51,7 +51,7 @@ func (h *messagechatroomHandler) Gets(ctx context.Context, token string, size ui
 func (h *messagechatroomHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
-	agentID uuid.UUID,
+	ownerID uuid.UUID,
 	chatroomID uuid.UUID,
 	messagechatID uuid.UUID,
 	source *commonaddress.Address,
@@ -70,7 +70,8 @@ func (h *messagechatroomHandler) Create(
 	tmp := &messagechatroom.Messagechatroom{
 		ID:         id,
 		CustomerID: customerID,
-		OwnerID:    agentID,
+		OwnerType:  messagechatroom.OwnerTypeAgent,
+		OwnerID:    ownerID,
 
 		ChatroomID:    chatroomID,
 		MessagechatID: messagechatID,

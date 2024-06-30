@@ -141,17 +141,17 @@ func (mr *MockChatHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockChatHandler)(nil).UpdateBasicInfo), ctx, id, name, detail)
 }
 
-// UpdateOwnerID mocks base method.
-func (m *MockChatHandler) UpdateOwnerID(ctx context.Context, id, ownerID uuid.UUID) (*chat.Chat, error) {
+// UpdateRoomOwnerID mocks base method.
+func (m *MockChatHandler) UpdateRoomOwnerID(ctx context.Context, id, ownerID uuid.UUID) (*chat.Chat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOwnerID", ctx, id, ownerID)
+	ret := m.ctrl.Call(m, "UpdateRoomOwnerID", ctx, id, ownerID)
 	ret0, _ := ret[0].(*chat.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateOwnerID indicates an expected call of UpdateOwnerID.
-func (mr *MockChatHandlerMockRecorder) UpdateOwnerID(ctx, id, ownerID interface{}) *gomock.Call {
+// UpdateRoomOwnerID indicates an expected call of UpdateRoomOwnerID.
+func (mr *MockChatHandlerMockRecorder) UpdateRoomOwnerID(ctx, id, ownerID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOwnerID", reflect.TypeOf((*MockChatHandler)(nil).UpdateOwnerID), ctx, id, ownerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRoomOwnerID", reflect.TypeOf((*MockChatHandler)(nil).UpdateRoomOwnerID), ctx, id, ownerID)
 }
