@@ -48,7 +48,7 @@ func (h *handler) chatGetFromRow(row *sql.Rows) (*chat.Chat, error) {
 
 		&res.Type,
 
-		&res.OwnerID,
+		&res.RoomOwnerID,
 		&participantIDs,
 
 		&res.Name,
@@ -111,7 +111,7 @@ func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
 
 		c.Type,
 
-		c.OwnerID.Bytes(),
+		c.RoomOwnerID.Bytes(),
 		participantIDs,
 
 		c.Name,

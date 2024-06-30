@@ -155,7 +155,7 @@ func (h *chatHandler) create(
 		ID:             id,
 		CustomerID:     customerID,
 		Type:           chatType,
-		OwnerID:        ownerID,
+		RoomOwnerID:    ownerID,
 		ParticipantIDs: participantIDs,
 		Name:           name,
 		Detail:         detail,

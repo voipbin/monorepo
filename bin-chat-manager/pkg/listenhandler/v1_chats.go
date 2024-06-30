@@ -35,7 +35,7 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m *rabbitmqhandler.Requ
 		ctx,
 		req.CustomerID,
 		req.Type,
-		req.OwnerID,
+		req.RoomOwnerID,
 		req.ParticipantIDs,
 		req.Name,
 		req.Detail,

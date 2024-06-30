@@ -13,6 +13,7 @@ type V1DataChatsPost struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 	Type       chat.Type `json:"type"`
 
+	RoomOwnerID    uuid.UUID   `json:"room_owner_id"`
 	OwnerID        uuid.UUID   `json:"owner_id"`
 	ParticipantIDs []uuid.UUID `json:"participant_ids"`
 
