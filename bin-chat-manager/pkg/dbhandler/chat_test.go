@@ -153,7 +153,7 @@ func Test_ChatGets(t *testing.T) {
 				"customer_id":     "20db856a-051f-49d3-986e-3715af514273",
 				"deleted":         "false",
 				"type":            string(chat.TypeNormal),
-				"owner_id":        "e90b7010-b936-11ee-8da8-bb61becf0b57",
+				"room_owner_id":   "e90b7010-b936-11ee-8da8-bb61becf0b57",
 			},
 		},
 	}

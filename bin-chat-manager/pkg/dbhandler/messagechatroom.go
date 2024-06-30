@@ -21,7 +21,8 @@ const (
 	select
 		id,
 		customer_id,
-		agent_id,
+		owner_type,
+		owner_id,
 
 		chatroom_id,
 		messagechat_id,
@@ -48,6 +49,7 @@ func (h *handler) messagechatroomGetFromRow(row *sql.Rows) (*messagechatroom.Mes
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.OwnerType,
 		&res.OwnerID,
 
 		&res.ChatroomID,
@@ -89,7 +91,8 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 	q := `insert into messagechatrooms(
 		id,
 		customer_id,
-		agent_id,
+		owner_type,
+		owner_id,
 
 		chatroom_id,
 		messagechat_id,
@@ -103,7 +106,7 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?,
+		?, ?, ?, ?,
 		?, ?,
 		?, ?, ?, ?,
 		?, ?, ?
@@ -127,6 +130,7 @@ func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.
 	_, err = stmt.ExecContext(ctx,
 		m.ID.Bytes(),
 		m.CustomerID.Bytes(),
+		m.OwnerType,
 		m.OwnerID.Bytes(),
 
 		m.ChatroomID.Bytes(),
@@ -250,9 +254,9 @@ func (h *handler) MessagechatroomGets(ctx context.Context, token string, size ui
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id":
+		case "customer_id", "owner_id", "chatroom_id", "messagechat_id":
 			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and customer_id = ?", q)
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, tmp.Bytes())
 
 		case "deleted":
@@ -261,19 +265,9 @@ func (h *handler) MessagechatroomGets(ctx context.Context, token string, size ui
 				values = append(values, DefaultTimeStamp)
 			}
 
-		case "type":
-			q = fmt.Sprintf("%s and type = ?", q)
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, v)
-
-		case "chatroom_id":
-			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and chatroom_id = ?", q)
-			values = append(values, tmp.Bytes())
-
-		case "messagechat_id":
-			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and messagechat_id = ?", q)
-			values = append(values, tmp.Bytes())
 
 		}
 	}

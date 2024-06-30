@@ -2,7 +2,8 @@ create table messagechatrooms(
   -- identity
   id          binary(16),
   customer_id binary(16),
-  agent_id    binary(16),
+  owner_type  varchar(255),
+  owner_id    binary(16),
 
   chatroom_id binary(16),
   messagechat_id binary(16),

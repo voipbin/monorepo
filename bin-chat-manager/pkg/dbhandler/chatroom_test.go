@@ -146,11 +146,11 @@ func Test_ChatroomGets(t *testing.T) {
 
 			10,
 			map[string]string{
-				"customer_id": "63331078-4431-43ed-96ac-5975fa9e6749",
-				"deleted":     "false",
-				"type":        string(chatroom.TypeNormal),
-				"owner_id":    "155d19da-bac6-11ee-8ed8-8fff6c8907d5",
-				"chat_id":     "152d7e64-bac6-11ee-a61f-67fba233c588",
+				"customer_id":   "63331078-4431-43ed-96ac-5975fa9e6749",
+				"deleted":       "false",
+				"type":          string(chatroom.TypeNormal),
+				"room_owner_id": "155d19da-bac6-11ee-8ed8-8fff6c8907d5",
+				"chat_id":       "152d7e64-bac6-11ee-a61f-67fba233c588",
 			},
 
 			[]*chatroom.Chatroom{
