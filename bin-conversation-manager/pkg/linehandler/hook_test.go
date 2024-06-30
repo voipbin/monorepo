@@ -1,312 +1,296 @@
 package linehandler
 
-import (
-	"context"
-	reflect "reflect"
-	"testing"
+// func Test_Hook(t *testing.T) {
 
-	commonaddress "monorepo/bin-common-handler/models/address"
+// 	tests := []struct {
+// 		name string
 
-	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+// 		account *account.Account
+// 		data    []byte
 
-	"monorepo/bin-conversation-manager/models/account"
-	"monorepo/bin-conversation-manager/models/conversation"
-	"monorepo/bin-conversation-manager/models/media"
-	"monorepo/bin-conversation-manager/models/message"
-)
+// 		// responseAccount *account.Account
 
-func Test_Hook(t *testing.T) {
+// 		expectResConversations []*conversation.Conversation
+// 		expectResMessages      []*message.Message
+// 	}{
+// 		{
+// 			name: "received message",
 
-	tests := []struct {
-		name string
+// 			account: &account.Account{
+// 				ID:         uuid.FromStringOrNil("5c1e2020-ff15-11ed-9f7c-5fdc6685e3e2"),
+// 				CustomerID: uuid.FromStringOrNil("8c9be70a-e7a6-11ec-8686-abd2812afa1e"),
+// 			},
+// 			data: []byte(`{
+// 				"destination": "U11298214116e3afbad432b5794a6d3a0",
+// 				"events": [
+// 					{
+// 						"type": "message",
+// 						"message": {
+// 							"type": "text",
+// 							"id": "16173792131295",
+// 							"text": "Hello"
+// 						},
+// 						"webhookEventId": "01G49KHTWA1D2WF05D0VHEMGZE",
+// 						"deliveryContext": {
+// 							"isRedelivery": false
+// 						},
+// 						"timestamp": 1653884906096,
+// 						"source": {
+// 							"type": "user",
+// 							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+// 						},
+// 						"replyToken": "4bdd674a22cc479b8e9e429465396b76",
+// 						"mode": "active"
+// 					}
+// 				]
+// 			}`),
 
-		account *account.Account
-		data    []byte
+// 			expectResMessages: []*message.Message{
+// 				{
+// 					CustomerID:    uuid.FromStringOrNil("8c9be70a-e7a6-11ec-8686-abd2812afa1e"),
+// 					Status:        message.StatusReceived,
+// 					ReferenceType: conversation.ReferenceTypeLine,
+// 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 					Source: &commonaddress.Address{
+// 						Type:   commonaddress.TypeLine,
+// 						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 					},
+// 					Text:   "Hello",
+// 					Medias: []media.Media{},
+// 				},
+// 			},
+// 		},
+// 		{
+// 			name: "received follow",
 
-		// responseAccount *account.Account
+// 			data: []byte(`{
+// 				"destination": "U11298214116e3afbad432b5794a6d3a0",
+// 				"events": [
+// 					{
+// 						"type": "follow",
+// 						"webhookEventId": "01G49KGV3YYCWA0CPZHP9AA6H9",
+// 						"deliveryContext": {
+// 							"isRedelivery": false
+// 						},
+// 						"timestamp": 1653884873348,
+// 						"source": {
+// 							"type": "user",
+// 							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+// 						},
+// 						"replyToken": "44b7e0b5fa034a58bfd75c9e256ad2ed",
+// 						"mode": "active"
+// 					}
+// 				]
+// 			}`),
 
-		expectResConversations []*conversation.Conversation
-		expectResMessages      []*message.Message
-	}{
-		{
-			name: "received message",
+// 			account: &account.Account{
+// 				ID:         uuid.FromStringOrNil("c62c6260-ff15-11ed-9a69-bb517f07e453"),
+// 				CustomerID: uuid.FromStringOrNil("c65bdc84-ff15-11ed-b5e5-eb878c571347"),
+// 				Type:       account.TypeLine,
+// 				Secret:     "ba5f0575d826d5b4a052a43145ef1391",
+// 				// Token:      "<your line token>",
+// 			},
 
-			account: &account.Account{
-				ID:         uuid.FromStringOrNil("5c1e2020-ff15-11ed-9f7c-5fdc6685e3e2"),
-				CustomerID: uuid.FromStringOrNil("8c9be70a-e7a6-11ec-8686-abd2812afa1e"),
-			},
-			data: []byte(`{
-				"destination": "U11298214116e3afbad432b5794a6d3a0",
-				"events": [
-					{
-						"type": "message",
-						"message": {
-							"type": "text",
-							"id": "16173792131295",
-							"text": "Hello"
-						},
-						"webhookEventId": "01G49KHTWA1D2WF05D0VHEMGZE",
-						"deliveryContext": {
-							"isRedelivery": false
-						},
-						"timestamp": 1653884906096,
-						"source": {
-							"type": "user",
-							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
-						},
-						"replyToken": "4bdd674a22cc479b8e9e429465396b76",
-						"mode": "active"
-					}
-				]
-			}`),
+// 			expectResConversations: []*conversation.Conversation{
+// 				{
+// 					CustomerID: uuid.FromStringOrNil("c65bdc84-ff15-11ed-b5e5-eb878c571347"),
+// 					AccountID:  uuid.FromStringOrNil("c62c6260-ff15-11ed-9a69-bb517f07e453"),
 
-			expectResMessages: []*message.Message{
-				{
-					CustomerID:    uuid.FromStringOrNil("8c9be70a-e7a6-11ec-8686-abd2812afa1e"),
-					Status:        message.StatusReceived,
-					ReferenceType: conversation.ReferenceTypeLine,
-					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Source: &commonaddress.Address{
-						Type:   commonaddress.TypeLine,
-						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					},
-					Text:   "Hello",
-					Medias: []media.Media{},
-				},
-			},
-		},
-		{
-			name: "received follow",
+// 					Name:   "Sungtae Kim",
+// 					Detail: "Conversation with Sungtae Kim",
 
-			data: []byte(`{
-				"destination": "U11298214116e3afbad432b5794a6d3a0",
-				"events": [
-					{
-						"type": "follow",
-						"webhookEventId": "01G49KGV3YYCWA0CPZHP9AA6H9",
-						"deliveryContext": {
-							"isRedelivery": false
-						},
-						"timestamp": 1653884873348,
-						"source": {
-							"type": "user",
-							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
-						},
-						"replyToken": "44b7e0b5fa034a58bfd75c9e256ad2ed",
-						"mode": "active"
-					}
-				]
-			}`),
+// 					ReferenceType: conversation.ReferenceTypeLine,
+// 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
-			account: &account.Account{
-				ID:         uuid.FromStringOrNil("c62c6260-ff15-11ed-9a69-bb517f07e453"),
-				CustomerID: uuid.FromStringOrNil("c65bdc84-ff15-11ed-b5e5-eb878c571347"),
-				Type:       account.TypeLine,
-				Secret:     "ba5f0575d826d5b4a052a43145ef1391",
-				Token:      "tsfIiDB/2cGI5sHRMIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-			},
+// 					Source: &commonaddress.Address{
+// 						Type:       commonaddress.TypeLine,
+// 						Target:     "",
+// 						TargetName: "Me",
+// 					},
+// 					Participants: []commonaddress.Address{
+// 						{
+// 							Type:       commonaddress.TypeLine,
+// 							Target:     "",
+// 							TargetName: "Me",
+// 						},
+// 						{
+// 							Type:       commonaddress.TypeLine,
+// 							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 							TargetName: "Sungtae Kim",
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
+// 		{
+// 			name: "received follow and message",
 
-			expectResConversations: []*conversation.Conversation{
-				{
-					CustomerID: uuid.FromStringOrNil("c65bdc84-ff15-11ed-b5e5-eb878c571347"),
-					AccountID:  uuid.FromStringOrNil("c62c6260-ff15-11ed-9a69-bb517f07e453"),
+// 			account: &account.Account{
+// 				ID:         uuid.FromStringOrNil("110d5ed8-ff16-11ed-aefb-0b546f35699e"),
+// 				CustomerID: uuid.FromStringOrNil("11391898-ff16-11ed-a3ca-ef45e5a17de8"),
+// 				Type:       account.TypeLine,
+// 				Secret:     "ba5f0575d826d5b4a052a43145ef1391",
+// 				// Token:      "<your line token>",
+// 			},
+// 			data: []byte(`{
+// 				"destination": "U11298214116e3afbad432b5794a6d3a0",
+// 				"events": [
+// 					{
+// 						"type": "follow",
+// 						"webhookEventId": "01G49KGV3YYCWA0CPZHP9AA6H9",
+// 						"deliveryContext": {
+// 							"isRedelivery": false
+// 						},
+// 						"timestamp": 1653884873348,
+// 						"source": {
+// 							"type": "user",
+// 							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+// 						},
+// 						"replyToken": "44b7e0b5fa034a58bfd75c9e256ad2ed",
+// 						"mode": "active"
+// 					},
+// 					{
+// 						"type": "message",
+// 						"message": {
+// 							"type": "text",
+// 							"id": "16173792131295",
+// 							"text": "Hello"
+// 						},
+// 						"webhookEventId": "01G49KHTWA1D2WF05D0VHEMGZE",
+// 						"deliveryContext": {
+// 							"isRedelivery": false
+// 						},
+// 						"timestamp": 1653884906096,
+// 						"source": {
+// 							"type": "user",
+// 							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+// 						},
+// 						"replyToken": "4bdd674a22cc479b8e9e429465396b76",
+// 						"mode": "active"
+// 					}
+// 				]
+// 			}`),
 
-					Name:   "Sungtae Kim",
-					Detail: "Conversation with Sungtae Kim",
+// 			expectResConversations: []*conversation.Conversation{
+// 				{
+// 					CustomerID: uuid.FromStringOrNil("11391898-ff16-11ed-a3ca-ef45e5a17de8"),
+// 					AccountID:  uuid.FromStringOrNil("110d5ed8-ff16-11ed-aefb-0b546f35699e"),
 
-					ReferenceType: conversation.ReferenceTypeLine,
-					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 					Name:   "Sungtae Kim",
+// 					Detail: "Conversation with Sungtae Kim",
 
-					Source: &commonaddress.Address{
-						Type:       commonaddress.TypeLine,
-						Target:     "",
-						TargetName: "Me",
-					},
-					Participants: []commonaddress.Address{
-						{
-							Type:       commonaddress.TypeLine,
-							Target:     "",
-							TargetName: "Me",
-						},
-						{
-							Type:       commonaddress.TypeLine,
-							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-							TargetName: "Sungtae Kim",
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "received follow and message",
+// 					ReferenceType: conversation.ReferenceTypeLine,
+// 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
-			account: &account.Account{
-				ID:         uuid.FromStringOrNil("110d5ed8-ff16-11ed-aefb-0b546f35699e"),
-				CustomerID: uuid.FromStringOrNil("11391898-ff16-11ed-a3ca-ef45e5a17de8"),
-				Type:       account.TypeLine,
-				Secret:     "ba5f0575d826d5b4a052a43145ef1391",
-				Token:      "tsfIiDB/2cGI5sHRMIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-			},
-			data: []byte(`{
-				"destination": "U11298214116e3afbad432b5794a6d3a0",
-				"events": [
-					{
-						"type": "follow",
-						"webhookEventId": "01G49KGV3YYCWA0CPZHP9AA6H9",
-						"deliveryContext": {
-							"isRedelivery": false
-						},
-						"timestamp": 1653884873348,
-						"source": {
-							"type": "user",
-							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
-						},
-						"replyToken": "44b7e0b5fa034a58bfd75c9e256ad2ed",
-						"mode": "active"
-					},
-					{
-						"type": "message",
-						"message": {
-							"type": "text",
-							"id": "16173792131295",
-							"text": "Hello"
-						},
-						"webhookEventId": "01G49KHTWA1D2WF05D0VHEMGZE",
-						"deliveryContext": {
-							"isRedelivery": false
-						},
-						"timestamp": 1653884906096,
-						"source": {
-							"type": "user",
-							"userId": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
-						},
-						"replyToken": "4bdd674a22cc479b8e9e429465396b76",
-						"mode": "active"
-					}
-				]
-			}`),
+// 					Source: &commonaddress.Address{
+// 						Type:       commonaddress.TypeLine,
+// 						Target:     "",
+// 						TargetName: "Me",
+// 					},
+// 					Participants: []commonaddress.Address{
+// 						{
+// 							Type:       commonaddress.TypeLine,
+// 							Target:     "",
+// 							TargetName: "Me",
+// 						},
+// 						{
+// 							Type:       commonaddress.TypeLine,
+// 							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 							TargetName: "Sungtae Kim",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			expectResMessages: []*message.Message{
+// 				{
+// 					ID:             [16]byte{},
+// 					CustomerID:     uuid.FromStringOrNil("11391898-ff16-11ed-a3ca-ef45e5a17de8"),
+// 					ConversationID: [16]byte{},
+// 					Status:         message.StatusReceived,
+// 					ReferenceType:  conversation.ReferenceTypeLine,
+// 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 					Source: &commonaddress.Address{
+// 						Type:   commonaddress.TypeLine,
+// 						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 					},
+// 					Text:   "Hello",
+// 					Medias: []media.Media{},
+// 				},
+// 			},
+// 		},
+// 	}
 
-			expectResConversations: []*conversation.Conversation{
-				{
-					CustomerID: uuid.FromStringOrNil("11391898-ff16-11ed-a3ca-ef45e5a17de8"),
-					AccountID:  uuid.FromStringOrNil("110d5ed8-ff16-11ed-aefb-0b546f35699e"),
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
 
-					Name:   "Sungtae Kim",
-					Detail: "Conversation with Sungtae Kim",
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-					ReferenceType: conversation.ReferenceTypeLine,
-					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 			h := lineHandler{}
+// 			ctx := context.Background()
 
-					Source: &commonaddress.Address{
-						Type:       commonaddress.TypeLine,
-						Target:     "",
-						TargetName: "Me",
-					},
-					Participants: []commonaddress.Address{
-						{
-							Type:       commonaddress.TypeLine,
-							Target:     "",
-							TargetName: "Me",
-						},
-						{
-							Type:       commonaddress.TypeLine,
-							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-							TargetName: "Sungtae Kim",
-						},
-					},
-				},
-			},
-			expectResMessages: []*message.Message{
-				{
-					ID:             [16]byte{},
-					CustomerID:     uuid.FromStringOrNil("11391898-ff16-11ed-a3ca-ef45e5a17de8"),
-					ConversationID: [16]byte{},
-					Status:         message.StatusReceived,
-					ReferenceType:  conversation.ReferenceTypeLine,
-					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Source: &commonaddress.Address{
-						Type:   commonaddress.TypeLine,
-						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					},
-					Text:   "Hello",
-					Medias: []media.Media{},
-				},
-			},
-		},
-	}
+// 			resConversations, resMessages, err := h.Hook(ctx, tt.account, tt.data)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+// 			if len(tt.expectResConversations) > 0 && !reflect.DeepEqual(resConversations, tt.expectResConversations) {
+// 				t.Errorf("Wrong match.\nexpect: %v\nres: %v\n", tt.expectResConversations[0], resConversations[0])
+// 			}
+// 			if len(tt.expectResMessages) > 0 && !reflect.DeepEqual(resMessages, tt.expectResMessages) {
+// 				t.Errorf("Wrong match.\nexpect: %v\nres: %v\n", tt.expectResMessages[0], resMessages[0])
+// 			}
+// 		})
+// 	}
+// }
 
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// func Test_getParticipant(t *testing.T) {
 
-			h := lineHandler{}
-			ctx := context.Background()
+// 	tests := []struct {
+// 		name string
 
-			resConversations, resMessages, err := h.Hook(ctx, tt.account, tt.data)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 		account *account.Account
+// 		id      string
 
-			if len(tt.expectResConversations) > 0 && !reflect.DeepEqual(resConversations, tt.expectResConversations) {
-				t.Errorf("Wrong match.\nexpect: %v\nres: %v\n", tt.expectResConversations[0], resConversations[0])
-			}
-			if len(tt.expectResMessages) > 0 && !reflect.DeepEqual(resMessages, tt.expectResMessages) {
-				t.Errorf("Wrong match.\nexpect: %v\nres: %v\n", tt.expectResMessages[0], resMessages[0])
-			}
-		})
-	}
-}
+// 		expectRes *commonaddress.Address
+// 	}{
+// 		{
+// 			name: "normal",
 
-func Test_getParticipant(t *testing.T) {
+// 			account: &account.Account{
+// 				ID:         uuid.FromStringOrNil("59e02406-ff16-11ed-ae5e-87a8da5c72e4"),
+// 				CustomerID: uuid.FromStringOrNil("5a1ccef6-ff16-11ed-9538-eb049dc1f23e"),
+// 				Secret:     "ba5f0575d826d5b4a052a43145ef1391",
+// 				// Token:      "<your line token>",
+// 			},
+// 			id: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
-	tests := []struct {
-		name string
+// 			expectRes: &commonaddress.Address{
+// 				Type:       commonaddress.TypeLine,
+// 				Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 				TargetName: "Sungtae Kim",
+// 			},
+// 		},
+// 	}
 
-		account *account.Account
-		id      string
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
 
-		expectRes *commonaddress.Address
-	}{
-		{
-			name: "normal",
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			account: &account.Account{
-				ID:         uuid.FromStringOrNil("59e02406-ff16-11ed-ae5e-87a8da5c72e4"),
-				CustomerID: uuid.FromStringOrNil("5a1ccef6-ff16-11ed-9538-eb049dc1f23e"),
-				Secret:     "ba5f0575d826d5b4a052a43145ef1391",
-				Token:      "tsfIiDB/2cGI5sHRMIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
-			},
-			id: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+// 			h := lineHandler{}
 
-			expectRes: &commonaddress.Address{
-				Type:       commonaddress.TypeLine,
-				Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				TargetName: "Sungtae Kim",
-			},
-		},
-	}
+// 			ctx := context.Background()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+// 			res, err := h.GetParticipant(ctx, tt.account, tt.id)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			h := lineHandler{}
-
-			ctx := context.Background()
-
-			res, err := h.GetParticipant(ctx, tt.account, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\nres: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(res, tt.expectRes) {
+// 				t.Errorf("Wrong match.\nexpect: %v\nres: %v\n", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }
