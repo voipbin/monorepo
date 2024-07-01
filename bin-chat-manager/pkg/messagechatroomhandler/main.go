@@ -33,7 +33,7 @@ type MessagechatroomHandler interface {
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
-		agentID uuid.UUID,
+		ownerID uuid.UUID,
 		chatroomID uuid.UUID,
 		messagechatID uuid.UUID,
 		source *commonaddress.Address,

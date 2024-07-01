@@ -22,7 +22,7 @@ func Test_v1ChatsPost(t *testing.T) {
 
 		customerID     uuid.UUID
 		chatType       chat.Type
-		ownerID        uuid.UUID
+		roomOwnerID    uuid.UUID
 		participantIDs []uuid.UUID
 		chatName       string
 		detail         string
@@ -33,7 +33,7 @@ func Test_v1ChatsPost(t *testing.T) {
 				URI:      "/v1/chats",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"e0ab1d48-31d9-11ed-bbc5-27681ded85a1","type":"normal","owner_id":"5f66bb7e-31da-11ed-ae71-377183eb19a3","participant_ids":["5f66bb7e-31da-11ed-ae71-377183eb19a3","6ebc6880-31da-11ed-8e95-a3bc92af9795"],"name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"customer_id":"e0ab1d48-31d9-11ed-bbc5-27681ded85a1","type":"normal","room_owner_id":"5f66bb7e-31da-11ed-ae71-377183eb19a3","participant_ids":["5f66bb7e-31da-11ed-ae71-377183eb19a3","6ebc6880-31da-11ed-8e95-a3bc92af9795"],"name":"test name","detail":"test detail"}`),
 			},
 
 			uuid.FromStringOrNil("e0ab1d48-31d9-11ed-bbc5-27681ded85a1"),
@@ -69,7 +69,7 @@ func Test_v1ChatsPost(t *testing.T) {
 				gomock.Any(),
 				tt.customerID,
 				tt.chatType,
-				tt.ownerID,
+				tt.roomOwnerID,
 				tt.participantIDs,
 				tt.chatName,
 				tt.detail,
@@ -121,7 +121,7 @@ func Test_v1ChatsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"6eb6134c-31dd-11ed-9f6c-f7fa9148cdb6","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"6eb6134c-31dd-11ed-9f6c-f7fa9148cdb6","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -151,7 +151,7 @@ func Test_v1ChatsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"47769404-31de-11ed-9ded-470bba65e75d","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"47b18d0c-31de-11ed-9cfe-afbd2262ab42","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"47769404-31de-11ed-9ded-470bba65e75d","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"47b18d0c-31de-11ed-9cfe-afbd2262ab42","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -239,7 +239,7 @@ func Test_v1ChatsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"13b7f120-31df-11ed-8214-63c85c3c8ecf","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"13b7f120-31df-11ed-8214-63c85c3c8ecf","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -303,7 +303,7 @@ func Test_v1ChatsIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d9967376-31df-11ed-ba8f-e376c0c4f1fc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d9967376-31df-11ed-ba8f-e376c0c4f1fc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -373,7 +373,7 @@ func Test_v1ChatsIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b3f5c700-31f0-11ed-b1a2-bb3854582a08","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"b3f5c700-31f0-11ed-b1a2-bb3854582a08","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -409,14 +409,14 @@ func Test_v1ChatsIDPut(t *testing.T) {
 	}
 }
 
-func Test_v1ChatsIDOwnerIDPut(t *testing.T) {
+func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
 		request *rabbitmqhandler.Request
 
-		chatID  uuid.UUID
-		ownerID uuid.UUID
+		chatID      uuid.UUID
+		roomOwnerID uuid.UUID
 
 		responseChat *chat.Chat
 
@@ -425,10 +425,10 @@ func Test_v1ChatsIDOwnerIDPut(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/chats/b3f5c700-31f0-11ed-b1a2-bb3854582a08/owner_id",
+				URI:      "/v1/chats/b3f5c700-31f0-11ed-b1a2-bb3854582a08/room_owner_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_id": "b45cd102-31f0-11ed-9cd9-3fa1a0f883ef"}`),
+				Data:     []byte(`{"room_owner_id": "b45cd102-31f0-11ed-9cd9-3fa1a0f883ef"}`),
 			},
 
 			uuid.FromStringOrNil("b3f5c700-31f0-11ed-b1a2-bb3854582a08"),
@@ -441,7 +441,7 @@ func Test_v1ChatsIDOwnerIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b3f5c700-31f0-11ed-b1a2-bb3854582a08","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"b3f5c700-31f0-11ed-b1a2-bb3854582a08","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -463,7 +463,7 @@ func Test_v1ChatsIDOwnerIDPut(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().UpdateOwnerID(gomock.Any(), tt.chatID, tt.ownerID).Return(tt.responseChat, nil)
+			mockChat.EXPECT().UpdateRoomOwnerID(gomock.Any(), tt.chatID, tt.roomOwnerID).Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -509,7 +509,7 @@ func Test_v1ChatsIDParticipantIDsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"4131ccfa-31e1-11ed-8ae8-ef5f171c9c8e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"4131ccfa-31e1-11ed-8ae8-ef5f171c9c8e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -576,7 +576,7 @@ func Test_v1ChatsIDParticipantIDsIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1a023c40-31e2-11ed-a0dd-3770f2201744","customer_id":"00000000-0000-0000-0000-000000000000","type":"","owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1a023c40-31e2-11ed-a0dd-3770f2201744","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

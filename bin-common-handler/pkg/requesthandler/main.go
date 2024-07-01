@@ -446,7 +446,7 @@ type RequestHandler interface {
 		ctx context.Context,
 		customerID uuid.UUID,
 		chatType chatchat.Type,
-		ownerID uuid.UUID,
+		roomOwnerID uuid.UUID,
 		participantIDs []uuid.UUID,
 		name string,
 		detail string,
@@ -455,7 +455,7 @@ type RequestHandler interface {
 	ChatV1ChatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatchat.Chat, error)
 	ChatV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error)
 	ChatV1ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchat.Chat, error)
-	ChatV1ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chatchat.Chat, error)
+	ChatV1ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) (*chatchat.Chat, error)
 	ChatV1ChatAddParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
 	ChatV1ChatRemoveParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
 

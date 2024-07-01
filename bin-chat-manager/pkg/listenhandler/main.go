@@ -50,7 +50,7 @@ var (
 	regV1Chats                   = regexp.MustCompile("/v1/chats$")
 	regV1ChatsGet                = regexp.MustCompile(`/v1/chats\?`)
 	regV1ChatsID                 = regexp.MustCompile("/v1/chats/" + regUUID + "$")
-	regV1ChatsIDOnwerID          = regexp.MustCompile("/v1/chats/" + regUUID + "/owner_id$")
+	regV1ChatsIDRoomOwnerID      = regexp.MustCompile("/v1/chats/" + regUUID + "/room_owner_id$")
 	regV1ChatsIDParticipantIDs   = regexp.MustCompile("/v1/chats/" + regUUID + "/participant_ids$")
 	regV1ChatsIDParticipantIDsID = regexp.MustCompile("/v1/chats/" + regUUID + "/participant_ids/" + regUUID + "$")
 
@@ -202,10 +202,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/chats/<chat-id>"
 		response, err = h.v1ChatsIDPut(ctx, m)
 
-	// chats/<chat-id>/owner_id
-	case regV1ChatsIDOnwerID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		requestType = "/chats/<chat-id>/owner_id"
-		response, err = h.v1ChatsIDOwnerIDPut(ctx, m)
+	// chats/<chat-id>/room_owner_id
+	case regV1ChatsIDRoomOwnerID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		requestType = "/chats/<chat-id>/room_owner_id"
+		response, err = h.v1ChatsIDRoomOwnerIDPut(ctx, m)
 
 	// chats/<chat-id>/participant_ids
 	case regV1ChatsIDParticipantIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:

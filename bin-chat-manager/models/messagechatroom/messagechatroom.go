@@ -13,7 +13,8 @@ import (
 type Messagechatroom struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
-	AgentID    uuid.UUID `json:"agent_id"`
+	OwnerType  OwnerType `json:"owner_type"` //
+	OwnerID    uuid.UUID `json:"owner_id"`
 
 	ChatroomID    uuid.UUID `json:"chatroom_id"`
 	MessagechatID uuid.UUID `json:"messagechat_id"`
@@ -28,6 +29,15 @@ type Messagechatroom struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+// OwnerType define
+type OwnerType string
+
+// list of owner types
+const (
+	OwnerTypeNonw  OwnerType = ""
+	OwnerTypeAgent OwnerType = "agent"
+)
 
 // Type define
 type Type string

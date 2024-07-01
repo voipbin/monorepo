@@ -23,7 +23,7 @@ const (
 
 		type,
 
-		owner_id,
+		room_owner_id,
 		participant_ids,
 
 		name,
@@ -48,7 +48,7 @@ func (h *handler) chatGetFromRow(row *sql.Rows) (*chat.Chat, error) {
 
 		&res.Type,
 
-		&res.OwnerID,
+		&res.RoomOwnerID,
 		&participantIDs,
 
 		&res.Name,
@@ -77,7 +77,7 @@ func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
 
 		type,
 
-		owner_id,
+		room_owner_id,
 		participant_ids,
 
 		name,
@@ -111,7 +111,7 @@ func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
 
 		c.Type,
 
-		c.OwnerID.Bytes(),
+		c.RoomOwnerID.Bytes(),
 		participantIDs,
 
 		c.Name,
@@ -230,9 +230,9 @@ func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filte
 
 	for k, v := range filters {
 		switch k {
-		case "customer_id":
+		case "customer_id", "room_owner_id":
 			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and customer_id = ?", q)
+			q = fmt.Sprintf("%s and %s = ?", q, k)
 			values = append(values, tmp.Bytes())
 
 		case "deleted":
@@ -245,11 +245,6 @@ func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filte
 			q = fmt.Sprintf("%s and type = ?", q)
 			values = append(values, v)
 
-		case "owner_id":
-			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and owner_id = ?", q)
-			values = append(values, tmp.Bytes())
-
 		case "participant_ids":
 			tmp := h.chatFilterParseParticipantIDs(v)
 			if tmp == "" {
@@ -259,6 +254,11 @@ func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filte
 			values = append(values, tmp)
 
 			q = fmt.Sprintf("%s and participant_ids = json_array(?)", q)
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+
 		}
 	}
 
@@ -267,7 +267,7 @@ func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filte
 
 	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ChatGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ChatGets. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -275,7 +275,7 @@ func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filte
 	for rows.Next() {
 		u, err := h.chatGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. ChatGets. err: %v", err)
 		}
 
 		res = append(res, u)
@@ -348,18 +348,18 @@ func (h *handler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ChatUpdateOwnerID updates the chat's owner_id.
-func (h *handler) ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) error {
+// ChatUpdateRoomOwnerID updates the chat's owner_id.
+func (h *handler) ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) error {
 	q := `
 	update chats set
-		owner_id = ?,
+		room_owner_id = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, ownerID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ChatUpdateOwnerID. err: %v", err)
+	if _, err := h.db.Exec(q, roomOwnerID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. ChatUpdateRoomOwnerID. err: %v", err)
 	}
 
 	// set to the cache

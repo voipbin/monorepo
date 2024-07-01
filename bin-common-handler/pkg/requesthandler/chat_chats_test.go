@@ -23,7 +23,7 @@ func Test_ChatV1ChatCreate(t *testing.T) {
 
 		customerID     uuid.UUID
 		chatType       chatchat.Type
-		ownerID        uuid.UUID
+		roomOwnerID    uuid.UUID
 		participantIDs []uuid.UUID
 		chatName       string
 		detail         string
@@ -58,7 +58,7 @@ func Test_ChatV1ChatCreate(t *testing.T) {
 				URI:      "/v1/chats",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"95e79972-3697-11ed-85be-5b6792ca4a82","type":"normal","owner_id":"96137b14-3697-11ed-b9b4-d7dac3f2b181","participant_ids":["964147e2-3697-11ed-a461-8342afde852e","966f1e74-3697-11ed-aebb-6703f26009c6"],"name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"customer_id":"95e79972-3697-11ed-85be-5b6792ca4a82","type":"normal","room_owner_id":"96137b14-3697-11ed-b9b4-d7dac3f2b181","participant_ids":["964147e2-3697-11ed-a461-8342afde852e","966f1e74-3697-11ed-aebb-6703f26009c6"],"name":"test name","detail":"test detail"}`),
 			},
 			&chatchat.Chat{
 				ID: uuid.FromStringOrNil("d50945c4-3697-11ed-9ffb-570b42b0ddd4"),
@@ -83,7 +83,7 @@ func Test_ChatV1ChatCreate(t *testing.T) {
 				ctx,
 				tt.customerID,
 				tt.chatType,
-				tt.ownerID,
+				tt.roomOwnerID,
 				tt.participantIDs,
 				tt.chatName,
 				tt.detail,
@@ -359,13 +359,13 @@ func Test_ChatV1ChatUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_ChatV1ChatUpdateOwnerID(t *testing.T) {
+func Test_ChatV1ChatUpdateRoomOwnerID(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		chatID        uuid.UUID
-		updateOwnerID uuid.UUID
+		chatID            uuid.UUID
+		updateRoomOwnerID uuid.UUID
 
 		response *rabbitmqhandler.Response
 
@@ -387,10 +387,10 @@ func Test_ChatV1ChatUpdateOwnerID(t *testing.T) {
 
 			"bin-manager.chat-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/chats/873465c0-3699-11ed-b0cc-fbee9352367b/owner_id",
+				URI:      "/v1/chats/873465c0-3699-11ed-b0cc-fbee9352367b/room_owner_id",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"owner_id":"875e8c42-3699-11ed-9746-a772f54ed917"}`),
+				Data:     []byte(`{"room_owner_id":"875e8c42-3699-11ed-9746-a772f54ed917"}`),
 			},
 			&chatchat.Chat{
 				ID: uuid.FromStringOrNil("873465c0-3699-11ed-b0cc-fbee9352367b"),
@@ -411,7 +411,7 @@ func Test_ChatV1ChatUpdateOwnerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatV1ChatUpdateOwnerID(ctx, tt.chatID, tt.updateOwnerID)
+			res, err := reqHandler.ChatV1ChatUpdateRoomOwnerID(ctx, tt.chatID, tt.updateRoomOwnerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -26,7 +26,7 @@ type DBHandler interface {
 	ChatDelete(ctx context.Context, id uuid.UUID) error
 	ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 	ChatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chat.Chat, error)
-	ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) error
+	ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) error
 	ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	ChatUpdateParticipantID(ctx context.Context, id uuid.UUID, participantIDs []uuid.UUID) error
 
