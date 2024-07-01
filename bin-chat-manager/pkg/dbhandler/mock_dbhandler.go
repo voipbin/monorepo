@@ -111,20 +111,6 @@ func (mr *MockDBHandlerMockRecorder) ChatUpdateBasicInfo(ctx, id, name, detail i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).ChatUpdateBasicInfo), ctx, id, name, detail)
 }
 
-// ChatUpdateOwnerID mocks base method.
-func (m *MockDBHandler) ChatUpdateOwnerID(ctx context.Context, id, ownerID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatUpdateOwnerID", ctx, id, ownerID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChatUpdateOwnerID indicates an expected call of ChatUpdateOwnerID.
-func (mr *MockDBHandlerMockRecorder) ChatUpdateOwnerID(ctx, id, ownerID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatUpdateOwnerID", reflect.TypeOf((*MockDBHandler)(nil).ChatUpdateOwnerID), ctx, id, ownerID)
-}
-
 // ChatUpdateParticipantID mocks base method.
 func (m *MockDBHandler) ChatUpdateParticipantID(ctx context.Context, id uuid.UUID, participantIDs []uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -137,6 +123,20 @@ func (m *MockDBHandler) ChatUpdateParticipantID(ctx context.Context, id uuid.UUI
 func (mr *MockDBHandlerMockRecorder) ChatUpdateParticipantID(ctx, id, participantIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatUpdateParticipantID", reflect.TypeOf((*MockDBHandler)(nil).ChatUpdateParticipantID), ctx, id, participantIDs)
+}
+
+// ChatUpdateRoomOwnerID mocks base method.
+func (m *MockDBHandler) ChatUpdateRoomOwnerID(ctx context.Context, id, ownerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatUpdateRoomOwnerID", ctx, id, ownerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatUpdateRoomOwnerID indicates an expected call of ChatUpdateRoomOwnerID.
+func (mr *MockDBHandlerMockRecorder) ChatUpdateRoomOwnerID(ctx, id, ownerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatUpdateRoomOwnerID", reflect.TypeOf((*MockDBHandler)(nil).ChatUpdateRoomOwnerID), ctx, id, ownerID)
 }
 
 // ChatroomAddParticipantID mocks base method.

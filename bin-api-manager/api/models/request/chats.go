@@ -29,10 +29,10 @@ type BodyChatsIDPUT struct {
 	Detail string `json:"detail"`
 }
 
-// BodyChatsIDOwnerIDPUT is rquest body define for
-// PUT /v1.0/chats/<chat-id>/owner_id
-type BodyChatsIDOwnerIDPUT struct {
-	OwnerID uuid.UUID `json:"owner_id"`
+// BodyChatsIDRoomOwnerIDPUT is rquest body define for
+// PUT /v1.0/chats/<chat-id>/room_owner_id
+type BodyChatsIDRoomOwnerIDPUT struct {
+	RoomOwnerID uuid.UUID `json:"room_owner_id"`
 }
 
 // BodyChatsIDParticipantIDsPOST is rquest body define for

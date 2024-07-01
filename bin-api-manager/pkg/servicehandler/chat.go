@@ -36,7 +36,7 @@ func (h *serviceHandler) ChatCreate(
 	ctx context.Context,
 	a *amagent.Agent,
 	chatType chatchat.Type,
-	ownerID uuid.UUID,
+	roomOwnerID uuid.UUID,
 	participantIDs []uuid.UUID,
 	name string,
 	detail string,
@@ -56,7 +56,7 @@ func (h *serviceHandler) ChatCreate(
 		ctx,
 		a.CustomerID,
 		chatType,
-		ownerID,
+		roomOwnerID,
 		participantIDs,
 		name,
 		detail,
@@ -200,9 +200,9 @@ func (h *serviceHandler) ChatUpdateBasicInfo(ctx context.Context, a *amagent.Age
 	return res, nil
 }
 
-// ChatUpdateOwnerID updates the chat's status.
+// ChatUpdateRoomOwnerID updates the chat's status.
 // It returns updated chat if it succeed.
-func (h *serviceHandler) ChatUpdateOwnerID(ctx context.Context, a *amagent.Agent, id uuid.UUID, ownerID uuid.UUID) (*chatchat.WebhookMessage, error) {
+func (h *serviceHandler) ChatUpdateRoomOwnerID(ctx context.Context, a *amagent.Agent, id uuid.UUID, ownerID uuid.UUID) (*chatchat.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatUpdateOwnerID",
 		"customer_id": a.CustomerID,
@@ -222,7 +222,7 @@ func (h *serviceHandler) ChatUpdateOwnerID(ctx context.Context, a *amagent.Agent
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ChatV1ChatUpdateOwnerID(ctx, id, ownerID)
+	tmp, err := h.reqHandler.ChatV1ChatUpdateRoomOwnerID(ctx, id, ownerID)
 	if err != nil {
 		logrus.Errorf("Could not update the chat. err: %v", err)
 		return nil, err

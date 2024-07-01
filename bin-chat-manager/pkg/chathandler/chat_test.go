@@ -356,7 +356,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_UpdateOwnerID(t *testing.T) {
+func Test_UpdateRoomOwnerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -395,11 +395,11 @@ func Test_UpdateOwnerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatUpdateOwnerID(ctx, tt.id, tt.ownerID).Return(nil)
+			mockDB.EXPECT().ChatUpdateRoomOwnerID(ctx, tt.id, tt.ownerID).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			res, err := h.UpdateOwnerID(ctx, tt.id, tt.ownerID)
+			res, err := h.UpdateRoomOwnerID(ctx, tt.id, tt.ownerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -731,8 +731,8 @@ func Test_RemoveParticipantID(t *testing.T) {
 			},
 			[]*chatroom.Chatroom{
 				{
-					ID:      uuid.FromStringOrNil("264e8764-3134-11ed-9f9d-e3e2f588f17a"),
-					OwnerID: uuid.FromStringOrNil("25fa6e86-3134-11ed-be21-27cdde31883c"),
+					ID:          uuid.FromStringOrNil("264e8764-3134-11ed-9f9d-e3e2f588f17a"),
+					RoomOwnerID: uuid.FromStringOrNil("25fa6e86-3134-11ed-be21-27cdde31883c"),
 				},
 				{
 					ID: uuid.FromStringOrNil("336e3386-3134-11ed-b1df-e38814f71100"),
@@ -780,7 +780,7 @@ func Test_RemoveParticipantID(t *testing.T) {
 			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatrooms, nil)
 			chatroomID := uuid.Nil
 			for _, cr := range tt.responseChatrooms {
-				if cr.OwnerID == tt.participantID {
+				if cr.RoomOwnerID == tt.participantID {
 					chatroomID = cr.ID
 				}
 				mockChatroom.EXPECT().RemoveParticipantID(ctx, cr.ID, tt.participantID).Return(&chatroom.Chatroom{}, nil)

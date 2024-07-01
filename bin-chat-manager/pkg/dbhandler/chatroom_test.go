@@ -41,12 +41,12 @@ func Test_ChatroomCreate(t *testing.T) {
 			&chatroom.Chatroom{
 				ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
 				CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
-				AgentID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
 
 				Type:   chatroom.TypeNormal,
 				ChatID: uuid.FromStringOrNil("78464d96-d6f3-4688-9f9d-9db0a4de5694"),
 
-				OwnerID: uuid.FromStringOrNil("6d6150d4-1121-4ec9-9f9d-2387b918c35e"),
+				RoomOwnerID: uuid.FromStringOrNil("6d6150d4-1121-4ec9-9f9d-2387b918c35e"),
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("ca06a988-df95-412b-9b5f-8ebbce71c0e8"),
 					uuid.FromStringOrNil("2b754dfc-03fe-4a17-b1a0-c0d95b2cc1be"),
@@ -61,12 +61,12 @@ func Test_ChatroomCreate(t *testing.T) {
 			&chatroom.Chatroom{
 				ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
 				CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
-				AgentID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
 
 				Type:   chatroom.TypeNormal,
 				ChatID: uuid.FromStringOrNil("78464d96-d6f3-4688-9f9d-9db0a4de5694"),
 
-				OwnerID: uuid.FromStringOrNil("6d6150d4-1121-4ec9-9f9d-2387b918c35e"),
+				RoomOwnerID: uuid.FromStringOrNil("6d6150d4-1121-4ec9-9f9d-2387b918c35e"),
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("ca06a988-df95-412b-9b5f-8ebbce71c0e8"),
 					uuid.FromStringOrNil("2b754dfc-03fe-4a17-b1a0-c0d95b2cc1be"),
@@ -127,13 +127,13 @@ func Test_ChatroomGets(t *testing.T) {
 			"normal",
 			[]*chatroom.Chatroom{
 				{
-					ID:         uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
-					CustomerID: uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
-					Type:       chatroom.TypeNormal,
-					ChatID:     uuid.FromStringOrNil("152d7e64-bac6-11ee-a61f-67fba233c588"),
-					OwnerID:    uuid.FromStringOrNil("155d19da-bac6-11ee-8ed8-8fff6c8907d5"),
-					TMCreate:   "2020-04-19T03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					ID:          uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
+					CustomerID:  uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
+					Type:        chatroom.TypeNormal,
+					ChatID:      uuid.FromStringOrNil("152d7e64-bac6-11ee-a61f-67fba233c588"),
+					RoomOwnerID: uuid.FromStringOrNil("155d19da-bac6-11ee-8ed8-8fff6c8907d5"),
+					TMCreate:    "2020-04-19T03:22:17.995000",
+					TMDelete:    DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("16d46a60-79b5-42af-99d2-e9c7404ab642"),
@@ -146,22 +146,22 @@ func Test_ChatroomGets(t *testing.T) {
 
 			10,
 			map[string]string{
-				"customer_id": "63331078-4431-43ed-96ac-5975fa9e6749",
-				"deleted":     "false",
-				"type":        string(chatroom.TypeNormal),
-				"owner_id":    "155d19da-bac6-11ee-8ed8-8fff6c8907d5",
-				"chat_id":     "152d7e64-bac6-11ee-a61f-67fba233c588",
+				"customer_id":   "63331078-4431-43ed-96ac-5975fa9e6749",
+				"deleted":       "false",
+				"type":          string(chatroom.TypeNormal),
+				"room_owner_id": "155d19da-bac6-11ee-8ed8-8fff6c8907d5",
+				"chat_id":       "152d7e64-bac6-11ee-a61f-67fba233c588",
 			},
 
 			[]*chatroom.Chatroom{
 				{
-					ID:         uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
-					CustomerID: uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
-					Type:       chatroom.TypeNormal,
-					ChatID:     uuid.FromStringOrNil("152d7e64-bac6-11ee-a61f-67fba233c588"),
-					OwnerID:    uuid.FromStringOrNil("155d19da-bac6-11ee-8ed8-8fff6c8907d5"),
-					TMCreate:   "2020-04-19T03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					ID:          uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
+					CustomerID:  uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
+					Type:        chatroom.TypeNormal,
+					ChatID:      uuid.FromStringOrNil("152d7e64-bac6-11ee-a61f-67fba233c588"),
+					RoomOwnerID: uuid.FromStringOrNil("155d19da-bac6-11ee-8ed8-8fff6c8907d5"),
+					TMCreate:    "2020-04-19T03:22:17.995000",
+					TMDelete:    DefaultTimeStamp,
 				},
 			},
 		},

@@ -265,7 +265,7 @@ func chatsIDPUT(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// chatsIDOwnerIDPUT handles PUT /chats/{id}/owner_id request.
+// chatsIDRoomOwnerIDPUT handles PUT /chats/{id}/room_owner_id request.
 // It updates a exist chat info with the given chat info.
 // And returns updated chat info if it succeed.
 //
@@ -276,7 +276,7 @@ func chatsIDPUT(c *gin.Context) {
 //	@Param			update_info	body		request.BodyChatsIDOwnerIDPUT	true	"The update info"
 //	@Success		200			{object}	chat.Chat
 //	@Router			/v1.0/chats/{id}/owner_id [put]
-func chatsIDOwnerIDPUT(c *gin.Context) {
+func chatsIDRoomOwnerIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsIDOwnerIDPUT",
 		"request_address": c.ClientIP,
@@ -297,7 +297,7 @@ func chatsIDOwnerIDPUT(c *gin.Context) {
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("chat_id", id)
 
-	var req request.BodyChatsIDOwnerIDPUT
+	var req request.BodyChatsIDRoomOwnerIDPUT
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
@@ -307,9 +307,9 @@ func chatsIDOwnerIDPUT(c *gin.Context) {
 
 	// update
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatUpdateOwnerID(c.Request.Context(), &a, id, req.OwnerID)
+	res, err := serviceHandler.ChatUpdateRoomOwnerID(c.Request.Context(), &a, id, req.RoomOwnerID)
 	if err != nil {
-		log.Errorf("Could not update the owner_id. err: %v", err)
+		log.Errorf("Could not update the room_owner_id. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

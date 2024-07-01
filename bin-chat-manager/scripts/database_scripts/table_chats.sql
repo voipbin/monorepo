@@ -5,7 +5,7 @@ create table chats(
 
   type        varchar(255),
 
-  owner_id        binary(16),
+  room_owner_id   binary(16),
   participant_ids json,
 
   name      varchar(255),

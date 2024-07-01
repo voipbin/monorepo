@@ -40,7 +40,7 @@ type ChatHandler interface {
 		detail string,
 	) (*chat.Chat, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*chat.Chat, error)
-	UpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chat.Chat, error)
+	UpdateRoomOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chat.Chat, error)
 	AddParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chat.Chat, error)
 	RemoveParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chat.Chat, error)
 	Delete(ctx context.Context, id uuid.UUID) (*chat.Chat, error)

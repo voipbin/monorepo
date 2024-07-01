@@ -385,9 +385,9 @@ func Test_ChatUpdateOwnerID(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1ChatUpdateOwnerID(ctx, tt.chatID, tt.ownerID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatUpdateRoomOwnerID(ctx, tt.chatID, tt.ownerID).Return(tt.responseChat, nil)
 
-			res, err := h.ChatUpdateOwnerID(ctx, tt.agent, tt.chatID, tt.ownerID)
+			res, err := h.ChatUpdateRoomOwnerID(ctx, tt.agent, tt.chatID, tt.ownerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

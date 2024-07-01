@@ -155,7 +155,7 @@ func (h *chatHandler) create(
 		ID:             id,
 		CustomerID:     customerID,
 		Type:           chatType,
-		OwnerID:        ownerID,
+		RoomOwnerID:    ownerID,
 		ParticipantIDs: participantIDs,
 		Name:           name,
 		Detail:         detail,
@@ -203,15 +203,15 @@ func (h *chatHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name st
 	return res, nil
 }
 
-// UpdateOwnerID updates the chat's owner_id
-func (h *chatHandler) UpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chat.Chat, error) {
+// UpdateRoomOwnerID updates the chat's owner_id
+func (h *chatHandler) UpdateRoomOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "UpdateOwnerID",
+		"func":         "UpdateRoomOwnerID",
 		"chat_id":      id,
 		"new_owner_id": ownerID,
 	})
 
-	if errUpdate := h.db.ChatUpdateOwnerID(ctx, id, ownerID); errUpdate != nil {
+	if errUpdate := h.db.ChatUpdateRoomOwnerID(ctx, id, ownerID); errUpdate != nil {
 		log.Errorf("Could not update the chat. err: %v", errUpdate)
 		return nil, errUpdate
 	}
@@ -359,7 +359,7 @@ func (h *chatHandler) RemoveParticipantID(ctx context.Context, id uuid.UUID, par
 	// update the each chatrooms
 	chatroomID := uuid.Nil
 	for _, cr := range chatrooms {
-		if cr.OwnerID == participantID {
+		if cr.RoomOwnerID == participantID {
 			chatroomID = cr.ID
 		}
 

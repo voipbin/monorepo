@@ -27,10 +27,10 @@ func Test_ChatCreate(t *testing.T) {
 			"normal",
 
 			&chat.Chat{
-				ID:         uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
-				CustomerID: uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
-				Type:       chat.TypeNormal,
-				OwnerID:    uuid.FromStringOrNil("c4111534-e222-4e0a-9485-f012ea0a9e02"),
+				ID:          uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
+				CustomerID:  uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
+				Type:        chat.TypeNormal,
+				RoomOwnerID: uuid.FromStringOrNil("c4111534-e222-4e0a-9485-f012ea0a9e02"),
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("47adb891-80aa-4ba4-af47-446faa6cf386"),
 					uuid.FromStringOrNil("3beef418-cf3a-4239-adff-6f096cebacae"),
@@ -43,10 +43,10 @@ func Test_ChatCreate(t *testing.T) {
 			},
 
 			&chat.Chat{
-				ID:         uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
-				CustomerID: uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
-				Type:       chat.TypeNormal,
-				OwnerID:    uuid.FromStringOrNil("c4111534-e222-4e0a-9485-f012ea0a9e02"),
+				ID:          uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
+				CustomerID:  uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
+				Type:        chat.TypeNormal,
+				RoomOwnerID: uuid.FromStringOrNil("c4111534-e222-4e0a-9485-f012ea0a9e02"),
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("3beef418-cf3a-4239-adff-6f096cebacae"),
 					uuid.FromStringOrNil("47adb891-80aa-4ba4-af47-446faa6cf386"),
@@ -121,10 +121,10 @@ func Test_ChatGets(t *testing.T) {
 			"normal",
 			[]*chat.Chat{
 				{
-					ID:         uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
-					Type:       chat.TypeNormal,
-					CustomerID: uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
-					OwnerID:    uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
+					ID:          uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					Type:        chat.TypeNormal,
+					CustomerID:  uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
+					RoomOwnerID: uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
 					ParticipantIDs: []uuid.UUID{
 						uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
 						uuid.FromStringOrNil("e9e04548-b958-11ee-af60-1721a820a3d2"),
@@ -133,10 +133,10 @@ func Test_ChatGets(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					CustomerID: uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
-					Type:       chat.TypeNormal,
-					OwnerID:    uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
+					ID:          uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+					CustomerID:  uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
+					Type:        chat.TypeNormal,
+					RoomOwnerID: uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
 					ParticipantIDs: []uuid.UUID{
 						uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
 						uuid.FromStringOrNil("ea09d3fe-b958-11ee-8b3b-a3ed291a64df"),
@@ -153,7 +153,7 @@ func Test_ChatGets(t *testing.T) {
 				"customer_id":     "20db856a-051f-49d3-986e-3715af514273",
 				"deleted":         "false",
 				"type":            string(chat.TypeNormal),
-				"owner_id":        "e90b7010-b936-11ee-8da8-bb61becf0b57",
+				"room_owner_id":   "e90b7010-b936-11ee-8da8-bb61becf0b57",
 			},
 		},
 	}
@@ -317,7 +317,7 @@ func Test_ChatDelete(t *testing.T) {
 	}
 }
 
-func Test_ChatUpdateOwnerID(t *testing.T) {
+func Test_ChatUpdateRoomOwnerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -331,10 +331,10 @@ func Test_ChatUpdateOwnerID(t *testing.T) {
 		{
 			"normal",
 			&chat.Chat{
-				ID:      uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
-				Name:    "name",
-				Detail:  "detail",
-				OwnerID: uuid.FromStringOrNil("0497e2dc-4af5-4baa-a986-8ca50bf001fb"),
+				ID:          uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
+				Name:        "name",
+				Detail:      "detail",
+				RoomOwnerID: uuid.FromStringOrNil("0497e2dc-4af5-4baa-a986-8ca50bf001fb"),
 			},
 
 			uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
@@ -344,7 +344,7 @@ func Test_ChatUpdateOwnerID(t *testing.T) {
 				ID:             uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
 				Name:           "name",
 				Detail:         "detail",
-				OwnerID:        uuid.FromStringOrNil("4b25fe52-02c7-4201-9fa8-91b1bfce068e"),
+				RoomOwnerID:    uuid.FromStringOrNil("4b25fe52-02c7-4201-9fa8-91b1bfce068e"),
 				ParticipantIDs: []uuid.UUID{},
 			},
 		},
@@ -366,7 +366,7 @@ func Test_ChatUpdateOwnerID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
-			if err := h.ChatUpdateOwnerID(ctx, tt.id, tt.ownerID); err != nil {
+			if err := h.ChatUpdateRoomOwnerID(ctx, tt.id, tt.ownerID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

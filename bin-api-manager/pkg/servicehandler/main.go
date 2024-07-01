@@ -198,7 +198,7 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *amagent.Agent,
 		chatType chatchat.Type,
-		ownerID uuid.UUID,
+		roomOwnerID uuid.UUID,
 		participantIDs []uuid.UUID,
 		name string,
 		detail string,
@@ -207,7 +207,7 @@ type ServiceHandler interface {
 	ChatGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.WebhookMessage, error)
 	ChatDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.WebhookMessage, error)
 	ChatUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchat.WebhookMessage, error)
-	ChatUpdateOwnerID(ctx context.Context, a *amagent.Agent, id uuid.UUID, ownerID uuid.UUID) (*chatchat.WebhookMessage, error)
+	ChatUpdateRoomOwnerID(ctx context.Context, a *amagent.Agent, id uuid.UUID, roomOwnerID uuid.UUID) (*chatchat.WebhookMessage, error)
 	ChatAddParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
 	ChatRemoveParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
 

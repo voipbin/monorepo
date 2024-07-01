@@ -10,12 +10,13 @@ import (
 type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
-	AgentID    uuid.UUID `json:"agent_id"`
+	OwnerType  OwnerType `json:"owner_type"`
+	OwnerID    uuid.UUID `json:"owner_id"`
 
 	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`
 
-	OwnerID        uuid.UUID   `json:"owner_id"`        // owned agent id
+	RoomOwnerID    uuid.UUID   `json:"room_owner_id"`   // owned agent id
 	ParticipantIDs []uuid.UUID `json:"participant_ids"` // list of participated ids(agent ids)
 
 	Name   string `json:"name"`
@@ -31,12 +32,13 @@ func (h *Chatroom) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:         h.ID,
 		CustomerID: h.CustomerID,
-		AgentID:    h.AgentID,
+		OwnerType:  h.OwnerType,
+		OwnerID:    h.OwnerID,
 
 		Type:   h.Type,
 		ChatID: h.ChatID,
 
-		OwnerID:        h.OwnerID,
+		RoomOwnerID:    h.RoomOwnerID,
 		ParticipantIDs: h.ParticipantIDs,
 
 		Name:   h.Name,

@@ -35,7 +35,7 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m *rabbitmqhandler.Requ
 		ctx,
 		req.CustomerID,
 		req.Type,
-		req.OwnerID,
+		req.RoomOwnerID,
 		req.ParticipantIDs,
 		req.Name,
 		req.Detail,
@@ -224,8 +224,8 @@ func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m *rabbitmqhandler.
 	return res, nil
 }
 
-// v1ChatsIDOwnerIDPut handles /v1/chats/{id}/owner_id PUT request
-func (h *listenHandler) v1ChatsIDOwnerIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// v1ChatsIDRoomOwnerIDPut handles /v1/chats/{id}/owner_id PUT request
+func (h *listenHandler) v1ChatsIDRoomOwnerIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsIDOwnerIDPut",
 	})
@@ -240,13 +240,13 @@ func (h *listenHandler) v1ChatsIDOwnerIDPut(ctx context.Context, m *rabbitmqhand
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
 
-	var req request.V1DataChatsIDOwnerIDPut
+	var req request.V1DataChatsIDRoomOwnerIDPut
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
 	}
 
-	tmp, err := h.chatHandler.UpdateOwnerID(ctx, id, req.OwnerID)
+	tmp, err := h.chatHandler.UpdateRoomOwnerID(ctx, id, req.RoomOwnerID)
 	if err != nil {
 		log.Errorf("Could not update the chat info. err: %v", err)
 		return nil, err

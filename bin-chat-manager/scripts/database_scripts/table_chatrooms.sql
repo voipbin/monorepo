@@ -2,12 +2,13 @@ create table chatrooms(
   -- identity
   id          binary(16),
   customer_id binary(16),
-  agent_id    binary(16),
+  owner_type  varchar(255),
+  owner_id    binary(16),
 
   type        varchar(255),
   chat_id     binary(16),
 
-  owner_id          binary(16),
+  room_owner_id     binary(16),
   participant_ids   json,
 
   name      varchar(255),
@@ -25,3 +26,4 @@ create index idx_chatrooms_customer_id on chatrooms(customer_id);
 create index idx_chatrooms_chat_id on chatrooms(chat_id);
 create index idx_chatrooms_owner_id on chatrooms(owner_id);
 create index idx_chatrooms_chat_id_owner_id on chatrooms(chat_id, owner_id);
+create index idx_chatrooms_room_owner_id on chatrooms(room_owner_id);
