@@ -6,6 +6,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -135,7 +136,9 @@ func Test_processEventCMCallHangup(t *testing.T) {
 				ID: uuid.FromStringOrNil("a0ae40ee-dd19-11ed-bc9e-63ab3d06e4c3"),
 			},
 			expectCall: &cmcall.Call{
-				ID: uuid.FromStringOrNil("a07bf864-dd19-11ed-a362-a792c5b0fd6d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a07bf864-dd19-11ed-a362-a792c5b0fd6d"),
+				},
 			},
 		},
 	}

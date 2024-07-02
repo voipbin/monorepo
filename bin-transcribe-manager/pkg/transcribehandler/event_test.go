@@ -6,6 +6,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -116,7 +117,9 @@ func Test_EventCMCallHangup(t *testing.T) {
 			name: "normal",
 
 			call: &cmcall.Call{
-				ID: uuid.FromStringOrNil("60865546-f2ef-11ee-93b7-13e9bdae3b1c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("60865546-f2ef-11ee-93b7-13e9bdae3b1c"),
+				},
 			},
 			responseTranscribes: []*transcribe.Transcribe{
 				{

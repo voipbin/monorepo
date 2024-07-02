@@ -11,6 +11,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -104,7 +105,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			responseCalls: []*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("1273f20c-b586-11ed-ab1c-03ffc97ffcfb"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1273f20c-b586-11ed-ab1c-03ffc97ffcfb"),
+					},
 				},
 			},
 			responseGroupcalls: []*cmgroupcall.Groupcall{},
@@ -206,7 +209,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			responseCalls: []*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("2f03e863-5cba-4661-84d0-972c1e860815"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2f03e863-5cba-4661-84d0-972c1e860815"),
+					},
 				},
 			},
 			responseGroupcalls:         []*cmgroupcall.Groupcall{},
@@ -309,7 +314,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			responseCalls: []*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("97d2b51e-b58b-11ed-b1e0-93fbb2f1280c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("97d2b51e-b58b-11ed-b1e0-93fbb2f1280c"),
+					},
 				},
 			},
 			responseGroupcalls:         []*cmgroupcall.Groupcall{},
@@ -412,7 +419,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 			responseCalls: []*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9"),
+					},
 				},
 			},
 			responseGroupcalls:         []*cmgroupcall.Groupcall{},
@@ -1790,7 +1799,9 @@ func Test_actionHandleConditionCallStatus(t *testing.T) {
 			},
 
 			&cmcall.Call{
-				ID:     uuid.FromStringOrNil("4980416e-9832-11ec-b189-5f96149e7ed8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4980416e-9832-11ec-b189-5f96149e7ed8"),
+				},
 				Status: cmcall.StatusRinging,
 			},
 		},
@@ -1872,7 +1883,9 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 			},
 
 			&cmcall.Call{
-				ID:     uuid.FromStringOrNil("2a497210-9833-11ec-9c8c-6f81d7341b91"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a497210-9833-11ec-9c8c-6f81d7341b91"),
+				},
 				Status: cmcall.StatusProgressing,
 			},
 			&activeflow.Activeflow{
@@ -2542,7 +2555,9 @@ func Test_actionHandleMessageSend(t *testing.T) {
 			expectText: "hello world. test variable: ttteeesssttt",
 
 			responseCall: &cmcall.Call{
-				ID:     uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
+				},
 				Status: cmcall.StatusProgressing,
 			},
 			expectReqActiveFlow: &activeflow.Activeflow{
@@ -2795,7 +2810,9 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{},
 			[]*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("a49dda82-a941-11ec-b5a9-9baf180541e9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a49dda82-a941-11ec-b5a9-9baf180541e9"),
+					},
 				},
 			},
 			[]*cmgroupcall.Groupcall{},
@@ -2847,10 +2864,14 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{},
 			[]*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("ff16e1f2-a941-11ec-b2c1-c3aa4ce144a0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ff16e1f2-a941-11ec-b2c1-c3aa4ce144a0"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("ff477790-a941-11ec-8475-035d159c8a77"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ff477790-a941-11ec-8475-035d159c8a77"),
+					},
 				},
 			},
 			[]*cmgroupcall.Groupcall{},
@@ -2908,7 +2929,9 @@ func Test_actionHandleCall(t *testing.T) {
 			},
 			[]*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("39691e00-a943-11ec-a69c-7f0e69becb70"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("39691e00-a943-11ec-a69c-7f0e69becb70"),
+					},
 				},
 			},
 			[]*cmgroupcall.Groupcall{},
@@ -2966,10 +2989,14 @@ func Test_actionHandleCall(t *testing.T) {
 			},
 			[]*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("f4a90298-a943-11ec-b31a-bf1f552ced44"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f4a90298-a943-11ec-b31a-bf1f552ced44"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("f4dd1e0c-a943-11ec-9295-6f71727bd164"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f4dd1e0c-a943-11ec-9295-6f71727bd164"),
+					},
 				},
 			},
 			[]*cmgroupcall.Groupcall{},
@@ -3019,7 +3046,9 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{},
 			[]*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("2aafe7e4-a994-11ec-8bae-338c6a067225"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2aafe7e4-a994-11ec-8bae-338c6a067225"),
+					},
 				},
 			},
 			[]*cmgroupcall.Groupcall{},
@@ -3069,7 +3098,9 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{},
 			[]*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("8873be9e-a996-11ec-993b-438622bb78da"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8873be9e-a996-11ec-993b-438622bb78da"),
+					},
 				},
 			},
 			[]*cmgroupcall.Groupcall{},

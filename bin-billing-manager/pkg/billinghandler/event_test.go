@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -41,7 +42,9 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			name: "normal",
 
 			call: &cmcall.Call{
-				ID: uuid.FromStringOrNil("b215ed62-f548-11ee-813d-7f31c7ccb7eb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b215ed62-f548-11ee-813d-7f31c7ccb7eb"),
+				},
 			},
 
 			responseAccount: &account.Account{
@@ -112,7 +115,9 @@ func Test_EventCMCallHangup(t *testing.T) {
 			name: "normal",
 
 			call: &cmcall.Call{
-				ID:       uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
+				},
 				TMHangup: "2023-06-08 03:23:17.995000",
 			},
 

@@ -8,6 +8,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -194,10 +195,12 @@ func Test_TranscribeStart(t *testing.T) {
 			direction:     tmtranscribe.DirectionBoth,
 
 			responseCall: &cmcall.Call{
-				ID:         uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				Status:     cmcall.StatusProgressing,
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Status:   cmcall.StatusProgressing,
+				TMDelete: defaultTimestamp,
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
 				ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
