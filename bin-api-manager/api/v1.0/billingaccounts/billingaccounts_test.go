@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -42,7 +43,9 @@ func Test_billingAccountsPOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			req: request.BodyBillingAccountsPOST{
 				Name:          "test name",
@@ -115,7 +118,9 @@ func Test_billingaccountsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			request.ParamBillingAccountsGET{
 				Pagination: request.Pagination{
@@ -134,7 +139,9 @@ func Test_billingaccountsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			request.ParamBillingAccountsGET{
 				Pagination: request.Pagination{
@@ -211,7 +218,9 @@ func Test_billingAccountsIDDelete(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			reqQuery:         "/v1.0/billing_accounts/9738a486-11ea-11ee-b56b-db24f5d2c81a",
@@ -273,7 +282,9 @@ func Test_billingAccountsIDGET(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				},
 			},
 
 			reqQuery:         "/v1.0/billing_accounts/602eb6b4-11eb-11ee-b79f-03124621dcc4",
@@ -336,7 +347,9 @@ func Test_billingAccountsIDPUT(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			reqQuery: "/v1.0/billing_accounts/8d1d01bc-4cdd-11ee-a22f-03714037d3db",
@@ -413,7 +426,9 @@ func Test_billingAccountsIDPaymentInfoPut(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			reqQuery: "/v1.0/billing_accounts/64461024-4cdf-11ee-be1f-e7111eb57d28/payment_info",
@@ -491,7 +506,9 @@ func Test_billingAccountsIDBalanceAddForcePOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				},
 			},
 
 			reqQuery: "/v1.0/billing_accounts/605eae78-11eb-11ee-b8d3-6fd8da9d9879/balance_add_force",
@@ -565,7 +582,9 @@ func Test_billingAccountsIDSubtractAddForcePOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+				},
 			},
 
 			reqQuery: "/v1.0/billing_accounts/e4e38ff6-11eb-11ee-879b-cb22a78168e4/balance_subtract_force",

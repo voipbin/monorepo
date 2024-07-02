@@ -83,8 +83,10 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				},
 			},
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
-				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				},
 			},
 			responseUUIDChannel: uuid.FromStringOrNil("80d67b3a-5f3b-11ed-a709-0f2943ef0184"),
 
@@ -265,7 +267,9 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				},
 			},
 			responseAgent: &amagent.Agent{
-				ID: uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				},
 			},
 			responseUUIDChannel: uuid.FromStringOrNil("d948969e-5de3-11ed-94f5-137ec429b6b6"),
 			responseProvider: &rmprovider.Provider{
@@ -1363,7 +1367,9 @@ func Test_getGroupcallRingMethod_destination_type_agent(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("de4249b4-e278-11ed-adcd-0b3ffc5eafb6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("de4249b4-e278-11ed-adcd-0b3ffc5eafb6"),
+				},
 				RingMethod: amagent.RingMethodLinear,
 			},
 
@@ -1378,7 +1384,9 @@ func Test_getGroupcallRingMethod_destination_type_agent(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("de806866-e278-11ed-83fd-17826e514dba"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("de806866-e278-11ed-83fd-17826e514dba"),
+				},
 				RingMethod: amagent.RingMethodRingAll,
 			},
 

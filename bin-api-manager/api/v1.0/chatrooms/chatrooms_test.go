@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -40,7 +41,9 @@ func Test_chatroommessagesPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatrooms",
@@ -120,7 +123,9 @@ func Test_chatroomsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
+				},
 			},
 
 			"/v1.0/chatrooms?owner_id=f3974fc6-38a0-11ed-a40b-6fc6c6ec606e&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -139,7 +144,9 @@ func Test_chatroomsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("65c83e84-8df5-11ee-ba8b-1700dcdfa8f2"),
+				},
 			},
 
 			"/v1.0/chatrooms?owner_id=20c40fac-38a1-11ed-83d3-93d4a1e51688&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -214,7 +221,9 @@ func Test_chatroomsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatrooms/5585fce6-38a1-11ed-93f2-c396374122fd",
@@ -277,7 +286,9 @@ func Test_chatroomsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatrooms/98799008-38a1-11ed-9406-6fa22402722c",
@@ -342,7 +353,9 @@ func Test_chatroomsIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatrooms/cba8e95e-bc64-11ee-9324-bb5c09ef083f",

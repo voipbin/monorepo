@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -31,8 +32,10 @@ func Test_AuthLogin(t *testing.T) {
 			password: "testpassword",
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("6bc342d0-8aed-11ee-a07d-7bc7fee5a336"),
-				CustomerID: uuid.FromStringOrNil("6c0ff198-8aed-11ee-8a04-474584947e03"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6bc342d0-8aed-11ee-a07d-7bc7fee5a336"),
+					CustomerID: uuid.FromStringOrNil("6c0ff198-8aed-11ee-8a04-474584947e03"),
+				},
 			},
 		},
 	}

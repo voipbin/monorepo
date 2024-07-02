@@ -10,6 +10,7 @@ import (
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -44,7 +45,9 @@ func Test_TagsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			request.BodyTagsPOST{
 				Name:   "test1 name",
@@ -114,7 +117,9 @@ func TestTagsGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/tags?page_size=11&page_token=2020-09-20T03:23:20.995000",
 
@@ -132,7 +137,9 @@ func TestTagsGET(t *testing.T) {
 		{
 			"more than 2 results",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/tags?page_size=10&page_token=2020-09-20T03:23:20.995000",
 
@@ -198,7 +205,9 @@ func TestTagsDelete(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			"/v1.0/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
@@ -250,7 +259,9 @@ func TestTagsIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			"/v1.0/tags/c07ff34e-500d-11ec-8393-2bc7870b7eff",
@@ -308,7 +319,9 @@ func Test_TagsIDPut(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			[]byte(`{"name":"update name", "detail": "update detail"}`),

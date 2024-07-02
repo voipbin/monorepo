@@ -9,6 +9,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -55,7 +56,9 @@ func Test_Execute(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("7c8e7e02-d1af-11ec-8d8e-d7280dd6fcc8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("7c8e7e02-d1af-11ec-8d8e-d7280dd6fcc8"),
+					},
 				},
 			},
 

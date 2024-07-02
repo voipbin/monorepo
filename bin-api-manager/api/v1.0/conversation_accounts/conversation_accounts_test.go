@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -46,7 +47,9 @@ func Test_conversationAccountsGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				},
 			},
 			"/v1.0/conversation_accounts?page_size=20&page_token=2020-09-20%2003:23:20.995000",
 
@@ -126,7 +129,9 @@ func Test_conversationAccountsPost(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				},
 			},
 			target: "/v1.0/conversation_accounts",
 
@@ -208,7 +213,9 @@ func Test_conversationAccountsIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
+				},
 			},
 			"/v1.0/conversation_accounts/ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c",
 
@@ -278,7 +285,9 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				},
 			},
 			target: "/v1.0/conversation_accounts/009f2ac8-0050-11ee-b416-5f4fb9c7c682",
 
@@ -360,7 +369,9 @@ func Test_conversationAccountsIDDelete(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				},
 			},
 			target: "/v1.0/conversation_accounts/31a54f8a-0050-11ee-aa7e-d3a80a493b8b",
 

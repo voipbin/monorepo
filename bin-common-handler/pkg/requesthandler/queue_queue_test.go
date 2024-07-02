@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -212,7 +213,9 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("2faae1f4-b4a2-11ec-a519-77ff3160d5e2"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2faae1f4-b4a2-11ec-a519-77ff3160d5e2"),
+					},
 				},
 			},
 		},
@@ -235,7 +238,9 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("300c0740-b4a2-11ec-9751-632ef9ed0b46"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("300c0740-b4a2-11ec-9751-632ef9ed0b46"),
+					},
 				},
 			},
 		},

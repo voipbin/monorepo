@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -39,7 +40,9 @@ func Test_queuecallsGet(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			request.ParamQueuecallsGET{
 				Pagination: request.Pagination{
@@ -58,7 +61,9 @@ func Test_queuecallsGet(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			request.ParamQueuecallsGET{
 				Pagination: request.Pagination{
@@ -131,7 +136,9 @@ func Test_queuecallsIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			&qmqueuecall.WebhookMessage{
 				ID:       uuid.FromStringOrNil("7d54d626-1681-11ed-ab05-473fa9aa2542"),
@@ -186,7 +193,9 @@ func Test_queuecallsIDDelete(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("a275df90-1681-11ed-a021-c3f295fc9257"),
 		},
@@ -235,7 +244,9 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/queuecalls/72c9dfb0-bcbe-11ed-853f-7f662faaee5b/kick",
@@ -285,7 +296,9 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/queuecalls/reference_id/e01d78ce-bcbe-11ed-8164-f3c4a472391e/kick",

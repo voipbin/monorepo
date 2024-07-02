@@ -10,6 +10,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -41,7 +42,9 @@ func Test_groupcallsPOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery: "/v1.0/groupcalls",
@@ -123,7 +126,9 @@ func Test_groupcallsGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("d98435c4-bf08-11ed-af72-f7e533f63816"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d98435c4-bf08-11ed-af72-f7e533f63816"),
+				},
 			},
 
 			"/v1.0/groupcalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -194,7 +199,9 @@ func Test_groupcallsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/groupcalls/c1423b7c-bf09-11ed-a3f8-cb3f5a42b528",
@@ -253,7 +260,9 @@ func Test_groupcallsIDHangupPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/groupcalls/0410089e-bf0a-11ed-93b7-f3a49f2b479f/hangup",
@@ -312,7 +321,9 @@ func Test_groupcallsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/groupcalls/487fd892-bf0a-11ed-9f7c-b3eaa708de0a",

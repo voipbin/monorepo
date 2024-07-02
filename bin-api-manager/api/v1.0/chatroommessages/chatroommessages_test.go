@@ -11,6 +11,7 @@ import (
 	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -41,7 +42,9 @@ func Test_chatroommessagesPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatroommessages",
@@ -126,7 +129,9 @@ func Test_chatmessagesGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatroommessages?chatroom_id=5f0a2dd4-389f-11ed-9b81-5b36a877165b&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -145,7 +150,9 @@ func Test_chatmessagesGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatroommessages?chatroom_id=d5246de0-389f-11ed-9790-23d937d90529&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -220,7 +227,9 @@ func Test_chatroommessagesIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatroommessages/0e2aab86-38a0-11ed-895e-c3af9cdbb491",
@@ -283,7 +292,9 @@ func Test_chatroommessagesIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatroommessages/72c7cdee-38a0-11ed-a3b4-737e737b5977",

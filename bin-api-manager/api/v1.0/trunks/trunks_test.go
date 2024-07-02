@@ -11,6 +11,7 @@ import (
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -41,7 +42,9 @@ func Test_trunksPOST(t *testing.T) {
 		{
 			name: "normal",
 			customer: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery: "/v1.0/trunks",
@@ -112,7 +115,9 @@ func Test_trunksGET(t *testing.T) {
 		{
 			name: "normal",
 			customer: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery: "/v1.0/trunks?page_size=20&page_token=2020-09-20%2003:23:20.995000",
@@ -185,7 +190,9 @@ func Test_TrunksIDGET(t *testing.T) {
 		{
 			name: "normal",
 			customer: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery: "/v1.0/trunks/733b46f6-5588-11ee-b04e-c781770c2c87",
@@ -243,7 +250,9 @@ func Test_TrunksIDPUT(t *testing.T) {
 		{
 			name: "normal",
 			customer: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery: "/v1.0/trunks/6019ea72-5589-11ee-8b45-13603ef0a2d4",
@@ -308,7 +317,9 @@ func Test_trunksIDDELETE(t *testing.T) {
 		{
 			name: "normal",
 			customer: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery:      "/v1.0/trunks/73ee8bce-558a-11ee-a104-5771d8493db0",

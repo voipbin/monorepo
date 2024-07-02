@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -531,7 +532,9 @@ func Test_isDialable(t *testing.T) {
 
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("c1ec0278-c406-11ec-8804-c738ff121aa6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c1ec0278-c406-11ec-8804-c738ff121aa6"),
+					},
 				},
 			},
 			[]*campaigncall.Campaigncall{},

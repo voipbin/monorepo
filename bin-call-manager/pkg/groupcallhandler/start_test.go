@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -73,8 +74,10 @@ func Test_Start_ringall(t *testing.T) {
 				uuid.FromStringOrNil("b521af3c-bbe7-11ed-910d-673d428424ab"),
 			},
 			responseAgent: &agagent.Agent{
-				ID:         uuid.FromStringOrNil("98fcf9ca-2c01-11ef-a404-cbad07804e20"),
-				CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("98fcf9ca-2c01-11ef-a404-cbad07804e20"),
+					CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+				},
 			},
 
 			expectGroupcall: &groupcall.Groupcall{
@@ -141,8 +144,10 @@ func Test_Start_ringall(t *testing.T) {
 				uuid.FromStringOrNil("c77bbfba-3856-4188-84a3-d735612dcc7d"),
 			},
 			responseAgent: &agagent.Agent{
-				ID:         uuid.FromStringOrNil("997e5a1a-2c01-11ef-a85e-4713a1f9259c"),
-				CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("997e5a1a-2c01-11ef-a85e-4713a1f9259c"),
+					CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+				},
 				Addresses: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
@@ -243,7 +248,13 @@ func Test_Start_ringall(t *testing.T) {
 				ringMethod := groupcall.RingMethodNone
 				if destination.Type == commonaddress.TypeAgent {
 					ringMethod = groupcall.RingMethodRingAll
-					mockReq.EXPECT().AgentV1AgentGet(ctx, gomock.Any()).Return(&agagent.Agent{CustomerID: tt.customerID, RingMethod: agagent.RingMethodRingAll}, nil)
+					tmpAgent := &agagent.Agent{
+						Identity: commonidentity.Identity{
+							CustomerID: tt.customerID,
+						},
+						RingMethod: agagent.RingMethodRingAll,
+					}
+					mockReq.EXPECT().AgentV1AgentGet(ctx, gomock.Any()).Return(tmpAgent, nil)
 				}
 				mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.expectGroupcallIDs[i], tt.customerID, tt.flowID, *tt.source, gomock.Any(), tt.masterCallID, tt.expectGroupcall.ID, ringMethod, groupcall.AnswerMethodHangupOthers).Return(&groupcall.Groupcall{}, nil)
 			}

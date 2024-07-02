@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -135,7 +136,9 @@ func Test_dbUpdateInfo(t *testing.T) {
 			ringMethod: agent.RingMethodRingAll,
 
 			responseAgent: &agent.Agent{
-				ID: uuid.FromStringOrNil("e9dddd94-298e-11ee-9182-c37003ff92d7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e9dddd94-298e-11ee-9182-c37003ff92d7"),
+				},
 			},
 		},
 	}
@@ -188,7 +191,9 @@ func Test_dbUpdatePassword(t *testing.T) {
 			password: "904ae97e-298f-11ee-8527-1bdc00790371",
 
 			responseAgent: &agent.Agent{
-				ID: uuid.FromStringOrNil("901d2638-298f-11ee-a14a-639e3e00089b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("901d2638-298f-11ee-a14a-639e3e00089b"),
+				},
 			},
 		},
 	}
@@ -242,7 +247,9 @@ func Test_dbUpdatePermission(t *testing.T) {
 			permission: agent.PermissionNone,
 
 			responseAgent: &agent.Agent{
-				ID: uuid.FromStringOrNil("411f1f22-2990-11ee-a246-c366dbfd41ec"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("411f1f22-2990-11ee-a246-c366dbfd41ec"),
+				},
 			},
 		},
 	}
@@ -299,7 +306,9 @@ func Test_dbUpdateTagIDs(t *testing.T) {
 			},
 
 			responseAgent: &agent.Agent{
-				ID: uuid.FromStringOrNil("741556bc-2990-11ee-bba5-f3d4e2e1d710"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("741556bc-2990-11ee-bba5-f3d4e2e1d710"),
+				},
 			},
 		},
 	}
@@ -360,7 +369,9 @@ func Test_dbUpdateAddresses(t *testing.T) {
 			},
 
 			responseAgent: &agent.Agent{
-				ID: uuid.FromStringOrNil("741556bc-2990-11ee-bba5-f3d4e2e1d710"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("741556bc-2990-11ee-bba5-f3d4e2e1d710"),
+				},
 			},
 		},
 	}
@@ -414,7 +425,9 @@ func Test_dbUpdateStatus(t *testing.T) {
 			status: agent.StatusBusy,
 
 			responseAgent: &agent.Agent{
-				ID: uuid.FromStringOrNil("c9f84f58-2990-11ee-8594-5f437170c924"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c9f84f58-2990-11ee-8594-5f437170c924"),
+				},
 			},
 		},
 	}

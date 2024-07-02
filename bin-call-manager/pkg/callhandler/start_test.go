@@ -719,8 +719,10 @@ func Test_getAddressOwner(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
-				CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
+					CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				},
 			},
 
 			expectAgentID:      uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
@@ -737,8 +739,10 @@ func Test_getAddressOwner(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
-				CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
+					CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				},
 			},
 
 			expectResOwnerType: commonidentity.OwnerTypeAgent,
