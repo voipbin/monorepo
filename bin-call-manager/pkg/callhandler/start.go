@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -549,7 +550,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 }
 
 // getAddressOwner returns the given address's owner
-func (h *callHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (call.OwnerType, uuid.UUID, error) {
+func (h *callHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (commonidentity.OwnerType, uuid.UUID, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "getAddressOwner",
 		"customer_id": customerID,
@@ -564,19 +565,19 @@ func (h *callHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID,
 		tmp, err = h.reqHandler.AgentV1AgentGet(ctx, id)
 		if err != nil {
 			log.Errorf("Could not get owner info. err: %v", err)
-			return call.OwnerTypeNone, uuid.Nil, err
+			return commonidentity.OwnerTypeNone, uuid.Nil, err
 		}
 	} else {
 		tmp, err = h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, *addr)
 		if err != nil {
 			log.Errorf("Could not get agent info. err: %v", err)
-			return call.OwnerTypeNone, uuid.Nil, nil
+			return commonidentity.OwnerTypeNone, uuid.Nil, nil
 		}
 	}
 
 	if tmp == nil {
-		return call.OwnerTypeNone, uuid.Nil, nil
+		return commonidentity.OwnerTypeNone, uuid.Nil, nil
 	}
 
-	return call.OwnerTypeAgent, tmp.ID, nil
+	return commonidentity.OwnerTypeAgent, tmp.ID, nil
 }

@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -32,13 +33,17 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d"),
 
 			&call.Call{
-				ID:       uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d"),
+				},
 				Status:   call.StatusHangup,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 
 			&call.Call{
-				ID:       uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d"),
+				},
 				Status:   call.StatusHangup,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},

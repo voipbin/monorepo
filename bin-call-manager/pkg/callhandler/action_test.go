@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -39,7 +40,9 @@ func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID: uuid.FromStringOrNil("ed1620aa-3e6e-11ec-902b-170b2849173a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ed1620aa-3e6e-11ec-902b-170b2849173a"),
+				},
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("012c12c8-7552-4ec9-85b7-d39d78fa789f"),
 					Type:   fmaction.TypeConfbridgeJoin,
@@ -86,7 +89,9 @@ func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 		{
 			"empty option",
 			&call.Call{
-				ID: uuid.FromStringOrNil("741a0f32-6bb2-11ed-bf34-9b3f75da5e87"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("741a0f32-6bb2-11ed-bf34-9b3f75da5e87"),
+				},
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("d5ab7c42-10dc-4363-8f06-89443f9a2c3b"),
 					Type:   fmaction.TypeStreamEcho,
@@ -133,7 +138,9 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 		{
 			"empty option",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("4371b0d6-df48-11ea-9a8c-177968c165e9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4371b0d6-df48-11ea-9a8c-177968c165e9"),
+				},
 				ChannelID: "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("87ea1d71-dd34-4c53-bd82-14082d5944aa"),
@@ -183,7 +190,9 @@ func Test_ActionTimeoutNext(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("66e039c6-e3fc-11ea-ae6f-53584373e7c9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("66e039c6-e3fc-11ea-ae6f-53584373e7c9"),
+				},
 				ChannelID: "12a05228-e3fd-11ea-b55f-afd68e7aa755",
 				Action: fmaction.Action{
 					ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
@@ -253,7 +262,9 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("5e9f3946-2188-11eb-9d74-bf4bf1239da3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5e9f3946-2188-11eb-9d74-bf4bf1239da3"),
+				},
 				ChannelID: "61a1345a-2188-11eb-ba52-af82c1239d8f",
 				Action: fmaction.Action{
 					Type: fmaction.TypeTalk,
@@ -322,7 +333,9 @@ func Test_ActionExecute_actionExecutePlay(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f4fce23b-356f-45e2-994a-2e7763fb1f6a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f4fce23b-356f-45e2-994a-2e7763fb1f6a"),
+				},
 				ChannelID: "23ae2630-70c0-4a6d-a41f-aea675c24e75",
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("2641f116-90d1-40a3-a817-e16b4f3325da"),
@@ -383,7 +396,9 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 		{
 			"default",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
+				},
 				ChannelID: "bfd0e668-2a77-11eb-9993-e72b323b1801",
 				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
@@ -454,7 +469,9 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 		{
 			"default",
 			&call.Call{
-				ID:          uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
+				},
 				ChannelID:   "5293419a-2b9e-11eb-bfa6-97a4312177f2",
 				RecordingID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
 				Status:      call.StatusProgressing,
@@ -513,7 +530,9 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				},
 				ChannelID: "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -529,7 +548,9 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 		{
 			"finish on key set but not qualified",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				},
 				ChannelID: "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -584,7 +605,9 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 			"length qualified",
 
 			&call.Call{
-				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				},
 				ActiveFlowID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
@@ -604,7 +627,9 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 			"finish on key #",
 
 			&call.Call{
-				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				},
 				ActiveFlowID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
@@ -624,7 +649,9 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 			"finish on key *",
 
 			&call.Call{
-				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				},
 				ActiveFlowID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
@@ -682,7 +709,9 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("50270fae-69bf-11eb-a0a7-273260ea280c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("50270fae-69bf-11eb-a0a7-273260ea280c"),
+				},
 				ChannelID: "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsSend,
@@ -699,7 +728,9 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 		{
 			"send 1 digits",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("49a66b38-69c0-11eb-b96c-d799dd21ba8f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("49a66b38-69c0-11eb-b96c-d799dd21ba8f"),
+				},
 				ChannelID: "49e625de-69c0-11eb-891d-db5407ae4982",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsSend,
@@ -762,7 +793,9 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
+				},
 				ChannelID: "4455e2f4-02f8-11ec-acf9-43a391fce607",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeExternalMediaStart,
@@ -826,7 +859,9 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:              uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
+				},
 				ChannelID:       "4455e2f4-02f8-11ec-acf9-43a391fce607",
 				ExternalMediaID: uuid.FromStringOrNil("c7e222a4-96ef-11ed-a9c7-731c399f5537"),
 				Action: fmaction.Action{
@@ -881,7 +916,9 @@ func Test_actionExecuteAMD(t *testing.T) {
 		{
 			"sync false",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				},
 				ChannelID: "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeAMD,
@@ -898,7 +935,9 @@ func Test_actionExecuteAMD(t *testing.T) {
 		{
 			"sync true",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
+				},
 				ChannelID: "7da1b4fc-19b9-11ec-948e-7f9ca90957a1",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeAMD,
@@ -959,7 +998,9 @@ func Test_cleanCurrentAction(t *testing.T) {
 		{
 			"playback has set",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				},
 				ChannelID: "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 			},
 			&channel.Channel{
@@ -972,7 +1013,9 @@ func Test_cleanCurrentAction(t *testing.T) {
 		{
 			"confbridgeID has set",
 			&call.Call{
-				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				},
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				ConfbridgeID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
 			},
@@ -985,7 +1028,9 @@ func Test_cleanCurrentAction(t *testing.T) {
 		{
 			"action sleep",
 			&call.Call{
-				ID:        uuid.FromStringOrNil("0d074aee-8c1a-11ec-b499-c33db4145901"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0d074aee-8c1a-11ec-b499-c33db4145901"),
+				},
 				ChannelID: "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Action: fmaction.Action{
 					Type: fmaction.TypeSleep,
@@ -1051,7 +1096,9 @@ func Test_ActionNext(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				},
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
@@ -1070,7 +1117,9 @@ func Test_ActionNext(t *testing.T) {
 				ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
 			},
 			&call.Call{
-				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				},
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
@@ -1130,7 +1179,9 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 		{
 			name: "normal",
 			call: &call.Call{
-				ID:        uuid.FromStringOrNil("a2da5b15-403f-492d-96e0-53f883028d88"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a2da5b15-403f-492d-96e0-53f883028d88"),
+				},
 				ChannelID: "105567ee-61de-4eed-98d4-d6b0d2667f3a",
 				Status:    call.StatusDialing,
 				Action: fmaction.Action{
@@ -1141,7 +1192,9 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("a2da5b15-403f-492d-96e0-53f883028d88"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a2da5b15-403f-492d-96e0-53f883028d88"),
+				},
 				ChannelID: "105567ee-61de-4eed-98d4-d6b0d2667f3a",
 				Status:    call.StatusTerminating,
 				Action: fmaction.Action{
@@ -1208,7 +1261,9 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 		{
 			name: "call hungup by user busy",
 			call: &call.Call{
-				ID:        uuid.FromStringOrNil("12ea8d3e-52b3-4c8e-a46c-a9d66a40c94c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("12ea8d3e-52b3-4c8e-a46c-a9d66a40c94c"),
+				},
 				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
 				Status:    call.StatusDialing,
 				Action: fmaction.Action{
@@ -1219,13 +1274,17 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 			},
 
 			responseReferenceCall: &call.Call{
-				ID:           uuid.FromStringOrNil("94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"),
+				},
 				ChannelID:    "f4cf0996-a3d1-11ed-8aca-97c846819d72",
 				Status:       call.StatusHangup,
 				HangupReason: call.HangupReasonBusy,
 			},
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("12ea8d3e-52b3-4c8e-a46c-a9d66a40c94c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("12ea8d3e-52b3-4c8e-a46c-a9d66a40c94c"),
+				},
 				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
 				Status:    call.StatusTerminating,
 				Action: fmaction.Action{
@@ -1247,7 +1306,9 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 		{
 			name: "reason failed with no route destination",
 			call: &call.Call{
-				ID:        uuid.FromStringOrNil("69788128-a3d2-11ed-8721-235dc7d17c81"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("69788128-a3d2-11ed-8721-235dc7d17c81"),
+				},
 				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
 				Status:    call.StatusDialing,
 				Action: fmaction.Action{
@@ -1258,13 +1319,17 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 			},
 
 			responseReferenceCall: &call.Call{
-				ID:           uuid.FromStringOrNil("69d1ff28-a3d2-11ed-be5d-f3ea54e96121"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("69d1ff28-a3d2-11ed-be5d-f3ea54e96121"),
+				},
 				ChannelID:    "7888691c-a3d2-11ed-9e53-5ba62e8286cb",
 				Status:       call.StatusHangup,
 				HangupReason: call.HangupReasonFailed,
 			},
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("69788128-a3d2-11ed-8721-235dc7d17c81"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("69788128-a3d2-11ed-8721-235dc7d17c81"),
+				},
 				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
 				Status:    call.StatusTerminating,
 				Action: fmaction.Action{
@@ -1336,7 +1401,9 @@ func Test_ActionNextForce(t *testing.T) {
 			name: "normal",
 
 			call: &call.Call{
-				ID:        uuid.FromStringOrNil("d2b36964-264f-11ee-85d8-1fc4aba6d482"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d2b36964-264f-11ee-85d8-1fc4aba6d482"),
+				},
 				ChannelID: "d2eff03c-264f-11ee-be38-dff577e39038",
 				Status:    call.StatusProgressing,
 			},

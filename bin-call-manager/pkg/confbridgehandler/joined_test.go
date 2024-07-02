@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -58,7 +59,9 @@ func Test_Joined_type_connect(t *testing.T) {
 				},
 			},
 			responseCall: &call.Call{
-				ID: uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
+				},
 			},
 
 			expectCallID:       uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
@@ -149,7 +152,9 @@ func Test_Joined_type_conference(t *testing.T) {
 				Type:     confbridge.TypeConference,
 			},
 			responseCall: &call.Call{
-				ID: uuid.FromStringOrNil("28582dac-a3bd-11ed-9f5e-93bf1afcbcf6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("28582dac-a3bd-11ed-9f5e-93bf1afcbcf6"),
+				},
 			},
 
 			expectCallID:       uuid.FromStringOrNil("28582dac-a3bd-11ed-9f5e-93bf1afcbcf6"),
@@ -219,7 +224,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 
 			channelID: "afaa2896-a3bd-11ed-8195-eb6e150c260e",
 			call: &call.Call{
-				ID: uuid.FromStringOrNil("afd0acf0-a3bd-11ed-921e-8bf69d65d2c1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("afd0acf0-a3bd-11ed-921e-8bf69d65d2c1"),
+				},
 			},
 			confbridge: &confbridge.Confbridge{
 				ID: uuid.FromStringOrNil("aff70e90-a3bd-11ed-8099-7b4446aef7ad"),
@@ -230,7 +237,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 
 			responseCalls: []*call.Call{
 				{
-					ID: uuid.FromStringOrNil("afd0acf0-a3bd-11ed-921e-8bf69d65d2c1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("afd0acf0-a3bd-11ed-921e-8bf69d65d2c1"),
+					},
 				},
 			},
 		},
@@ -239,7 +248,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 
 			channelID: "070da3b0-a3be-11ed-aec8-27faeea66ece",
 			call: &call.Call{
-				ID:     uuid.FromStringOrNil("07360832-a3be-11ed-80e9-6f824b36d382"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("07360832-a3be-11ed-80e9-6f824b36d382"),
+				},
 				Status: call.StatusRinging,
 			},
 			confbridge: &confbridge.Confbridge{
@@ -253,12 +264,16 @@ func Test_joinedTypeConnect(t *testing.T) {
 
 			responseCalls: []*call.Call{
 				{
-					ID:        uuid.FromStringOrNil("07360832-a3be-11ed-80e9-6f824b36d382"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("07360832-a3be-11ed-80e9-6f824b36d382"),
+					},
 					Status:    call.StatusRinging,
 					Direction: call.DirectionIncoming,
 				},
 				{
-					ID:        uuid.FromStringOrNil("07cd17cc-a3be-11ed-b200-a75abbfb90ca"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("07cd17cc-a3be-11ed-b200-a75abbfb90ca"),
+					},
 					Status:    call.StatusRinging,
 					Direction: call.DirectionOutgoing,
 				},
@@ -271,7 +286,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 
 			channelID: "166454ca-a3bf-11ed-bb15-77d1ba7adeda",
 			call: &call.Call{
-				ID:     uuid.FromStringOrNil("168b8482-a3bf-11ed-8739-db2e4a76beb9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("168b8482-a3bf-11ed-8739-db2e4a76beb9"),
+				},
 				Status: call.StatusRinging,
 			},
 			confbridge: &confbridge.Confbridge{
@@ -285,12 +302,16 @@ func Test_joinedTypeConnect(t *testing.T) {
 
 			responseCalls: []*call.Call{
 				{
-					ID:        uuid.FromStringOrNil("16dc7a40-a3bf-11ed-b0f3-1b2254e87579"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("16dc7a40-a3bf-11ed-b0f3-1b2254e87579"),
+					},
 					Status:    call.StatusProgressing,
 					Direction: call.DirectionOutgoing,
 				},
 				{
-					ID:     uuid.FromStringOrNil("168b8482-a3bf-11ed-8739-db2e4a76beb9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("168b8482-a3bf-11ed-8739-db2e4a76beb9"),
+					},
 					Status: call.StatusRinging,
 				},
 			},
@@ -360,7 +381,9 @@ func Test_joinedTypeConference(t *testing.T) {
 
 			channelID: "7b98f864-a3bf-11ed-8777-df84c037fd2b",
 			call: &call.Call{
-				ID: uuid.FromStringOrNil("7bc0581e-a3bf-11ed-9781-07084ef6a76b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7bc0581e-a3bf-11ed-9781-07084ef6a76b"),
+				},
 			},
 			confbridge: &confbridge.Confbridge{
 				ID: uuid.FromStringOrNil("7bea77e8-a3bf-11ed-b44a-0f9d205baa32"),

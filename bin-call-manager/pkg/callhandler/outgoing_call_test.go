@@ -7,6 +7,7 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -89,13 +90,15 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			expectDialrouteTarget: "",
 			expectCall: &call.Call{
-				ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
-				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
-				OwnerType:  call.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
-				ChannelID:  "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
-				FlowID:     uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
-				Type:       call.TypeFlow,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+					OwnerType:  commonidentity.OwnerTypeAgent,
+					OwnerID:    uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+				},
+				ChannelID: "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
+				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+				Type:      call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -271,10 +274,12 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			expectDialrouteTarget: "+82",
 			expectCall: &call.Call{
-				ID:             uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
-				CustomerID:     uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
-				OwnerType:      call.OwnerTypeAgent,
-				OwnerID:        uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+					CustomerID: uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+					OwnerType:  commonidentity.OwnerTypeAgent,
+					OwnerID:    uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				},
 				ChannelID:      "d948969e-5de3-11ed-94f5-137ec429b6b6",
 				FlowID:         uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
 				ActiveFlowID:   uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
@@ -558,8 +563,10 @@ func Test_getDialURI_Tel(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("04e5d530-5d96-11ed-bbc8-cfb95f6d6085"),
-				CustomerID: uuid.FromStringOrNil("f7a14b8c-534c-11ed-9fb1-c7c376f2730b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("04e5d530-5d96-11ed-bbc8-cfb95f6d6085"),
+					CustomerID: uuid.FromStringOrNil("f7a14b8c-534c-11ed-9fb1-c7c376f2730b"),
+				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821121656521",
@@ -626,8 +633,10 @@ func Test_getDialURI_SIP(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("3c28f5fe-5d96-11ed-bf69-9340492cc88d"),
-				CustomerID: uuid.FromStringOrNil("22139104-534d-11ed-aba9-e73d8b8e1c43"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3c28f5fe-5d96-11ed-bf69-9340492cc88d"),
+					CustomerID: uuid.FromStringOrNil("22139104-534d-11ed-aba9-e73d8b8e1c43"),
+				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeSIP,
 					Target: "test@test.com",
@@ -640,8 +649,10 @@ func Test_getDialURI_SIP(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("5e0329d8-5d96-11ed-a009-2763e323daa8"),
-				CustomerID: uuid.FromStringOrNil("dfd086b2-534c-11ed-b905-93a3b56e1ae8"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5e0329d8-5d96-11ed-a009-2763e323daa8"),
+					CustomerID: uuid.FromStringOrNil("dfd086b2-534c-11ed-b905-93a3b56e1ae8"),
+				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeSIP,
 					Target: "test@test.com",
@@ -766,8 +777,10 @@ func Test_createChannel(t *testing.T) {
 			name: "normal",
 
 			call: &call.Call{
-				ID:         uuid.FromStringOrNil("7e0a846a-5d96-11ed-9005-07794a4f93cb"),
-				CustomerID: uuid.FromStringOrNil("6f3fd136-534d-11ed-90a2-ff71219800e5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7e0a846a-5d96-11ed-9005-07794a4f93cb"),
+					CustomerID: uuid.FromStringOrNil("6f3fd136-534d-11ed-90a2-ff71219800e5"),
+				},
 
 				ChannelID: "7fd0947a-5f39-11ed-8ce5-7b34330a9d7c",
 				Source: commonaddress.Address{
@@ -855,8 +868,10 @@ func Test_createFailoverChannel(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("25c7a29a-5f7d-11ed-86cc-bb999f3cccaf"),
-				CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("25c7a29a-5f7d-11ed-86cc-bb999f3cccaf"),
+					CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
+				},
 
 				ChannelID: "263bc88c-5f7d-11ed-a26c-735426e79b33",
 				Source: commonaddress.Address{
@@ -882,8 +897,10 @@ func Test_createFailoverChannel(t *testing.T) {
 
 			uuid.FromStringOrNil("2902a512-5f7e-11ed-8cb0-ef43ac5ddea8"),
 			&call.Call{
-				ID:         uuid.FromStringOrNil("25c7a29a-5f7d-11ed-86cc-bb999f3cccaf"),
-				CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("25c7a29a-5f7d-11ed-86cc-bb999f3cccaf"),
+					CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
+				},
 
 				ChannelID: "2902a512-5f7e-11ed-8cb0-ef43ac5ddea8",
 				Source: commonaddress.Address{
@@ -922,8 +939,10 @@ func Test_createFailoverChannel(t *testing.T) {
 			},
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("25c7a29a-5f7d-11ed-86cc-bb999f3cccaf"),
-				CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("25c7a29a-5f7d-11ed-86cc-bb999f3cccaf"),
+					CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
+				},
 
 				ChannelID: "2902a512-5f7e-11ed-8cb0-ef43ac5ddea8",
 				Source: commonaddress.Address{

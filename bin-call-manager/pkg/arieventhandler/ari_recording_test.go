@@ -9,6 +9,8 @@ import (
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
@@ -157,7 +159,9 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 				},
 			},
 			&call.Call{
-				ID: uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
+				},
 			},
 			&recording.Recording{
 				ID: uuid.FromStringOrNil("4f367e2c-612c-11eb-b063-676ca5ee546a"),

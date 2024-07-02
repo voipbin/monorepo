@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -42,7 +43,9 @@ func Test_RecordingStart(t *testing.T) {
 			86400,
 
 			&call.Call{
-				ID:     uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+				},
 				Status: call.StatusProgressing,
 			},
 			&recording.Recording{
@@ -113,7 +116,9 @@ func Test_RecordingStop(t *testing.T) {
 			86400,
 
 			&call.Call{
-				ID:          uuid.FromStringOrNil("9fbc00a0-9317-11ed-b20d-374b334d2c55"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9fbc00a0-9317-11ed-b20d-374b334d2c55"),
+				},
 				Status:      call.StatusProgressing,
 				RecordingID: uuid.FromStringOrNil("9fea43b6-9317-11ed-9777-bbde3dec8816"),
 			},

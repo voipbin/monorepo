@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -38,8 +39,10 @@ func Test_processV1CallsIDGet(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6"),
-				CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6"),
+					CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -100,8 +103,10 @@ func Test_processV1CallsGet(t *testing.T) {
 
 			[]*call.Call{
 				{
-					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
-					CustomerID: uuid.FromStringOrNil("ac03d4ea-7f50-11ec-908d-d39407ab524d"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+						CustomerID: uuid.FromStringOrNil("ac03d4ea-7f50-11ec-908d-d39407ab524d"),
+					},
 				},
 			},
 			map[string]string{
@@ -126,12 +131,16 @@ func Test_processV1CallsGet(t *testing.T) {
 
 			[]*call.Call{
 				{
-					ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
-					CustomerID: uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("866ad964-620e-11eb-9f09-9fab48a7edd3"),
+						CustomerID: uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("095e2ec4-5f6c-11ec-b64c-efe2fb8efcbc"),
-					CustomerID: uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("095e2ec4-5f6c-11ec-b64c-efe2fb8efcbc"),
+						CustomerID: uuid.FromStringOrNil("ac35aeb6-7f50-11ec-b7c5-abac92baf1fb"),
+					},
 				},
 			},
 			map[string]string{
@@ -325,8 +334,10 @@ func Test_processV1CallsIDPost(t *testing.T) {
 			masterCallID: uuid.FromStringOrNil("11b1b1fa-8c93-11ec-9597-2320d5458176"),
 
 			call: &call.Call{
-				ID:          uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
-				CustomerID:  uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+					CustomerID: uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
+				},
 				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
@@ -368,9 +379,11 @@ func Test_processV1CallsIDPost(t *testing.T) {
 			connect:        true,
 
 			call: &call.Call{
-				ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
-				CustomerID: uuid.FromStringOrNil("ffeda266-7f50-11ec-8089-df3388aef0cc"),
-				FlowID:     uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+					CustomerID: uuid.FromStringOrNil("ffeda266-7f50-11ec-8089-df3388aef0cc"),
+				},
+				FlowID: uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeSIP,
 					Target: "test_source@127.0.0.1:5061",
@@ -458,7 +471,9 @@ func Test_processV1CallsPost(t *testing.T) {
 
 			responseCalls: []*call.Call{
 				{
-					ID: uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
+					},
 				},
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
@@ -492,7 +507,9 @@ func Test_processV1CallsPost(t *testing.T) {
 
 			responseCalls: []*call.Call{
 				{
-					ID: uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
+					},
 				},
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
@@ -564,8 +581,10 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 			},
 
 			&call.Call{
-				ID:          uuid.FromStringOrNil("8e49788e-fc9e-41a0-a73c-a24c030848ca"),
-				CustomerID:  uuid.FromStringOrNil("6ed4431a-7f51-11ec-8855-73041a5777e8"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8e49788e-fc9e-41a0-a73c-a24c030848ca"),
+					CustomerID: uuid.FromStringOrNil("6ed4431a-7f51-11ec-8855-73041a5777e8"),
+				},
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 			},
@@ -627,8 +646,10 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 			},
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
-				CustomerID: uuid.FromStringOrNil("6ed4431a-7f51-11ec-8855-73041a5777e8"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
+					CustomerID: uuid.FromStringOrNil("6ed4431a-7f51-11ec-8855-73041a5777e8"),
+				},
 			},
 
 			uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
@@ -689,8 +710,10 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:          uuid.FromStringOrNil("37b3a214-0afd-11eb-88ea-7bdd69288e90"),
-				CustomerID:  uuid.FromStringOrNil("6efe9d54-7f51-11ec-95dc-4f25e8777704"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("37b3a214-0afd-11eb-88ea-7bdd69288e90"),
+					CustomerID: uuid.FromStringOrNil("6efe9d54-7f51-11ec-95dc-4f25e8777704"),
+				},
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 			},
@@ -708,8 +731,10 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 		{
 			"next force",
 			&call.Call{
-				ID:          uuid.FromStringOrNil("37b3a214-0afd-11eb-88ea-7bdd69288e90"),
-				CustomerID:  uuid.FromStringOrNil("6f29a850-7f51-11ec-a44d-0714d04b7ff2"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("37b3a214-0afd-11eb-88ea-7bdd69288e90"),
+					CustomerID: uuid.FromStringOrNil("6f29a850-7f51-11ec-a44d-0714d04b7ff2"),
+				},
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 			},
@@ -767,8 +792,10 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("bfcdc03a-25bf-11eb-a9b2-bba80a81835b"),
-				CustomerID: uuid.FromStringOrNil("86711e1c-7f51-11ec-a807-0385a20de8ac"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bfcdc03a-25bf-11eb-a9b2-bba80a81835b"),
+					CustomerID: uuid.FromStringOrNil("86711e1c-7f51-11ec-a807-0385a20de8ac"),
+				},
 			},
 			uuid.FromStringOrNil("76490d6a-25c0-11eb-970b-3bf9ae938f41"),
 			&rabbitmqhandler.Request{
@@ -779,7 +806,9 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 			},
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("bfcdc03a-25bf-11eb-a9b2-bba80a81835b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bfcdc03a-25bf-11eb-a9b2-bba80a81835b"),
+				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -832,7 +861,9 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID: uuid.FromStringOrNil("0eaa2942-25c4-11eb-90a3-63fb2b029bae"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0eaa2942-25c4-11eb-90a3-63fb2b029bae"),
+				},
 			},
 			uuid.FromStringOrNil("0ee268f2-25c4-11eb-917c-07eef32616dc"),
 			&rabbitmqhandler.Request{
@@ -841,7 +872,9 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 			},
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("0eaa2942-25c4-11eb-90a3-63fb2b029bae"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0eaa2942-25c4-11eb-90a3-63fb2b029bae"),
+				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -909,7 +942,9 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			},
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
+				},
 			},
 
 			uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
@@ -987,7 +1022,9 @@ func Test_processV1CallsIDExternalMediaDelete(t *testing.T) {
 			},
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("7fcac8d6-9730-11ed-bd80-a764f6bc382e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7fcac8d6-9730-11ed-bd80-a764f6bc382e"),
+				},
 			},
 
 			uuid.FromStringOrNil("7fcac8d6-9730-11ed-bd80-a764f6bc382e"),
@@ -1193,7 +1230,9 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 			uuid.FromStringOrNil("09178464-8fd2-11ed-a1d7-5b5491e83cc7"),
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("0953474c-8fd2-11ed-a24a-7bf36392fef2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0953474c-8fd2-11ed-a24a-7bf36392fef2"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -1215,7 +1254,9 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 			uuid.Nil,
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("0977e50c-8fd2-11ed-8684-e34a2113a8cc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0977e50c-8fd2-11ed-8684-e34a2113a8cc"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -1282,7 +1323,9 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 			},
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
+				},
 			},
 
 			uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
@@ -1348,7 +1391,9 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 			},
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("1c73262e-9344-11ed-840d-37569c93274f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1c73262e-9344-11ed-840d-37569c93274f"),
+				},
 			},
 
 			uuid.FromStringOrNil("1c73262e-9344-11ed-840d-37569c93274f"),

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -71,7 +72,9 @@ func Test_dialNextDestination_call(t *testing.T) {
 				RingMethod: groupcall.RingMethodRingAll,
 			},
 			responseCall: &call.Call{
-				ID: uuid.FromStringOrNil("73529bb2-e233-11ed-9595-1f0b37264b28"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("73529bb2-e233-11ed-9595-1f0b37264b28"),
+				},
 			},
 
 			expectDestination: &commonaddress.Address{

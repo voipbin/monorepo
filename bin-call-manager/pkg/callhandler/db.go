@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -23,7 +24,7 @@ func (h *callHandler) Create(
 
 	id uuid.UUID,
 	customerID uuid.UUID,
-	ownerType call.OwnerType,
+	ownerType commonidentity.OwnerType,
 	ownerID uuid.UUID,
 
 	channelID string,
@@ -61,10 +62,12 @@ func (h *callHandler) Create(
 	}
 
 	c := &call.Call{
-		ID:         callID,
-		CustomerID: customerID,
-		OwnerType:  ownerType,
-		OwnerID:    ownerID,
+		Identity: commonidentity.Identity{
+			ID:         callID,
+			CustomerID: customerID,
+			OwnerType:  ownerType,
+			OwnerID:    ownerID,
+		},
 
 		ChannelID:    channelID,
 		BridgeID:     bridgeID,

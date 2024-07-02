@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -17,11 +18,13 @@ import (
 
 // Call struct represent asterisk's channel information
 type Call struct {
-	// identity
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerType  OwnerType `json:"owner_type"`
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
+
+	// // identity
+	// ID         uuid.UUID `json:"id"`
+	// CustomerID uuid.UUID `json:"customer_id"`
+	// OwnerType  OwnerType `json:"owner_type"`
+	// OwnerID    uuid.UUID `json:"owner_id"`
 
 	ChannelID string `json:"channel_id"`
 	BridgeID  string `json:"bridge_id"` // call bridge id

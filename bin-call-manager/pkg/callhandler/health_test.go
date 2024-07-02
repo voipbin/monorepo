@@ -9,6 +9,7 @@ import (
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -37,7 +38,9 @@ func Test_HealthCheck(t *testing.T) {
 			retryCount: 0,
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("8b0c11f9-ad03-4bd7-98a5-102f89877e2a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8b0c11f9-ad03-4bd7-98a5-102f89877e2a"),
+				},
 				ChannelID: "a5416ed3-5f61-4e1e-971f-0b3ff61ce19e",
 				Status:    call.StatusProgressing,
 				TMHangup:  dbhandler.DefaultTimeStamp,
@@ -58,7 +61,9 @@ func Test_HealthCheck(t *testing.T) {
 			retryCount: 0,
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("d0760324-75d6-443d-aa6f-d3b8703bf78a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0760324-75d6-443d-aa6f-d3b8703bf78a"),
+				},
 				ChannelID: "cba7edf9-8586-40c0-992b-5885103228c1",
 				Status:    call.StatusProgressing,
 				TMHangup:  dbhandler.DefaultTimeStamp,
@@ -79,7 +84,9 @@ func Test_HealthCheck(t *testing.T) {
 			retryCount: 0,
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("d0760324-75d6-443d-aa6f-d3b8703bf78a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0760324-75d6-443d-aa6f-d3b8703bf78a"),
+				},
 				ChannelID: "cba7edf9-8586-40c0-992b-5885103228c1",
 				Status:    call.StatusProgressing,
 				TMHangup:  dbhandler.DefaultTimeStamp,

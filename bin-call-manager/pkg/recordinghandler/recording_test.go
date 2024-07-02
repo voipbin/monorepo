@@ -5,6 +5,8 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -55,10 +57,12 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 			duration:     0,
 
 			responseCall: &call.Call{
-				ID:         uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
-				CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
-				ChannelID:  "8e5c2a28-f24a-11ed-97f4-5f82e61f6239",
-				Status:     call.StatusProgressing,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
+					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
+				},
+				ChannelID: "8e5c2a28-f24a-11ed-97f4-5f82e61f6239",
+				Status:    call.StatusProgressing,
 			},
 			responseUUID:       uuid.FromStringOrNil("8e914000-f24a-11ed-b09f-879b31d16030"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",

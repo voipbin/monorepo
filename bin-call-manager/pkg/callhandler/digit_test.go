@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -35,7 +36,9 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
+				},
 				ChannelID: "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
@@ -99,7 +102,9 @@ func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 			100,
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -173,7 +178,9 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 			"${" + variableCallDigits + "}#",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -203,7 +210,9 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 			"${" + variableCallDigits + "}*",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -233,7 +242,9 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 			"${" + variableCallDigits + "}2",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				},
 				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -307,7 +318,9 @@ func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
 			"1",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("c102c248-a902-11ed-9cdd-439f377ef6a3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c102c248-a902-11ed-9cdd-439f377ef6a3"),
+				},
 				ChannelID: "c0b5711e-a902-11ed-9f51-c74975f93e22",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeTalk,
@@ -371,7 +384,9 @@ func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
 			100,
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("4f4b048c-a905-11ed-8dfa-07f2bde8ba51"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f4b048c-a905-11ed-8dfa-07f2bde8ba51"),
+				},
 				ChannelID: "4f273ce6-a905-11ed-8509-2f79d7c536a1",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeTalk,
@@ -428,7 +443,9 @@ func Test_DTMFGet(t *testing.T) {
 			uuid.FromStringOrNil("dec200a8-9014-11ec-9c0b-b35777a9d85a"),
 
 			&call.Call{
-				ID:           uuid.FromStringOrNil("1ca7fdc8-defd-11ec-880d-9f8645d0b676"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1ca7fdc8-defd-11ec-880d-9f8645d0b676"),
+				},
 				ActiveFlowID: uuid.FromStringOrNil("23989d54-defd-11ec-ae0a-9f577eaf8a74"),
 			},
 			&variable.Variable{
