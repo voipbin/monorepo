@@ -7,6 +7,7 @@ import (
 	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -48,7 +49,9 @@ func Test_HealthCheck(t *testing.T) {
 			},
 			"2023-01-03 21:35:02.809",
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("ae1a2bec-94d2-11ed-913d-73ee1991cfa1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ae1a2bec-94d2-11ed-913d-73ee1991cfa1"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("ae654a6e-94d2-11ed-b9ca-5b472f10031a"),
 				Status:       cmcall.StatusProgressing,
 			},
@@ -125,7 +128,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			},
 			responseCurTimeAdd: "2023-01-03 21:35:02.809",
 			responseCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("8e75c934-94d4-11ed-9de9-7fce898af73a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8e75c934-94d4-11ed-9de9-7fce898af73a"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("8ea3058e-94d4-11ed-b42c-b7dc2e29c819"),
 				Status:       cmcall.StatusProgressing,
 			},
@@ -187,7 +192,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			},
 			responseCurTimeAdd: "2023-01-03 21:35:02.809",
 			responseCall: &cmcall.Call{
-				ID:     uuid.FromStringOrNil("85a99b98-94d7-11ed-87b3-4f8bf6bfbd39"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("85a99b98-94d7-11ed-87b3-4f8bf6bfbd39"),
+				},
 				Status: cmcall.StatusRinging,
 			},
 
@@ -208,7 +215,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			},
 			responseCurTimeAdd: "2023-01-03 21:35:02.809",
 			responseCall: &cmcall.Call{
-				ID: uuid.FromStringOrNil("a5724d7c-94d6-11ed-bc34-5f290587207e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a5724d7c-94d6-11ed-bc34-5f290587207e"),
+				},
 			},
 			responseConferencecallError: fmt.Errorf(""),
 
@@ -229,7 +238,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			},
 			responseCurTimeAdd: "2023-01-03 21:35:02.809",
 			responseCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("198fbabe-94d7-11ed-b69a-5336a8f18455"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("198fbabe-94d7-11ed-b69a-5336a8f18455"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("19ec879e-94d7-11ed-957c-5b56c6cdd831"),
 			},
 			responseConference: &conference.Conference{
@@ -255,7 +266,9 @@ func Test_HealthCheck_error(t *testing.T) {
 			},
 			responseCurTimeAdd: "2023-01-01 21:35:02.809",
 			responseCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("3f3059d5-6a74-4e6b-a225-964ee1d315b8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3f3059d5-6a74-4e6b-a225-964ee1d315b8"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("a772d8cd-1fdb-4553-ae35-19b0f9f499cc"),
 			},
 			responseConference: &conference.Conference{

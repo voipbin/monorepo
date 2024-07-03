@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -70,8 +71,10 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 
 	id := h.utilHandler.UUIDCreate()
 	a := &agent.Agent{
-		ID:           id,
-		CustomerID:   customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		Username:     username,
 		PasswordHash: hashPassword,
 

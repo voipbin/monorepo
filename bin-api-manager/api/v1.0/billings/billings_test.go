@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-api-manager/api/models/common"
 	"monorepo/bin-api-manager/api/models/request"
@@ -41,7 +42,9 @@ func Test_billingsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			request.ParamBillingsGET{
@@ -63,7 +66,9 @@ func Test_billingsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			request.ParamBillingsGET{
 				Pagination: request.Pagination{

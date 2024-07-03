@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -37,7 +38,9 @@ func TestBridgeLeftJoin(t *testing.T) {
 				Type:        channel.TypeCall,
 			},
 			&call.Call{
-				ID:           uuid.FromStringOrNil("095658d8-151c-11ec-8aa9-1fca7824a72f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("095658d8-151c-11ec-8aa9-1fca7824a72f"),
+				},
 				ChannelID:    "0820e474-151c-11ec-859d-0b3af329400f",
 				Status:       call.StatusProgressing,
 				ConfbridgeID: uuid.FromStringOrNil("3d093cca-2022-11ec-9358-c7e3a147380e"),

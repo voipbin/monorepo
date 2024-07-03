@@ -2,16 +2,17 @@ package agent
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
 
 // Agent data model
 type Agent struct {
-	ID           uuid.UUID `json:"id"`            // agent id
-	CustomerID   uuid.UUID `json:"customer_id"`   // customer's id
-	Username     string    `json:"username"`      // agent's username
-	PasswordHash string    `json:"password_hash"` // hashed Password
+	commonidentity.Identity
+
+	Username     string `json:"username"`      // agent's username
+	PasswordHash string `json:"password_hash"` // hashed Password
 
 	Name   string `json:"name"`   // agent's name
 	Detail string `json:"detail"` // agent's detail

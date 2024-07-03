@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -34,11 +35,15 @@ func Test_UpdateStatusRinging(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status: call.StatusDialing,
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status: call.StatusRinging,
 			},
 		},
@@ -84,7 +89,9 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status: call.StatusRinging,
 			},
 		},
@@ -94,7 +101,9 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status: call.StatusProgressing,
 			},
 		},
@@ -104,7 +113,9 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status: call.StatusTerminating,
 			},
 		},
@@ -114,7 +125,9 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status: call.StatusCanceling,
 			},
 		},
@@ -124,7 +137,9 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status: call.StatusHangup,
 			},
 		},
@@ -169,12 +184,16 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusDialing,
 				Direction: call.DirectionIncoming,
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
 			},
@@ -185,12 +204,16 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
 			},
@@ -201,12 +224,16 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("0c864f8e-c8a6-11ec-af3c-372ebc5b6d6d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0c864f8e-c8a6-11ec-af3c-372ebc5b6d6d"),
+				},
 				Status:    call.StatusDialing,
 				Direction: call.DirectionOutgoing,
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("0c864f8e-c8a6-11ec-af3c-372ebc5b6d6d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0c864f8e-c8a6-11ec-af3c-372ebc5b6d6d"),
+				},
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionOutgoing,
 			},
@@ -217,12 +244,16 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusRinging,
 				Direction: call.DirectionOutgoing,
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionOutgoing,
 			},
@@ -288,14 +319,18 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
 			call: &call.Call{
-				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
+				},
 				Status:      call.StatusDialing,
 				Direction:   call.DirectionOutgoing,
 				GroupcallID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
 			},
 
 			responseCall: &call.Call{
-				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
+				},
 				Status:      call.StatusProgressing,
 				Direction:   call.DirectionOutgoing,
 				GroupcallID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
@@ -368,7 +403,9 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
 			},
@@ -379,7 +416,9 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusTerminating,
 				Direction: call.DirectionIncoming,
 			},
@@ -390,7 +429,9 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusCanceling,
 				Direction: call.DirectionIncoming,
 			},
@@ -401,7 +442,9 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 				TMRinging: "2020-09-20T03:23:20.995000",
 			},
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				},
 				Status:    call.StatusHangup,
 				Direction: call.DirectionIncoming,
 			},

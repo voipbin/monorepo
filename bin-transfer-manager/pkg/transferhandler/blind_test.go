@@ -10,6 +10,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -43,8 +44,10 @@ func Test_blindExecute(t *testing.T) {
 			name: "normal",
 
 			transfererCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("884eeae2-dbb3-11ed-bf74-8f39182ac412"),
-				CustomerID:   uuid.FromStringOrNil("87a36756-dbb5-11ed-8ab5-0b2b7aab415b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("884eeae2-dbb3-11ed-bf74-8f39182ac412"),
+					CustomerID: uuid.FromStringOrNil("87a36756-dbb5-11ed-8ab5-0b2b7aab415b"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("51db01e6-dbb6-11ed-8901-e3139187e083"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,

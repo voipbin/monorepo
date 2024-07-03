@@ -10,6 +10,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -37,7 +38,9 @@ func Test_attendedInit(t *testing.T) {
 			name: "normal",
 
 			transfererCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("1ee4b104-dbb8-11ed-aca8-a3870b5b6fec"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1ee4b104-dbb8-11ed-aca8-a3870b5b6fec"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("1f268336-dbb8-11ed-9618-db090c5e42d6"),
 			},
 
@@ -98,7 +101,9 @@ func Test_attendedCancel(t *testing.T) {
 			name: "normal",
 
 			transfererCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("d96aaab0-dc44-11ed-8b23-2bc7cc1b025a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d96aaab0-dc44-11ed-8b23-2bc7cc1b025a"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("d9c6377c-dc44-11ed-a6ac-7f9a18bc4e86"),
 			},
 
@@ -165,8 +170,10 @@ func Test_attendedExecute(t *testing.T) {
 			name: "normal",
 
 			transfererCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("64243052-dc6f-11ed-ac22-e7d20e32e435"),
-				CustomerID:   uuid.FromStringOrNil("64631858-dc6f-11ed-97c9-c74c6afbd067"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("64243052-dc6f-11ed-ac22-e7d20e32e435"),
+					CustomerID: uuid.FromStringOrNil("64631858-dc6f-11ed-97c9-c74c6afbd067"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("64912a40-dc6f-11ed-bc6c-f3d9bb503ba5"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,

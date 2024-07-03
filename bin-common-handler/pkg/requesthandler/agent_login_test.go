@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -46,7 +47,9 @@ func Test_AgentV1Login(t *testing.T) {
 				Data:       []byte(`{"id":"805adc04-8a2e-11ee-8548-57e4277837c0"}`),
 			},
 			&amagent.Agent{
-				ID: uuid.FromStringOrNil("805adc04-8a2e-11ee-8548-57e4277837c0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("805adc04-8a2e-11ee-8548-57e4277837c0"),
+				},
 			},
 		},
 	}

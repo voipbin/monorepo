@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -24,7 +25,9 @@ func Test_setVariables(t *testing.T) {
 		{
 			"call status dialing",
 			&call.Call{
-				ID:           uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
+				},
 				ActiveFlowID: uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,

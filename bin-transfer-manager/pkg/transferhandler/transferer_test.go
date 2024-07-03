@@ -8,6 +8,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -40,7 +41,9 @@ func Test_transfererHangupTypeAttended(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("73abc206-dd14-11ed-82f4-c3a0208de1a0"),
 			},
 			transfererCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("73d8d282-dd14-11ed-bcb5-3fbb56ae81cb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("73d8d282-dd14-11ed-bcb5-3fbb56ae81cb"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("73abc206-dd14-11ed-82f4-c3a0208de1a0"),
 			},
 

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
@@ -34,8 +35,10 @@ func Test_QueuecallGets(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2021-03-01 01:00:00.995000",
@@ -101,8 +104,10 @@ func Test_QueuecallGet(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
@@ -161,8 +166,10 @@ func Test_QueuecallDelete(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
@@ -222,8 +229,10 @@ func Test_QueuecallKick(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("968e4108-bcbd-11ed-bbf4-2740d4b50a8e"),
@@ -284,8 +293,10 @@ func Test_QueuecallKickByReferenceID(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("b3fef3c2-bcbd-11ed-b53a-77ef688fa9c5"),

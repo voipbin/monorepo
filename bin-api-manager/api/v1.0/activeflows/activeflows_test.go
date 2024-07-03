@@ -12,6 +12,7 @@ import (
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -45,7 +46,9 @@ func Test_activeflowsPOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			reqQuery: "/v1.0/activeflows",
@@ -127,7 +130,9 @@ func Test_ActiveflowsGET(t *testing.T) {
 		{
 			name: "1 item",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("44b678b0-8def-11ee-8112-23635969596b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("44b678b0-8def-11ee-8112-23635969596b"),
+				},
 			},
 
 			reqQuery: "/v1.0/activeflows?page_token=2020-09-20%2003:23:20.995000&page_size=10",
@@ -145,7 +150,9 @@ func Test_ActiveflowsGET(t *testing.T) {
 		{
 			name: "more than 2 items",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			reqQuery: "/v1.0/activeflows?page_token=2020-09-20%2003:23:20.995000&page_size=10",
@@ -219,7 +226,9 @@ func Test_ActiveflowsIDGET(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			reqQuery: "/v1.0/activeflows/31c3088a-cb2c-11ed-b323-2b5e8c1da422",
@@ -285,7 +294,9 @@ func Test_activeflowsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/activeflows/8abf67b2-cb2c-11ed-997d-4ff8509599f7",
@@ -347,7 +358,9 @@ func Test_activeflowsIDStopPOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery:     "/v1.0/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop",

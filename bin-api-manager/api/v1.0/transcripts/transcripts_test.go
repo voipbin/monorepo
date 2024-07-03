@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -41,7 +42,9 @@ func Test_transcriptsGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("83f82e1a-828d-11ed-89ea-9f7ac48ae9b8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("83f82e1a-828d-11ed-89ea-9f7ac48ae9b8"),
+				},
 			},
 
 			"/v1.0/transcripts?transcribe_id=8425d50e-828d-11ed-a91c-f77fe2ce8202&page_size=10&page_token=2020-09-20%2003:23:20.995000",

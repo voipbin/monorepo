@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	chatchat "monorepo/bin-chat-manager/models/chat"
@@ -39,8 +40,10 @@ func Test_ChatmessageCreate(t *testing.T) {
 			"normal",
 
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("1768c58e-3774-11ed-ac88-3b7ca9a452f4"),
@@ -108,8 +111,10 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("8ec6c9be-3774-11ed-a626-73312e33dc72"),
@@ -182,8 +187,10 @@ func Test_ChatmessageGet(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
@@ -239,8 +246,10 @@ func Test_ChatmessageDelete(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("587ecd5a-3776-11ed-b8be-93dc6a90e040"),

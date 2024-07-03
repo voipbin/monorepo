@@ -8,6 +8,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -38,8 +39,10 @@ func Test_TranscribeGet(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
@@ -102,8 +105,10 @@ func Test_TranscribeGets(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2020-10-20 01:00:00.995000",
@@ -184,8 +189,10 @@ func Test_TranscribeStart(t *testing.T) {
 			name: "normal",
 
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			referenceType: request.TranscribeReferenceTypeCall,
@@ -194,10 +201,12 @@ func Test_TranscribeStart(t *testing.T) {
 			direction:     tmtranscribe.DirectionBoth,
 
 			responseCall: &cmcall.Call{
-				ID:         uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				Status:     cmcall.StatusProgressing,
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Status:   cmcall.StatusProgressing,
+				TMDelete: defaultTimestamp,
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
 				ID:         uuid.FromStringOrNil("2b76bad2-8282-11ed-9cde-fb9aba5fd1d7"),
@@ -266,8 +275,10 @@ func Test_TranscribeStop(t *testing.T) {
 			name: "normal",
 
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			transcribeID: uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
@@ -334,8 +345,10 @@ func Test_TranscribeDelete(t *testing.T) {
 			name: "normal",
 
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			transcribeID: uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),

@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -44,7 +45,9 @@ func Test_routesGet_customer_id(t *testing.T) {
 			"1 item",
 
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("de748080-7939-4625-a929-459c09a08448"),
 			"/v1.0/routes?customer_id=de748080-7939-4625-a929-459c09a08448&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -62,7 +65,9 @@ func Test_routesGet_customer_id(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260"),
 			"/v1.0/routes?customer_id=0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260&page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -137,7 +142,9 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 			"1 item",
 
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			10,
@@ -154,7 +161,9 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			10,
@@ -224,7 +233,9 @@ func Test_routesPost(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/routes",
@@ -304,7 +315,9 @@ func Test_routesIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/routes/1c776852-5167-11ed-bf9a-eba39c6546e4",
@@ -367,7 +380,9 @@ func Test_routesIDDelete(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("4d1e5ab0-5167-11ed-98ff-f7ff08fc0833"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4d1e5ab0-5167-11ed-98ff-f7ff08fc0833"),
+				},
 			},
 
 			"/v1.0/routes/4d1e5ab0-5167-11ed-98ff-f7ff08fc0833",
@@ -437,7 +452,9 @@ func Test_routesIDPut(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/routes/cd2b8926-5167-11ed-a158-ffb3472a3a4d",

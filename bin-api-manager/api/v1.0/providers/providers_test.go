@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -45,7 +46,9 @@ func Test_providersGet(t *testing.T) {
 			"1 item",
 
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/providers?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			10,
@@ -62,7 +65,9 @@ func Test_providersGet(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/providers?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			10,
@@ -134,7 +139,9 @@ func Test_providersPost(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/providers",
@@ -221,7 +228,9 @@ func Test_providersIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/providers/d091abe2-5160-11ed-b13c-57769429b0f0",
@@ -286,7 +295,9 @@ func Test_providersIDDelete(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
+				},
 			},
 
 			"/v1.0/providers/528bae9a-5161-11ed-b6c1-03e42a38600c",
@@ -358,7 +369,9 @@ func Test_providersIDPut(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/providers/169cbfe0-5162-11ed-9be1-872503f37e02",

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -32,7 +33,9 @@ func Test_wsGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 		},
 	}

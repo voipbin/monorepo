@@ -64,7 +64,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	golang.org/x/sys v0.21.0 // indirect
-	google.golang.org/genproto v0.0.0-20240624140628-dc46fd24d27d // indirect
+	google.golang.org/genproto v0.0.0-20240701130421-f6361c86f094 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 

@@ -13,6 +13,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -49,7 +50,9 @@ func Test_CallsPOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			req: request.BodyCallsPOST{
 				Source: commonaddress.Address{
@@ -67,7 +70,9 @@ func Test_CallsPOST(t *testing.T) {
 
 			responseCalls: []*cmcall.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("98b963ac-8df9-11ec-b26b-031d30ff93df"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("98b963ac-8df9-11ec-b26b-031d30ff93df"),
+					},
 				},
 			},
 			responseGroupcalls: []*cmgroupcall.WebhookMessage{
@@ -136,7 +141,9 @@ func Test_CallsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			request.ParamCallsGET{
 				Pagination: request.Pagination{
@@ -146,7 +153,9 @@ func Test_CallsGET(t *testing.T) {
 			},
 			[]*cmcall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -155,7 +164,9 @@ func Test_CallsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			request.ParamCallsGET{
 				Pagination: request.Pagination{
@@ -165,15 +176,21 @@ func Test_CallsGET(t *testing.T) {
 			},
 			[]*cmcall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("668e6ee6-f989-11ea-abca-bf1ca885b142"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("668e6ee6-f989-11ea-abca-bf1ca885b142"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("5d8167e0-f989-11ea-8b34-2b0a03c78fc5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d8167e0-f989-11ea-8b34-2b0a03c78fc5"),
+					},
 					TMCreate: "2020-09-20T03:23:22.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("61c6626a-f989-11ea-abbf-97944933fee9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("61c6626a-f989-11ea-abbf-97944933fee9"),
+					},
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
@@ -227,10 +244,14 @@ func Test_CallsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			&cmcall.WebhookMessage{
-				ID:       uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
+				},
 				TMCreate: "2020-09-20T03:23:21.995000",
 			},
 		},
@@ -290,14 +311,18 @@ func Test_callsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/calls/72709904-719c-11ed-94f7-b78b75ad5dce",
 			uuid.FromStringOrNil("72709904-719c-11ed-94f7-b78b75ad5dce"),
 
 			&cmcall.WebhookMessage{
-				ID: uuid.FromStringOrNil("72709904-719c-11ed-94f7-b78b75ad5dce"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72709904-719c-11ed-94f7-b78b75ad5dce"),
+				},
 			},
 
 			`{"id":"72709904-719c-11ed-94f7-b78b75ad5dce","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","tm_progressing":"","tm_ringing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`,
@@ -352,14 +377,18 @@ func Test_callsIDHangupPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/calls/09b9bf4c-8927-11ed-b16c-5719373564c9/hangup",
 			uuid.FromStringOrNil("09b9bf4c-8927-11ed-b16c-5719373564c9"),
 
 			&cmcall.WebhookMessage{
-				ID: uuid.FromStringOrNil("09b9bf4c-8927-11ed-b16c-5719373564c9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("09b9bf4c-8927-11ed-b16c-5719373564c9"),
+				},
 			},
 
 			`{"id":"09b9bf4c-8927-11ed-b16c-5719373564c9","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","tm_progressing":"","tm_ringing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`,
@@ -414,7 +443,9 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
@@ -479,7 +510,9 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/eb763a4a-cf0f-11ed-a989-8fbebcdb62c2/hold",
@@ -533,7 +566,9 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/ebbb2f06-cf0f-11ed-be2c-27600beaf155/hold",
@@ -589,7 +624,9 @@ func Test_CallsIDMutePOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			[]byte(`{"direction":"both"}`),
@@ -647,7 +684,9 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/97b7fadc-cf10-11ed-b07a-7b718bb9eef9/mute",
@@ -703,7 +742,9 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/4c72ec78-d13e-11ed-b853-cff593bdd1af/moh",
@@ -757,7 +798,9 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/4cb3b1ae-d13e-11ed-a27d-f78da612d3c4/moh",
@@ -811,7 +854,9 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/836320ae-d13e-11ed-9b0c-efff68751c5a/silence",
@@ -865,7 +910,9 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/839a7b62-d13e-11ed-9448-e71729a96494/silence",
@@ -920,7 +967,9 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/calls/906c71fe-e922-11ee-808c-a721a8e44e90/media_stream?encapsulation=rtp",

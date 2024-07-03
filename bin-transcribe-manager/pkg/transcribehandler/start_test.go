@@ -8,6 +8,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -52,7 +53,9 @@ func Test_Start_referencetype_call(t *testing.T) {
 			transcribe.DirectionBoth,
 
 			&cmcall.Call{
-				ID:     uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+				},
 				Status: cmcall.StatusProgressing,
 			},
 			uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
@@ -159,7 +162,9 @@ func Test_isValidReference(t *testing.T) {
 			referenceID:   uuid.FromStringOrNil("918c6c26-98ae-11ed-8a80-a703c7717d9a"),
 
 			responseCall: &cmcall.Call{
-				ID:     uuid.FromStringOrNil("918c6c26-98ae-11ed-8a80-a703c7717d9a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("918c6c26-98ae-11ed-8a80-a703c7717d9a"),
+				},
 				Status: cmcall.StatusProgressing,
 			},
 

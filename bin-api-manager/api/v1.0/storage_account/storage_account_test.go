@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	smaccount "monorepo/bin-storage-manager/models/account"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -39,7 +40,9 @@ func Test_storageAccountGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
+				},
 			},
 			"/v1.0/storage_account",
 

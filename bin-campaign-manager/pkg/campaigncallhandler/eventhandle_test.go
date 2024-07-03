@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	cmcall "monorepo/bin-call-manager/models/call"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -83,7 +84,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason normal",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonNormal,
 			},
 			&campaigncall.Campaigncall{
@@ -100,7 +103,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason amd",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonAMD,
 			},
 			&campaigncall.Campaigncall{
@@ -117,7 +122,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason busy",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonBusy,
 			},
 			&campaigncall.Campaigncall{
@@ -134,7 +141,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason canceled",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonCanceled,
 			},
 			&campaigncall.Campaigncall{
@@ -151,7 +160,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason dialout",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonDialout,
 			},
 			&campaigncall.Campaigncall{
@@ -168,7 +179,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason failed",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonFailed,
 			},
 			&campaigncall.Campaigncall{
@@ -185,7 +198,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason noanswer",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonNoanswer,
 			},
 			&campaigncall.Campaigncall{
@@ -202,7 +217,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 			"hangup reason timeout",
 
 			&cmcall.Call{
-				ID:           uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6b87eb3-f79f-4b3d-a970-7ac4bc39fa31"),
+				},
 				HangupReason: cmcall.HangupReasonTimeout,
 			},
 			&campaigncall.Campaigncall{

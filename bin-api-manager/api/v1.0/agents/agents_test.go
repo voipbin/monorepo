@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -47,7 +48,9 @@ func Test_AgentsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("7cb6256c-8df4-11ee-bc2b-476ff1dc3eb8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7cb6256c-8df4-11ee-bc2b-476ff1dc3eb8"),
+				},
 			},
 			request.BodyAgentsPOST{
 				Username:   "test1",
@@ -70,13 +73,17 @@ func Test_AgentsPOST(t *testing.T) {
 			[]commonaddress.Address{},
 
 			&amagent.WebhookMessage{
-				ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
+				},
 			},
 		},
 		{
 			"have webhook",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("7cf444aa-8df4-11ee-abd9-b762d225dc87"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7cf444aa-8df4-11ee-abd9-b762d225dc87"),
+				},
 			},
 			request.BodyAgentsPOST{
 				Username:   "test1",
@@ -99,7 +106,9 @@ func Test_AgentsPOST(t *testing.T) {
 			[]commonaddress.Address{},
 
 			&amagent.WebhookMessage{
-				ID: uuid.FromStringOrNil("3071bee2-79af-11ec-9f30-83b56e9d88b5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3071bee2-79af-11ec-9f30-83b56e9d88b5"),
+				},
 			},
 		}}
 
@@ -155,7 +164,9 @@ func Test_AgentsGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("7d2835bc-8df4-11ee-bde2-377a8d7b62a2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d2835bc-8df4-11ee-bde2-377a8d7b62a2"),
+				},
 			},
 			"/v1.0/agents?page_size=11&page_token=2020-09-20T03:23:20.995000&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3",
 
@@ -169,7 +180,9 @@ func Test_AgentsGET(t *testing.T) {
 
 			[]*amagent.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -177,7 +190,9 @@ func Test_AgentsGET(t *testing.T) {
 		{
 			"1 tag id and status",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("7d5c0be4-8df4-11ee-866d-e7d040a2316f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d5c0be4-8df4-11ee-866d-e7d040a2316f"),
+				},
 			},
 			"/v1.0/agents?page_size=10&page_token=&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3&status=available",
 
@@ -192,7 +207,9 @@ func Test_AgentsGET(t *testing.T) {
 
 			[]*amagent.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -200,7 +217,9 @@ func Test_AgentsGET(t *testing.T) {
 		{
 			"more than 2 tag ids",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				},
 			},
 			"/v1.0/agents?tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c&status=available",
 
@@ -215,10 +234,14 @@ func Test_AgentsGET(t *testing.T) {
 
 			[]*amagent.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("39fa07ce-4fb8-11ec-8e5b-db7c7886455c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("39fa07ce-4fb8-11ec-8e5b-db7c7886455c"),
+					},
 				},
 			},
 		},
@@ -268,7 +291,9 @@ func Test_AgentsIDStatusPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				},
 			},
 			"/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/status",
 			[]byte(`{"status":"available"}`),
@@ -322,7 +347,9 @@ func Test_agentsIDPermissionPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
+				},
 			},
 			"/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/permission",
 			[]byte(`{"permission":32}`),
@@ -376,7 +403,9 @@ func Test_agentsIDPasswordPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("d3481932-d3cf-11ee-ab64-5b6368efe4ce"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d3481932-d3cf-11ee-ab64-5b6368efe4ce"),
+				},
 			},
 			"/v1.0/agents/d3481932-d3cf-11ee-ab64-5b6368efe4ce/password",
 			[]byte(`{"password":"updatepassword"}`),

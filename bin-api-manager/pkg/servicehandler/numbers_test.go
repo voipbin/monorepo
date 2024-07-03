@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -36,8 +37,10 @@ func Test_OrderNumberGets(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			"2021-03-01 01:00:00.995000",
@@ -102,8 +105,10 @@ func Test_OrderNumberGet(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
@@ -163,8 +168,10 @@ func Test_OrderNumberGetError(t *testing.T) {
 		{
 			"deleted item",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("b6ad4c06-7c99-11eb-b2c9-fbe9ecb397e0"),
@@ -225,8 +232,10 @@ func Test_NumberCreate(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
@@ -287,8 +296,10 @@ func Test_NumberDelete(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("10bd9968-7be5-11eb-9c49-7fe12b631d76"),
@@ -371,8 +382,10 @@ func Test_NumberUpdate(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
@@ -468,8 +481,10 @@ func Test_NumberUpdateError(t *testing.T) {
 		{
 			"deleted item",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
@@ -533,8 +548,10 @@ func Test_NumberRenew(t *testing.T) {
 		{
 			name: "normal",
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
@@ -605,8 +622,10 @@ func Test_numberVerifyFlow(t *testing.T) {
 			name: "normal",
 
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
-				CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
+					CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			flowID: uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
@@ -622,8 +641,10 @@ func Test_numberVerifyFlow(t *testing.T) {
 			name: "flow id nil",
 
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
-				CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5a2ac626-d57d-11ee-ad66-1f8e01bf7985"),
+					CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			flowID: uuid.Nil,

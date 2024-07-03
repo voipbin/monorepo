@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -48,7 +49,9 @@ func Test_GetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					},
 				},
 			},
 
@@ -59,7 +62,9 @@ func Test_GetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					},
 				},
 			},
 		},
@@ -78,7 +83,9 @@ func Test_GetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					},
 				},
 			},
 
@@ -90,7 +97,9 @@ func Test_GetAgents(t *testing.T) {
 			},
 			[]amagent.Agent{
 				{
-					ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					},
 				},
 			},
 		},

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -27,7 +28,9 @@ func TestChainedCallIDAdd(t *testing.T) {
 		{
 			"call status progressing",
 			&call.Call{
-				ID:     uuid.FromStringOrNil("eb71954c-2504-11eb-a92f-0bd8129658a9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eb71954c-2504-11eb-a92f-0bd8129658a9"),
+				},
 				Status: call.StatusProgressing,
 			},
 
@@ -37,7 +40,9 @@ func TestChainedCallIDAdd(t *testing.T) {
 		{
 			"call status dialing",
 			&call.Call{
-				ID:     uuid.FromStringOrNil("a31ccbbe-256c-11eb-8d6a-7b6b14b71912"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a31ccbbe-256c-11eb-8d6a-7b6b14b71912"),
+				},
 				Status: call.StatusDialing,
 			},
 
@@ -47,7 +52,9 @@ func TestChainedCallIDAdd(t *testing.T) {
 		{
 			"call status ringing",
 			&call.Call{
-				ID:     uuid.FromStringOrNil("a3cc1dd0-256c-11eb-afd6-871abdb9c625"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a3cc1dd0-256c-11eb-afd6-871abdb9c625"),
+				},
 				Status: call.StatusRinging,
 			},
 
@@ -107,7 +114,9 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 		{
 			"call status terminating",
 			&call.Call{
-				ID:     uuid.FromStringOrNil("aa6e29e8-256d-11eb-8433-6ffc4a89784b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aa6e29e8-256d-11eb-8433-6ffc4a89784b"),
+				},
 				Status: call.StatusTerminating,
 			},
 
@@ -116,7 +125,9 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 		{
 			"call status canceling",
 			&call.Call{
-				ID:     uuid.FromStringOrNil("aadeebd8-256d-11eb-8b7d-13422cdc50af"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aadeebd8-256d-11eb-8b7d-13422cdc50af"),
+				},
 				Status: call.StatusCanceling,
 			},
 
@@ -125,7 +136,9 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 		{
 			"call status hangup",
 			&call.Call{
-				ID:     uuid.FromStringOrNil("ab4f22e0-256d-11eb-a3e1-9be571423d11"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab4f22e0-256d-11eb-a3e1-9be571423d11"),
+				},
 				Status: call.StatusHangup,
 			},
 
@@ -171,7 +184,9 @@ func TestChainedCallIDRemove(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID: uuid.FromStringOrNil("4786ca48-256c-11eb-be3c-7361101fde14"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4786ca48-256c-11eb-be3c-7361101fde14"),
+				},
 			},
 
 			uuid.FromStringOrNil("4786ca48-256c-11eb-be3c-7361101fde14"),

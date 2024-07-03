@@ -6,6 +6,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
@@ -34,7 +35,9 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 			},
 
 			expectCall: &cmcall.Call{
-				ID: uuid.FromStringOrNil("961e297a-f2f1-11ee-a261-57833f5b870a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("961e297a-f2f1-11ee-a261-57833f5b870a"),
+				},
 			},
 		},
 	}

@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/pkg/dbhandler"
@@ -30,7 +31,9 @@ func Test_EventCallHangup(t *testing.T) {
 			name: "normal",
 
 			call: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("43af6682-ecd8-11ee-8a52-639e2d4145e5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("43af6682-ecd8-11ee-8a52-639e2d4145e5"),
+				},
 				ActiveFlowID: uuid.FromStringOrNil("442965e0-ecd8-11ee-b7dd-0bad460f1c42"),
 			},
 			responseActiveflow: &activeflow.Activeflow{

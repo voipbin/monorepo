@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -55,10 +56,12 @@ func Test_Start_call(t *testing.T) {
 			duration:      0,
 
 			responseCall: &call.Call{
-				ID:         uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
-				CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
-				ChannelID:  "4f577092-8fd7-11ed-83c6-2fc653ad0b7c",
-				Status:     call.StatusProgressing,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
+					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
+				},
+				ChannelID: "4f577092-8fd7-11ed-83c6-2fc653ad0b7c",
+				Status:    call.StatusProgressing,
 			},
 			responseUUID:       uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",

@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-api-manager/api/models/common"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	smfile "monorepo/bin-storage-manager/models/file"
 	"net/http"
 	"net/http/httptest"
@@ -35,7 +36,9 @@ func Test_filesPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/storage_files",
@@ -105,7 +108,9 @@ func Test_filesPOST_err(t *testing.T) {
 		{
 			"file size over max size",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/storage_files",
@@ -175,7 +180,9 @@ func Test_filesGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/storage_files?token_size=100",
@@ -233,7 +240,9 @@ func Test_filesIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34",
@@ -293,7 +302,9 @@ func Test_filesIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/storage_files/22bad83e-1718-11ef-8e93-63a03937356b",

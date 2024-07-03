@@ -7,6 +7,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -35,8 +36,10 @@ func Test_serviceInit(t *testing.T) {
 
 			transfererCallID: uuid.FromStringOrNil("4aa921da-dc6c-11ed-a6af-37db475b99ac"),
 			responseCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("4aa921da-dc6c-11ed-a6af-37db475b99ac"),
-				CustomerID:   uuid.FromStringOrNil("4af6c836-dc6c-11ed-8ede-eb826d3723eb"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4aa921da-dc6c-11ed-a6af-37db475b99ac"),
+					CustomerID: uuid.FromStringOrNil("4af6c836-dc6c-11ed-8ede-eb826d3723eb"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("4acf5788-dc6c-11ed-b296-b72b7e4a360b"),
 			},
 			responseFlow: &fmflow.Flow{
@@ -100,8 +103,10 @@ func Test_createFlow(t *testing.T) {
 			name: "normal",
 
 			transfererCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("d57a241e-dbb1-11ed-af85-873dc3222a0e"),
-				CustomerID:   uuid.FromStringOrNil("09c2ed00-dbb2-11ed-8948-b79e70113428"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d57a241e-dbb1-11ed-af85-873dc3222a0e"),
+					CustomerID: uuid.FromStringOrNil("09c2ed00-dbb2-11ed-8948-b79e70113428"),
+				},
 				ConfbridgeID: uuid.FromStringOrNil("fa9ed858-dbb0-11ed-93b5-afd5429fc93c"),
 			},
 

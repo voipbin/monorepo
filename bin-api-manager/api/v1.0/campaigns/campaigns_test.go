@@ -9,6 +9,7 @@ import (
 
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -45,7 +46,9 @@ func Test_campaignsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/campaigns",
@@ -142,7 +145,9 @@ func Test_campaignsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/campaigns?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -164,7 +169,9 @@ func Test_campaignsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/campaigns?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -240,7 +247,9 @@ func Test_campaignsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
 
@@ -302,7 +311,9 @@ func Test_campaignsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/campaigns/aa1a055a-c68b-11ec-99c7-173b42898a47",
@@ -363,7 +374,9 @@ func Test_campaignsIDPUT(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery:  "/v1.0/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
@@ -431,7 +444,9 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855"),
 
@@ -494,7 +509,9 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("40460ace-c68c-11ec-9694-830803c448f7"),
 
@@ -557,7 +574,9 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("79027712-c68c-11ec-b75e-27bce33a22a8"),
 
@@ -624,7 +643,9 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
 
@@ -690,7 +711,9 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
 
@@ -756,7 +779,9 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("571e5aa6-c86e-11ec-a62f-d7989ff2e4dd"),
 
@@ -778,7 +803,9 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("ef319a88-c86e-11ec-a8b2-abe87e962b9b"),
 

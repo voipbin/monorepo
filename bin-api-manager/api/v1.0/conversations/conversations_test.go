@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
@@ -48,7 +49,9 @@ func Test_conversationsGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			"/v1.0/conversations?page_size=20&page_token=2020-09-20%2003:23:20.995000",
 
@@ -127,7 +130,9 @@ func Test_conversationsIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			"/v1.0/conversations/4d9ae3d4-ed2e-11ec-a384-1b8e70bb589d",
 
@@ -198,7 +203,9 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			"/v1.0/conversations/a09b01e0-ed2e-11ec-bdf1-8fa58d1092ad/messages?page_size=20&page_token=2020-09-20%2003:23:20.995000",
 
@@ -279,7 +286,9 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			"/v1.0/conversations/5950b02c-ed2f-11ec-9093-d3dcc91a72fa/messages",
 
@@ -347,7 +356,9 @@ func Test_conversationsIDPut(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			"/v1.0/conversations/0e288b58-007d-11ee-b0ac-8be49d249ca9",
 

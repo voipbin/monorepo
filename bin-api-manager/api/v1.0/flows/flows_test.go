@@ -11,6 +11,7 @@ import (
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -40,7 +41,9 @@ func Test_flowsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/flows",
@@ -116,7 +119,9 @@ func Test_flowsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/flows/2375219e-0b87-11eb-90f9-036ec16f126b",
@@ -185,7 +190,9 @@ func Test_flowsIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
@@ -272,7 +279,9 @@ func Test_flowsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/flows/d466f900-67cb-11eb-b2ff-1f9adc48f842",

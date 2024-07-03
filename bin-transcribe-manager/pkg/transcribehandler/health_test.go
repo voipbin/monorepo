@@ -9,6 +9,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -48,7 +49,9 @@ func Test_HealthCheck(t *testing.T) {
 				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
 			responseCall: &cmcall.Call{
-				ID:       uuid.FromStringOrNil("3f7775c7-af75-4fa7-85f2-3e6e9d27663f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3f7775c7-af75-4fa7-85f2-3e6e9d27663f"),
+				},
 				Status:   cmcall.StatusProgressing,
 				TMHangup: dbhandler.DefaultTimeStamp,
 				TMDelete: dbhandler.DefaultTimeStamp,
@@ -89,7 +92,9 @@ func Test_HealthCheck(t *testing.T) {
 				TMDelete:      dbhandler.DefaultTimeStamp,
 			},
 			responseCall: &call.Call{
-				ID:       uuid.FromStringOrNil("6f459316-678f-4c22-aa16-5f91cd8c4a2d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6f459316-678f-4c22-aa16-5f91cd8c4a2d"),
+				},
 				Status:   call.StatusHangup,
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -57,7 +58,9 @@ func Test_Join(t *testing.T) {
 			},
 
 			rsponseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("00b8301e-9f1d-11ea-a08e-038ccf4318cd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("00b8301e-9f1d-11ea-a08e-038ccf4318cd"),
+				},
 				ChannelID: "15feb3f8-9f1d-11ea-a707-7f644f1ae186",
 				BridgeID:  "7154276e-a3cb-11ed-bb8d-f307ed271462",
 				Type:      call.TypeConference,
@@ -88,7 +91,9 @@ func Test_Join(t *testing.T) {
 				Type: confbridge.TypeConnect,
 			},
 			rsponseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("2133ea06-38e4-11ec-a400-df96309626a9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2133ea06-38e4-11ec-a400-df96309626a9"),
+				},
 				ChannelID: "15feb3f8-9f1d-11ea-a707-7f644f1ae186",
 				BridgeID:  "5909845a-a3cc-11ed-a8ec-cf8e4729c180",
 				Type:      call.TypeFlow,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -35,7 +36,9 @@ func Test_MuteOn(t *testing.T) {
 			direction: call.MuteDirectionBoth,
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("17cb6616-d13a-11ed-ac5f-cf2e89d2d519"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17cb6616-d13a-11ed-ac5f-cf2e89d2d519"),
+				},
 				ChannelID: "9a4086ec-cef3-11ed-b377-ef35b455442f",
 			},
 		},
@@ -95,7 +98,9 @@ func Test_MuteOff(t *testing.T) {
 			direction: call.MuteDirectionBoth,
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("183303a2-d13a-11ed-a800-9b0f57c3143f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("183303a2-d13a-11ed-a800-9b0f57c3143f"),
+				},
 				ChannelID: "9a6e4122-cef3-11ed-b195-5b72e7449d60",
 			},
 			expectMuteDirection: call.MuteDirectionNone,
