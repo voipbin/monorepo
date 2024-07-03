@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -39,7 +39,9 @@ func TestAvailableNumbersGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("f111bf46-8df6-11ee-8b96-df7d1f63d9d2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f111bf46-8df6-11ee-8b96-df7d1f63d9d2"),
+				},
 			},
 			10,
 			"US",

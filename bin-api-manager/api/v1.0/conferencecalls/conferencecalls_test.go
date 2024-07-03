@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -41,7 +42,9 @@ func Test_conferencecallsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/conferencecalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -59,7 +62,9 @@ func Test_conferencecallsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/conferencecalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -133,7 +138,9 @@ func Test_ConferencesIDGET(t *testing.T) {
 			"normal",
 
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
 
@@ -188,7 +195,9 @@ func Test_conferencecallsIDDELETE(t *testing.T) {
 		{
 			"simple test",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
 			"/v1.0/conferencecalls/23d576b4-15b4-11ed-b6f4-fbfaed3df462",

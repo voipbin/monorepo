@@ -7,6 +7,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -43,7 +44,9 @@ func Test_EventGroupcallCreated(t *testing.T) {
 			},
 
 			responseAgent: &agent.Agent{
-				ID:     uuid.FromStringOrNil("0de675c4-d1e4-498c-81f7-01bd8ee9e656"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0de675c4-d1e4-498c-81f7-01bd8ee9e656"),
+				},
 				Status: agent.StatusAvailable,
 			},
 		},
@@ -102,7 +105,9 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 				},
 			},
 			responseAgent: &agent.Agent{
-				ID:     uuid.FromStringOrNil("e3eae3d0-8e4f-46a1-b6bd-5d36feae4749"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e3eae3d0-8e4f-46a1-b6bd-5d36feae4749"),
+				},
 				Status: agent.StatusAvailable,
 			},
 		},
@@ -159,10 +164,14 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			},
 			responseAgents: []*agent.Agent{
 				{
-					ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e39bfb34-ccca-11ee-9c3e-2fba9dd3bf35"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e39bfb34-ccca-11ee-9c3e-2fba9dd3bf35"),
+					},
 				},
 			},
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -46,7 +47,9 @@ func Test_Talk(t *testing.T) {
 			"en-US",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
+				},
 				ChannelID: "2830d52e-a49c-11ed-b9df-ef7dbeaeaf09",
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
@@ -76,7 +79,9 @@ func Test_Talk(t *testing.T) {
 			"en-US",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
+				},
 				ChannelID: "7218dd84-a49d-11ed-af2d-8f7a58f91a79",
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
@@ -158,7 +163,9 @@ func Test_Play(t *testing.T) {
 			},
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("9a78ee81-8462-4350-9fd2-6bbf93cc26f2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9a78ee81-8462-4350-9fd2-6bbf93cc26f2"),
+				},
 				ChannelID: "c486e658-25b2-416b-a5df-0d11c7c633ab",
 				Action: fmaction.Action{
 					ID: uuid.FromStringOrNil("19baefc2-5de9-4acb-b6a7-0f4a55089934"),
@@ -182,7 +189,9 @@ func Test_Play(t *testing.T) {
 			},
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("3d0c6c4a-a17f-4c5d-ae2b-635e5866fbd0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3d0c6c4a-a17f-4c5d-ae2b-635e5866fbd0"),
+				},
 				ChannelID: "d13fff6a-99ab-4a04-b5d3-754ab00efb00",
 				Action: fmaction.Action{
 					ID: uuid.FromStringOrNil("abe00434-bcfb-445d-a8b1-33d936f3ebc3"),
@@ -241,7 +250,9 @@ func Test_MediaStop(t *testing.T) {
 			uuid.FromStringOrNil("40c63616-5a28-43f8-b016-5f198f155535"),
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("40c63616-5a28-43f8-b016-5f198f155535"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("40c63616-5a28-43f8-b016-5f198f155535"),
+				},
 				ChannelID: "996e51e1-0d70-4115-89e8-20f9fc1ea45c",
 			},
 		},

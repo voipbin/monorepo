@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -103,8 +104,10 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 			expectRes: &agent.Agent{
-				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
-				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				},
 				Username:   "test1@voipbin.net",
 				Name:       "test1 name",
 				Detail:     "test1 detail",
@@ -165,8 +168,10 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
 
 			&agent.Agent{
-				ID:         uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
-				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				},
 				Username:   "test2",
 				Name:       "test2 name",
 				Detail:     "test2 detail",
@@ -223,8 +228,10 @@ func Test_deleteForce(t *testing.T) {
 			uuid.FromStringOrNil("073fb108-e746-11ee-8a34-033accc28b49"),
 
 			&agent.Agent{
-				ID:         uuid.FromStringOrNil("073fb108-e746-11ee-8a34-033accc28b49"),
-				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("073fb108-e746-11ee-8a34-033accc28b49"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				},
 				Username:   "test2",
 				Name:       "test2 name",
 				Detail:     "test2 detail",
@@ -279,8 +286,10 @@ func Test_UpdateStatus(t *testing.T) {
 			agent.StatusAvailable,
 
 			&agent.Agent{
-				ID:         uuid.FromStringOrNil("1f7e03de-79a5-11ec-ac0a-4f99eb1b36e8"),
-				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1f7e03de-79a5-11ec-ac0a-4f99eb1b36e8"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				},
 				Username:   "test2",
 				Name:       "test2 name",
 				Detail:     "test2 detail",
@@ -341,7 +350,9 @@ func Test_GetByCustomerIDAndAddress(t *testing.T) {
 			},
 
 			responseAgent: &agent.Agent{
-				ID: uuid.FromStringOrNil("d3eaf9d2-2d88-11ef-9997-7bea6cbbf856"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d3eaf9d2-2d88-11ef-9997-7bea6cbbf856"),
+				},
 			},
 		},
 	}
@@ -395,19 +406,25 @@ func Test_isOnlyAdmin(t *testing.T) {
 			id: uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
 
 			responseAgent: &agent.Agent{
-				ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
-				CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				},
 				Permission: agent.PermissionCustomerAdmin,
 			},
 			responseAgents: []*agent.Agent{
 				{
-					ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
-					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
+						CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					},
 					Permission: agent.PermissionCustomerAdmin,
 				},
 				{
-					ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
-					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("9156fd04-e73e-11ee-b987-bbd3786d50b0"),
+						CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					},
 					Permission: agent.PermissionCustomerAgent,
 				},
 			},
@@ -424,14 +441,18 @@ func Test_isOnlyAdmin(t *testing.T) {
 			id: uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
 
 			responseAgent: &agent.Agent{
-				ID:         uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
-				CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				},
 				Permission: agent.PermissionCustomerAdmin,
 			},
 			responseAgents: []*agent.Agent{
 				{
-					ID:         uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
-					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("062fb072-e743-11ee-9006-73486af008af"),
+						CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					},
 					Permission: agent.PermissionCustomerAdmin,
 				},
 			},
@@ -448,19 +469,25 @@ func Test_isOnlyAdmin(t *testing.T) {
 			id: uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
 
 			responseAgent: &agent.Agent{
-				ID:         uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
-				CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
+					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+				},
 				Permission: agent.PermissionCustomerAdmin,
 			},
 			responseAgents: []*agent.Agent{
 				{
-					ID:         uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
-					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("3714d7a8-e743-11ee-a810-f759c74aeb9c"),
+						CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					},
 					Permission: agent.PermissionCustomerAdmin,
 				},
 				{
-					ID:         uuid.FromStringOrNil("37b3b29c-e743-11ee-a40d-1b23ea7c53e1"),
-					CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("37b3b29c-e743-11ee-a40d-1b23ea7c53e1"),
+						CustomerID: uuid.FromStringOrNil("ae51a166-e73e-11ee-92dd-07437d91f85c"),
+					},
 					Permission: agent.PermissionCustomerAdmin,
 				},
 			},
@@ -528,8 +555,10 @@ func Test_UpdateAddresses(t *testing.T) {
 			},
 
 			responseAgent: &agent.Agent{
-				ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
-				CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
 			},
 			responseExtension: &rmextension.Extension{
 				ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),

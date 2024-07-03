@@ -8,6 +8,7 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -70,8 +71,10 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 				Target: "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
 			},
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
-				CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
+					CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
+				},
 			},
 			responseFlow: &fmflow.Flow{
 				ID: uuid.FromStringOrNil("1d82f6c0-e6a6-4718-8f23-720f845a8fbe"),
@@ -282,7 +285,9 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 				Target: "test-exten",
 			},
 			responseAgent: &amagent.Agent{
-				ID: uuid.FromStringOrNil("7cb15cd0-2fe8-11ef-b367-db54b9814493"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7cb15cd0-2fe8-11ef-b367-db54b9814493"),
+				},
 			},
 			responseDestination: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,

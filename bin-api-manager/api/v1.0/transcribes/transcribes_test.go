@@ -10,6 +10,7 @@ import (
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -41,7 +42,9 @@ func Test_transcribesPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
 			},
 
 			"/v1.0/transcribes",
@@ -108,7 +111,9 @@ func Test_transcribesGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
 			},
 
 			"/v1.0/transcribes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -183,7 +188,9 @@ func Test_transcribesIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("c7631adc-828a-11ed-bfb9-87aeb6847454"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c7631adc-828a-11ed-bfb9-87aeb6847454"),
+				},
 			},
 
 			"/v1.0/transcribes/cced3564-828a-11ed-902f-6b70b24b6821",
@@ -244,7 +251,9 @@ func Test_transcribesIDDelete(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("9534352c-828b-11ed-985f-5b1e2478a83f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9534352c-828b-11ed-985f-5b1e2478a83f"),
+				},
 			},
 
 			"/v1.0/transcribes/9563c0da-828b-11ed-9ca3-d735336f3293",
@@ -305,7 +314,9 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("c5e620e0-828b-11ed-ba7c-4be64b7a1acc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c5e620e0-828b-11ed-ba7c-4be64b7a1acc"),
+				},
 			},
 
 			"/v1.0/transcribes/c61977a6-828b-11ed-b4c5-f73135cd3f5a/stop",

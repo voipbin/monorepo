@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -44,7 +45,9 @@ func Test_conferencesPOST(t *testing.T) {
 		{
 			"conference type",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			cfconference.TypeConference,
@@ -64,7 +67,9 @@ func Test_conferencesPOST(t *testing.T) {
 		{
 			"pre/post actions",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			cfconference.TypeConference,
@@ -154,7 +159,9 @@ func TestConferencesIDGET(t *testing.T) {
 		{
 			"simple test",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
 
@@ -208,7 +215,9 @@ func Test_conferencesIDDELETE(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			reqQuery: "/v1.0/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
@@ -269,7 +278,9 @@ func Test_conferencesIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
 			[]byte(`{"name": "update name", "detail": "update detail", "timeout": 86400, "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
@@ -339,7 +350,9 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
 			"/v1.0/conferences/d2f603ce-910c-11ed-a360-0356e6882c63/recording_start",
@@ -394,7 +407,9 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("f1f4d55c-910c-11ed-ad67-8768a5ad30d8"),
 			"/v1.0/conferences/f1f4d55c-910c-11ed-ad67-8768a5ad30d8/recording_stop",
@@ -451,7 +466,9 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("af60d8b6-98ec-11ed-9e1b-ab94ae0c68d9"),
 			"en-US",
@@ -509,7 +526,9 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("af8db78c-98ec-11ed-9d8c-ffdf26e9202d"),
 			"/v1.0/conferences/af8db78c-98ec-11ed-9d8c-ffdf26e9202d/transcribe_stop",
@@ -566,7 +585,9 @@ func Test_conferencesIDMediaStreamGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/conferences/fb250b7c-eb49-11ee-a795-1386bac55428/media_stream?encapsulation=rtp",

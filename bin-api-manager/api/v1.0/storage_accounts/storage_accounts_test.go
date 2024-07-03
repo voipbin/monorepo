@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	smaccount "monorepo/bin-storage-manager/models/account"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -46,7 +47,9 @@ func Test_storageAccountsGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				},
 			},
 			"/v1.0/storage_accounts?page_size=20&page_token=2020-09-20%2003:23:20.995000",
 
@@ -126,7 +129,9 @@ func Test_storageAccountsPost(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				},
 			},
 			target: "/v1.0/storage_accounts",
 
@@ -204,7 +209,9 @@ func Test_storageAccountsIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
+				},
 			},
 			"/v1.0/storage_accounts/c85cf9d0-1bef-11ef-a736-e75259c323b2",
 
@@ -273,7 +280,9 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
+				},
 			},
 			target: "/v1.0/storage_accounts/c88754b4-1bef-11ef-b6d2-0b09724bcbc3",
 

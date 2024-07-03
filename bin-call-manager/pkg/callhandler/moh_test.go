@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,7 +32,9 @@ func Test_MOHOn(t *testing.T) {
 
 			id: uuid.FromStringOrNil("d011cf18-d139-11ed-92f8-d75f1d7e1914"),
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("d011cf18-d139-11ed-92f8-d75f1d7e1914"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d011cf18-d139-11ed-92f8-d75f1d7e1914"),
+				},
 				ChannelID: "9a4086ec-cef3-11ed-b377-ef35b455442f",
 			},
 		},
@@ -84,7 +87,9 @@ func Test_MOHOff(t *testing.T) {
 
 			id: uuid.FromStringOrNil("d0609bfc-d139-11ed-b643-ff2b2ad0a3eb"),
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("d0609bfc-d139-11ed-b643-ff2b2ad0a3eb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0609bfc-d139-11ed-b643-ff2b2ad0a3eb"),
+				},
 				ChannelID: "9a6e4122-cef3-11ed-b195-5b72e7449d60",
 			},
 		},

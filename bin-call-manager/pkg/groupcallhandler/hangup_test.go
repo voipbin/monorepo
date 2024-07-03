@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -255,7 +256,9 @@ func Test_hangupRingMethodLinear_mastercall_has_invalid_status(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID:     uuid.FromStringOrNil("8b39b79c-e26a-11ed-a15d-a70fae1d453a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8b39b79c-e26a-11ed-a15d-a70fae1d453a"),
+				},
 				Status: call.StatusCanceling,
 			},
 		},
@@ -268,7 +271,9 @@ func Test_hangupRingMethodLinear_mastercall_has_invalid_status(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID:     uuid.FromStringOrNil("75f8aef0-e26b-11ed-90f9-5bdeb6afde1e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("75f8aef0-e26b-11ed-90f9-5bdeb6afde1e"),
+				},
 				Status: call.StatusTerminating,
 			},
 		},
@@ -281,7 +286,9 @@ func Test_hangupRingMethodLinear_mastercall_has_invalid_status(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID:     uuid.FromStringOrNil("9052a47c-e26b-11ed-989e-4f387b975c9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9052a47c-e26b-11ed-989e-4f387b975c9f"),
+				},
 				Status: call.StatusHangup,
 			},
 		},

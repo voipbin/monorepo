@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	chatchat "monorepo/bin-chat-manager/models/chat"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	chatchat "monorepo/bin-chat-manager/models/chat"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -40,7 +40,9 @@ func Test_chatsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats",
@@ -123,7 +125,9 @@ func Test_chatsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -141,7 +145,9 @@ func Test_chatsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -215,7 +221,9 @@ func Test_chatsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats/66f4fc5e-38a4-11ed-9898-4fe958a93f32",
@@ -278,7 +286,9 @@ func Test_chatsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats/bb04bc12-38a4-11ed-83a7-2f3469ac49d8",
@@ -343,7 +353,9 @@ func Test_chatsIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats/493c3ece-38a5-11ed-a068-3b268867512b",
@@ -420,7 +432,9 @@ func Test_chatsIDRoomOwnerIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats/71e7f444-38a5-11ed-ada5-7b100414c281/room_owner_id",
@@ -496,7 +510,9 @@ func Test_chatsIDParticipantIDsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats/9e543ff6-38a5-11ed-9e73-6f0b324904e7/participant_ids",
@@ -571,7 +587,9 @@ func Test_chatsIDParticipantIDsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chats/c8a77ab6-38a5-11ed-b33f-137843123dff/participant_ids/c8d869fa-38a5-11ed-9fa4-0ba3841352ee",

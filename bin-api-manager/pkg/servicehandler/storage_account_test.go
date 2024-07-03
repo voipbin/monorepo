@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	smaccount "monorepo/bin-storage-manager/models/account"
 
@@ -29,8 +30,10 @@ func Test_storageAccountGet(t *testing.T) {
 		{
 			"normal",
 			&amagent.Agent{
-				ID:         uuid.FromStringOrNil("b7ef6ea6-1bd7-11ef-88a6-ff71fa05d8bd"),
-				CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b7ef6ea6-1bd7-11ef-88a6-ff71fa05d8bd"),
+					CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
+				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("b87c0fc8-1bd7-11ef-84a7-3b073405f0cd"),
@@ -85,8 +88,10 @@ func Test_StorageAccountDelete(t *testing.T) {
 			name: "normal",
 
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
-				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
+					CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			storageAccountID: uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
@@ -149,8 +154,10 @@ func Test_StorageAccountGets(t *testing.T) {
 		{
 			name: "normal",
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("6998ca62-1bd8-11ef-bfe1-f3c47f813931"),
-				CustomerID: uuid.FromStringOrNil("69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6998ca62-1bd8-11ef-bfe1-f3c47f813931"),
+					CustomerID: uuid.FromStringOrNil("69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			size:  10,
@@ -222,8 +229,10 @@ func Test_StorageAccountCreate(t *testing.T) {
 			name: "normal",
 
 			agent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("f2295586-1bd8-11ef-8610-73602171ce63"),
-				CustomerID: uuid.FromStringOrNil("f24de752-1bd8-11ef-b438-4361eeff2690"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f2295586-1bd8-11ef-8610-73602171ce63"),
+					CustomerID: uuid.FromStringOrNil("f24de752-1bd8-11ef-b438-4361eeff2690"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			customerID: uuid.FromStringOrNil("e9942acc-1bd8-11ef-9c19-33ff4d2cf1ae"),

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	chatbotchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -40,7 +41,9 @@ func Test_chatbotcallsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatbotcalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -62,7 +65,9 @@ func Test_chatbotcallsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatbotcalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -138,7 +143,9 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("f199188b-8d78-4778-8891-8f276cd56de5"),
 
@@ -200,7 +207,9 @@ func Test_chatbotcallsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 
 			"/v1.0/chatbotcalls/c1a95988-5382-4769-98a9-b404823a64bf",

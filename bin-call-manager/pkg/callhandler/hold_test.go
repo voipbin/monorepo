@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,7 +32,9 @@ func Test_HoldOn(t *testing.T) {
 
 			id: uuid.FromStringOrNil("97864554-cef3-11ed-9ba5-a7e641ec5c06"),
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("97864554-cef3-11ed-9ba5-a7e641ec5c06"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("97864554-cef3-11ed-9ba5-a7e641ec5c06"),
+				},
 				ChannelID: "9a4086ec-cef3-11ed-b377-ef35b455442f",
 			},
 		},
@@ -84,7 +87,9 @@ func Test_HoldOff(t *testing.T) {
 
 			id: uuid.FromStringOrNil("d9a5bc58-cef3-11ed-8296-4b4cc63de165"),
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("d9a5bc58-cef3-11ed-8296-4b4cc63de165"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d9a5bc58-cef3-11ed-8296-4b4cc63de165"),
+				},
 				ChannelID: "9a6e4122-cef3-11ed-b195-5b72e7449d60",
 			},
 		},

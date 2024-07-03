@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -28,14 +29,18 @@ func Test_AgentCreate(t *testing.T) {
 		{
 			name: "normal",
 			agent: &agent.Agent{
-				ID:           uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &agent.Agent{
-				ID:           uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
@@ -48,7 +53,9 @@ func Test_AgentCreate(t *testing.T) {
 		{
 			name: "have address",
 			agent: &agent.Agent{
-				ID:           uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Addresses: []commonaddress.Address{
@@ -62,7 +69,9 @@ func Test_AgentCreate(t *testing.T) {
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &agent.Agent{
-				ID:           uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
@@ -81,7 +90,9 @@ func Test_AgentCreate(t *testing.T) {
 		{
 			name: "have addresses",
 			agent: &agent.Agent{
-				ID:           uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Addresses: []commonaddress.Address{
@@ -100,7 +111,9 @@ func Test_AgentCreate(t *testing.T) {
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &agent.Agent{
-				ID:           uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
@@ -124,8 +137,10 @@ func Test_AgentCreate(t *testing.T) {
 		{
 			name: "have tag",
 			agent: &agent.Agent{
-				ID:           uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
-				CustomerID:   uuid.FromStringOrNil("33f9ca84-7fde-11ec-a186-9f2e8c3a62aa"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
+					CustomerID: uuid.FromStringOrNil("33f9ca84-7fde-11ec-a186-9f2e8c3a62aa"),
+				},
 				Username:     "test4",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
@@ -133,8 +148,10 @@ func Test_AgentCreate(t *testing.T) {
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &agent.Agent{
-				ID:           uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
-				CustomerID:   uuid.FromStringOrNil("33f9ca84-7fde-11ec-a186-9f2e8c3a62aa"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
+					CustomerID: uuid.FromStringOrNil("33f9ca84-7fde-11ec-a186-9f2e8c3a62aa"),
+				},
 				Username:     "test4",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
@@ -192,14 +209,18 @@ func Test_AgentDelete(t *testing.T) {
 		{
 			name: "normal",
 			agent: &agent.Agent{
-				ID:           uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &agent.Agent{
-				ID:           uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
+				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
@@ -267,14 +288,18 @@ func Test_AgentGets(t *testing.T) {
 			name: "normal",
 			agents: []*agent.Agent{
 				{
-					ID:           uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					},
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				},
 				{
-					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					},
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				},
@@ -289,8 +314,10 @@ func Test_AgentGets(t *testing.T) {
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: []*agent.Agent{
 				{
-					ID:           uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
-					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
+						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					},
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
@@ -300,8 +327,10 @@ func Test_AgentGets(t *testing.T) {
 					TMDelete:     DefaultTimeStamp,
 				},
 				{
-					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					},
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
@@ -316,8 +345,10 @@ func Test_AgentGets(t *testing.T) {
 			name: "gets by username",
 			agents: []*agent.Agent{
 				{
-					ID:           uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
-					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
+						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					},
 					Username:     "test3@test.com",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				},
@@ -332,8 +363,10 @@ func Test_AgentGets(t *testing.T) {
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: []*agent.Agent{
 				{
-					ID:           uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
-					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("04ab77b0-cbb7-11ee-b58c-9b64857cf4b2"),
+						CustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					},
 					Username:     "test3@test.com",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
@@ -409,8 +442,10 @@ func Test_AgentSetAddresses(t *testing.T) {
 			name: "normal",
 			agents: []*agent.Agent{
 				{
-					ID:           uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-					CustomerID:   uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+						CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
+					},
 					Username:     "test1",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					Name:         "test1name",
@@ -432,8 +467,10 @@ func Test_AgentSetAddresses(t *testing.T) {
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &agent.Agent{
-				ID:           uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-				CustomerID:   uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
+					CustomerID: uuid.FromStringOrNil("835498de-7fde-11ec-8bf4-0b4a81c8b61d"),
+				},
 				Username:     "test1",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:         "test1name",

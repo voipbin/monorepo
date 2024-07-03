@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -43,12 +44,16 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 				TMAnswer: "2020-05-02 20:56:51.498",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				},
 				Status: call.StatusRinging,
 			},
 
 			&call.Call{
-				ID:     uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				},
 				Status: call.StatusProgressing,
 			},
 		},
@@ -62,11 +67,15 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 				TMAnswer: "2020-05-02 20:56:51.498",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("84e77160-4d40-11ec-aa31-8b1d57a189d0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("84e77160-4d40-11ec-aa31-8b1d57a189d0"),
+				},
 				Status: call.StatusDialing,
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("84e77160-4d40-11ec-aa31-8b1d57a189d0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("84e77160-4d40-11ec-aa31-8b1d57a189d0"),
+				},
 				Status: call.StatusProgressing,
 			},
 		},
@@ -130,11 +139,15 @@ func Test_ARIChannelStateChangeStatusRinging(t *testing.T) {
 				TMRinging: "2020-05-02 20:56:51.498",
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				},
 				Status: call.StatusDialing,
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4974832-4d3b-11ec-895b-0b7796863054"),
+				},
 				Status: call.StatusRinging,
 			},
 		},
@@ -187,7 +200,9 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID: uuid.FromStringOrNil("67500948-df45-11ee-b0c6-1383284b63b0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("67500948-df45-11ee-b0c6-1383284b63b0"),
+				},
 			},
 		},
 	}
@@ -284,7 +299,9 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 				Type: channel.TypeConfbridge,
 			},
 			&call.Call{
-				ID: uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
+				},
 				Action: action.Action{
 					ID: uuid.FromStringOrNil("77a82874-e7dd-11ea-9647-27054cd71830"),
 				},
@@ -294,7 +311,9 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 			"77a82874-e7dd-11ea-9647-27054cd71830",
 
 			&call.Call{
-				ID:           uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
+				},
 				Action:       action.Action{},
 				FlowID:       uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
 				ActiveFlowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),

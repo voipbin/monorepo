@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -62,7 +64,9 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 			"both",
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				},
 				ChannelID: "8066017c-02fb-11ec-ba6c-c320820accf1",
 				BridgeID:  "500d0b6e-eb39-11ee-a30a-9392749106cc",
 			},
@@ -179,7 +183,9 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 			channel.SnoopDirectionBoth,
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				},
 				// AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID: "8066017c-02fb-11ec-ba6c-c320820accf1",
 			},

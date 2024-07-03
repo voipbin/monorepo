@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -71,7 +72,9 @@ func Test_dialNextDestination_call(t *testing.T) {
 				RingMethod: groupcall.RingMethodRingAll,
 			},
 			responseCall: &call.Call{
-				ID: uuid.FromStringOrNil("73529bb2-e233-11ed-9595-1f0b37264b28"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("73529bb2-e233-11ed-9595-1f0b37264b28"),
+				},
 			},
 
 			expectDestination: &commonaddress.Address{
@@ -185,8 +188,10 @@ func Test_dialNextDestination_groupcall(t *testing.T) {
 				AnswerMethod: groupcall.AnswerMethodHangupOthers,
 			},
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("04e3700b-a20b-4f0c-8db7-f58b4ddd4f42"),
-				CustomerID: uuid.FromStringOrNil("e591e541-3a4d-4afd-b01e-d27c7db42dea"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("04e3700b-a20b-4f0c-8db7-f58b4ddd4f42"),
+					CustomerID: uuid.FromStringOrNil("e591e541-3a4d-4afd-b01e-d27c7db42dea"),
+				},
 				RingMethod: amagent.RingMethodRingAll,
 				Addresses: []commonaddress.Address{
 					{
@@ -351,8 +356,10 @@ func Test_getDialDestinationsAddressAndRingMethodTypeAgent(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("a47ddec7-bf14-4030-9303-a660481dad8f"),
-				CustomerID: uuid.FromStringOrNil("1a7c277a-d3e5-448c-be17-78b80bc19844"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a47ddec7-bf14-4030-9303-a660481dad8f"),
+					CustomerID: uuid.FromStringOrNil("1a7c277a-d3e5-448c-be17-78b80bc19844"),
+				},
 				RingMethod: amagent.RingMethodRingAll,
 				Addresses: []commonaddress.Address{
 					{
@@ -449,8 +456,10 @@ func Test_getAddressOwner(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
-				CustomerID: uuid.FromStringOrNil("8e1a8f84-2fd7-11ef-a27d-ab76183e2c6b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
+					CustomerID: uuid.FromStringOrNil("8e1a8f84-2fd7-11ef-a27d-ab76183e2c6b"),
+				},
 			},
 
 			expectAgentID:      uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
@@ -467,8 +476,10 @@ func Test_getAddressOwner(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("8e7f4af0-2fd7-11ef-9c3a-53f59238b991"),
-				CustomerID: uuid.FromStringOrNil("8e5ddef6-2fd7-11ef-82a7-235a64789cf8"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8e7f4af0-2fd7-11ef-9c3a-53f59238b991"),
+					CustomerID: uuid.FromStringOrNil("8e5ddef6-2fd7-11ef-82a7-235a64789cf8"),
+				},
 			},
 
 			expectResOwnerType: groupcall.OwnerTypeAgent,

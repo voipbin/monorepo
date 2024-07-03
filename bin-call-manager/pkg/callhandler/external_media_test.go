@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -46,7 +47,9 @@ func Test_ExternalMediaStart(t *testing.T) {
 			"both",
 
 			&call.Call{
-				ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				},
 			},
 			&externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
@@ -106,7 +109,9 @@ func Test_ExternalMediaStop(t *testing.T) {
 			uuid.FromStringOrNil("a4a11b7a-96f8-11ed-a7ff-c7b76333c22f"),
 
 			&call.Call{
-				ID:              uuid.FromStringOrNil("a4a11b7a-96f8-11ed-a7ff-c7b76333c22f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4a11b7a-96f8-11ed-a7ff-c7b76333c22f"),
+				},
 				ExternalMediaID: uuid.FromStringOrNil("5338f2ba-96fa-11ed-9741-83dfb85823e4"),
 			},
 			&externalmedia.ExternalMedia{
@@ -174,7 +179,9 @@ func Test_ExternalMediaStop_error(t *testing.T) {
 			id: uuid.FromStringOrNil("7e77d07c-9727-11ed-9a5c-7f64fe264774"),
 
 			responseCall: &call.Call{
-				ID: uuid.FromStringOrNil("7e77d07c-9727-11ed-9a5c-7f64fe264774"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7e77d07c-9727-11ed-9a5c-7f64fe264774"),
+				},
 			},
 		},
 		{
@@ -183,7 +190,9 @@ func Test_ExternalMediaStop_error(t *testing.T) {
 			id: uuid.FromStringOrNil("92a767b4-9728-11ed-885f-47623ef9293e"),
 
 			responseCall: &call.Call{
-				ID:              uuid.FromStringOrNil("92a767b4-9728-11ed-885f-47623ef9293e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("92a767b4-9728-11ed-885f-47623ef9293e"),
+				},
 				ExternalMediaID: uuid.FromStringOrNil("92cd6342-9728-11ed-b00b-d7edef482e40"),
 			},
 			responseExternalMediaError: fmt.Errorf(""),

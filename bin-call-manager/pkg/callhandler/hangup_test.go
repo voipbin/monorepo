@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -47,7 +48,9 @@ func Test_Hangup(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
+				},
 				ChannelID: "70271162-1772-11ec-a941-fb10a2f9c2e7",
 				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
@@ -68,7 +71,9 @@ func Test_Hangup(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("e37dcd4e-1778-11ec-95c1-5b6f4657bd15"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e37dcd4e-1778-11ec-95c1-5b6f4657bd15"),
+				},
 				ChannelID: "e3c68930-1778-11ec-8c04-0bcef8a75b4f",
 				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
@@ -93,7 +98,9 @@ func Test_Hangup(t *testing.T) {
 			},
 
 			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("0a3988a6-d901-11ed-9e5a-af6485ff8915"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0a3988a6-d901-11ed-9e5a-af6485ff8915"),
+				},
 				ChannelID: "09e6139c-d901-11ed-9ec4-c7733d43bc03",
 				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
@@ -147,14 +154,18 @@ func Test_Hangup(t *testing.T) {
 
 			for _, chainedCallID := range tt.responseCall.ChainedCallIDs {
 				tmpCall := &call.Call{
-					ID:     chainedCallID,
+					Identity: commonidentity.Identity{
+						ID: chainedCallID,
+					},
 					Status: call.StatusProgressing,
 				}
 				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
 				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating).Return(nil)
 
 				tmpCall2 := &call.Call{
-					ID:     chainedCallID,
+					Identity: commonidentity.Identity{
+						ID: chainedCallID,
+					},
 					Status: call.StatusTerminating,
 				}
 				mockDB.EXPECT().CallGet(ctx, tmpCall.ID).Return(tmpCall2, nil)
@@ -196,7 +207,9 @@ func Test_hangingUpWithCause(t *testing.T) {
 			ari.ChannelCauseNormalClearing,
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("785880aa-1777-11ec-abec-2b721201c1af"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("785880aa-1777-11ec-abec-2b721201c1af"),
+				},
 				ChannelID: "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
 				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
@@ -219,7 +232,9 @@ func Test_hangingUpWithCause(t *testing.T) {
 			ari.ChannelCauseNormalClearing,
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("ac477e50-ab1c-11ec-b50f-7bb28cc97fd4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ac477e50-ab1c-11ec-b50f-7bb28cc97fd4"),
+				},
 				ChannelID: "ac7411a4-ab1c-11ec-bce4-e7e983448875",
 				Status:    call.StatusDialing,
 				Direction: call.DirectionOutgoing,
@@ -300,13 +315,17 @@ func Test_hangingupWithReference(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:     uuid.FromStringOrNil("045e6cd0-41f7-4b24-833d-f17b0236b9a6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("045e6cd0-41f7-4b24-833d-f17b0236b9a6"),
+				},
 				Status: call.StatusProgressing,
 			},
 			uuid.FromStringOrNil("0bd3152c-1a1e-4464-9c60-395bdcafa6bd"),
 
 			&call.Call{
-				ID:        uuid.FromStringOrNil("0bd3152c-1a1e-4464-9c60-395bdcafa6bd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0bd3152c-1a1e-4464-9c60-395bdcafa6bd"),
+				},
 				Status:    call.StatusHangup,
 				ChannelID: "19b1bc03-cf90-47b9-9fbd-5fef6d9393a4",
 			},
@@ -316,7 +335,9 @@ func Test_hangingupWithReference(t *testing.T) {
 				TMEnd:       dbhandler.DefaultTimeStamp,
 			},
 			&call.Call{
-				ID:     uuid.FromStringOrNil("045e6cd0-41f7-4b24-833d-f17b0236b9a6"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("045e6cd0-41f7-4b24-833d-f17b0236b9a6"),
+				},
 				Status: call.StatusTerminating,
 			},
 		},

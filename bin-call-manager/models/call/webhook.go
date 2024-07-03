@@ -3,6 +3,8 @@ package call
 import (
 	"encoding/json"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -12,11 +14,7 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	// identity
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerType  OwnerType `json:"owner_type"`
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
 
 	FlowID       uuid.UUID `json:"flow_id"` // flow id
 	ActiveflowID uuid.UUID `json:"activeflow_id"`
@@ -55,10 +53,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
-		OwnerType:  h.OwnerType,
-		OwnerID:    h.OwnerID,
+		Identity: h.Identity,
 
 		FlowID:       h.FlowID,
 		ActiveflowID: h.ActiveFlowID,

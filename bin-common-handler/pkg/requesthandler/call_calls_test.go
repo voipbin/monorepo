@@ -8,7 +8,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmrecording "monorepo/bin-call-manager/models/recording"
-
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -258,7 +258,9 @@ func Test_CallV1CallsCreate(t *testing.T) {
 			},
 			expectResCalls: []*cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
+					},
 				},
 			},
 			expectResGroupcalls: []*cmgroupcall.Groupcall{
@@ -354,7 +356,9 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 				Data:       []byte(`{"id":"9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"}`),
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"),
+				},
 			},
 		},
 	}
@@ -412,7 +416,9 @@ func Test_CallV1CallGet(t *testing.T) {
 				Data:       []byte(`{"id":"7ab80df4-4c72-11ec-b095-17146a0e7e4c"}`),
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("7ab80df4-4c72-11ec-b095-17146a0e7e4c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7ab80df4-4c72-11ec-b095-17146a0e7e4c"),
+				},
 			},
 		},
 	}
@@ -479,7 +485,9 @@ func Test_CallV1CallGets(t *testing.T) {
 			},
 			[]cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("d3ce27ac-4c72-11ec-b790-6b79445cbb01"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d3ce27ac-4c72-11ec-b790-6b79445cbb01"),
+					},
 				},
 			},
 		},
@@ -505,10 +513,14 @@ func Test_CallV1CallGets(t *testing.T) {
 			},
 			[]cmcall.Call{
 				{
-					ID: uuid.FromStringOrNil("11cfd8e8-4c73-11ec-8f06-b73cd86fc9ae"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("11cfd8e8-4c73-11ec-8f06-b73cd86fc9ae"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("12237ce6-4c73-11ec-8a2a-57b7a8d6a6f4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("12237ce6-4c73-11ec-8a2a-57b7a8d6a6f4"),
+					},
 				},
 			},
 		},
@@ -576,7 +588,9 @@ func Test_CMCallAddChainedCall(t *testing.T) {
 				Data:     []byte(`{"chained_call_id":"8d48ded8-25c9-11eb-a8da-a7bcaada697c"}`),
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("887a7600-25c9-11eb-ab60-338d7ef0ba0f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("887a7600-25c9-11eb-ab60-338d7ef0ba0f"),
+				},
 			},
 		},
 	}
@@ -639,7 +653,9 @@ func Test_CMCallRemoveChainedCall(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("1ced9274-8ee0-11ec-8c36-13795e573d73"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1ced9274-8ee0-11ec-8c36-13795e573d73"),
+				},
 			},
 		},
 	}
@@ -700,7 +716,9 @@ func Test_CallV1CallDelete(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("045c4e0d-7838-46bf-b28d-3aeaa943a53e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("045c4e0d-7838-46bf-b28d-3aeaa943a53e"),
+				},
 			},
 		},
 	}
@@ -761,8 +779,10 @@ func Test_CallV1CallHangup(t *testing.T) {
 				DataType: "application/json",
 			},
 			&cmcall.Call{
-				ID:          uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
-				CustomerID:  uuid.FromStringOrNil("a789f1d6-7f52-11ec-b563-e3d43178d814"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
+					CustomerID: uuid.FromStringOrNil("a789f1d6-7f52-11ec-b563-e3d43178d814"),
+				},
 				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
 				Source:      address.Address{},
 				Destination: address.Address{},
@@ -837,7 +857,9 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
+				},
 			},
 		},
 	}
@@ -896,7 +918,9 @@ func Test_CallV1CallExternalMediaStop(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("487233ec-97c1-11ed-968d-47ee0ef18dbf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("487233ec-97c1-11ed-968d-47ee0ef18dbf"),
+				},
 			},
 		},
 	}
@@ -1074,7 +1098,9 @@ func Test_CallV1CallRecordingStart(t *testing.T) {
 				Data:     []byte(`{"format":"wav","end_of_silence":1000,"end_of_key":"#","duration":86400}`),
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("6533f61e-9348-11ed-83bc-ab5a0adfe5e5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6533f61e-9348-11ed-83bc-ab5a0adfe5e5"),
+				},
 			},
 		},
 	}
@@ -1133,7 +1159,9 @@ func Test_CallV1CallRecordingStop(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodPost,
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("6593f41a-9348-11ed-bdd2-3b5bf8891acb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6593f41a-9348-11ed-bdd2-3b5bf8891acb"),
+				},
 			},
 		},
 	}
@@ -1196,7 +1224,9 @@ func Test_CallV1CallUpdateConfbridgeID(t *testing.T) {
 				Data:       []byte(`{"id":"6c2d5016-467d-4d53-86ce-f5b5fc451b1c"}`),
 			},
 			&cmcall.Call{
-				ID: uuid.FromStringOrNil("6c2d5016-467d-4d53-86ce-f5b5fc451b1c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6c2d5016-467d-4d53-86ce-f5b5fc451b1c"),
+				},
 			},
 		},
 	}

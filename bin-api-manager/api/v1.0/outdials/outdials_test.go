@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
@@ -44,7 +45,9 @@ func Test_outdialsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			request.ParamOutdialsGET{
 				Pagination: request.Pagination{
@@ -63,7 +66,9 @@ func Test_outdialsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			request.ParamOutdialsGET{
 				Pagination: request.Pagination{
@@ -134,7 +139,9 @@ func Test_outdialsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			request.BodyOutdialsPOST{
 				CampaignID: uuid.FromStringOrNil("5770a50e-1a94-45fc-9ba1-79064573cf06"),
@@ -196,7 +203,9 @@ func Test_outdialsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("3bb463ed-aa6e-4b64-9fc5-b1fc62096b67"),
 
@@ -246,7 +255,9 @@ func Test_outdialsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("37877e5d-ebe3-492d-be8c-54d62e98b4db"),
 			&omoutdial.WebhookMessage{
@@ -295,7 +306,9 @@ func Test_outdialsIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("38114323-144a-499c-bfde-f3d8af114a7a"),
 			request.BodyOutdialsIDPUT{
@@ -355,7 +368,9 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("607ea822-121d-4a52-ad3f-3f5320445ec8"),
 			request.BodyOutdialsIDCampaignIDPUT{
@@ -414,7 +429,9 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("056eefbd-8afa-402a-8c9e-681040ec8803"),
 			request.BodyOutdialsIDDataPUT{
@@ -475,7 +492,9 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("726d6b88-2028-44fe-a415-a58067d98acf"),
 			request.BodyOutdialsIDTargetsPOST{
@@ -558,7 +577,9 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("112950f8-e3d3-4585-b858-125a59f8f51f"),
 			uuid.FromStringOrNil("86a52dde-c523-11ec-a8b0-53d9628a5d7f"),
@@ -611,7 +632,9 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("112950f8-e3d3-4585-b858-125a59f8f51f"),
 			uuid.FromStringOrNil("0adb2487-eea7-4ec9-bb7f-b2b2aa5af49e"),
@@ -668,7 +691,9 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/outdials/fe7a06b6-c82c-11ec-89fd-f741623099f0/targets?page_size=10&page_token=2020-09-20%2003:23:21.995000",
 			request.ParamOutdialsIDTargetsGET{
@@ -690,7 +715,9 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/outdials/33d8b93c-c82e-11ec-b630-f304b7d48448/targets?page_size=15&page_token=2020-09-20%2003:23:21.995000",
 			request.ParamOutdialsIDTargetsGET{

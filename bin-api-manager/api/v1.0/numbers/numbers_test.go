@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -41,7 +42,9 @@ func TestNumbersGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
 			request.ParamNumbersGET{
@@ -100,7 +103,9 @@ func Test_NumbersIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			"/v1.0/numbers/3ab6711c-7be6-11eb-8da6-d31a9f3d45a6",
@@ -163,7 +168,9 @@ func TestNumbersIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("d905c26e-7be6-11eb-b92a-ab4802b4bde3"),
 			"/v1.0/numbers/d905c26e-7be6-11eb-b92a-ab4802b4bde3",
@@ -214,7 +221,9 @@ func TestNumbersPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/numbers",
 			request.BodyNumbersPOST{
@@ -275,7 +284,9 @@ func TestNumbersIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
 
@@ -341,7 +352,9 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			"/v1.0/numbers/a440c6b8-94cd-11ec-a524-af82f0c3ee68/flow_ids",
 
@@ -407,7 +420,9 @@ func Test_NumbersRenewPOST(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uri: "/v1.0/numbers/renew",
 

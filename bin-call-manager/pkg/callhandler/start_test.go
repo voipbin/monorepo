@@ -8,6 +8,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -115,7 +116,9 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				ID: "56b24806-5e56-11ed-9b77-cf2a442594d7",
 			},
 			&call.Call{
-				ID:           uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
+				},
 				ChannelID:    "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
 				Type:         call.TypeConference,
 				Direction:    call.DirectionIncoming,
@@ -144,8 +147,10 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 			"reference_type=call,reference_id=666ae678-5e55-11ed-8bbd-bbd66d73cbaf",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
-				CustomerID: uuid.FromStringOrNil("2d6e83b0-5e56-11ed-9fcc-db15249e4a66"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
+					CustomerID: uuid.FromStringOrNil("2d6e83b0-5e56-11ed-9fcc-db15249e4a66"),
+				},
 
 				ChannelID: "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
 				BridgeID:  "56b24806-5e56-11ed-9b77-cf2a442594d7",
@@ -307,7 +312,9 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				},
 			},
 			&call.Call{
-				ID:           uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
+				},
 				ChannelID:    "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
 				FlowID:       uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 				ActiveFlowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
@@ -327,8 +334,10 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				"deleted": "false",
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
-				CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
+					CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
+				},
 
 				ChannelID: "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
 				BridgeID:  "ab5d36ce-5e5e-11ed-917e-a70e0240c226",
@@ -697,7 +706,7 @@ func Test_getAddressOwner(t *testing.T) {
 		responseAgent *amagent.Agent
 
 		expectAgentID      uuid.UUID
-		expectResOwnerType call.OwnerType
+		expectResOwnerType commonidentity.OwnerType
 		expectResOwnerID   uuid.UUID
 	}{
 		{
@@ -710,12 +719,14 @@ func Test_getAddressOwner(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
-				CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
+					CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				},
 			},
 
 			expectAgentID:      uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
-			expectResOwnerType: call.OwnerTypeAgent,
+			expectResOwnerType: commonidentity.OwnerTypeAgent,
 			expectResOwnerID:   uuid.FromStringOrNil("91a56bc6-2fd5-11ef-b664-bf13af632f01"),
 		},
 		{
@@ -728,11 +739,13 @@ func Test_getAddressOwner(t *testing.T) {
 			},
 
 			responseAgent: &amagent.Agent{
-				ID:         uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
-				CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
+					CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				},
 			},
 
-			expectResOwnerType: call.OwnerTypeAgent,
+			expectResOwnerType: commonidentity.OwnerTypeAgent,
 			expectResOwnerID:   uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
 		},
 	}

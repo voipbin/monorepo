@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -51,7 +52,9 @@ func Test_customersPOST(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers",
@@ -148,7 +151,9 @@ func Test_customersGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 			"/v1.0/customers?page_size=20&page_token=2020-09-20%2003:23:20.995000",
 
@@ -228,7 +233,9 @@ func Test_customersIDGet(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
@@ -294,7 +301,9 @@ func Test_customersIDPut(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
@@ -359,7 +368,9 @@ func Test_customersIDDelete(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			"/v1.0/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
@@ -414,7 +425,9 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 		{
 			name: "normal",
 			agent: amagent.Agent{
-				ID:         uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 			target: "/v1.0/customers/cc876058-1773-11ee-9694-136fe246dd34/billing_account_id",

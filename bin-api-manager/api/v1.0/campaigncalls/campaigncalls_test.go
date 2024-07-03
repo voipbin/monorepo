@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -41,7 +42,9 @@ func Test_campaigncallsGET(t *testing.T) {
 		{
 			"1 item",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/campaigncalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -63,7 +66,9 @@ func Test_campaigncallsGET(t *testing.T) {
 		{
 			"more than 2 items",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
 			},
 
 			"/v1.0/campaigncalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
@@ -139,7 +144,9 @@ func Test_campaigncallsIDGET(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("897e611a-c870-11ec-9b81-a7b70b7cdaa1"),
 
@@ -192,7 +199,9 @@ func Test_campaigncallsIDDELETE(t *testing.T) {
 		{
 			"normal",
 			amagent.Agent{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
 			},
 			uuid.FromStringOrNil("afe97cd6-c870-11ec-b750-f3db7eda3a33"),
 
