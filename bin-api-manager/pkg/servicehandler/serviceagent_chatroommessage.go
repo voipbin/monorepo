@@ -14,10 +14,10 @@ import (
 // It returns chatroommessage if it succeed.
 func (h *serviceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ServiceAgentChatroommessageGet",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"chat_id":     id,
+		"func":                "ServiceAgentChatroommessageGet",
+		"customer_id":         a.CustomerID,
+		"username":            a.Username,
+		"chatroom_message_id": id,
 	})
 	log.Debug("Getting a chatroommessage.")
 
@@ -28,7 +28,7 @@ func (h *serviceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *
 		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if tmp.OwnerID != a.ID {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}

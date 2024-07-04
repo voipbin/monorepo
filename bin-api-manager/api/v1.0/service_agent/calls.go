@@ -38,7 +38,7 @@ func callsGET(c *gin.Context) {
 		"agent": a,
 	})
 
-	var requestParam request.ParamServiceTalkCallsGET
+	var requestParam request.ParamServiceAgentCallsGET
 	if err := c.BindQuery(&requestParam); err != nil {
 		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
 		c.AbortWithStatus(400)
@@ -68,11 +68,63 @@ func callsGET(c *gin.Context) {
 	if len(calls) > 0 {
 		nextToken = calls[len(calls)-1].TMCreate
 	}
-	res := response.BodyCallsGET{
+	res := response.BodyServiceAgentCallsGET{
 		Result: calls,
 		Pagination: response.Pagination{
 			NextPageToken: nextToken,
 		},
+	}
+
+	c.JSON(200, res)
+}
+
+// callsPOST handles POST /calls request.
+// It creates a temp flow and create a call with temp flow.
+//
+//	@Summary		Make an outbound call
+//	@Description	dialing to destination
+//	@Produce		json
+//	@Param			call	body		request.BodyCallsPOST	true	"The call detail"
+//	@Success		200		{object}	call.Call
+//	@Router			/v1.0/calls [post]
+func callsPOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsPOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	var req request.BodyServiceAgentCallsPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// create call
+	tmpCalls, tmpGroupcalls, err := serviceHandler.CallCreate(c.Request.Context(), &a, req.FlowID, req.Actions, &req.Source, req.Destinations)
+	if err != nil {
+		log.Errorf("Could not create a call for outgoing. err; %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res := &response.BodyServiceAgentCallsPOST{
+		Calls:      tmpCalls,
+		Groupcalls: tmpGroupcalls,
 	}
 
 	c.JSON(200, res)

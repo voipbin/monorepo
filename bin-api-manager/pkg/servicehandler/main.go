@@ -568,6 +568,21 @@ type ServiceHandler interface {
 		target string,
 	) (*rmroute.WebhookMessage, error)
 
+	// service_agent call
+	ServiceAgentCallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error)
+	ServiceAgentCallGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)
+	ServiceAgentCallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)
+
+	// service_agent chatroom
+	ServiceAgentChatroomGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatchatroom.WebhookMessage, error)
+	ServiceAgentChatroomGet(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatchatroom.WebhookMessage, error)
+	ServiceAgentChatroomDelete(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatchatroom.WebhookMessage, error)
+	ServiceAgentChatroomCreate(ctx context.Context, a *amagent.Agent, participantIDs []uuid.UUID, name string, detail string) (*chatchatroom.WebhookMessage, error)
+
+	// service_agent chatroom message
+	ServiceAgentChatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
+	ServiceAgentChatroommessageGets(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error)
+
 	// storage account
 	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error)
 	StorageAccountGet(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)

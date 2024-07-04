@@ -5,7 +5,6 @@ import (
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
-	chatroom "monorepo/bin-chat-manager/models/chatroom"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -14,7 +13,7 @@ import (
 // ServiceAgentChatroomGets sends a request to chat-manager
 // to getting the given agent's list of chatrooms.
 // it returns list of chatrooms if it succeed.
-func (h *serviceHandler) ServiceAgentChatroomGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatroom.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentChatroomGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatchatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentChatroomGets",
 		"customer_id": a.CustomerID,
@@ -51,7 +50,7 @@ func (h *serviceHandler) ServiceAgentChatroomGets(ctx context.Context, a *amagen
 // ServiceAgentChatroomGets sends a request to chat-manager
 // to getting the given agent's list of chatrooms.
 // it returns list of chatrooms if it succeed.
-func (h *serviceHandler) ServiceAgentChatroomGet(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatroom.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentChatroomGet(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatchatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentChatroomGets",
 		"agent":       a,
@@ -75,7 +74,7 @@ func (h *serviceHandler) ServiceAgentChatroomGet(ctx context.Context, a *amagent
 // ServiceAgentChatroomDelete sends a request to chat-manager
 // to getting the given agent's list of chatrooms.
 // it returns list of chatrooms if it succeed.
-func (h *serviceHandler) ServiceAgentChatroomDelete(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatroom.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentChatroomDelete(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatchatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentChatroomDelete",
 		"agent":       a,

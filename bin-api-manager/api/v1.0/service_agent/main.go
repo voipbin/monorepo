@@ -7,6 +7,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	targets := r.Group("/service_agent")
 
 	targets.GET("/calls", callsGET)
+	targets.POST("/calls", callsPOST)
 
 	// targets.GET("", routesGET)
 	// targets.POST("", routesPOST)
