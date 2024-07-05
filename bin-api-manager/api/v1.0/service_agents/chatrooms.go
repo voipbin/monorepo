@@ -1,4 +1,4 @@
-package service_talk
+package service_agents
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -11,19 +11,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// callsGET handles GET service_talk/calls request.
-// It returns list of calls of the given customer.
+// chatroomsGET handles GET service_agents/chatrooms request.
+// It returns list of chatrooms of the given customer.
 
-// @Summary		Get list of calls
-// @Description	get calls of the customer
+// @Summary		Get list of chatrooms
+// @Description	get chatrooms of the customer
 // @Produce		json
 // @Param			page_size	query		int		false	"The size of results. Max 100"
 // @Param			page_token	query		string	false	"The token. tm_create"
 // @Success		200			{object}	response.BodyCallsGET
-// @Router			/v1.0/calls [get]
-func callsGET(c *gin.Context) {
+// @Router			/v1.0/service_agents/chatrooms [get]
+func chatroomsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "callsGET",
+		"func":            "chatroomsGET",
 		"request_address": c.ClientIP,
 	})
 
@@ -73,58 +73,6 @@ func callsGET(c *gin.Context) {
 		Pagination: response.Pagination{
 			NextPageToken: nextToken,
 		},
-	}
-
-	c.JSON(200, res)
-}
-
-// callsPOST handles POST /calls request.
-// It creates a temp flow and create a call with temp flow.
-//
-//	@Summary		Make an outbound call
-//	@Description	dialing to destination
-//	@Produce		json
-//	@Param			call	body		request.BodyCallsPOST	true	"The call detail"
-//	@Success		200		{object}	call.Call
-//	@Router			/v1.0/calls [post]
-func callsPOST(c *gin.Context) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "callsPOST",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	var req request.BodyServiceAgentCallsPOST
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	// get service
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-
-	// create call
-	tmpCalls, tmpGroupcalls, err := serviceHandler.CallCreate(c.Request.Context(), &a, req.FlowID, req.Actions, &req.Source, req.Destinations)
-	if err != nil {
-		log.Errorf("Could not create a call for outgoing. err; %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	res := &response.BodyServiceAgentCallsPOST{
-		Calls:      tmpCalls,
-		Groupcalls: tmpGroupcalls,
 	}
 
 	c.JSON(200, res)
