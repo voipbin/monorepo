@@ -68,10 +68,17 @@ func (h *serviceHandler) ChatroomGetsByOwnerID(ctx context.Context, a *amagent.A
 		"owner_id": owner.ID.String(),
 	}
 
-	res, err := h.chatroomGetsByFilters(ctx, size, token, filters)
+	tmps, err := h.chatroomGetsByFilters(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get chatrooms list. err: %v", err)
 		return nil, err
+	}
+
+	// create result
+	res := []*chatchatroom.WebhookMessage{}
+	for _, f := range tmps {
+		tmp := f.ConvertWebhookMessage()
+		res = append(res, tmp)
 	}
 
 	return res, nil
@@ -79,7 +86,7 @@ func (h *serviceHandler) ChatroomGetsByOwnerID(ctx context.Context, a *amagent.A
 
 // chatroomGetsByFilters gets the list of chatrooms of the given filters.
 // It returns list of chatrooms if it succeed.
-func (h *serviceHandler) chatroomGetsByFilters(ctx context.Context, size uint64, token string, filters map[string]string) ([]*chatchatroom.WebhookMessage, error) {
+func (h *serviceHandler) chatroomGetsByFilters(ctx context.Context, size uint64, token string, filters map[string]string) ([]chatchatroom.Chatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "chatroomGetsByFilters",
 		"size":    size,
@@ -93,17 +100,10 @@ func (h *serviceHandler) chatroomGetsByFilters(ctx context.Context, size uint64,
 	}
 
 	// get chatrooms
-	tmps, err := h.reqHandler.ChatV1ChatroomGets(ctx, token, size, filters)
+	res, err := h.reqHandler.ChatV1ChatroomGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
-	}
-
-	// create result
-	res := []*chatchatroom.WebhookMessage{}
-	for _, f := range tmps {
-		tmp := f.ConvertWebhookMessage()
-		res = append(res, tmp)
 	}
 
 	return res, nil

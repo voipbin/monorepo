@@ -211,8 +211,8 @@ func Test_chatroomsIDGET(t *testing.T) {
 		name     string
 		customer amagent.Agent
 
-		reqQuery          string
-		chatroommessageID uuid.UUID
+		reqQuery   string
+		chatroomID uuid.UUID
 
 		responseChatroom *chatchatroom.WebhookMessage
 
@@ -256,7 +256,7 @@ func Test_chatroomsIDGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroomGet(req.Context(), &tt.customer, tt.chatroommessageID).Return(tt.responseChatroom, nil)
+			mockSvc.EXPECT().ChatroomGet(req.Context(), &tt.customer, tt.chatroomID).Return(tt.responseChatroom, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
