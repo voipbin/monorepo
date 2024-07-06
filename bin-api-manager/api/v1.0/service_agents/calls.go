@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +21,7 @@ import (
 // @Param			page_size	query		int		false	"The size of results. Max 100"
 // @Param			page_token	query		string	false	"The token. tm_create"
 // @Success		200			{object}	response.BodyCallsGET
-// @Router			/v1.0/calls [get]
+// @Router			/v1.0/service_agents/calls [get]
 func callsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsGET",
@@ -57,7 +58,7 @@ func callsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get calls
-	calls, err := serviceHandler.CallGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
+	calls, err := serviceHandler.ServiceAgentCallGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -78,18 +79,18 @@ func callsGET(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// callsPOST handles POST /calls request.
-// It creates a temp flow and create a call with temp flow.
+// callsIDGET handles GET /service_agents/calls/{id} request.
+// It returns detail call info.
 //
-//	@Summary		Make an outbound call
-//	@Description	dialing to destination
+//	@Summary		Get detail call info.
+//	@Description	Returns detail call info of the given call id.
 //	@Produce		json
-//	@Param			call	body		request.BodyCallsPOST	true	"The call detail"
-//	@Success		200		{object}	call.Call
-//	@Router			/v1.0/calls [post]
-func callsPOST(c *gin.Context) {
+//	@Param			id	path		string	true	"The ID of the call"
+//	@Success		200	{object}	call.Call
+//	@Router			/v1.0/service_agents/calls/{id} [get]
+func callsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "callsPOST",
+		"func":            "callsIDGET",
 		"request_address": c.ClientIP,
 	})
 
@@ -104,27 +105,17 @@ func callsPOST(c *gin.Context) {
 		"agent": a,
 	})
 
-	var req request.BodyServiceAgentCallsPOST
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDGET.")
 
-	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-
-	// create call
-	tmpCalls, tmpGroupcalls, err := serviceHandler.CallCreate(c.Request.Context(), &a, req.FlowID, req.Actions, &req.Source, req.Destinations)
+	res, err := serviceHandler.ServiceAgentCallGet(c.Request.Context(), &a, id)
 	if err != nil {
-		log.Errorf("Could not create a call for outgoing. err; %v", err)
+		log.Errorf("Could not get a call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
-	}
-
-	res := &response.BodyServiceAgentCallsPOST{
-		Calls:      tmpCalls,
-		Groupcalls: tmpGroupcalls,
 	}
 
 	c.JSON(200, res)

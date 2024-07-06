@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	chatmedia "monorepo/bin-chat-manager/models/media"
+	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
+	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -12,17 +15,17 @@ import (
 
 // ServiceAgentChatroommessageGet gets the chatroommessage of the given id.
 // It returns chatroommessage if it succeed.
-func (h *serviceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *amagent.Agent, chatroomMessageID uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                "ServiceAgentChatroommessageGet",
 		"customer_id":         a.CustomerID,
 		"username":            a.Username,
-		"chatroom_message_id": id,
+		"chatroom_message_id": chatroomMessageID,
 	})
 	log.Debug("Getting a chatroommessage.")
 
 	// get chat
-	tmp, err := h.chatroommessageGet(ctx, a, id)
+	tmp, err := h.chatroommessageGet(ctx, a, chatroomMessageID)
 	if err != nil {
 		log.Errorf("Could not get chatroommessage info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
@@ -80,76 +83,58 @@ func (h *serviceHandler) ServiceAgentChatroommessageGets(ctx context.Context, a 
 	return res, nil
 }
 
-// // ServiceAgentChatroomGets sends a request to chat-manager
-// // to getting the given agent's list of chatrooms.
-// // it returns list of chatrooms if it succeed.
-// func (h *serviceHandler) ServiceAgentChatroomGet(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatroom.WebhookMessage, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":        "ServiceAgentChatroomGets",
-// 		"agent":       a,
-// 		"chatroom_id": chatroomID,
-// 	})
+// ServiceAgentChatroommessageCreate creates the chatroom message of the given chatroom id.
+// It returns created chatroommessages if it succeed.
+func (h *serviceHandler) ServiceAgentChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string, medias []chatmedia.Media) (*chatmessagechatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentChatroommessageCreate",
+		"agent":       a,
+		"chatroom_id": chatroomID,
+		"message":     message,
+		"medias":      medias,
+	})
+	log.Debug("Creating the chatroom message.")
 
-// 	tmp, err := h.chatroomGet(ctx, chatroomID)
-// 	if err != nil {
-// 		log.Errorf("Could not get chatroom info. err: %v", err)
-// 		return nil, err
-// 	}
+	// get chatroom info
+	cr, err := h.chatroomGet(ctx, chatroomID)
+	if err != nil {
+		log.Errorf("Could not get chatroom info. err: %v", err)
+		return nil, err
+	}
 
-// 	if a.ID != tmp.OwnerID {
-// 		return nil, fmt.Errorf("user has no permission")
-// 	}
+	if cr.OwnerID != a.ID {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
 
-// 	res := tmp.ConvertWebhookMessage()
-// 	return res, nil
-// }
+	// create chatmessage
+	source := commonaddress.Address{
+		Type:       commonaddress.TypeAgent,
+		Target:     a.ID.String(),
+		TargetName: a.Name,
+	}
+	cm, err := h.ChatmessageCreate(ctx, a, cr.ChatID, source, chatmessagechat.TypeNormal, message, medias)
+	if err != nil {
+		log.Errorf("Could not create chatmessage. err: %v", err)
+		return nil, err
+	}
 
-// // ServiceAgentChatroomDelete sends a request to chat-manager
-// // to getting the given agent's list of chatrooms.
-// // it returns list of chatrooms if it succeed.
-// func (h *serviceHandler) ServiceAgentChatroomDelete(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatroom.WebhookMessage, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":        "ServiceAgentChatroomDelete",
-// 		"agent":       a,
-// 		"chatroom_id": chatroomID,
-// 	})
+	// get message chatroom by chatmessage.
+	filters := map[string]string{
+		"chatroom_id":    cr.ID.String(),
+		"messagechat_id": cm.ID.String(),
+	}
+	crms, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
+	if err != nil {
+		log.Errorf("Could not get message chatroom. err: %v", err)
+		return nil, err
+	}
 
-// 	tmp, err := h.chatroomGet(ctx, chatroomID)
-// 	if err != nil {
-// 		log.Errorf("Could not get chatroom info. err: %v", err)
-// 		return nil, err
-// 	}
+	if len(crms) < 1 {
+		log.Errorf("Could not create message chatroom.")
+		return nil, fmt.Errorf("could not create chatroom message")
+	}
 
-// 	if a.ID != tmp.OwnerID {
-// 		return nil, fmt.Errorf("user has no permission")
-// 	}
-
-// 	tmpRes, err := h.chatroomDelete(ctx, chatroomID)
-// 	if err != nil {
-// 		log.Errorf("Could not delete chatroom info. err: %v", err)
-// 		return nil, err
-// 	}
-
-// 	res := tmpRes.ConvertWebhookMessage()
-// 	return res, nil
-// }
-
-// // ServiceAgentChatroomCreate creates the chatroom message of the given chatroom id.
-// // It returns created chatroommessages if it succeed.
-// func (h *serviceHandler) ServiceAgentChatroomCreate(ctx context.Context, a *amagent.Agent, participantIDs []uuid.UUID, name string, detail string) (*chatchatroom.WebhookMessage, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":            "ServiceAgentChatroomCreate",
-// 		"agent":           a,
-// 		"participant_ids": participantIDs,
-// 		"name":            name,
-// 		"detail":          detail,
-// 	})
-
-// 	res, err := h.ChatroomCreate(ctx, a, participantIDs, name, detail)
-// 	if err != nil {
-// 		log.Errorf("Could not create chatroom info. err: %v", err)
-// 		return nil, err
-// 	}
-
-// 	return res, nil
-// }
+	res := crms[0].ConvertWebhookMessage()
+	return res, nil
+}

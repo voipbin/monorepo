@@ -2938,6 +2938,36 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroomGets(ctx, a, size,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroomGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroomGets), ctx, a, size, token)
 }
 
+// ServiceAgentChatroomUpdateBasicInfo mocks base method.
+func (m *MockServiceHandler) ServiceAgentChatroomUpdateBasicInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string) (*chatroom.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentChatroomUpdateBasicInfo", ctx, a, id, name, detail)
+	ret0, _ := ret[0].(*chatroom.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentChatroomUpdateBasicInfo indicates an expected call of ServiceAgentChatroomUpdateBasicInfo.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroomUpdateBasicInfo(ctx, a, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroomUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroomUpdateBasicInfo), ctx, a, id, name, detail)
+}
+
+// ServiceAgentChatroommessageCreate mocks base method.
+func (m *MockServiceHandler) ServiceAgentChatroommessageCreate(ctx context.Context, a *agent.Agent, chatroomID uuid.UUID, message string, medias []media.Media) (*messagechatroom.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentChatroommessageCreate", ctx, a, chatroomID, message, medias)
+	ret0, _ := ret[0].(*messagechatroom.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentChatroommessageCreate indicates an expected call of ServiceAgentChatroommessageCreate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroommessageCreate(ctx, a, chatroomID, message, medias interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroommessageCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroommessageCreate), ctx, a, chatroomID, message, medias)
+}
+
 // ServiceAgentChatroommessageGet mocks base method.
 func (m *MockServiceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*messagechatroom.WebhookMessage, error) {
 	m.ctrl.T.Helper()

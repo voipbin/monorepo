@@ -8,15 +8,12 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	// calls
 	targets.GET("/calls", callsGET)
-	targets.POST("/calls", callsPOST)
+	targets.GET("/calls/:id", callsIDGET)
 
 	// chatrooms
-
-	// chatroommessages
-
-	// targets.GET("", routesGET)
-	// targets.POST("", routesPOST)
-	// targets.GET("/:id", routesIDGet)
-	// targets.DELETE("/:id", routesIDDelete)
-	// targets.PUT("/:id", routesIDPUT)
+	targets.GET("/chatrooms", chatroomsGET)
+	targets.POST("/chatrooms", chatroomsPOST)
+	targets.GET("/chatrooms/:id", chatroomsIDGET)
+	targets.PUT("/chatrooms/:id", chatroomsIDPUT)
+	targets.DELETE("/chatrooms/:id", chatroomsIDDELETE)
 }

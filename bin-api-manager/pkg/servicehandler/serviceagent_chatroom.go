@@ -38,21 +38,27 @@ func (h *serviceHandler) ServiceAgentChatroomGets(ctx context.Context, a *amagen
 		"deleted":     "false", // we don't need deleted items
 	}
 
-	res, err := h.chatroomGetsByFilters(ctx, size, token, filters)
+	tmps, err := h.chatroomGetsByFilters(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not chatrooms info. err: %v", err)
 		return nil, err
 	}
 
+	res := []*chatchatroom.WebhookMessage{}
+	for _, f := range tmps {
+		tmp := f.ConvertWebhookMessage()
+		res = append(res, tmp)
+	}
+
 	return res, nil
 }
 
-// ServiceAgentChatroomGets sends a request to chat-manager
+// ServiceAgentChatroomGet sends a request to chat-manager
 // to getting the given agent's list of chatrooms.
 // it returns list of chatrooms if it succeed.
 func (h *serviceHandler) ServiceAgentChatroomGet(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatchatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ServiceAgentChatroomGets",
+		"func":        "ServiceAgentChatroomGet",
 		"agent":       a,
 		"chatroom_id": chatroomID,
 	})
@@ -102,7 +108,7 @@ func (h *serviceHandler) ServiceAgentChatroomDelete(ctx context.Context, a *amag
 }
 
 // ServiceAgentChatroomCreate creates the chatroom message of the given chatroom id.
-// It returns created chatroommessages if it succeed.
+// It returns created chatroom if it succeed.
 func (h *serviceHandler) ServiceAgentChatroomCreate(ctx context.Context, a *amagent.Agent, participantIDs []uuid.UUID, name string, detail string) (*chatchatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ServiceAgentChatroomCreate",
@@ -115,6 +121,26 @@ func (h *serviceHandler) ServiceAgentChatroomCreate(ctx context.Context, a *amag
 	res, err := h.ChatroomCreate(ctx, a, participantIDs, name, detail)
 	if err != nil {
 		log.Errorf("Could not create chatroom info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ServiceAgentChatroomUpdateBasicInfo updates the chatroom's basic info.
+// It returns updated chatroom if it succeed.
+func (h *serviceHandler) ServiceAgentChatroomUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentChatroomUpdateBasicInfo",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"chatroom_id": id,
+	})
+	log.Debug("Updating the chatroom.")
+
+	res, err := h.ChatroomUpdateBasicInfo(ctx, a, id, name, detail)
+	if err != nil {
+		logrus.Errorf("Could not update the chatroom. err: %v", err)
 		return nil, err
 	}
 
