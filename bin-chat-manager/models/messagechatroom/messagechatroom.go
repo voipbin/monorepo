@@ -2,6 +2,7 @@ package messagechatroom
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
@@ -11,10 +12,7 @@ import (
 
 // Messagechatroom defines the message for the chatroom
 type Messagechatroom struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerType  OwnerType `json:"owner_type"` //
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
 
 	ChatroomID    uuid.UUID `json:"chatroom_id"`
 	MessagechatID uuid.UUID `json:"messagechat_id"`

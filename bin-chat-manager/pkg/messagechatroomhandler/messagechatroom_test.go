@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -33,7 +34,9 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("f9a22990-32b0-11ed-911a-8baec663a128"),
 
 			&messagechatroom.Messagechatroom{
-				ID: uuid.FromStringOrNil("f9a22990-32b0-11ed-911a-8baec663a128"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f9a22990-32b0-11ed-911a-8baec663a128"),
+				},
 			},
 		},
 	}
@@ -93,7 +96,9 @@ func Test_Gets(t *testing.T) {
 
 			[]*messagechatroom.Messagechatroom{
 				{
-					CustomerID: uuid.FromStringOrNil("df481ecc-32b2-11ed-9274-6b15aa52d410"),
+					Identity: commonidentity.Identity{
+						CustomerID: uuid.FromStringOrNil("df481ecc-32b2-11ed-9274-6b15aa52d410"),
+					},
 				},
 			},
 		},
@@ -171,14 +176,18 @@ func Test_Create(t *testing.T) {
 			responseUUID:    uuid.FromStringOrNil("68922a7a-daae-11ee-8e4d-6fbcd4b11b39"),
 			responseCurTime: "2024-03-05 05:10:04.781006734",
 			responseMessagechatroom: &messagechatroom.Messagechatroom{
-				ID: uuid.FromStringOrNil("6692d52a-32b3-11ed-9cf8-ef08221492ce"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6692d52a-32b3-11ed-9cf8-ef08221492ce"),
+				},
 			},
 
 			expectMessagechatroom: &messagechatroom.Messagechatroom{
-				ID:            uuid.FromStringOrNil("68922a7a-daae-11ee-8e4d-6fbcd4b11b39"),
-				CustomerID:    uuid.FromStringOrNil("65ac45e2-32b3-11ed-b720-973a629c7807"),
-				OwnerType:     messagechatroom.OwnerTypeAgent,
-				OwnerID:       uuid.FromStringOrNil("0698e5d4-daae-11ee-be05-cb7440513a2f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("68922a7a-daae-11ee-8e4d-6fbcd4b11b39"),
+					CustomerID: uuid.FromStringOrNil("65ac45e2-32b3-11ed-b720-973a629c7807"),
+					OwnerType:  commonidentity.OwnerTypeAgent,
+					OwnerID:    uuid.FromStringOrNil("0698e5d4-daae-11ee-be05-cb7440513a2f"),
+				},
 				ChatroomID:    uuid.FromStringOrNil("65d8b7e4-32b3-11ed-8846-97d903739f2c"),
 				MessagechatID: uuid.FromStringOrNil("662ecbfc-32b3-11ed-ae98-a71aa0c6ca99"),
 				Source: &commonaddress.Address{
@@ -249,7 +258,9 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("f1b4ce88-32b3-11ed-910f-c300da3e58d5"),
 
 			&messagechatroom.Messagechatroom{
-				ID: uuid.FromStringOrNil("f1b4ce88-32b3-11ed-910f-c300da3e58d5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f1b4ce88-32b3-11ed-910f-c300da3e58d5"),
+				},
 			},
 		},
 	}

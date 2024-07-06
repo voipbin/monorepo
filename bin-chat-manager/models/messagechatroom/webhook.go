@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
@@ -12,10 +13,7 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerType  OwnerType `json:"owner_type"` //
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
 
 	ChatroomID    uuid.UUID `json:"chatroom_id"`
 	MessagechatID uuid.UUID `json:"messagechat_id"`
@@ -33,10 +31,7 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Messagechatroom) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:         h.ID,
-		CustomerID: h.CustomerID,
-		OwnerType:  h.OwnerType,
-		OwnerID:    h.OwnerID,
+		Identity: h.Identity,
 
 		ChatroomID:    h.ChatroomID,
 		MessagechatID: h.MessagechatID,

@@ -3,6 +3,8 @@ package chatroomhandler
 import (
 	"context"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -69,10 +71,12 @@ func (h *chatroomHandler) Create(
 	id := uuid.Must(uuid.NewV4())
 	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &chatroom.Chatroom{
-		ID:             id,
-		CustomerID:     customerID,
-		OwnerType:      chatroom.OwnerTypeAgent,
-		OwnerID:        ownerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+			OwnerType:  commonidentity.OwnerTypeAgent,
+			OwnerID:    ownerID,
+		},
 		Type:           chatroomType,
 		ChatID:         chatID,
 		RoomOwnerID:    roomOwnerID,

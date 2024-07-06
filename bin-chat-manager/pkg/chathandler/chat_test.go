@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -627,10 +628,14 @@ func Test_AddParticipantID(t *testing.T) {
 			},
 			[]*chatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("02e9531c-312f-11ed-989c-cf70d99dbb1e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("02e9531c-312f-11ed-989c-cf70d99dbb1e"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("0343ca40-312f-11ed-8b56-971508921afc"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0343ca40-312f-11ed-8b56-971508921afc"),
+					},
 				},
 			},
 
@@ -731,11 +736,15 @@ func Test_RemoveParticipantID(t *testing.T) {
 			},
 			[]*chatroom.Chatroom{
 				{
-					ID:          uuid.FromStringOrNil("264e8764-3134-11ed-9f9d-e3e2f588f17a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("264e8764-3134-11ed-9f9d-e3e2f588f17a"),
+					},
 					RoomOwnerID: uuid.FromStringOrNil("25fa6e86-3134-11ed-be21-27cdde31883c"),
 				},
 				{
-					ID: uuid.FromStringOrNil("336e3386-3134-11ed-b1df-e38814f71100"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("336e3386-3134-11ed-b1df-e38814f71100"),
+					},
 				},
 			},
 

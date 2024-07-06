@@ -1,6 +1,8 @@
 package chatroom
 
 import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-chat-manager/models/chat"
@@ -8,10 +10,7 @@ import (
 
 // Chatroom defines chatroom
 type Chatroom struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerType  OwnerType `json:"owner_type"` //
-	OwnerID    uuid.UUID `json:"owner_id"`   //
+	commonidentity.Identity
 
 	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`

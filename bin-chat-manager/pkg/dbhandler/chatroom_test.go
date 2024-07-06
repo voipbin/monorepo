@@ -8,6 +8,8 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
@@ -28,20 +30,26 @@ func Test_ChatroomCreate(t *testing.T) {
 			"empty all",
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("5772b2d8-0247-4214-9588-56d6792bc15b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5772b2d8-0247-4214-9588-56d6792bc15b"),
+				},
 			},
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("5772b2d8-0247-4214-9588-56d6792bc15b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5772b2d8-0247-4214-9588-56d6792bc15b"),
+				},
 			},
 		},
 		{
 			"all items",
 
 			&chatroom.Chatroom{
-				ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
-				CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
-				OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
+					CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
+					OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				},
 
 				Type:   chatroom.TypeNormal,
 				ChatID: uuid.FromStringOrNil("78464d96-d6f3-4688-9f9d-9db0a4de5694"),
@@ -59,9 +67,11 @@ func Test_ChatroomCreate(t *testing.T) {
 			},
 
 			&chatroom.Chatroom{
-				ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
-				CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
-				OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
+					CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
+					OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				},
 
 				Type:   chatroom.TypeNormal,
 				ChatID: uuid.FromStringOrNil("78464d96-d6f3-4688-9f9d-9db0a4de5694"),
@@ -127,8 +137,10 @@ func Test_ChatroomGets(t *testing.T) {
 			"normal",
 			[]*chatroom.Chatroom{
 				{
-					ID:          uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
-					CustomerID:  uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
+						CustomerID: uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
+					},
 					Type:        chatroom.TypeNormal,
 					ChatID:      uuid.FromStringOrNil("152d7e64-bac6-11ee-a61f-67fba233c588"),
 					RoomOwnerID: uuid.FromStringOrNil("155d19da-bac6-11ee-8ed8-8fff6c8907d5"),
@@ -136,11 +148,13 @@ func Test_ChatroomGets(t *testing.T) {
 					TMDelete:    DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("16d46a60-79b5-42af-99d2-e9c7404ab642"),
-					CustomerID: uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
-					Type:       chatroom.TypeNormal,
-					TMCreate:   "2020-04-18T03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("16d46a60-79b5-42af-99d2-e9c7404ab642"),
+						CustomerID: uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
+					},
+					Type:     chatroom.TypeNormal,
+					TMCreate: "2020-04-18T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 
@@ -155,8 +169,10 @@ func Test_ChatroomGets(t *testing.T) {
 
 			[]*chatroom.Chatroom{
 				{
-					ID:          uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
-					CustomerID:  uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f17903aa-1c48-4ce5-80da-5e62fc0e7951"),
+						CustomerID: uuid.FromStringOrNil("63331078-4431-43ed-96ac-5975fa9e6749"),
+					},
 					Type:        chatroom.TypeNormal,
 					ChatID:      uuid.FromStringOrNil("152d7e64-bac6-11ee-a61f-67fba233c588"),
 					RoomOwnerID: uuid.FromStringOrNil("155d19da-bac6-11ee-8ed8-8fff6c8907d5"),
@@ -213,7 +229,9 @@ func Test_ChatroomUpdateBasicInfo(t *testing.T) {
 		{
 			"normal",
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("62b08684-6a3b-4416-910f-d77843d41932"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("62b08684-6a3b-4416-910f-d77843d41932"),
+				},
 			},
 
 			uuid.FromStringOrNil("62b08684-6a3b-4416-910f-d77843d41932"),
@@ -221,7 +239,9 @@ func Test_ChatroomUpdateBasicInfo(t *testing.T) {
 			"update detail",
 
 			&chatroom.Chatroom{
-				ID:     uuid.FromStringOrNil("62b08684-6a3b-4416-910f-d77843d41932"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("62b08684-6a3b-4416-910f-d77843d41932"),
+				},
 				Name:   "update name",
 				Detail: "update detail",
 			},
@@ -284,7 +304,9 @@ func Test_ChatroomDelete(t *testing.T) {
 			uuid.FromStringOrNil("0c1fde2b-1985-42b4-8eb3-96888e0477b5"),
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("0c1fde2b-1985-42b4-8eb3-96888e0477b5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0c1fde2b-1985-42b4-8eb3-96888e0477b5"),
+				},
 			},
 		},
 	}

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -183,7 +184,9 @@ func Test_Create(t *testing.T) {
 			},
 			[]*chatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("41b04940-32b8-11ed-9da3-473f30fded15"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("41b04940-32b8-11ed-9da3-473f30fded15"),
+					},
 				},
 			},
 
@@ -399,10 +402,14 @@ func Test_Delete(t *testing.T) {
 			},
 			[]*messagechatroom.Messagechatroom{
 				{
-					ID: uuid.FromStringOrNil("11131196-32c2-11ed-b4c7-5bfb2b12ea7a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("11131196-32c2-11ed-b4c7-5bfb2b12ea7a"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("11b3578c-32c2-11ed-9759-976f13bc97e9"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("11b3578c-32c2-11ed-9759-976f13bc97e9"),
+					},
 				},
 			},
 
