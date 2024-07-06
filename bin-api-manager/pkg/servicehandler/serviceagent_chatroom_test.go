@@ -46,10 +46,14 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 
 			responseChatrooms: []chatchatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("474885c2-3ba1-11ef-9cc2-77ca8259e738"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("474885c2-3ba1-11ef-9cc2-77ca8259e738"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("487ee210-3ba1-11ef-81ba-0b1288173f42"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("487ee210-3ba1-11ef-81ba-0b1288173f42"),
+					},
 				},
 			},
 			expectFilters: map[string]string{
@@ -59,10 +63,14 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 			},
 			expectRes: []*chatchatroom.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("474885c2-3ba1-11ef-9cc2-77ca8259e738"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("474885c2-3ba1-11ef-9cc2-77ca8259e738"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("487ee210-3ba1-11ef-81ba-0b1288173f42"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("487ee210-3ba1-11ef-81ba-0b1288173f42"),
+					},
 				},
 			},
 		},
@@ -122,12 +130,16 @@ func Test_ServiceAgentChatroomGet(t *testing.T) {
 			chatroomID: uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
 
 			responseChatroom: &chatchatroom.Chatroom{
-				ID:      uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
-				OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				Identity: commonidentity.Identity{
+					ID:      uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
 			},
 			expectRes: &chatchatroom.WebhookMessage{
-				ID:      uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
-				OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				Identity: commonidentity.Identity{
+					ID:      uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
 			},
 		},
 	}
@@ -186,12 +198,16 @@ func Test_ServiceAgentChatroomDelete(t *testing.T) {
 			chatroomID: uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
 
 			responseChatroom: &chatchatroom.Chatroom{
-				ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
-				OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				Identity: commonidentity.Identity{
+					ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
 			},
 			expectRes: &chatchatroom.WebhookMessage{
-				ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
-				OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				Identity: commonidentity.Identity{
+					ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
 			},
 		},
 	}
@@ -268,8 +284,10 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 			responseCurTime: "",
 			responseChatrooms: []chatchatroom.Chatroom{
 				{
-					ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
-					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+					Identity: commonidentity.Identity{
+						ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+						OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+					},
 				},
 			},
 
@@ -280,8 +298,10 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 				"owner_id": "5cd8c836-3b9f-11ef-98ac-db226570f09a",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
-				ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
-				OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				Identity: commonidentity.Identity{
+					ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
 			},
 		},
 	}

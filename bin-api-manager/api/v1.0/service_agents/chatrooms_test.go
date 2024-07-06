@@ -43,10 +43,14 @@ func Test_chatroomsGET(t *testing.T) {
 
 			resChatrooms: []*chatchatroom.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("b7e14a4a-3bb9-11ef-bb03-3b706018eb7c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b7e14a4a-3bb9-11ef-bb03-3b706018eb7c"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("b8588a06-3bb9-11ef-81c3-43bb60ab1c00"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b8588a06-3bb9-11ef-81c3-43bb60ab1c00"),
+					},
 				},
 			},
 
@@ -118,7 +122,9 @@ func Test_chatroomsPOST(t *testing.T) {
 			},
 
 			&chatchatroom.WebhookMessage{
-				ID: uuid.FromStringOrNil("367e5888-3bbb-11ef-a60b-0fecf1ef915a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("367e5888-3bbb-11ef-a60b-0fecf1ef915a"),
+				},
 			},
 		},
 	}
@@ -189,7 +195,9 @@ func Test_chatroomsIDGET(t *testing.T) {
 			reqQuery: "/v1.0/service_agents/chatrooms/100d4c94-3bbc-11ef-bfc4-0743f08f4c60",
 
 			responseChatroom: &chatchatroom.WebhookMessage{
-				ID: uuid.FromStringOrNil("100d4c94-3bbc-11ef-bfc4-0743f08f4c60"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("100d4c94-3bbc-11ef-bfc4-0743f08f4c60"),
+				},
 			},
 
 			expectChatroomID: uuid.FromStringOrNil("100d4c94-3bbc-11ef-bfc4-0743f08f4c60"),
@@ -255,7 +263,9 @@ func Test_chatroomsIDDELETE(t *testing.T) {
 			uuid.FromStringOrNil("5b0bda76-3bbc-11ef-bf6d-a33053327539"),
 
 			&chatchatroom.WebhookMessage{
-				ID: uuid.FromStringOrNil("5b0bda76-3bbc-11ef-bf6d-a33053327539"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5b0bda76-3bbc-11ef-bf6d-a33053327539"),
+				},
 			},
 
 			`{"id":"5b0bda76-3bbc-11ef-bf6d-a33053327539","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
@@ -324,7 +334,9 @@ func Test_chatroomsIDPUT(t *testing.T) {
 			},
 
 			responseChat: &chatchatroom.WebhookMessage{
-				ID: uuid.FromStringOrNil("7ccc0438-3bbc-11ef-8096-ef2cd860ae7f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7ccc0438-3bbc-11ef-8096-ef2cd860ae7f"),
+				},
 			},
 
 			expectChatroomID: uuid.FromStringOrNil("7ccc0438-3bbc-11ef-8096-ef2cd860ae7f"),
