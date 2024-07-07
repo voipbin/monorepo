@@ -65,8 +65,10 @@ func (h *callHandler) Create(
 		Identity: commonidentity.Identity{
 			ID:         callID,
 			CustomerID: customerID,
-			OwnerType:  ownerType,
-			OwnerID:    ownerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: ownerType,
+			OwnerID:   ownerID,
 		},
 
 		ChannelID:    channelID,

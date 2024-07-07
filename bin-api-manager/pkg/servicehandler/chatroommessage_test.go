@@ -46,12 +46,16 @@ func Test_ChatroommessageGet(t *testing.T) {
 			uuid.FromStringOrNil("78605f6a-3778-11ed-a0bc-f7087bf490a3"),
 
 			&chatmessagechatroom.Messagechatroom{
-				ID:         uuid.FromStringOrNil("78605f6a-3778-11ed-a0bc-f7087bf490a3"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("78605f6a-3778-11ed-a0bc-f7087bf490a3"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&chatmessagechatroom.WebhookMessage{
-				ID:         uuid.FromStringOrNil("78605f6a-3778-11ed-a0bc-f7087bf490a3"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("78605f6a-3778-11ed-a0bc-f7087bf490a3"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -125,16 +129,20 @@ func Test_ChatroommessageCreate(t *testing.T) {
 			},
 
 			responseChatroom: &chatchatroom.Chatroom{
-				ID:         uuid.FromStringOrNil("e59dcafa-bbf6-11ee-914f-ab362a70a1cf"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				ChatID:     uuid.FromStringOrNil("2fabac6a-bbf8-11ee-9e21-53afa17d17cb"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e59dcafa-bbf6-11ee-914f-ab362a70a1cf"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				ChatID: uuid.FromStringOrNil("2fabac6a-bbf8-11ee-9e21-53afa17d17cb"),
 			},
 			responseMessagechat: &chatmessagechat.Messagechat{
 				ID: uuid.FromStringOrNil("2fe4994e-bbf8-11ee-ba94-137f44f6810a"),
 			},
 			responseMessagechatroom: []chatmessagechatroom.Messagechatroom{
 				{
-					ID: uuid.FromStringOrNil("33c28d38-bbf7-11ee-895e-779ed7851af1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("33c28d38-bbf7-11ee-895e-779ed7851af1"),
+					},
 				},
 			},
 
@@ -148,7 +156,9 @@ func Test_ChatroommessageCreate(t *testing.T) {
 				"messagechat_id": "2fe4994e-bbf8-11ee-ba94-137f44f6810a",
 			},
 			expectRes: &chatmessagechatroom.WebhookMessage{
-				ID: uuid.FromStringOrNil("33c28d38-bbf7-11ee-895e-779ed7851af1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("33c28d38-bbf7-11ee-895e-779ed7851af1"),
+				},
 			},
 		},
 	}
@@ -216,12 +226,16 @@ func Test_ChatroommessageGetsByChatroomID(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 
 			&chatchatroom.Chatroom{
-				ID:         uuid.FromStringOrNil("a416bb54-3778-11ed-9eb3-4b926f921d68"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a416bb54-3778-11ed-9eb3-4b926f921d68"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			[]chatmessagechatroom.Messagechatroom{
 				{
-					ID: uuid.FromStringOrNil("a442c686-3778-11ed-a13a-83c9ddd14c70"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a442c686-3778-11ed-a13a-83c9ddd14c70"),
+					},
 				},
 			},
 
@@ -231,7 +245,9 @@ func Test_ChatroommessageGetsByChatroomID(t *testing.T) {
 			},
 			[]*chatmessagechatroom.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("a442c686-3778-11ed-a13a-83c9ddd14c70"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("a442c686-3778-11ed-a13a-83c9ddd14c70"),
+					},
 				},
 			},
 		},
@@ -291,12 +307,16 @@ func Test_ChatroommessageDelete(t *testing.T) {
 			uuid.FromStringOrNil("f091186c-3778-11ed-afad-ef1c157d091e"),
 
 			&chatmessagechatroom.Messagechatroom{
-				ID:         uuid.FromStringOrNil("f091186c-3778-11ed-afad-ef1c157d091e"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f091186c-3778-11ed-afad-ef1c157d091e"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&chatmessagechatroom.WebhookMessage{
-				ID:         uuid.FromStringOrNil("f091186c-3778-11ed-afad-ef1c157d091e"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f091186c-3778-11ed-afad-ef1c157d091e"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}

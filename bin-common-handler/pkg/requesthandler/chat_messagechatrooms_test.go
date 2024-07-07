@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -56,7 +57,9 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 			},
 			[]chatmessagechatroom.Messagechatroom{
 				{
-					ID: uuid.FromStringOrNil("161eef40-369e-11ed-9e79-fb15c8cb465a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("161eef40-369e-11ed-9e79-fb15c8cb465a"),
+					},
 				},
 			},
 		},
@@ -120,7 +123,9 @@ func Test_ChatV1MessagechatroomGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&chatmessagechatroom.Messagechatroom{
-				ID: uuid.FromStringOrNil("677d8888-369e-11ed-84b3-ef10b6d21710"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("677d8888-369e-11ed-84b3-ef10b6d21710"),
+				},
 			},
 		},
 	}
@@ -180,7 +185,9 @@ func Test_ChatV1MessagechatroomDelete(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&chatmessagechatroom.Messagechatroom{
-				ID: uuid.FromStringOrNil("919c4582-369e-11ed-8a8c-77506adf5ffe"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("919c4582-369e-11ed-8a8c-77506adf5ffe"),
+				},
 			},
 		},
 	}

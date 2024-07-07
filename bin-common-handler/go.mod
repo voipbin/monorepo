@@ -55,7 +55,7 @@ replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 require (
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 )
 
 require (

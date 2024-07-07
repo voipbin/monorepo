@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,7 +32,9 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("d1a339b0-900a-49d0-8c93-88bc29774123"),
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("d1a339b0-900a-49d0-8c93-88bc29774123"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1a339b0-900a-49d0-8c93-88bc29774123"),
+				},
 			},
 		},
 	}
@@ -99,7 +102,9 @@ func Test_Create(t *testing.T) {
 			"test detail",
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("352b4a77-49e4-4f8f-814a-7d7c3e14679c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("352b4a77-49e4-4f8f-814a-7d7c3e14679c"),
+				},
 			},
 		},
 	}
@@ -158,7 +163,9 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			"update detail",
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("2a6aa7be-7576-4351-93c1-cd125713334d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a6aa7be-7576-4351-93c1-cd125713334d"),
+				},
 			},
 		},
 	}
@@ -213,7 +220,9 @@ func Test_AddParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("0a85ad34-4f3c-4bbe-bad7-b6239219719c"),
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("76ecc5c6-0fda-4a37-9626-9baa11804ed1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("76ecc5c6-0fda-4a37-9626-9baa11804ed1"),
+				},
 			},
 		},
 	}
@@ -268,7 +277,9 @@ func Test_RemoveParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("d7220b09-8759-489a-97ed-f5875e92fb0c"),
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("82c31fde-2b70-4f50-a336-fdb2422fa202"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("82c31fde-2b70-4f50-a336-fdb2422fa202"),
+				},
 			},
 		},
 	}
@@ -321,7 +332,9 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("da0836f4-e25d-4340-b4b4-59399b26ad11"),
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("da0836f4-e25d-4340-b4b4-59399b26ad11"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("da0836f4-e25d-4340-b4b4-59399b26ad11"),
+				},
 			},
 		},
 	}

@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -49,7 +50,9 @@ func Test_v1ChatroomsGet(t *testing.T) {
 
 			[]*chatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("5cedbefc-3503-11ed-a344-aff6ed0bb63f"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5cedbefc-3503-11ed-a344-aff6ed0bb63f"),
+					},
 				},
 			},
 
@@ -78,10 +81,14 @@ func Test_v1ChatroomsGet(t *testing.T) {
 
 			[]*chatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("5d479a4e-3503-11ed-9d61-d375835c6b38"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d479a4e-3503-11ed-9d61-d375835c6b38"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("5d74efc6-3503-11ed-bf79-4f76cba0af3c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d74efc6-3503-11ed-bf79-4f76cba0af3c"),
+					},
 				},
 			},
 
@@ -172,7 +179,9 @@ func Test_v1ChatroomsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("be0b33ea-3503-11ed-9ea4-d3c16293dae7"),
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("be0b33ea-3503-11ed-9ea4-d3c16293dae7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be0b33ea-3503-11ed-9ea4-d3c16293dae7"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -242,7 +251,9 @@ func Test_v1ChatroomsIDPut(t *testing.T) {
 			"update detail",
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("d11c222e-bc5b-11ee-940b-d3e8acd4c0d3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d11c222e-bc5b-11ee-940b-d3e8acd4c0d3"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -307,7 +318,9 @@ func Test_v1ChatroomsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("3ec65848-3504-11ed-bf5e-738f1d450725"),
 
 			&chatroom.Chatroom{
-				ID: uuid.FromStringOrNil("3ec65848-3504-11ed-bf5e-738f1d450725"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3ec65848-3504-11ed-bf5e-738f1d450725"),
+				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

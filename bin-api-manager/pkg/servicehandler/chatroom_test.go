@@ -59,7 +59,9 @@ func Test_ChatroomGetsByOwnerID(t *testing.T) {
 
 			[]chatchatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("3bb948f2-3777-11ed-861d-d79db76202e4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3bb948f2-3777-11ed-861d-d79db76202e4"),
+					},
 				},
 			},
 
@@ -69,7 +71,9 @@ func Test_ChatroomGetsByOwnerID(t *testing.T) {
 			},
 			[]*chatchatroom.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("3bb948f2-3777-11ed-861d-d79db76202e4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3bb948f2-3777-11ed-861d-d79db76202e4"),
+					},
 				},
 			},
 		},
@@ -128,12 +132,16 @@ func Test_ChatroomGet(t *testing.T) {
 			uuid.FromStringOrNil("b1698256-3777-11ed-acfe-e7f4e78652c6"),
 
 			&chatchatroom.Chatroom{
-				ID:         uuid.FromStringOrNil("b1698256-3777-11ed-acfe-e7f4e78652c6"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b1698256-3777-11ed-acfe-e7f4e78652c6"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&chatchatroom.WebhookMessage{
-				ID:         uuid.FromStringOrNil("b1698256-3777-11ed-acfe-e7f4e78652c6"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b1698256-3777-11ed-acfe-e7f4e78652c6"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -194,7 +202,9 @@ func Test_chatroomGetByChatIDAndOwnerID(t *testing.T) {
 
 			responseChatrooms: []chatchatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("737e2fda-bc02-11ee-8642-6b9fa97d4d3b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("737e2fda-bc02-11ee-8642-6b9fa97d4d3b"),
+					},
 				},
 			},
 
@@ -204,7 +214,9 @@ func Test_chatroomGetByChatIDAndOwnerID(t *testing.T) {
 				"owner_id": "734e22c2-bc02-11ee-b7b0-9f9f9f508f1b",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
-				ID: uuid.FromStringOrNil("737e2fda-bc02-11ee-8642-6b9fa97d4d3b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("737e2fda-bc02-11ee-8642-6b9fa97d4d3b"),
+				},
 			},
 		},
 	}
@@ -263,12 +275,16 @@ func Test_ChatroomDelete(t *testing.T) {
 			uuid.FromStringOrNil("e592fe04-3777-11ed-8055-3b96646165b9"),
 
 			&chatchatroom.Chatroom{
-				ID:         uuid.FromStringOrNil("e592fe04-3777-11ed-8055-3b96646165b9"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e592fe04-3777-11ed-8055-3b96646165b9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&chatchatroom.WebhookMessage{
-				ID:         uuid.FromStringOrNil("e592fe04-3777-11ed-8055-3b96646165b9"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e592fe04-3777-11ed-8055-3b96646165b9"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -352,7 +368,9 @@ func Test_ChatroomCreate(t *testing.T) {
 			},
 			responseChatrooms: []chatchatroom.Chatroom{
 				{
-					ID: uuid.FromStringOrNil("3eed1842-bc04-11ee-8e09-ef9647ed120e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3eed1842-bc04-11ee-8e09-ef9647ed120e"),
+					},
 				},
 			},
 
@@ -363,7 +381,9 @@ func Test_ChatroomCreate(t *testing.T) {
 				"owner_id": "d152e69e-105b-11ee-b395-eb18426de979",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
-				ID: uuid.FromStringOrNil("3eed1842-bc04-11ee-8e09-ef9647ed120e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3eed1842-bc04-11ee-8e09-ef9647ed120e"),
+				},
 			},
 		},
 	}
@@ -436,14 +456,22 @@ func Test_ChatroomUpdateBasicInfo(t *testing.T) {
 			"update detail",
 
 			&chatchatroom.Chatroom{
-				ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
-				CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
-				OwnerID:    uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
+					CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				},
 			},
 			&chatchatroom.WebhookMessage{
-				ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
-				CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
-				OwnerID:    uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
+					CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				},
 			},
 		},
 	}
