@@ -74,8 +74,10 @@ func (h *chatroomHandler) Create(
 		Identity: commonidentity.Identity{
 			ID:         id,
 			CustomerID: customerID,
-			OwnerType:  commonidentity.OwnerTypeAgent,
-			OwnerID:    ownerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeAgent,
+			OwnerID:   ownerID,
 		},
 		Type:           chatroomType,
 		ChatID:         chatID,

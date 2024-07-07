@@ -131,13 +131,17 @@ func Test_ServiceAgentChatroomGet(t *testing.T) {
 
 			responseChatroom: &chatchatroom.Chatroom{
 				Identity: commonidentity.Identity{
-					ID:      uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
+					ID: uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
+				},
+				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID:      uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
+					ID: uuid.FromStringOrNil("5c84e452-3ba2-11ef-98d5-eb4f7adf4754"),
+				},
+				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
 			},
@@ -199,13 +203,17 @@ func Test_ServiceAgentChatroomDelete(t *testing.T) {
 
 			responseChatroom: &chatchatroom.Chatroom{
 				Identity: commonidentity.Identity{
-					ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+					ID: uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+				},
+				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+					ID: uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+				},
+				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
 			},
@@ -285,7 +293,9 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 			responseChatrooms: []chatchatroom.Chatroom{
 				{
 					Identity: commonidentity.Identity{
-						ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+						ID: uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+					},
+					Owner: commonidentity.Owner{
 						OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					},
 				},
@@ -299,7 +309,9 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID:      uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+					ID: uuid.FromStringOrNil("52733472-3ba3-11ef-b4fc-2f4b52924d45"),
+				},
+				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
 			},

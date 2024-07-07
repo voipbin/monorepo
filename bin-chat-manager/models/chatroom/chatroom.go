@@ -11,6 +11,7 @@ import (
 // Chatroom defines chatroom
 type Chatroom struct {
 	commonidentity.Identity
+	commonidentity.Owner
 
 	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`

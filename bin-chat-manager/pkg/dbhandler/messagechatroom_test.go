@@ -41,7 +41,9 @@ func Test_MessagechatroomCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("7a0c38f0-20b9-11ed-8e47-b7f77cbe161e"),
 					CustomerID: uuid.FromStringOrNil("7a369a6e-20b9-11ed-adca-5713ccb2dc5e"),
-					OwnerID:    uuid.FromStringOrNil("77f158b0-da31-11ee-8884-abbae9b72b3c"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("77f158b0-da31-11ee-8884-abbae9b72b3c"),
 				},
 
 				ChatroomID: uuid.FromStringOrNil("7a9865d2-20b9-11ed-8243-3faf34c97731"),

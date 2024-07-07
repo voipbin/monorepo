@@ -10,6 +10,7 @@ import (
 // WebhookMessage defines
 type WebhookMessage struct {
 	commonidentity.Identity
+	commonidentity.Owner
 
 	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`
@@ -29,6 +30,7 @@ type WebhookMessage struct {
 func (h *Chatroom) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
+		Owner:    h.Owner,
 
 		Type:   h.Type,
 		ChatID: h.ChatID,

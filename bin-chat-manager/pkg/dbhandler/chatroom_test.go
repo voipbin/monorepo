@@ -48,7 +48,9 @@ func Test_ChatroomCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
 					CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
-					OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
 				},
 
 				Type:   chatroom.TypeNormal,
@@ -70,7 +72,9 @@ func Test_ChatroomCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9d4ea39d-e2dc-4254-99aa-04f05a7bedc7"),
 					CustomerID: uuid.FromStringOrNil("90b2d956-9d0a-426d-90e6-1e60585833fe"),
-					OwnerID:    uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("6512dac0-da31-11ee-95b1-b7241292ed37"),
 				},
 
 				Type:   chatroom.TypeNormal,

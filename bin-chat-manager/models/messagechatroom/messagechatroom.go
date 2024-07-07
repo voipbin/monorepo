@@ -13,6 +13,7 @@ import (
 // Messagechatroom defines the message for the chatroom
 type Messagechatroom struct {
 	commonidentity.Identity
+	commonidentity.Owner
 
 	ChatroomID    uuid.UUID `json:"chatroom_id"`
 	MessagechatID uuid.UUID `json:"messagechat_id"`

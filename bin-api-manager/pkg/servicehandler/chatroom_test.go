@@ -459,14 +459,18 @@ func Test_ChatroomUpdateBasicInfo(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
 					CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
-					OwnerID:    uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
 			},
 			&chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("996add0e-bc63-11ee-86e3-cb1450c93e7b"),
 					CustomerID: uuid.FromStringOrNil("999dc43a-bc63-11ee-9462-77cf3a1394d7"),
-					OwnerID:    uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
 			},
 		},
