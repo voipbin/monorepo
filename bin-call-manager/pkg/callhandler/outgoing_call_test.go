@@ -95,8 +95,10 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
-					OwnerType:  commonidentity.OwnerTypeAgent,
-					OwnerID:    uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
 				},
 				ChannelID: "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
 				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
@@ -281,8 +283,10 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 					CustomerID: uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
-					OwnerType:  commonidentity.OwnerTypeAgent,
-					OwnerID:    uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
 				},
 				ChannelID:      "d948969e-5de3-11ed-94f5-137ec429b6b6",
 				FlowID:         uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),

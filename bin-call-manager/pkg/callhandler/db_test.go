@@ -116,8 +116,10 @@ func Test_Create(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("db8e0052-5d15-11ed-afd1-f3139883b1f4"),
 					CustomerID: uuid.FromStringOrNil("dc375314-5d15-11ed-afd7-b3f36cf2d4a6"),
-					OwnerType:  commonidentity.OwnerTypeAgent,
-					OwnerID:    uuid.FromStringOrNil("812ff854-2bfe-11ef-9d3d-6fe5b3e2de92"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("812ff854-2bfe-11ef-9d3d-6fe5b3e2de92"),
 				},
 
 				ChannelID: "dc88e2e2-5d15-11ed-bd52-f3db2e20c793",

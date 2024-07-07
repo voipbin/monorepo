@@ -15,6 +15,7 @@ import (
 // WebhookMessage defines
 type WebhookMessage struct {
 	commonidentity.Identity
+	commonidentity.Owner
 
 	FlowID       uuid.UUID `json:"flow_id"` // flow id
 	ActiveflowID uuid.UUID `json:"activeflow_id"`
@@ -54,6 +55,7 @@ type WebhookMessage struct {
 func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
+		Owner:    h.Owner,
 
 		FlowID:       h.FlowID,
 		ActiveflowID: h.ActiveFlowID,

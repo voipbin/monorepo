@@ -10,6 +10,7 @@ import (
 // Agent data model
 type Agent struct {
 	commonidentity.Identity
+	commonidentity.Owner
 
 	Username     string `json:"username"`      // agent's username
 	PasswordHash string `json:"password_hash"` // hashed Password

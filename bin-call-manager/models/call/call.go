@@ -19,12 +19,7 @@ import (
 // Call struct represent asterisk's channel information
 type Call struct {
 	commonidentity.Identity
-
-	// // identity
-	// ID         uuid.UUID `json:"id"`
-	// CustomerID uuid.UUID `json:"customer_id"`
-	// OwnerType  OwnerType `json:"owner_type"`
-	// OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Owner
 
 	ChannelID string `json:"channel_id"`
 	BridgeID  string `json:"bridge_id"` // call bridge id

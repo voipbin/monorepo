@@ -39,8 +39,10 @@ func Test_CallCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
 					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
-					OwnerType:  commonidentity.OwnerTypeAgent,
-					OwnerID:    uuid.FromStringOrNil("7277e05c-2bf8-11ef-a54d-dfe525b51ec5"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("7277e05c-2bf8-11ef-a54d-dfe525b51ec5"),
 				},
 
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
@@ -97,8 +99,10 @@ func Test_CallCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
 					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
-					OwnerType:  commonidentity.OwnerTypeAgent,
-					OwnerID:    uuid.FromStringOrNil("7277e05c-2bf8-11ef-a54d-dfe525b51ec5"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("7277e05c-2bf8-11ef-a54d-dfe525b51ec5"),
 				},
 
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",

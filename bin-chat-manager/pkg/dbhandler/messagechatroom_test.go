@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -28,16 +29,22 @@ func Test_MessagechatroomCreate(t *testing.T) {
 			"empty all",
 
 			&messagechatroom.Messagechatroom{
-				ID: uuid.FromStringOrNil("79d814a8-20b9-11ed-b450-d7f8fee3b91c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("79d814a8-20b9-11ed-b450-d7f8fee3b91c"),
+				},
 			},
 		},
 		{
 			"all items",
 
 			&messagechatroom.Messagechatroom{
-				ID:         uuid.FromStringOrNil("7a0c38f0-20b9-11ed-8e47-b7f77cbe161e"),
-				CustomerID: uuid.FromStringOrNil("7a369a6e-20b9-11ed-adca-5713ccb2dc5e"),
-				OwnerID:    uuid.FromStringOrNil("77f158b0-da31-11ee-8884-abbae9b72b3c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7a0c38f0-20b9-11ed-8e47-b7f77cbe161e"),
+					CustomerID: uuid.FromStringOrNil("7a369a6e-20b9-11ed-adca-5713ccb2dc5e"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("77f158b0-da31-11ee-8884-abbae9b72b3c"),
+				},
 
 				ChatroomID: uuid.FromStringOrNil("7a9865d2-20b9-11ed-8243-3faf34c97731"),
 
@@ -107,8 +114,10 @@ func Test_MessagechatroomGets(t *testing.T) {
 			"normal",
 			[]*messagechatroom.Messagechatroom{
 				{
-					ID:            uuid.FromStringOrNil("7afc1816-20b9-11ed-9ff2-838e10ae7629"),
-					CustomerID:    uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("7afc1816-20b9-11ed-9ff2-838e10ae7629"),
+						CustomerID: uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					},
 					ChatroomID:    uuid.FromStringOrNil("c84b4484-bad2-11ee-be7f-1bb4bcbab992"),
 					MessagechatID: uuid.FromStringOrNil("c87ad8d4-bad2-11ee-964d-2f7ccf4aa5aa"),
 
@@ -116,8 +125,10 @@ func Test_MessagechatroomGets(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:            uuid.FromStringOrNil("7b2f6bd0-20b9-11ed-9c4d-e3fcfa19401a"),
-					CustomerID:    uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("7b2f6bd0-20b9-11ed-9c4d-e3fcfa19401a"),
+						CustomerID: uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					},
 					ChatroomID:    uuid.FromStringOrNil("c84b4484-bad2-11ee-be7f-1bb4bcbab992"),
 					MessagechatID: uuid.FromStringOrNil("c8a3c082-bad2-11ee-bb40-878bc8a951a1"),
 
@@ -136,8 +147,10 @@ func Test_MessagechatroomGets(t *testing.T) {
 
 			[]*messagechatroom.Messagechatroom{
 				{
-					ID:            uuid.FromStringOrNil("7afc1816-20b9-11ed-9ff2-838e10ae7629"),
-					CustomerID:    uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("7afc1816-20b9-11ed-9ff2-838e10ae7629"),
+						CustomerID: uuid.FromStringOrNil("7acab154-20b9-11ed-9a1e-0738cbdd7876"),
+					},
 					ChatroomID:    uuid.FromStringOrNil("c84b4484-bad2-11ee-be7f-1bb4bcbab992"),
 					MessagechatID: uuid.FromStringOrNil("c87ad8d4-bad2-11ee-964d-2f7ccf4aa5aa"),
 
@@ -196,15 +209,19 @@ func Test_MessagechatroomGetsByChatroomID(t *testing.T) {
 			10,
 			[]*messagechatroom.Messagechatroom{
 				{
-					ID:         uuid.FromStringOrNil("9c6ab1ec-32b1-11ed-95e5-b3a4aecc4139"),
-					CustomerID: uuid.FromStringOrNil("b2ac47ea-32b1-11ed-aa0f-67af7ca6642e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("9c6ab1ec-32b1-11ed-95e5-b3a4aecc4139"),
+						CustomerID: uuid.FromStringOrNil("b2ac47ea-32b1-11ed-aa0f-67af7ca6642e"),
+					},
 					ChatroomID: uuid.FromStringOrNil("9b92a996-32b1-11ed-af59-53f7f7a54e1c"),
 					TMCreate:   "2020-04-19T03:22:17.995000",
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("b28241ac-32b1-11ed-8c03-afc480f989f0"),
-					CustomerID: uuid.FromStringOrNil("b2ac47ea-32b1-11ed-aa0f-67af7ca6642e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("b28241ac-32b1-11ed-8c03-afc480f989f0"),
+						CustomerID: uuid.FromStringOrNil("b2ac47ea-32b1-11ed-aa0f-67af7ca6642e"),
+					},
 					ChatroomID: uuid.FromStringOrNil("9b92a996-32b1-11ed-af59-53f7f7a54e1c"),
 					TMCreate:   "2020-04-18T03:22:17.995000",
 					TMDelete:   DefaultTimeStamp,
@@ -256,11 +273,12 @@ func Test_MessagechatroomDelete(t *testing.T) {
 			"normal",
 
 			&messagechatroom.Messagechatroom{
-
-				ID:         uuid.FromStringOrNil("0abd8bb0-20ba-11ed-80da-5ff9e046c29f"),
-				CustomerID: uuid.FromStringOrNil("0aee266c-20ba-11ed-9784-cb1e7c4182d4"),
-				TMCreate:   "2020-04-19T03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0abd8bb0-20ba-11ed-80da-5ff9e046c29f"),
+					CustomerID: uuid.FromStringOrNil("0aee266c-20ba-11ed-9784-cb1e7c4182d4"),
+				},
+				TMCreate: "2020-04-19T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
