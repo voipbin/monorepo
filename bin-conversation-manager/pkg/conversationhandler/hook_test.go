@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -71,7 +72,9 @@ func Test_Hook(t *testing.T) {
 			},
 			responseConversations: []*conversation.Conversation{
 				{
-					CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+					Identity: commonidentity.Identity{
+						CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+					},
 				},
 			},
 			responseUUIDs: []uuid.UUID{
@@ -175,7 +178,9 @@ func Test_hookLine(t *testing.T) {
 			}`),
 
 			responseConversation: &conversation.Conversation{
-				ID:            uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
+				},
 				ReferenceType: conversation.ReferenceTypeLine,
 			},
 
@@ -184,7 +189,9 @@ func Test_hookLine(t *testing.T) {
 			},
 			responseConversations: []*conversation.Conversation{
 				{
-					CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+					Identity: commonidentity.Identity{
+						CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+					},
 				},
 			},
 			responseMessages: []*message.Message{

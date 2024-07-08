@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -44,7 +45,9 @@ func Test_Event(t *testing.T) {
 			},
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			responseConversation: &conversation.Conversation{
-				ID: uuid.FromStringOrNil("f45df2d0-f12d-11ec-bd7f-2f3e6d9a6218"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f45df2d0-f12d-11ec-bd7f-2f3e6d9a6218"),
+				},
 			},
 		},
 	}
@@ -123,7 +126,9 @@ func Test_eventSMS(t *testing.T) {
 			},
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			responseConversation: &conversation.Conversation{
-				ID: uuid.FromStringOrNil("20d80048-f12f-11ec-8f8d-affa9735f9de"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("20d80048-f12f-11ec-8f8d-affa9735f9de"),
+				},
 			},
 		},
 	}

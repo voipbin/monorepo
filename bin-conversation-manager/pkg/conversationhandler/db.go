@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -55,8 +56,15 @@ func (h *conversationHandler) Create(
 
 	id := h.utilHandler.UUIDCreate()
 	tmp := &conversation.Conversation{
-		ID:            id,
-		CustomerID:    customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeNone,
+			OwnerID:   uuid.Nil,
+		},
+
 		Name:          name,
 		Detail:        detail,
 		ReferenceType: referenceType,

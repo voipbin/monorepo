@@ -2,6 +2,9 @@ create table conversation_conversations(
   -- identity
   id            binary(16),     -- id
   customer_id   binary(16),     -- customer id
+  owner_type    varchar(255),   -- owner type
+  owner_id      binary(16),     -- owner id
+
   account_id    binary(16),     -- account id
 
   name    varchar(255),
@@ -23,3 +26,4 @@ create table conversation_conversations(
 
 create index idx_conversation_conversations_customerid on conversation_conversations(customer_id);
 create index idx_conversation_conversations_reference_type_reference_id on conversation_conversations(reference_type, reference_id);
+create index idx_conversation_conversations_owner_id on conversation_conversations(owner_id);

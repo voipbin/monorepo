@@ -6,14 +6,15 @@ import (
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
-	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
-
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-conversation-manager/pkg/conversationhandler"
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
 )
 
 func Test_processV1ConversationsGet(t *testing.T) {
@@ -39,8 +40,10 @@ func Test_processV1ConversationsGet(t *testing.T) {
 
 			[]*conversation.Conversation{
 				{
-					ID:         uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
-					CustomerID: uuid.FromStringOrNil("64a3cbd8-e863-11ec-85de-1bcd09d3872e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
+						CustomerID: uuid.FromStringOrNil("64a3cbd8-e863-11ec-85de-1bcd09d3872e"),
+					},
 				},
 			},
 
@@ -51,7 +54,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -63,12 +66,16 @@ func Test_processV1ConversationsGet(t *testing.T) {
 
 			[]*conversation.Conversation{
 				{
-					ID:         uuid.FromStringOrNil("b7ac843c-e863-11ec-9652-0ff162b38a15"),
-					CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("b7ac843c-e863-11ec-9652-0ff162b38a15"),
+						CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("c45aec8c-e863-11ec-9bae-4fcfe883444a"),
-					CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c45aec8c-e863-11ec-9bae-4fcfe883444a"),
+						CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+					},
 				},
 			},
 			&rabbitmqhandler.Request{
@@ -78,7 +85,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"b7ac843c-e863-11ec-9652-0ff162b38a15","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"c45aec8c-e863-11ec-9bae-4fcfe883444a","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"b7ac843c-e863-11ec-9652-0ff162b38a15","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"c45aec8c-e863-11ec-9bae-4fcfe883444a","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -127,7 +134,9 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
 
 			&conversation.Conversation{
-				ID: uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
+				},
 			},
 
 			&rabbitmqhandler.Request{
@@ -137,7 +146,7 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -353,7 +362,9 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 			},
 
 			responseConversation: &conversation.Conversation{
-				ID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+				},
 			},
 
 			expectConversationID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
@@ -363,7 +374,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"8d8ab6ae-0074-11ee-80d0-df60c15605d7","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"8d8ab6ae-0074-11ee-80d0-df60c15605d7","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
