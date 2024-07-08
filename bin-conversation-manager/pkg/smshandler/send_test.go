@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -33,7 +34,9 @@ func Test_Send(t *testing.T) {
 			name: "received message",
 
 			conversation: &conversation.Conversation{
-				ID:          uuid.FromStringOrNil("b3181e20-ffd4-11ed-aa4e-37a91163c788"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b3181e20-ffd4-11ed-aa4e-37a91163c788"),
+				},
 				ReferenceID: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
 			},
 			transactionID: "b37322e8-ffd4-11ed-a984-7b6db99c07e8",

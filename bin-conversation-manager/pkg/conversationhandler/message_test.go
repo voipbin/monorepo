@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 
 	"github.com/gofrs/uuid"
@@ -38,8 +39,10 @@ func Test_MessageSend(t *testing.T) {
 			[]media.Media{},
 
 			&conversation.Conversation{
-				ID:            uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
-				CustomerID:    uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
+					CustomerID: uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
+				},
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
 			},

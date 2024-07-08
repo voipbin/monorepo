@@ -2,15 +2,17 @@ package conversation
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
 
 // Conversation defines
 type Conversation struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	AccountID  uuid.UUID `json:"account_id"`
+	commonidentity.Identity
+	commonidentity.Owner
+
+	AccountID uuid.UUID `json:"account_id"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`

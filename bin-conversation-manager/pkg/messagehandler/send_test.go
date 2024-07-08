@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -39,8 +40,10 @@ func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 			name: "line text type",
 
 			conversation: &conversation.Conversation{
-				ID:            uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
-				CustomerID:    uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
+					CustomerID: uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
+				},
 				AccountID:     uuid.FromStringOrNil("086b4920-fe3f-11ed-b570-bf801ec89642"),
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
