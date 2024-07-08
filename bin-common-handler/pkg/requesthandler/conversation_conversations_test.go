@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -48,7 +49,9 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d"}`),
 			},
 			&cvconversation.Conversation{
-				ID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+				},
 			},
 		},
 	}
@@ -116,10 +119,14 @@ func Test_ConversationV1ConversationGetsByCustomerID(t *testing.T) {
 
 			[]cvconversation.Conversation{
 				{
-					ID: uuid.FromStringOrNil("30071608-7e43-11ec-b04a-bb4270e3e223"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30071608-7e43-11ec-b04a-bb4270e3e223"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("5ca81a9a-7e43-11ec-b271-5b65823bfdd3"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5ca81a9a-7e43-11ec-b271-5b65823bfdd3"),
+					},
 				},
 			},
 		},
@@ -324,7 +331,9 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 			},
 
 			expectRes: &cvconversation.Conversation{
-				ID: uuid.FromStringOrNil("1397bde6-007a-11ee-903f-4b1fc025c9a9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1397bde6-007a-11ee-903f-4b1fc025c9a9"),
+				},
 			},
 		},
 	}

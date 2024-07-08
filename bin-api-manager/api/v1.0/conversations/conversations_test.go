@@ -60,13 +60,17 @@ func Test_conversationsGet(t *testing.T) {
 
 			[]*cvconversation.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("120bc6da-ed2e-11ec-839d-cb324c315bf3"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("120bc6da-ed2e-11ec-839d-cb324c315bf3"),
+					},
 				},
 			},
 			&response.BodyConversationsGET{
 				Result: []*cvconversation.WebhookMessage{
 					{
-						ID: uuid.FromStringOrNil("120bc6da-ed2e-11ec-839d-cb324c315bf3"),
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("120bc6da-ed2e-11ec-839d-cb324c315bf3"),
+						},
 					},
 				},
 			},
@@ -139,7 +143,9 @@ func Test_conversationsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("4d9ae3d4-ed2e-11ec-a384-1b8e70bb589d"),
 
 			&cvconversation.WebhookMessage{
-				ID: uuid.FromStringOrNil("4d9ae3d4-ed2e-11ec-a384-1b8e70bb589d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4d9ae3d4-ed2e-11ec-a384-1b8e70bb589d"),
+				},
 			},
 		},
 	}
@@ -369,7 +375,9 @@ func Test_conversationsIDPut(t *testing.T) {
 			},
 
 			&cvconversation.WebhookMessage{
-				ID: uuid.FromStringOrNil("0e288b58-007d-11ee-b0ac-8be49d249ca9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e288b58-007d-11ee-b0ac-8be49d249ca9"),
+				},
 			},
 		},
 	}
