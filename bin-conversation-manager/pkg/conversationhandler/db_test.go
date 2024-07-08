@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -32,8 +33,10 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("e0258e08-e6e8-11ec-b5c7-ff2400334630"),
 
 			&conversation.Conversation{
-				ID:         uuid.FromStringOrNil("e0258e08-e6e8-11ec-b5c7-ff2400334630"),
-				CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e0258e08-e6e8-11ec-b5c7-ff2400334630"),
+					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				},
 			},
 		},
 	}
@@ -84,8 +87,10 @@ func Test_GetByReferenceInfo(t *testing.T) {
 			"a481fe6c-e6e9-11ec-92f7-6366decbd9e8",
 
 			&conversation.Conversation{
-				ID:         uuid.FromStringOrNil("a9341b0c-e6e9-11ec-a3a2-0b511930bae5"),
-				CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a9341b0c-e6e9-11ec-a3a2-0b511930bae5"),
+					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				},
 			},
 		},
 	}
@@ -157,13 +162,17 @@ func Test_Create(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("d2a852d8-0069-11ee-96b8-3fffef7f1833"),
 			responseConversation: &conversation.Conversation{
-				ID:         uuid.FromStringOrNil("1c73620a-e6e8-11ec-89d7-a788fc793ba3"),
-				CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1c73620a-e6e8-11ec-89d7-a788fc793ba3"),
+					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				},
 			},
 
 			expectConversation: &conversation.Conversation{
-				ID:            uuid.FromStringOrNil("d2a852d8-0069-11ee-96b8-3fffef7f1833"),
-				CustomerID:    uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d2a852d8-0069-11ee-96b8-3fffef7f1833"),
+					CustomerID: uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
+				},
 				Name:          "test conversation",
 				Detail:        "test detail",
 				ReferenceType: conversation.ReferenceTypeLine,
@@ -232,7 +241,9 @@ func Test_ConversationGetsByConversationID(t *testing.T) {
 
 			[]*conversation.Conversation{
 				{
-					ID: uuid.FromStringOrNil("643d8d88-e862-11ec-a93c-bf31836c63e8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("643d8d88-e862-11ec-a93c-bf31836c63e8"),
+					},
 				},
 			},
 		},
@@ -287,7 +298,9 @@ func Test_Update(t *testing.T) {
 			detail:           "test detail",
 
 			responseConversation: &conversation.Conversation{
-				ID: uuid.FromStringOrNil("4455607e-006a-11ee-bfbb-032b6e5d2c44"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4455607e-006a-11ee-bfbb-032b6e5d2c44"),
+				},
 			},
 		},
 	}

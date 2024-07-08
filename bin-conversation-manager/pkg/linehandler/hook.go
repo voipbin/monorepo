@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -117,8 +118,14 @@ func (h *lineHandler) hookHandleFollow(ctx context.Context, ac *account.Account,
 
 	// create a conversation
 	res := &conversation.Conversation{
-		ID:            uuid.Nil,
-		CustomerID:    ac.CustomerID,
+		Identity: commonidentity.Identity{
+			ID:         uuid.Nil,
+			CustomerID: ac.CustomerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeNone,
+			OwnerID:   uuid.Nil,
+		},
 		AccountID:     ac.ID,
 		Name:          p.TargetName,
 		Detail:        "Conversation with " + p.TargetName,
