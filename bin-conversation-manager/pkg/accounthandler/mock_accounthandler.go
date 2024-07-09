@@ -81,19 +81,19 @@ func (mr *MockAccountHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAccountHandler)(nil).Get), ctx, id)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockAccountHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*account.Account, error) {
+// Gets mocks base method.
+func (m *MockAccountHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockAccountHandlerMockRecorder) GetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockAccountHandlerMockRecorder) Gets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).GetsByCustomerID), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, pageToken, pageSize, filters)
 }
 
 // Update mocks base method.

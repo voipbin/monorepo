@@ -2848,19 +2848,19 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGet(ctx, accountI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountGet), ctx, accountID)
 }
 
-// ConversationV1AccountGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]account0.Account, error) {
+// ConversationV1AccountGets mocks base method.
+func (m *MockRequestHandler) ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]account0.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1AccountGetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "ConversationV1AccountGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConversationV1AccountGetsByCustomerID indicates an expected call of ConversationV1AccountGetsByCustomerID.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+// ConversationV1AccountGets indicates an expected call of ConversationV1AccountGets.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountGetsByCustomerID), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountGets), ctx, pageToken, pageSize, filters)
 }
 
 // ConversationV1AccountUpdate mocks base method.
@@ -2893,19 +2893,19 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGet(ctx, con
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGet), ctx, conversationID)
 }
 
-// ConversationV1ConversationGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) ConversationV1ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]conversation.Conversation, error) {
+// ConversationV1ConversationGets mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1ConversationGetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "ConversationV1ConversationGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConversationV1ConversationGetsByCustomerID indicates an expected call of ConversationV1ConversationGetsByCustomerID.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+// ConversationV1ConversationGets indicates an expected call of ConversationV1ConversationGets.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGetsByCustomerID), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGets), ctx, pageToken, pageSize, filters)
 }
 
 // ConversationV1ConversationMessageGetsByConversationID mocks base method.

@@ -218,15 +218,15 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 	}
 }
 
-func Test_ConversationGetsByCustomerID(t *testing.T) {
+func Test_ConversationGets(t *testing.T) {
 
 	tests := []struct {
 		name          string
 		conversations []*conversation.Conversation
 
-		customerID uuid.UUID
-		token      string
-		limit      uint64
+		token   string
+		limit   uint64
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*conversation.Conversation
@@ -236,12 +236,12 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 			conversations: []*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("3358a1b2-e42a-11ec-9052-23951983d6b2"),
-						CustomerID: uuid.FromStringOrNil("2e7d337e-e42a-11ec-b705-07b2b80e4ad5"),
+						ID:         uuid.FromStringOrNil("a4b1d416-3e12-11ef-9007-3bcec17f6287"),
+						CustomerID: uuid.FromStringOrNil("a55f730a-3e12-11ef-adec-df6b60fe6b19"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: commonidentity.OwnerTypeAgent,
-						OwnerID:   uuid.FromStringOrNil("ca6a040e-3d35-11ef-a473-4740ccf31c05"),
+						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
 					Name:          "conversation name",
 					Detail:        "conversation detail",
@@ -252,12 +252,12 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 				},
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("193eaefe-3d36-11ef-9d42-8ba5672f593d"),
-						CustomerID: uuid.FromStringOrNil("2e7d337e-e42a-11ec-b705-07b2b80e4ad5"),
+						ID:         uuid.FromStringOrNil("a52972d2-3e12-11ef-ab7c-9303bf77ff4d"),
+						CustomerID: uuid.FromStringOrNil("a55f730a-3e12-11ef-adec-df6b60fe6b19"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: commonidentity.OwnerTypeAgent,
-						OwnerID:   uuid.FromStringOrNil("ca6a040e-3d35-11ef-a473-4740ccf31c05"),
+						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
 					Name:          "conversation name",
 					Detail:        "conversation detail",
@@ -268,20 +268,23 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 				},
 			},
 
-			customerID: uuid.FromStringOrNil("2e7d337e-e42a-11ec-b705-07b2b80e4ad5"),
-			token:      "2022-06-18 03:22:17.995000",
-			limit:      100,
+			token: "2022-06-18 03:22:17.995000",
+			limit: 100,
+			filters: map[string]string{
+				"deleted":     "false",
+				"customer_id": "a55f730a-3e12-11ef-adec-df6b60fe6b19",
+			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			expectRes: []*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("3358a1b2-e42a-11ec-9052-23951983d6b2"),
-						CustomerID: uuid.FromStringOrNil("2e7d337e-e42a-11ec-b705-07b2b80e4ad5"),
+						ID:         uuid.FromStringOrNil("a4b1d416-3e12-11ef-9007-3bcec17f6287"),
+						CustomerID: uuid.FromStringOrNil("a55f730a-3e12-11ef-adec-df6b60fe6b19"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: commonidentity.OwnerTypeAgent,
-						OwnerID:   uuid.FromStringOrNil("ca6a040e-3d35-11ef-a473-4740ccf31c05"),
+						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
 
 					Name:          "conversation name",
@@ -296,12 +299,12 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 				},
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("193eaefe-3d36-11ef-9d42-8ba5672f593d"),
-						CustomerID: uuid.FromStringOrNil("2e7d337e-e42a-11ec-b705-07b2b80e4ad5"),
+						ID:         uuid.FromStringOrNil("a52972d2-3e12-11ef-ab7c-9303bf77ff4d"),
+						CustomerID: uuid.FromStringOrNil("a55f730a-3e12-11ef-adec-df6b60fe6b19"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: commonidentity.OwnerTypeAgent,
-						OwnerID:   uuid.FromStringOrNil("ca6a040e-3d35-11ef-a473-4740ccf31c05"),
+						OwnerID:   uuid.FromStringOrNil("a5932312-3e12-11ef-ba41-3720b253edff"),
 					},
 
 					Name:          "conversation name",
@@ -341,7 +344,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConversationGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.ConversationGets(ctx, tt.limit, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
