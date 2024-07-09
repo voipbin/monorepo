@@ -22,14 +22,14 @@ import (
 type DBHandler interface {
 	AccountCreate(ctx context.Context, ac *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*account.Account, error)
+	AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error)
 	AccountSet(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 
 	ConversationCreate(ctx context.Context, cv *conversation.Conversation) error
 	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
 	ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error)
-	ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*conversation.Conversation, error)
+	ConversationGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conversation.Conversation, error)
 	ConversationSet(ctx context.Context, id uuid.UUID, name string, detail string) error
 
 	MediaCreate(ctx context.Context, m *media.Media) error

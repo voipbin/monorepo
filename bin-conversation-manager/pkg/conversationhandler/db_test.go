@@ -221,25 +221,27 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_ConversationGetsByConversationID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
 		responseConversations []*conversation.Conversation
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("63e4949e-e862-11ec-8053-5fd7299c0a16"),
-			"2022-04-18 03:22:17.995000",
-			100,
+			pageToken: "2022-04-18 03:22:17.995000",
+			pageSize:  100,
+			filters: map[string]string{
+				"customer_id": "62fe906c-3e13-11ef-9a64-270aea3013c5",
+			},
 
-			[]*conversation.Conversation{
+			responseConversations: []*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("643d8d88-e862-11ec-a93c-bf31836c63e8"),
@@ -264,9 +266,9 @@ func Test_ConversationGetsByConversationID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseConversations, nil)
+			mockDB.EXPECT().ConversationGets(ctx, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseConversations, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := h.Gets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

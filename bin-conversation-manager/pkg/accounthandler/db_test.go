@@ -148,23 +148,25 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		cusotmerID uuid.UUID
-		size       uint64
-		token      string
+		size    uint64
+		token   string
+		filters map[string]string
 
 		responseAccounts []*account.Account
 	}{
 		{
 			name: "normal",
 
-			cusotmerID: uuid.FromStringOrNil("1040dd7c-fe49-11ed-b1a6-2f664beba6f5"),
-			size:       10,
-			token:      "2020-05-03%2021:35:02.809",
+			size:  10,
+			token: "2020-05-03%2021:35:02.809",
+			filters: map[string]string{
+				"customer_id": "99a9734a-3e16-11ef-94d4-9b7a8c5e0f6c",
+			},
 
 			responseAccounts: []*account.Account{
 				{
@@ -191,9 +193,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGetsByCustomerID(ctx, tt.cusotmerID, tt.token, tt.size).Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAccounts, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.cusotmerID, tt.token, tt.size)
+			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

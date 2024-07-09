@@ -55,8 +55,13 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
+	filters := map[string]string{
+		"deleted":     "false",
+		"customer_id": a.CustomerID.String(),
+	}
+
 	// get tmp
-	tmp, err := h.reqHandler.ConversationV1ConversationGetsByCustomerID(ctx, a.CustomerID, token, size)
+	tmp, err := h.reqHandler.ConversationV1ConversationGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)

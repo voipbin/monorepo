@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -86,6 +87,7 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
+	utilHandler         utilhandler.UtilHandler
 	accountHandler      accounthandler.AccountHandler
 	conversationHandler conversationhandler.ConversationHandler
 	messageHandler      messagehandler.MessageHandler
@@ -101,6 +103,7 @@ func NewListenHandler(
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
 
+		utilHandler:         utilhandler.NewUtilHandler(),
 		accountHandler:      accountHandler,
 		conversationHandler: conversationHandler,
 		messageHandler:      messageHandler,

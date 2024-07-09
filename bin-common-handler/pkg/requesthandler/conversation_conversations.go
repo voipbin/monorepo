@@ -38,11 +38,14 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 	return &res, nil
 }
 
-// ConversationV1ConversationGetsByCustomerID sends a request to conversation-manager
+// ConversationV1ConversationGets sends a request to conversation-manager
 // to getting a list of conversation info.
 // it returns detail list of conversation info if it succeed.
-func (r *requestHandler) ConversationV1ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cvconversation.Conversation, error) {
-	uri := fmt.Sprintf("/v1/conversations?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cvconversation.Conversation, error) {
+	uri := fmt.Sprintf("/v1/conversations?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	// parse filters
+	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
 	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
 	switch {

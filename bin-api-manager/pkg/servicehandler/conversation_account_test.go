@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
+func Test_ConversationAccount(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -26,8 +26,9 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		response  []cvaccount.Account
-		expectRes []*cvaccount.WebhookMessage
+		responseAccounts []cvaccount.Account
+		expectFilters    map[string]string
+		expectRes        []*cvaccount.WebhookMessage
 	}{
 		{
 			"normal",
@@ -48,6 +49,10 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("e7ec5106-0048-11ee-af79-4b073b23214a"),
 				},
+			},
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*cvaccount.WebhookMessage{
 				{
@@ -72,10 +77,9 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseAccounts, nil)
 			res, err := h.ConversationAccountGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -28,8 +28,10 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		response  []cvconversation.Conversation
-		expectRes []*cvconversation.WebhookMessage
+		responseConversations []cvconversation.Conversation
+
+		expectFilters map[string]string
+		expectRes     []*cvconversation.WebhookMessage
 	}{
 		{
 			"normal",
@@ -54,6 +56,10 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 						ID: uuid.FromStringOrNil("18c13288-ed21-11ec-9d0f-c7be55dc87d7"),
 					},
 				},
+			},
+			map[string]string{
+				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				"deleted":     "false",
 			},
 			[]*cvconversation.WebhookMessage{
 				{
@@ -85,7 +91,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseConversations, nil)
 			res, err := h.ConversationGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

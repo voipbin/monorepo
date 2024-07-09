@@ -53,8 +53,14 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
+	// filters
+	filters := map[string]string{
+		"customer_id": a.CustomerID.String(),
+		"deleted":     "false", // we don't need deleted items
+	}
+
 	// get
-	tmp, err := h.reqHandler.ConversationV1AccountGetsByCustomerID(ctx, a.CustomerID, token, size)
+	tmp, err := h.reqHandler.ConversationV1AccountGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get conversation account infos from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find conversation accounts info. err: %v", err)
