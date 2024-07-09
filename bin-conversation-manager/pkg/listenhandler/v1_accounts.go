@@ -34,11 +34,10 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhan
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// get filters
+	filters := h.utilHandler.URLParseFilters(u)
 
-	log.Debugf("Received request. customer_id: %s, size: %d, token: %s", customerID, pageSize, pageToken)
-	tmps, err := h.accountHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	tmps, err := h.accountHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
 		return simpleResponse(500), nil

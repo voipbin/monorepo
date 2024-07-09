@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -18,32 +19,37 @@ func Test_processV1AccountsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		expectCustomerID uuid.UUID
-		expectPageSize   uint64
-		expectPageToken  string
+		request *rabbitmqhandler.Request
 
+		expectPageSize  uint64
+		expectPageToken string
+
+		responseFilters  map[string]string
 		responseAccounts []*account.Account
 
-		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
 			name: "normal",
 
-			expectCustomerID: uuid.FromStringOrNil("6af495b0-fecb-11ed-b59e-e70b3afff8a1"),
-			expectPageSize:   10,
-			expectPageToken:  "2021-03-01 03:30:17.000000",
+			request: &rabbitmqhandler.Request{
+				URI:    "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=6af495b0-fecb-11ed-b59e-e70b3afff8a1&filter_deleted=false",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
 
+			expectPageSize:  10,
+			expectPageToken: "2021-03-01 03:30:17.000000",
+
+			responseFilters: map[string]string{
+				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
+				"deleted":     "false",
+			},
 			responseAccounts: []*account.Account{
 				{
 					ID: uuid.FromStringOrNil("645891fe-e863-11ec-b291-9f454e92f1bb"),
 				},
 			},
 
-			request: &rabbitmqhandler.Request{
-				URI:    "/v1/accounts?customer_id=6af495b0-fecb-11ed-b59e-e70b3afff8a1&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
-			},
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -53,10 +59,18 @@ func Test_processV1AccountsGet(t *testing.T) {
 		{
 			name: "2 results",
 
-			expectCustomerID: uuid.FromStringOrNil("6b2efe9e-fecb-11ed-aa65-ff71705cd816"),
-			expectPageSize:   10,
-			expectPageToken:  "2021-03-01 03:30:17.000000",
+			request: &rabbitmqhandler.Request{
+				URI:    "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=6b2efe9e-fecb-11ed-aa65-ff71705cd816&filter_deleted=false",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
 
+			expectPageSize:  10,
+			expectPageToken: "2021-03-01 03:30:17.000000",
+
+			responseFilters: map[string]string{
+				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
+				"deleted":     "false",
+			},
 			responseAccounts: []*account.Account{
 				{
 					ID: uuid.FromStringOrNil("6b5f9da6-fecb-11ed-a0ea-4fdabd236387"),
@@ -65,10 +79,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("6b906c9c-fecb-11ed-a341-f38426e7e737"),
 				},
 			},
-			request: &rabbitmqhandler.Request{
-				URI:    "/v1/accounts?customer_id=6b2efe9e-fecb-11ed-aa65-ff71705cd816&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
-			},
+
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -82,15 +93,18 @@ func Test_processV1AccountsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:     mockSock,
+				utilHandler:    mockUtil,
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().GetsByCustomerID(gomock.Any(), tt.expectCustomerID, tt.expectPageToken, tt.expectPageSize).Return(tt.responseAccounts, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.responseFilters).Return(tt.responseAccounts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

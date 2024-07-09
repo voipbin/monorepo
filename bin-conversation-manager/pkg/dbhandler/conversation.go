@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -283,32 +284,57 @@ func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversat
 	return res, nil
 }
 
-// ConversationGetsByCustomerID returns list of conversation.
-func (h *handler) ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*conversation.Conversation, error) {
+// ConversationGets returns a list of conversations.
+func (h *handler) ConversationGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conversation.Conversation, error) {
 
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
 	`, conversationSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "customer_id", "owner_id", "account_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ConversationGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. ConversationGets. err: %v", err)
 	}
 	defer rows.Close()
 
-	var res []*conversation.Conversation
+	res := []*conversation.Conversation{}
 	for rows.Next() {
 		u, err := h.conversationGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. ConversationGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("could not get data. ConversationGets, err: %v", err)
 		}
 
 		res = append(res, u)

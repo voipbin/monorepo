@@ -22,15 +22,15 @@ func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID
 	return h.db.ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID)
 }
 
-// GetsByCustomerID returns list of conversations
-func (h *conversationHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*conversation.Conversation, error) {
+// Gets returns list of conversations
+func (h *conversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
+		"func":    "Gets",
+		"filters": filters,
 	})
-	log.Debugf("Getting a list of conversations. customer_id: %s", customerID)
+	log.Debugf("Getting a list of conversations.")
 
-	res, err := h.db.ConversationGetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	res, err := h.db.ConversationGets(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get conversations. err: %v", err)
 		return nil, err

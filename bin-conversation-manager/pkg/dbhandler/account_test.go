@@ -236,15 +236,15 @@ func Test_AccountGet(t *testing.T) {
 	}
 }
 
-func Test_AccountGetsByCustomerID(t *testing.T) {
+func Test_AccountGets(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		accounts []*account.Account
 
-		customerID uuid.UUID
-		token      string
-		limit      uint64
+		token   string
+		limit   uint64
+		filters map[string]string
 
 		responseCurTime string
 		expectRes       []*account.Account
@@ -253,31 +253,34 @@ func Test_AccountGetsByCustomerID(t *testing.T) {
 			name: "normal",
 			accounts: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("77a0ee60-fee1-11ed-b1bc-6b41f664c8be"),
-					CustomerID: uuid.FromStringOrNil("7767e246-fee1-11ed-b7ee-c393c4e00b2e"),
+					ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
+					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 				},
 				{
-					ID:         uuid.FromStringOrNil("77cdd808-fee1-11ed-9fc3-c7bb91c23537"),
-					CustomerID: uuid.FromStringOrNil("7767e246-fee1-11ed-b7ee-c393c4e00b2e"),
+					ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
+					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 				},
 			},
 
-			customerID: uuid.FromStringOrNil("7767e246-fee1-11ed-b7ee-c393c4e00b2e"),
-			token:      "2022-06-18 03:22:17.995000",
-			limit:      100,
+			token: "2022-06-18 03:22:17.995000",
+			limit: 100,
+			filters: map[string]string{
+				"deleted":     "false",
+				"customer_id": "157d41b4-3e16-11ef-a8ed-4b84a868d055",
+			},
 
 			responseCurTime: "2022-04-18 03:22:17.995000",
 			expectRes: []*account.Account{
 				{
-					ID:         uuid.FromStringOrNil("77cdd808-fee1-11ed-9fc3-c7bb91c23537"),
-					CustomerID: uuid.FromStringOrNil("7767e246-fee1-11ed-b7ee-c393c4e00b2e"),
+					ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
+					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					TMCreate:   "2022-04-18 03:22:17.995000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("77a0ee60-fee1-11ed-b1bc-6b41f664c8be"),
-					CustomerID: uuid.FromStringOrNil("7767e246-fee1-11ed-b7ee-c393c4e00b2e"),
+					ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
+					CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					TMCreate:   "2022-04-18 03:22:17.995000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
@@ -309,7 +312,7 @@ func Test_AccountGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.AccountGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.AccountGets(ctx, tt.limit, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

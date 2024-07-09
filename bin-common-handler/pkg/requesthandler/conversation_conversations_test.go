@@ -14,6 +14,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ConversationV1ConversationsGet(t *testing.T) {
@@ -83,15 +84,16 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 	}
 }
 
-func Test_ConversationV1ConversationGetsByCustomerID(t *testing.T) {
+func Test_ConversationV1ConversationGets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
+		pageToken string
+		pageSize  uint64
+		filters   map[string]string
 
+		expectURL     string
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
@@ -101,13 +103,16 @@ func Test_ConversationV1ConversationGetsByCustomerID(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd"),
 			"2021-03-02 03:23:20.995000",
 			10,
+			map[string]string{
+				"deleted": "false",
+			},
 
+			"/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conversation-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd",
+				URI:      "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -138,15 +143,17 @@ func Test_ConversationV1ConversationGetsByCustomerID(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock: mockSock,
+				sock:        mockSock,
+				utilHandler: mockUtil,
 			}
-
 			ctx := context.Background()
 
+			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

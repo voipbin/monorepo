@@ -82,19 +82,19 @@ func (mr *MockConversationHandlerMockRecorder) GetByReferenceInfo(ctx, customerI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceInfo", reflect.TypeOf((*MockConversationHandler)(nil).GetByReferenceInfo), ctx, customerID, referenceType, referenceID)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockConversationHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*conversation.Conversation, error) {
+// Gets mocks base method.
+func (m *MockConversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockConversationHandlerMockRecorder) GetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+// Gets indicates an expected call of Gets.
+func (mr *MockConversationHandlerMockRecorder) Gets(ctx, pageToken, pageSize, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockConversationHandler)(nil).GetsByCustomerID), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConversationHandler)(nil).Gets), ctx, pageToken, pageSize, filters)
 }
 
 // Hook mocks base method.

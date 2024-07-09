@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 
@@ -200,32 +201,57 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 	return res, nil
 }
 
-// AccountGetsByCustomerID returns list of accounts.
-func (h *handler) AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*account.Account, error) {
+// AccountGets returns a list of account.
+func (h *handler) AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
 
 	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
+	q := fmt.Sprintf(`%s
+	where
+		tm_create < ?
 	`, accountSelect)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	values := []interface{}{
+		token,
+	}
+
+	for k, v := range filters {
+		switch k {
+
+		case "deleted":
+			if v == "false" {
+				q = fmt.Sprintf("%s and tm_delete >= ?", q)
+				values = append(values, DefaultTimeStamp)
+			}
+
+		case "customer_id":
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
+
+		default:
+			q = fmt.Sprintf("%s and %s = ?", q, k)
+			values = append(values, v)
+		}
+	}
+
+	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
+	values = append(values, strconv.FormatUint(size, 10))
+
+	rows, err := h.db.Query(q, values...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AccountGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
 	}
 	defer rows.Close()
 
-	var res []*account.Account
+	res := []*account.Account{}
 	for rows.Next() {
 		u, err := h.accountGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. AccountGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("could not get data. AccountGets, err: %v", err)
 		}
 
 		res = append(res, u)

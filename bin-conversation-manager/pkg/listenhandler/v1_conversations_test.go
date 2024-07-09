@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-conversation-manager/models/conversation"
@@ -22,22 +23,31 @@ func Test_processV1ConversationsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		expectCustomerID uuid.UUID
-		expectPageSize   uint64
-		expectPageToken  string
+		request *rabbitmqhandler.Request
 
+		expectPageSize  uint64
+		expectPageToken string
+
+		responseFilters       map[string]string
 		responseConversations []*conversation.Conversation
 
-		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("64a3cbd8-e863-11ec-85de-1bcd09d3872e"),
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=64a3cbd8-e863-11ec-85de-1bcd09d3872e&filter_deleted=false",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
 			10,
 			"2021-03-01 03:30:17.000000",
 
+			map[string]string{
+				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
+				"deleted":     "false",
+			},
 			[]*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
@@ -47,10 +57,6 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Request{
-				URI:    "/v1/conversations?customer_id=64a3cbd8-e863-11ec-85de-1bcd09d3872e&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
-			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -60,10 +66,18 @@ func Test_processV1ConversationsGet(t *testing.T) {
 		{
 			"2 results",
 
-			uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=b77be746-e863-11ec-97b0-bb06bbb7db0e&filter_deleted=false",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
 			10,
 			"2021-03-01 03:30:17.000000",
 
+			map[string]string{
+				"customer_id": "b77be746-e863-11ec-97b0-bb06bbb7db0e",
+				"deleted":     "false",
+			},
 			[]*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
@@ -78,10 +92,6 @@ func Test_processV1ConversationsGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Request{
-				URI:    "/v1/conversations?customer_id=b77be746-e863-11ec-97b0-bb06bbb7db0e&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
-			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -95,15 +105,18 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockConversation := conversationhandler.NewMockConversationHandler(mc)
 
 			h := &listenHandler{
 				rabbitSock:          mockSock,
+				utilHandler:         mockUtil,
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().GetsByCustomerID(gomock.Any(), tt.expectCustomerID, tt.expectPageToken, tt.expectPageSize).Return(tt.responseConversations, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockConversation.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.responseFilters).Return(tt.responseConversations, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
