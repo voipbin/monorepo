@@ -478,7 +478,9 @@ func Test_processV1CallsPost(t *testing.T) {
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("4f1e2d54-7d52-4c1f-ad49-5b51feea0055"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4f1e2d54-7d52-4c1f-ad49-5b51feea0055"),
+					},
 				},
 			},
 
@@ -514,7 +516,9 @@ func Test_processV1CallsPost(t *testing.T) {
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("50e70d60-d722-43ce-a6b6-d69a28e36cbe"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("50e70d60-d722-43ce-a6b6-d69a28e36cbe"),
+					},
 				},
 			},
 

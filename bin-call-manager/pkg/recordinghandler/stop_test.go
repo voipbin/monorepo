@@ -5,6 +5,7 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -30,8 +31,10 @@ func Test_storeRecording(t *testing.T) {
 			name: "normal",
 
 			recording: &recording.Recording{
-				ID:         uuid.FromStringOrNil("8bf246d8-1d54-11ef-bf58-6bc042955973"),
-				CustomerID: uuid.FromStringOrNil("8c80974e-1d54-11ef-929a-4fe8843edba5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8bf246d8-1d54-11ef-bf58-6bc042955973"),
+					CustomerID: uuid.FromStringOrNil("8c80974e-1d54-11ef-929a-4fe8843edba5"),
+				},
 				Filenames: []string{
 					"call_2abd6900-3f33-4a9f-8241-7ca7a0050e15_2024-03-29T21:50:32Z_in.wav",
 					"call_2abd6900-3f33-4a9f-8241-7ca7a0050e15_2024-03-29T21:50:32Z_out.wav",
@@ -39,7 +42,9 @@ func Test_storeRecording(t *testing.T) {
 			},
 
 			responseRecording: &recording.Recording{
-				ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+				},
 			},
 		},
 	}
@@ -97,7 +102,9 @@ func Test_Stopped(t *testing.T) {
 			id: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
 
 			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("a89d0f2a-8ff2-11ed-98b5-a35c4608884b"),
 				AsteriskID:    "42:01:0a:a4:00:03",
@@ -182,7 +189,9 @@ func Test_Stop_referenceTypeCall(t *testing.T) {
 			id: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
 
 			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				AsteriskID:    "42:01:0a:a4:00:03",
 				ChannelIDs: []string{
@@ -248,7 +257,9 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 			id: uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
 
 			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
+				},
 				ReferenceType: recording.ReferenceTypeConfbridge,
 				AsteriskID:    "42:01:0a:a4:00:03",
 				RecordingName: "conference_f3eeac6a-90c2-11ed-9bad-9bc50d0bf273_2023-01-05T14:58:05Z",

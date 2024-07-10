@@ -67,7 +67,9 @@ func Test_dialNextDestination_call(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("2c5cf172-e1fb-11ed-9c31-cb222c40d531"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
+				},
 				CallCount:  0,
 				RingMethod: groupcall.RingMethodRingAll,
 			},
@@ -148,8 +150,10 @@ func Test_dialNextDestination_groupcall(t *testing.T) {
 			name: "normal",
 
 			groupcall: &groupcall.Groupcall{
-				CustomerID: uuid.FromStringOrNil("e591e541-3a4d-4afd-b01e-d27c7db42dea"),
-				Source:     &commonaddress.Address{},
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("e591e541-3a4d-4afd-b01e-d27c7db42dea"),
+				},
+				Source: &commonaddress.Address{},
 				Destinations: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
@@ -174,8 +178,10 @@ func Test_dialNextDestination_groupcall(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("2c5cf172-e1fb-11ed-9c31-cb222c40d531"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
-				CustomerID:   uuid.FromStringOrNil("e591e541-3a4d-4afd-b01e-d27c7db42dea"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
+					CustomerID: uuid.FromStringOrNil("e591e541-3a4d-4afd-b01e-d27c7db42dea"),
+				},
 				Source:       &commonaddress.Address{},
 				Destinations: []commonaddress.Address{},
 				CallCount:    0,
@@ -443,7 +449,7 @@ func Test_getAddressOwner(t *testing.T) {
 		responseAgent *amagent.Agent
 
 		expectAgentID      uuid.UUID
-		expectResOwnerType groupcall.OwnerType
+		expectResOwnerType commonidentity.OwnerType
 		expectResOwnerID   uuid.UUID
 	}{
 		{
@@ -463,7 +469,7 @@ func Test_getAddressOwner(t *testing.T) {
 			},
 
 			expectAgentID:      uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
-			expectResOwnerType: groupcall.OwnerTypeAgent,
+			expectResOwnerType: commonidentity.OwnerTypeAgent,
 			expectResOwnerID:   uuid.FromStringOrNil("8e3b890a-2fd7-11ef-b442-133f59be8b36"),
 		},
 		{
@@ -482,7 +488,7 @@ func Test_getAddressOwner(t *testing.T) {
 				},
 			},
 
-			expectResOwnerType: groupcall.OwnerTypeAgent,
+			expectResOwnerType: commonidentity.OwnerTypeAgent,
 			expectResOwnerID:   uuid.FromStringOrNil("8e7f4af0-2fd7-11ef-9c3a-53f59238b991"),
 		},
 	}

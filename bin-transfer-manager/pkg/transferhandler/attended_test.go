@@ -197,7 +197,9 @@ func Test_attendedExecute(t *testing.T) {
 			},
 
 			responseGroupcall: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("a0878814-dc6f-11ed-8711-333f46f48590"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0878814-dc6f-11ed-8711-333f46f48590"),
+				},
 			},
 			responseTransfer: &transfer.Transfer{
 				ID: uuid.FromStringOrNil("a0b45cb8-dc6f-11ed-98ba-177bdc1ba9c2"),

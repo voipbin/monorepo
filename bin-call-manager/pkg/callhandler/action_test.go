@@ -409,7 +409,9 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 			},
 
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("dec99d2a-8fe8-11ed-b223-478f994dc5a0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dec99d2a-8fe8-11ed-b223-478f994dc5a0"),
+				},
 			},
 
 			recording.FormatWAV,
@@ -481,7 +483,9 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 				},
 			},
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
+				},
 			},
 		},
 	}

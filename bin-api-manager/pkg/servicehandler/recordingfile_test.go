@@ -48,8 +48,10 @@ func Test_RecordingfileGet(t *testing.T) {
 			uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 
 			&cmrecording.Recording{
-				ID:         uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 				Filenames: []string{
 					"call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 				},

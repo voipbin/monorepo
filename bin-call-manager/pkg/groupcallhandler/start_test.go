@@ -81,12 +81,16 @@ func Test_Start_ringall(t *testing.T) {
 			},
 
 			expectGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("df3b830c-e468-11ed-adc8-bb725367b1c4"),
-				CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
-				OwnerType:  groupcall.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("98fcf9ca-2c01-11ef-a404-cbad07804e20"),
-				Status:     groupcall.StatusProgressing,
-				FlowID:     uuid.FromStringOrNil("40e71e72-bbe7-11ed-9334-a7afb83b403e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("df3b830c-e468-11ed-adc8-bb725367b1c4"),
+					CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("98fcf9ca-2c01-11ef-a404-cbad07804e20"),
+				},
+				Status: groupcall.StatusProgressing,
+				FlowID: uuid.FromStringOrNil("40e71e72-bbe7-11ed-9334-a7afb83b403e"),
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -157,12 +161,16 @@ func Test_Start_ringall(t *testing.T) {
 			},
 
 			expectGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("0bdd8a4b-6b49-45d9-b4e2-7f0c5e792519"),
-				CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
-				OwnerType:  groupcall.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("997e5a1a-2c01-11ef-a85e-4713a1f9259c"),
-				Status:     groupcall.StatusProgressing,
-				FlowID:     uuid.FromStringOrNil("ad291cc4-f37a-4438-be8d-53b3c61ca40d"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("0bdd8a4b-6b49-45d9-b4e2-7f0c5e792519"),
+					CustomerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("997e5a1a-2c01-11ef-a85e-4713a1f9259c"),
+				},
+				Status: groupcall.StatusProgressing,
+				FlowID: uuid.FromStringOrNil("ad291cc4-f37a-4438-be8d-53b3c61ca40d"),
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -314,7 +322,9 @@ func Test_Start_linear(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("f2997eda-1cea-4ab6-bd98-d2a11d3bf20d"),
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("b521af3c-bbe7-11ed-910d-673d428424ab"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b521af3c-bbe7-11ed-910d-673d428424ab"),
+				},
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("edf8f332-bbe8-11ed-a2a7-63ae0390190e"),
 				},

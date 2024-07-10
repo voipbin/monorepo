@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -52,7 +53,9 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 			},
 			[]cmgroupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("ac47b7fa-be33-11ed-b247-f381628bad10"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ac47b7fa-be33-11ed-b247-f381628bad10"),
+					},
 				},
 			},
 		},
@@ -78,10 +81,14 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 			},
 			[]cmgroupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("d789d812-be33-11ed-9f54-1b18b82aa8f8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d789d812-be33-11ed-9f54-1b18b82aa8f8"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("d7af6dfc-be33-11ed-939f-b3e2f9be4bd5"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d7af6dfc-be33-11ed-939f-b3e2f9be4bd5"),
+					},
 				},
 			},
 		},
@@ -176,7 +183,9 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 				Data:     []byte(`{"id":"812e519b-bbf6-415f-9c49-b4db5c76f68d","customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","master_groupcall_id":"e6310999-eab1-48fc-b0ce-f5ee55743864","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
 			expectRes: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("2b7dc4ac-bbae-11ed-b868-f762b6f7fd23"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2b7dc4ac-bbae-11ed-b868-f762b6f7fd23"),
+				},
 			},
 		},
 	}
@@ -237,7 +246,9 @@ func Test_CallV1GroupcallGet(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("1717ba30-be34-11ed-87e7-5739c7ea8622"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1717ba30-be34-11ed-87e7-5739c7ea8622"),
+				},
 			},
 		},
 	}
@@ -297,7 +308,9 @@ func Test_CallV1GroupcallDelete(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("06d9ec2a-be33-11ed-acc5-876b594da79c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("06d9ec2a-be33-11ed-acc5-876b594da79c"),
+				},
 			},
 		},
 	}
@@ -357,7 +370,9 @@ func Test_CallV1GroupcallHangup(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodPost,
 			},
 			&cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("3d82215c-be33-11ed-aed4-7b9daa884e9f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3d82215c-be33-11ed-aed4-7b9daa884e9f"),
+				},
 			},
 		},
 	}
@@ -420,7 +435,9 @@ func Test_CallV1GroupcallUpdateAnswerGroupcallID(t *testing.T) {
 				Data:     []byte(`{"answer_groupcall_id":"e5399dc0-e328-11ed-af77-6f6bf2e02462"}`),
 			},
 			expectRes: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("e50ab9b0-e328-11ed-abe1-abcb6aaa1b47"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e50ab9b0-e328-11ed-abe1-abcb6aaa1b47"),
+				},
 			},
 		},
 	}

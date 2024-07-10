@@ -8,7 +8,7 @@ import (
 	"time"
 
 	cmrecording "monorepo/bin-call-manager/models/recording"
-
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -45,8 +45,10 @@ func Test_RecordingGet(t *testing.T) {
 			uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
 
 			&cmrecording.Recording{
-				ID:            uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
-				CustomerID:    uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
+					CustomerID: uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
+				},
 				ReferenceType: cmrecording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 				Status:        cmrecording.StatusEnded,
@@ -129,8 +131,10 @@ func Test_RecordingDelete(t *testing.T) {
 			uuid.FromStringOrNil("a18fbd98-8eaa-11ed-8d35-6b10d649e16f"),
 
 			&cmrecording.Recording{
-				ID:            uuid.FromStringOrNil("a18fbd98-8eaa-11ed-8d35-6b10d649e16f"),
-				CustomerID:    uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a18fbd98-8eaa-11ed-8d35-6b10d649e16f"),
+					CustomerID: uuid.FromStringOrNil("e46238ef-c246-4024-9926-417246acdcba"),
+				},
 				ReferenceType: cmrecording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 				Status:        cmrecording.StatusEnded,

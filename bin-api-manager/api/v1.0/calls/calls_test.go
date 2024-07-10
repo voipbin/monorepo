@@ -77,7 +77,9 @@ func Test_CallsPOST(t *testing.T) {
 			},
 			responseGroupcalls: []*cmgroupcall.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("37d675b5-83b2-4a78-8ed4-fe680ec41060"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("37d675b5-83b2-4a78-8ed4-fe680ec41060"),
+					},
 				},
 			},
 

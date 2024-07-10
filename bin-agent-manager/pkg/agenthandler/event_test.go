@@ -34,7 +34,9 @@ func Test_EventGroupcallCreated(t *testing.T) {
 			name: "normal",
 
 			groupcall: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("8a7bb5d0-f84f-4568-917c-14961a8a7141"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8a7bb5d0-f84f-4568-917c-14961a8a7141"),
+				},
 				Destinations: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeAgent,
@@ -95,8 +97,10 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 			name: "normal",
 
 			groupcall: &cmgroupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("59e5b918-ac3e-4381-9894-f611cadeab93"),
-				CustomerID: uuid.FromStringOrNil("2b0153e0-28e0-11ef-ac14-9b7259fa6ef3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("59e5b918-ac3e-4381-9894-f611cadeab93"),
+					CustomerID: uuid.FromStringOrNil("2b0153e0-28e0-11ef-ac14-9b7259fa6ef3"),
+				},
 				Destinations: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeAgent,

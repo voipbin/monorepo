@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
-
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // recordingReferenceTypeCall creates a new reocording for call type
@@ -84,10 +85,14 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 	}
 
 	tmp := &recording.Recording{
-		ID:         id,
-		CustomerID: c.CustomerID,
-		OwnerType:  recording.OwnerTypeNone,
-		OwnerID:    uuid.Nil,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: c.CustomerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeNone,
+			OwnerID:   uuid.Nil,
+		},
 
 		ReferenceType: recording.ReferenceTypeCall,
 		ReferenceID:   c.ID,
@@ -165,8 +170,14 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 		recordingFilename,
 	}
 	tmp := &recording.Recording{
-		ID:         id,
-		CustomerID: cb.CustomerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: cb.CustomerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeNone,
+			OwnerID:   uuid.Nil,
+		},
 
 		ReferenceType: recording.ReferenceTypeConfbridge,
 		ReferenceID:   cb.ID,

@@ -1,13 +1,15 @@
 package recording
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+)
 
 // Recording struct represent record information
 type Recording struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerType  OwnerType `json:"owner_type"`
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
+	commonidentity.Owner
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -27,15 +29,6 @@ type Recording struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
-
-// OwnerType defines
-type OwnerType string
-
-// list of owner types
-const (
-	OwnerTypeNone  OwnerType = ""
-	OwnerTypeAgent OwnerType = "agent" // the owner id is agent's id.
-)
 
 // ReferenceType type
 type ReferenceType string
