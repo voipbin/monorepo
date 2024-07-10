@@ -18,8 +18,7 @@ import (
 func (h *serviceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *amagent.Agent, chatroomMessageID uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                "ServiceAgentChatroommessageGet",
-		"customer_id":         a.CustomerID,
-		"username":            a.Username,
+		"agent":               a,
 		"chatroom_message_id": chatroomMessageID,
 	})
 	log.Debug("Getting a chatroommessage.")

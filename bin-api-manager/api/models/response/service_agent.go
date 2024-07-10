@@ -4,25 +4,41 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
+	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 )
 
-// BodyServiceAgentCallsGET is response body define for
+// BodyServiceAgentsCallsGET is response body define for
 // GET /v1.0/service_agent/calls
-type BodyServiceAgentCallsGET struct {
+type BodyServiceAgentsCallsGET struct {
 	Result []*cmcall.WebhookMessage `json:"result"`
 	Pagination
 }
 
-// BodyServiceAgentCallsPOST is response body define for
+// BodyServiceAgentsCallsPOST is response body define for
 // POST /v1.0/service_agent/calls
-type BodyServiceAgentCallsPOST struct {
+type BodyServiceAgentsCallsPOST struct {
 	Calls      []*cmcall.WebhookMessage      `json:"calls"`
 	Groupcalls []*cmgroupcall.WebhookMessage `json:"groupcalls"`
 }
 
-// BodyServiceAgentChatroomsGET is response body define for
+// BodyServiceAgentsChatroomsGET is response body define for
 // GET /v1.0/service_agent/chatrooms
-type BodyServiceAgentChatroomsGET struct {
+type BodyServiceAgentsChatroomsGET struct {
 	Result []*chatchatroom.WebhookMessage `json:"result"`
+	Pagination
+}
+
+// BodyServiceAgentsConversationsGET is response body define for
+// GET /v1.0/service_agent/conversations
+type BodyServiceAgentsConversationsGET struct {
+	Result []*cvconversation.WebhookMessage `json:"result"`
+	Pagination
+}
+
+// BodyServiceAgentsChatroommessagesGET is response body define for
+// GET /v1.0/service_agents/chatroommessages
+type BodyServiceAgentsChatroommessagesGET struct {
+	Result []*chatmessagechatroom.WebhookMessage `json:"result"`
 	Pagination
 }

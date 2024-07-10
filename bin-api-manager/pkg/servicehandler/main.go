@@ -585,6 +585,20 @@ type ServiceHandler interface {
 	ServiceAgentChatroommessageGets(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error)
 	ServiceAgentChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string, medias []chatmedia.Media) (*chatmessagechatroom.WebhookMessage, error)
 
+	// service_agent conversation
+	ServiceAgentConversationGet(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)
+	ServiceAgentConversationGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvconversation.WebhookMessage, error)
+
+	// service_agent conversation message
+	ServiceAgentConversationMessageGets(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error)
+	ServiceAgentConversationMessageSend(
+		ctx context.Context,
+		a *amagent.Agent,
+		conversationID uuid.UUID,
+		text string,
+		medias []cvmedia.Media,
+	) (*cvmessage.WebhookMessage, error)
+
 	// storage account
 	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error)
 	StorageAccountGet(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)

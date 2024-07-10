@@ -2998,6 +2998,66 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroommessageGets(ctx, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroommessageGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroommessageGets), ctx, a, chatroomID, size, token)
 }
 
+// ServiceAgentConversationGet mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationGet(ctx context.Context, a *agent.Agent, conversationID uuid.UUID) (*conversation.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentConversationGet", ctx, a, conversationID)
+	ret0, _ := ret[0].(*conversation.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentConversationGet indicates an expected call of ServiceAgentConversationGet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationGet(ctx, a, conversationID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationGet), ctx, a, conversationID)
+}
+
+// ServiceAgentConversationGets mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conversation.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentConversationGets", ctx, a, size, token)
+	ret0, _ := ret[0].([]*conversation.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentConversationGets indicates an expected call of ServiceAgentConversationGets.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationGets(ctx, a, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationGets), ctx, a, size, token)
+}
+
+// ServiceAgentConversationMessageGets mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationMessageGets(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*message.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentConversationMessageGets", ctx, a, conversationID, size, token)
+	ret0, _ := ret[0].([]*message.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentConversationMessageGets indicates an expected call of ServiceAgentConversationMessageGets.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageGets(ctx, a, conversationID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationMessageGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationMessageGets), ctx, a, conversationID, size, token)
+}
+
+// ServiceAgentConversationMessageSend mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationMessageSend(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, text string, medias []media0.Media) (*message.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentConversationMessageSend", ctx, a, conversationID, text, medias)
+	ret0, _ := ret[0].(*message.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentConversationMessageSend indicates an expected call of ServiceAgentConversationMessageSend.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageSend(ctx, a, conversationID, text, medias interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationMessageSend), ctx, a, conversationID, text, medias)
+}
+
 // StorageAccountCreate mocks base method.
 func (m *MockServiceHandler) StorageAccountCreate(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*account1.WebhookMessage, error) {
 	m.ctrl.T.Helper()

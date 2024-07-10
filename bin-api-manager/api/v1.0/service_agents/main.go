@@ -16,4 +16,11 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	targets.GET("/chatrooms/:id", chatroomsIDGET)
 	targets.PUT("/chatrooms/:id", chatroomsIDPUT)
 	targets.DELETE("/chatrooms/:id", chatroomsIDDELETE)
+
+	// chatroom messages
+
+	// conversations
+	targets.GET("/conversations", conversationsGET)
+	targets.GET("/conversations/:id", conversationsIDGET)
+
 }
