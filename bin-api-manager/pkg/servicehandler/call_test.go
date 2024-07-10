@@ -209,7 +209,9 @@ func Test_CallCreate(t *testing.T) {
 			},
 			responseGroupcalls: []*cmgroupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					},
 				},
 			},
 
@@ -222,7 +224,9 @@ func Test_CallCreate(t *testing.T) {
 			},
 			expectResGroupcalls: []*cmgroupcall.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					},
 				},
 			},
 		},
@@ -267,7 +271,9 @@ func Test_CallCreate(t *testing.T) {
 			},
 			responseGroupcalls: []*cmgroupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					},
 				},
 			},
 
@@ -280,7 +286,9 @@ func Test_CallCreate(t *testing.T) {
 			},
 			expectResGroupcalls: []*cmgroupcall.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					},
 				},
 			},
 		},
@@ -325,7 +333,9 @@ func Test_CallCreate(t *testing.T) {
 			},
 			responseGroupcalls: []*cmgroupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					},
 				},
 			},
 
@@ -338,7 +348,9 @@ func Test_CallCreate(t *testing.T) {
 			},
 			expectResGroupcalls: []*cmgroupcall.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+					},
 				},
 			},
 		},

@@ -40,7 +40,9 @@ func Test_processEventCMGroupcallProgressing(t *testing.T) {
 			},
 
 			expectGroupcall: &cmgroupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("0ea68fee-da26-11ed-ada5-2febe5011cb8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0ea68fee-da26-11ed-ada5-2febe5011cb8"),
+				},
 				AnswerCallID: uuid.FromStringOrNil("0ecb37e0-da26-11ed-a869-db2b71931ccd"),
 			},
 		},
@@ -88,7 +90,9 @@ func Test_processEventCMGroupcallHangup(t *testing.T) {
 				ID: uuid.FromStringOrNil("e2f76cc8-da26-11ed-9c2f-7bd1ea71acf7"),
 			},
 			expectGroupcall: &cmgroupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("e29736e6-da26-11ed-a609-b755ca01899f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e29736e6-da26-11ed-a609-b755ca01899f"),
+				},
 				AnswerCallID: uuid.FromStringOrNil("e2c65a66-da26-11ed-9479-c7409ab92ef8"),
 			},
 		},

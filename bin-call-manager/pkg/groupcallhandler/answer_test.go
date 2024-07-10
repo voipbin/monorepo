@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -33,7 +34,9 @@ func Test_AnswerCall(t *testing.T) {
 			answerCallID: uuid.FromStringOrNil("769f39e4-bb26-11ed-928d-1309c50d6617"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("7669f00e-bb26-11ed-a4c3-bf62864985db"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7669f00e-bb26-11ed-a4c3-bf62864985db"),
+				},
 				AnswerMethod: groupcall.AnswerMethodHangupOthers,
 				AnswerCallID: uuid.FromStringOrNil("769f39e4-bb26-11ed-928d-1309c50d6617"),
 			},
@@ -84,7 +87,9 @@ func Test_AnswerGroupcall(t *testing.T) {
 			answerGroupcallID: uuid.FromStringOrNil("26e62358-9898-4920-a871-42cd14afcb8a"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:                uuid.FromStringOrNil("811d3277-a22c-4732-8b81-c8e5077876b5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("811d3277-a22c-4732-8b81-c8e5077876b5"),
+				},
 				AnswerMethod:      groupcall.AnswerMethodHangupOthers,
 				AnswerGroupcallID: uuid.FromStringOrNil("26e62358-9898-4920-a871-42cd14afcb8a"),
 				CallIDs: []uuid.UUID{
@@ -104,7 +109,9 @@ func Test_AnswerGroupcall(t *testing.T) {
 			answerGroupcallID: uuid.FromStringOrNil("0e58d8fb-7dba-4d43-9226-76c4dd1c256e"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:                uuid.FromStringOrNil("83b6b795-aa1c-4ec5-a7ec-1af8ae8c14e3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("83b6b795-aa1c-4ec5-a7ec-1af8ae8c14e3"),
+				},
 				AnswerMethod:      groupcall.AnswerMethodHangupOthers,
 				AnswerGroupcallID: uuid.FromStringOrNil("0e58d8fb-7dba-4d43-9226-76c4dd1c256e"),
 				MasterGroupcallID: uuid.FromStringOrNil("b78ed0c3-9266-4844-852b-12b645f4ebe1"),
@@ -181,7 +188,9 @@ func Test_answerCommon(t *testing.T) {
 			name: "have no master groupcall id",
 
 			groupcall: &groupcall.Groupcall{
-				ID:                uuid.FromStringOrNil("16dd70b2-02b6-4807-aed1-b0b16b21f02d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("16dd70b2-02b6-4807-aed1-b0b16b21f02d"),
+				},
 				AnswerMethod:      groupcall.AnswerMethodHangupOthers,
 				AnswerGroupcallID: uuid.FromStringOrNil("7d5d6cec-bd33-41e9-b23d-7909b6bdfd5d"),
 				CallIDs: []uuid.UUID{
@@ -198,7 +207,9 @@ func Test_answerCommon(t *testing.T) {
 			name: "have master groupcall id",
 
 			groupcall: &groupcall.Groupcall{
-				ID:                uuid.FromStringOrNil("9c89b1c5-fc4e-41c5-85f4-314c15c3bfea"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9c89b1c5-fc4e-41c5-85f4-314c15c3bfea"),
+				},
 				AnswerMethod:      groupcall.AnswerMethodHangupOthers,
 				AnswerGroupcallID: uuid.FromStringOrNil("f1d1a43e-833c-447d-933b-004239b97360"),
 				MasterGroupcallID: uuid.FromStringOrNil("49bee46a-8741-4e4a-8287-dffa85375398"),

@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/identity"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -30,10 +32,14 @@ func Test_RecordingCreate(t *testing.T) {
 		{
 			"have all",
 			&recording.Recording{
-				ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
-				OwnerType:  recording.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
+					CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				},
+				Owner: identity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
+				},
 
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
@@ -58,10 +64,14 @@ func Test_RecordingCreate(t *testing.T) {
 			"2020-04-18 03:22:17.995000",
 
 			&recording.Recording{
-				ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
-				OwnerType:  recording.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
+					CustomerID: uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("a19704ac-2bf9-11ef-9691-7768f2e4877f"),
+				},
 
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
@@ -152,12 +162,16 @@ func Test_RecordingGets(t *testing.T) {
 			"normal",
 			[]*recording.Recording{
 				{
-					ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
-					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
+						CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
-					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
+						CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					},
 				},
 			},
 
@@ -169,8 +183,10 @@ func Test_RecordingGets(t *testing.T) {
 
 			[]*recording.Recording{
 				{
-					ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
-					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
+						CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					},
 					Filenames:  []string{},
 					ChannelIDs: []string{},
 
@@ -181,8 +197,10 @@ func Test_RecordingGets(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
-					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
+						CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					},
 					Filenames:  []string{},
 					ChannelIDs: []string{},
 
@@ -257,14 +275,18 @@ func Test_RecordingDelete(t *testing.T) {
 		{
 			"normal",
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+				},
 			},
 
 			uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
 			"2020-04-18T03:22:18.995000",
 
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+				},
 
 				Filenames:  []string{},
 				ChannelIDs: []string{},

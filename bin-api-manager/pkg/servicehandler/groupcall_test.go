@@ -46,14 +46,18 @@ func Test_GroupcallGet(t *testing.T) {
 			uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
 
 			&cmgroupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			&cmgroupcall.WebhookMessage{
-				ID:         uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -132,11 +136,15 @@ func Test_GroupcallCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("afce8664-bf01-11ed-b58c-dbe9035888fa"),
 			},
 			responseGroupcall: &cmgroupcall.Groupcall{
-				ID:       uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				},
 				TMDelete: defaultTimestamp,
 			},
 			expectRes: &cmgroupcall.WebhookMessage{
-				ID:       uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				},
 				TMDelete: defaultTimestamp,
 			},
 		},
@@ -198,14 +206,18 @@ func Test_GroupcallHangup(t *testing.T) {
 			groupcallID: uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
 
 			responseGroupcall: &cmgroupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &cmgroupcall.WebhookMessage{
-				ID:         uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -263,14 +275,18 @@ func Test_GroupcallDelete(t *testing.T) {
 			groupcallID: uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
 
 			responseGroupcall: &cmgroupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &cmgroupcall.WebhookMessage{
-				ID:         uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}

@@ -91,8 +91,10 @@ func Test_Start_call(t *testing.T) {
 				"context_type=call,context=call-record,reference_type=call,reference_id=d883a3f2-8fd4-11ed-baee-af9907e4df67,recording_id=e141bb2c-8fd5-11ed-a0f9-9735e31b8411,recording_name=call_d883a3f2-8fd4-11ed-baee-af9907e4df67_2023-01-05T14:58:05Z,recording_direction=out,recording_format=wav,recording_end_of_silence=0,recording_end_of_key=,recording_duration=0",
 			},
 			expectRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),
-				CustomerID:    uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),
+					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
 				Status:        recording.StatusInitiating,
@@ -210,13 +212,17 @@ func Test_Start_confbridge(t *testing.T) {
 			responseUUID:       uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",
 			responseRecording: &recording.Recording{
-				ID: uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
+				},
 			},
 
 			expectFilename: "confbridge_67f358e8-90a2-11ed-b315-2b63c5f83d10_2023-01-05T14:58:05Z_in",
 			expectRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
-				CustomerID:    uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
+					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				},
 				ReferenceType: recording.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
 				Status:        recording.StatusInitiating,
@@ -309,7 +315,9 @@ func Test_Started(t *testing.T) {
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("def310b4-9011-11ed-bc02-ab675449097d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("def310b4-9011-11ed-bc02-ab675449097d"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("a89d0f2a-8ff2-11ed-98b5-a35c4608884b"),
 				AsteriskID:    "42:01:0a:a4:00:03",

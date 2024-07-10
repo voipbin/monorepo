@@ -49,7 +49,9 @@ func Test_RecordingStart(t *testing.T) {
 				Status: call.StatusProgressing,
 			},
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("5c2e0aa4-9317-11ed-83be-4bc8dcb3ae1d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5c2e0aa4-9317-11ed-83be-4bc8dcb3ae1d"),
+				},
 			},
 		},
 	}
@@ -123,7 +125,9 @@ func Test_RecordingStop(t *testing.T) {
 				RecordingID: uuid.FromStringOrNil("9fea43b6-9317-11ed-9777-bbde3dec8816"),
 			},
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("9fea43b6-9317-11ed-9777-bbde3dec8816"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9fea43b6-9317-11ed-9777-bbde3dec8816"),
+				},
 			},
 		},
 	}

@@ -71,7 +71,9 @@ func Test_blindExecute(t *testing.T) {
 			},
 
 			responseGroupcall: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("8906ea48-dbb3-11ed-9680-eba11737a7bb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8906ea48-dbb3-11ed-9680-eba11737a7bb"),
+				},
 			},
 			responseTransfer: &transfer.Transfer{
 				ID: uuid.FromStringOrNil("89b9c942-dbb3-11ed-8784-67bdc93fd8af"),

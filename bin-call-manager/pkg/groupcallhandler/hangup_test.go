@@ -33,7 +33,9 @@ func Test_HangingupOthers(t *testing.T) {
 			name: "normal",
 
 			groupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("da99d4e8-d905-11ed-8a4c-a72c1eb8b80f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("da99d4e8-d905-11ed-8a4c-a72c1eb8b80f"),
+				},
 				AnswerCallID: uuid.FromStringOrNil("db0412c2-d905-11ed-b350-272f54423bec"),
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("db0412c2-d905-11ed-b350-272f54423bec"),
@@ -49,7 +51,9 @@ func Test_HangingupOthers(t *testing.T) {
 
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("3254b16a-e2bd-11ed-b31e-df49f649152a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3254b16a-e2bd-11ed-b31e-df49f649152a"),
+					},
 					CallIDs: []uuid.UUID{
 						uuid.FromStringOrNil("71912f2a-e2bd-11ed-b1f8-fba9db2da3bc"),
 						uuid.FromStringOrNil("71c31706-e2bd-11ed-b7bb-53bb2e2dfc2e"),
@@ -111,7 +115,9 @@ func Test_Hangingup(t *testing.T) {
 			id: uuid.FromStringOrNil("81c68518-e2c0-11ed-bcf0-7f41a7a2a0fd"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("81c68518-e2c0-11ed-bcf0-7f41a7a2a0fd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("81c68518-e2c0-11ed-bcf0-7f41a7a2a0fd"),
+				},
 
 				GroupcallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("688c37a4-e2c1-11ed-aa37-43c89a764ffa"),
@@ -124,14 +130,18 @@ func Test_Hangingup(t *testing.T) {
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("688c37a4-e2c1-11ed-aa37-43c89a764ffa"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("688c37a4-e2c1-11ed-aa37-43c89a764ffa"),
+					},
 					CallIDs: []uuid.UUID{
 						uuid.FromStringOrNil("b425439a-e2c1-11ed-84d5-3f9f98878242"),
 						uuid.FromStringOrNil("b44c7406-e2c1-11ed-baeb-9f9c34586579"),
 					},
 				},
 				{
-					ID: uuid.FromStringOrNil("250935ea-e2c1-11ed-85de-fff8ed66d29e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("250935ea-e2c1-11ed-85de-fff8ed66d29e"),
+					},
 					CallIDs: []uuid.UUID{
 						uuid.FromStringOrNil("b4778434-e2c1-11ed-8968-136b2bfe7bdc"),
 						uuid.FromStringOrNil("b4a2917e-e2c1-11ed-b462-cbd0377dfcce"),
@@ -199,7 +209,9 @@ func Test_Hangup(t *testing.T) {
 			id: uuid.FromStringOrNil("c3892bf4-e270-11ed-8b11-1bfcdb4ba661"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("c3892bf4-e270-11ed-8b11-1bfcdb4ba661"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3892bf4-e270-11ed-8b11-1bfcdb4ba661"),
+				},
 			},
 		},
 	}
@@ -251,7 +263,9 @@ func Test_hangupRingMethodLinear_mastercall_has_invalid_status(t *testing.T) {
 			name: "has master call info and status is canceling",
 
 			groupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("539dbd0a-e26b-11ed-b6d7-4ff6c9abd671"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("539dbd0a-e26b-11ed-b6d7-4ff6c9abd671"),
+				},
 				MasterCallID: uuid.FromStringOrNil("8b39b79c-e26a-11ed-a15d-a70fae1d453a"),
 			},
 
@@ -266,7 +280,9 @@ func Test_hangupRingMethodLinear_mastercall_has_invalid_status(t *testing.T) {
 			name: "has master call info and status is terminating",
 
 			groupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("75d18f64-e26b-11ed-982a-43572f221e34"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("75d18f64-e26b-11ed-982a-43572f221e34"),
+				},
 				MasterCallID: uuid.FromStringOrNil("75f8aef0-e26b-11ed-90f9-5bdeb6afde1e"),
 			},
 
@@ -281,7 +297,9 @@ func Test_hangupRingMethodLinear_mastercall_has_invalid_status(t *testing.T) {
 			name: "has master call info and status is hangup",
 
 			groupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("902c0f9c-e26b-11ed-82db-abc3ceb7826d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("902c0f9c-e26b-11ed-82db-abc3ceb7826d"),
+				},
 				MasterCallID: uuid.FromStringOrNil("9052a47c-e26b-11ed-989e-4f387b975c9f"),
 			},
 
@@ -342,7 +360,9 @@ func Test_hangupRingMethodLinear_groupcall_has_invalid_dialindex(t *testing.T) {
 			name: "dial index is equal len",
 
 			groupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("fb09d8bc-e26b-11ed-9257-4f3c882e1db1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb09d8bc-e26b-11ed-9257-4f3c882e1db1"),
+				},
 				Destinations: []commonaddress.Address{
 					{
 						Type: commonaddress.TypeTel,
@@ -358,7 +378,9 @@ func Test_hangupRingMethodLinear_groupcall_has_invalid_dialindex(t *testing.T) {
 			name: "dial index is over len",
 
 			groupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("fb09d8bc-e26b-11ed-9257-4f3c882e1db1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb09d8bc-e26b-11ed-9257-4f3c882e1db1"),
+				},
 				Destinations: []commonaddress.Address{
 					{
 						Type: commonaddress.TypeTel,
@@ -422,7 +444,9 @@ func Test_HangupGroupcall(t *testing.T) {
 			id: uuid.FromStringOrNil("1e3801c6-e44a-11ed-bbee-230bc52a8c1b"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("1e3801c6-e44a-11ed-bbee-230bc52a8c1b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1e3801c6-e44a-11ed-bbee-230bc52a8c1b"),
+				},
 				CallCount:  0,
 				RingMethod: groupcall.RingMethodRingAll,
 			},
@@ -480,7 +504,9 @@ func Test_HangupCall_Ringall(t *testing.T) {
 			id: uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
+				},
 				CallCount:  0,
 				RingMethod: groupcall.RingMethodRingAll,
 			},
@@ -538,7 +564,9 @@ func Test_callHangupLinear(t *testing.T) {
 			id: uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4b3ad8d2-f7b6-4d8f-868b-364c25c18f6b"),
+				},
 				CallCount:  0,
 				RingMethod: groupcall.RingMethodRingAll,
 			},

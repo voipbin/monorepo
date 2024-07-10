@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -40,7 +41,9 @@ func Test_Gets(t *testing.T) {
 
 			responseRecordings: []*recording.Recording{
 				{
-					ID: uuid.FromStringOrNil("22bc0808-8ff1-11ed-8f17-1f43c39a199e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("22bc0808-8ff1-11ed-8f17-1f43c39a199e"),
+					},
 				},
 			},
 		},
@@ -95,7 +98,9 @@ func Test_Delete(t *testing.T) {
 			recordingID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
 
 			responseRecording: &recording.Recording{
-				ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+				},
 			},
 			responseFiles: []smfile.File{
 				{
@@ -168,11 +173,15 @@ func Test_deleteRecordingFiles(t *testing.T) {
 			name: "normal",
 
 			recording: &recording.Recording{
-				ID: uuid.FromStringOrNil("1e8bcc64-1d5d-11ef-9738-7bc321400c35"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1e8bcc64-1d5d-11ef-9738-7bc321400c35"),
+				},
 			},
 
 			responseRecording: &recording.Recording{
-				ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("84df7daa-8eb9-11ed-b16e-4b8732219a4e"),
+				},
 			},
 
 			responseFiles: []smfile.File{

@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -52,7 +53,9 @@ func Test_CallV1RecordingGets(t *testing.T) {
 			},
 			[]cmrecording.Recording{
 				{
-					ID: uuid.FromStringOrNil("c9c63840-8ebf-11ed-8f4c-534a60a32848"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c9c63840-8ebf-11ed-8f4c-534a60a32848"),
+					},
 				},
 			},
 		},
@@ -79,10 +82,14 @@ func Test_CallV1RecordingGets(t *testing.T) {
 			},
 			[]cmrecording.Recording{
 				{
-					ID: uuid.FromStringOrNil("ca1558b2-8ebf-11ed-9014-33c1de740f04"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("ca1558b2-8ebf-11ed-9014-33c1de740f04"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e445e45e-8ebf-11ed-89f3-8b24e2aee52e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e445e45e-8ebf-11ed-89f3-8b24e2aee52e"),
+					},
 				},
 			},
 		},
@@ -145,7 +152,9 @@ func Test_CallV1RecordingGet(t *testing.T) {
 				Data:       []byte(`{"id":"32154990-8ec0-11ed-98c2-7f6a7e0cc03e"}`),
 			},
 			&cmrecording.Recording{
-				ID: uuid.FromStringOrNil("32154990-8ec0-11ed-98c2-7f6a7e0cc03e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("32154990-8ec0-11ed-98c2-7f6a7e0cc03e"),
+				},
 			},
 		},
 	}
@@ -206,7 +215,9 @@ func Test_CallV1RecordingDelete(t *testing.T) {
 				DataType: "application/json",
 			},
 			&cmrecording.Recording{
-				ID: uuid.FromStringOrNil("570ddfbe-8ec0-11ed-9dd8-1f8e11bf6de2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("570ddfbe-8ec0-11ed-9dd8-1f8e11bf6de2"),
+				},
 			},
 		},
 	}
@@ -278,7 +289,9 @@ func Test_CallV1RecordingStart(t *testing.T) {
 				Data:     []byte(`{"owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"a49bea54-90ce-11ed-9bfb-67a5f5309240","format":"wav","end_of_silence":10000,"end_of_key":"#","duration":100000}`),
 			},
 			&cmrecording.Recording{
-				ID: uuid.FromStringOrNil("a4d5b57c-90ce-11ed-a125-b38f2f6766f4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4d5b57c-90ce-11ed-a125-b38f2f6766f4"),
+				},
 			},
 		},
 	}
@@ -339,7 +352,9 @@ func Test_CallV1RecordingStop(t *testing.T) {
 				DataType: "",
 			},
 			&cmrecording.Recording{
-				ID: uuid.FromStringOrNil("a4d5b57c-90ce-11ed-a125-b38f2f6766f4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a4d5b57c-90ce-11ed-a125-b38f2f6766f4"),
+				},
 			},
 		},
 	}

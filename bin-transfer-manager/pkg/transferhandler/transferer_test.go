@@ -48,7 +48,9 @@ func Test_transfererHangupTypeAttended(t *testing.T) {
 			},
 
 			responseGroupcall: &cmgroupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("74032dac-dd14-11ed-9a51-bfa35d33c8c3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("74032dac-dd14-11ed-9a51-bfa35d33c8c3"),
+				},
 				AnswerCallID: uuid.FromStringOrNil("742f5fb2-dd14-11ed-a171-3f5bdaf8117d"),
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{

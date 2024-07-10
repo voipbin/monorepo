@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -120,7 +121,7 @@ func (h *groupcallHandler) startRingall(
 	// if that is happen, we will loose the groupcall control.
 	callIDs := getKeys(mapCalls)
 	groupcallIDs := getKeys(mapGroupcalls)
-	res, err := h.Create(ctx, id, customerID, groupcall.OwnerTypeNone, uuid.Nil, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod)
+	res, err := h.Create(ctx, id, customerID, commonidentity.OwnerTypeNone, uuid.Nil, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod)
 	if err != nil {
 		log.Errorf("Could not create groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create groupcall.")
@@ -199,7 +200,7 @@ func (h *groupcallHandler) startLinear(
 	// create groupcall
 	// we need to create groupcall earlier than the call. because if we create a call first, it is possible to hangup/answer the call before the create a groupcall
 	// if that is happen, we will loose the groupcall control.
-	res, err := h.Create(ctx, id, customerID, groupcall.OwnerTypeNone, uuid.Nil, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodLinear, answerMethod)
+	res, err := h.Create(ctx, id, customerID, commonidentity.OwnerTypeNone, uuid.Nil, flowID, source, destinations, callIDs, groupcallIDs, masterCallID, masterGroupcallID, groupcall.RingMethodLinear, answerMethod)
 	if err != nil {
 		log.Errorf("Could not create groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create groupcall.")

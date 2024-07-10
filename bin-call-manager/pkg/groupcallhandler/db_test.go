@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -24,7 +25,7 @@ func Test_Create(t *testing.T) {
 
 		id                uuid.UUID
 		customerID        uuid.UUID
-		ownerType         groupcall.OwnerType
+		ownerType         commonidentity.OwnerType
 		ownerID           uuid.UUID
 		flowID            uuid.UUID
 		source            *commonaddress.Address
@@ -43,7 +44,7 @@ func Test_Create(t *testing.T) {
 
 			id:         uuid.FromStringOrNil("708d695e-e457-11ed-a7eb-dfe8cc1bbd99"),
 			customerID: uuid.FromStringOrNil("c345ddd8-bb27-11ed-812c-df4f74c7c1a1"),
-			ownerType:  groupcall.OwnerTypeAgent,
+			ownerType:  commonidentity.OwnerTypeAgent,
 			ownerID:    uuid.FromStringOrNil("88177492-2c00-11ef-b655-af61ed389cee"),
 			flowID:     uuid.FromStringOrNil("9aa1067e-e4bc-4ec0-8251-75b266330514"),
 			source: &commonaddress.Address{
@@ -74,12 +75,16 @@ func Test_Create(t *testing.T) {
 			answerMethod:      groupcall.AnswerMethodHangupOthers,
 
 			expectGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("708d695e-e457-11ed-a7eb-dfe8cc1bbd99"),
-				CustomerID: uuid.FromStringOrNil("c345ddd8-bb27-11ed-812c-df4f74c7c1a1"),
-				OwnerType:  groupcall.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("88177492-2c00-11ef-b655-af61ed389cee"),
-				Status:     groupcall.StatusProgressing,
-				FlowID:     uuid.FromStringOrNil("9aa1067e-e4bc-4ec0-8251-75b266330514"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("708d695e-e457-11ed-a7eb-dfe8cc1bbd99"),
+					CustomerID: uuid.FromStringOrNil("c345ddd8-bb27-11ed-812c-df4f74c7c1a1"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("88177492-2c00-11ef-b655-af61ed389cee"),
+				},
+				Status: groupcall.StatusProgressing,
+				FlowID: uuid.FromStringOrNil("9aa1067e-e4bc-4ec0-8251-75b266330514"),
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -171,10 +176,14 @@ func Test_Gets(t *testing.T) {
 
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("b3cc0d12-bd7c-11ed-9b14-0bbea6e65d74"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b3cc0d12-bd7c-11ed-9b14-0bbea6e65d74"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("b3f8f2c8-bd7c-11ed-b479-dbff552bfa7e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b3f8f2c8-bd7c-11ed-b479-dbff552bfa7e"),
+					},
 				},
 			},
 		},
@@ -226,7 +235,9 @@ func Test_Get(t *testing.T) {
 
 			id: uuid.FromStringOrNil("678717bc-bb29-11ed-81c0-c3d2e4da7296"),
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("678717bc-bb29-11ed-81c0-c3d2e4da7296"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("678717bc-bb29-11ed-81c0-c3d2e4da7296"),
+				},
 			},
 		},
 	}
@@ -280,7 +291,9 @@ func Test_UpdateAnswerCallID(t *testing.T) {
 			callID: uuid.FromStringOrNil("ac9c3c42-bb29-11ed-aa47-47441a47de62"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("ac6ae0fc-bb29-11ed-9f2a-6b95feacf142"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ac6ae0fc-bb29-11ed-9f2a-6b95feacf142"),
+				},
 				AnswerCallID: uuid.FromStringOrNil("ac9c3c42-bb29-11ed-aa47-47441a47de62"),
 			},
 		},
@@ -337,7 +350,9 @@ func Test_UpdateAnswerGroupcallID(t *testing.T) {
 			groupcallID: uuid.FromStringOrNil("ad78b600-f184-4ed9-8296-fbe56f1cc0d2"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:                uuid.FromStringOrNil("6f148790-2cd4-44ed-962b-fdb7a5f4a28c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6f148790-2cd4-44ed-962b-fdb7a5f4a28c"),
+				},
 				AnswerGroupcallID: uuid.FromStringOrNil("ad78b600-f184-4ed9-8296-fbe56f1cc0d2"),
 			},
 		},
@@ -391,7 +406,9 @@ func Test_dbDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("6d83f5fe-bd7c-11ed-83eb-af7a569ac7ad"),
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("6d83f5fe-bd7c-11ed-83eb-af7a569ac7ad"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6d83f5fe-bd7c-11ed-83eb-af7a569ac7ad"),
+				},
 			},
 		},
 	}
@@ -444,7 +461,9 @@ func Test_DecreaseCallCount(t *testing.T) {
 
 			id: uuid.FromStringOrNil("41d22862-d899-11ed-9791-2355b45b9efc"),
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("41d22862-d899-11ed-9791-2355b45b9efc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("41d22862-d899-11ed-9791-2355b45b9efc"),
+				},
 			},
 		},
 	}
@@ -496,7 +515,9 @@ func Test_DecreaseGroupcallCount(t *testing.T) {
 
 			id: uuid.FromStringOrNil("6d5bdb48-e2c3-11ed-8bdc-67d0aa1f514d"),
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("6d5bdb48-e2c3-11ed-8bdc-67d0aa1f514d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6d5bdb48-e2c3-11ed-8bdc-67d0aa1f514d"),
+				},
 			},
 		},
 	}
@@ -558,7 +579,9 @@ func Test_UpdateCallIDsAndCallCountAndDialIndex(t *testing.T) {
 			dialIndex: 2,
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("0f286b57-2114-486b-a6f9-bd0f3641b506"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0f286b57-2114-486b-a6f9-bd0f3641b506"),
+				},
 			},
 		},
 	}
@@ -620,7 +643,9 @@ func Test_UpdateGroupcallIDsAndGroupcallCountAndDialIndex(t *testing.T) {
 			dialIndex:      2,
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("6aecfce2-d32c-4716-9fa4-bbe87ff5e088"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6aecfce2-d32c-4716-9fa4-bbe87ff5e088"),
+				},
 			},
 		},
 	}
@@ -675,7 +700,9 @@ func Test_UpdateStatus(t *testing.T) {
 			status: groupcall.StatusHangup,
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("bc5c0a83-6785-4fc1-9d62-940e53abcb70"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("bc5c0a83-6785-4fc1-9d62-940e53abcb70"),
+				},
 			},
 		},
 	}

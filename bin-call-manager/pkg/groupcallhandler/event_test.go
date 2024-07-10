@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-call-manager/models/groupcall"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -35,12 +36,16 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
-					ID:       uuid.FromStringOrNil("c007ba2a-f0c7-11ee-857b-777b125077ae"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c007ba2a-f0c7-11ee-857b-777b125077ae"),
+					},
 					Status:   groupcall.StatusHangup,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("c0404f8e-f0c7-11ee-8e1d-df676cb88c41"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c0404f8e-f0c7-11ee-8e1d-df676cb88c41"),
+					},
 					Status:   groupcall.StatusHangup,
 					TMDelete: dbhandler.DefaultTimeStamp,
 				},

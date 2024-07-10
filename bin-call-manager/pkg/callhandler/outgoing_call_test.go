@@ -435,7 +435,9 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			},
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("2a14f3af-68cd-4b64-b6db-856cb15cc1cc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a14f3af-68cd-4b64-b6db-856cb15cc1cc"),
+				},
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("9da13d85-1a50-46d7-a4f6-e1a70650a648"),
 					uuid.FromStringOrNil("8815fce3-7560-4574-a659-20905f928f5a"),
@@ -509,7 +511,9 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 			},
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("f6223d68-e274-11ed-805f-4329b5f9076e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f6223d68-e274-11ed-805f-4329b5f9076e"),
+				},
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("f64b0bd0-e274-11ed-8457-63d2b832a8c0"),
 					uuid.FromStringOrNil("f673400a-e274-11ed-920b-535097d30c6f"),

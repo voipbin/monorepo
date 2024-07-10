@@ -52,7 +52,9 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 				},
 			},
 			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
 				Filenames: []string{
@@ -82,7 +84,9 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 				},
 			},
 			responseRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
 				Filenames: []string{
@@ -164,7 +168,9 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 				},
 			},
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("4f367e2c-612c-11eb-b063-676ca5ee546a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f367e2c-612c-11eb-b063-676ca5ee546a"),
+				},
 				Filenames: []string{
 					"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888_in.wav",
 					"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888_out.wav",

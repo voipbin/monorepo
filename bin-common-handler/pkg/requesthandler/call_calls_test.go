@@ -265,7 +265,9 @@ func Test_CallV1CallsCreate(t *testing.T) {
 			},
 			expectResGroupcalls: []*cmgroupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("69b105a6-939b-4eb0-99a5-0efa5b3cd80e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("69b105a6-939b-4eb0-99a5-0efa5b3cd80e"),
+					},
 				},
 			},
 		},

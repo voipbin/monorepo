@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -49,7 +50,9 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 			},
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("05a4617c-bb41-11ed-8591-d72108ff17fd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("05a4617c-bb41-11ed-8591-d72108ff17fd"),
+				},
 			},
 
 			expectID:         uuid.FromStringOrNil("114c466e-e46a-11ed-9034-5fd743781da6"),
@@ -144,10 +147,14 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
-					ID: uuid.FromStringOrNil("d8896324-bd7d-11ed-bdea-5b96b47c0bf4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d8896324-bd7d-11ed-bdea-5b96b47c0bf4"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("d8ae01d4-bd7d-11ed-b570-236fa9212eba"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d8ae01d4-bd7d-11ed-b570-236fa9212eba"),
+					},
 				},
 			},
 
@@ -214,8 +221,10 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("6b59c9a6-bd7d-11ed-98cc-536b0b571118"),
-				CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6b59c9a6-bd7d-11ed-98cc-536b0b571118"),
+					CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				},
 			},
 
 			uuid.FromStringOrNil("6b59c9a6-bd7d-11ed-98cc-536b0b571118"),
@@ -273,8 +282,10 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("922b2b46-bd7e-11ed-8754-3772984da05b"),
-				CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("922b2b46-bd7e-11ed-8754-3772984da05b"),
+					CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				},
 			},
 
 			uuid.FromStringOrNil("922b2b46-bd7e-11ed-8754-3772984da05b"),
@@ -332,8 +343,10 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodPost,
 			},
 			&groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("b055775c-bd7e-11ed-a2b8-1f2c8369029a"),
-				CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b055775c-bd7e-11ed-a2b8-1f2c8369029a"),
+					CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				},
 			},
 
 			uuid.FromStringOrNil("b055775c-bd7e-11ed-a2b8-1f2c8369029a"),
@@ -394,7 +407,9 @@ func Test_processV1GroupcallsIDAnswerGroupcallIDPost(t *testing.T) {
 				Data:     []byte(`{"answer_groupcall_id":"c5a12f84-e443-11ed-82ef-47e49bddaa68"}`),
 			},
 			&groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("c5292994-e443-11ed-9d25-f79431094c08"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c5292994-e443-11ed-9d25-f79431094c08"),
+				},
 			},
 
 			uuid.FromStringOrNil("c5292994-e443-11ed-9d25-f79431094c08"),
@@ -453,7 +468,9 @@ func Test_processV1GroupcallsIDHangupGroupcallPost(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodPost,
 			},
 			&groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("dd850fba-e445-11ed-a841-9bf7ed18abe2"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dd850fba-e445-11ed-a841-9bf7ed18abe2"),
+				},
 			},
 
 			uuid.FromStringOrNil("dd850fba-e445-11ed-a841-9bf7ed18abe2"),
@@ -511,7 +528,9 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodPost,
 			},
 			&groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("0b4d5a38-e446-11ed-9b91-bb8a66b3fb46"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0b4d5a38-e446-11ed-9b91-bb8a66b3fb46"),
+				},
 			},
 
 			uuid.FromStringOrNil("0b4d5a38-e446-11ed-9b91-bb8a66b3fb46"),
