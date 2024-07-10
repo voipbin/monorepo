@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -30,10 +31,14 @@ func Test_GroupcallCreate(t *testing.T) {
 			name: "have all",
 
 			data: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
-				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
-				OwnerType:  groupcall.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("bbc99a3e-2bf8-11ef-b744-db67144792ae"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
+					CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("bbc99a3e-2bf8-11ef-b744-db67144792ae"),
+				},
 
 				Status: groupcall.StatusProgressing,
 				FlowID: uuid.FromStringOrNil("53cc3b24-0af3-4500-9764-1aa421ddbba3"),
@@ -73,10 +78,14 @@ func Test_GroupcallCreate(t *testing.T) {
 
 			responseCurTime: "2023-01-18 03:22:18.995000",
 			expectRes: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
-				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
-				OwnerType:  groupcall.OwnerTypeAgent,
-				OwnerID:    uuid.FromStringOrNil("bbc99a3e-2bf8-11ef-b744-db67144792ae"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
+					CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("bbc99a3e-2bf8-11ef-b744-db67144792ae"),
+				},
 
 				Status: groupcall.StatusProgressing,
 				FlowID: uuid.FromStringOrNil("53cc3b24-0af3-4500-9764-1aa421ddbba3"),
@@ -169,8 +178,10 @@ func Test_GroupcallSetAnswerCallID(t *testing.T) {
 		{
 			name: "normal",
 			data: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
-				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
+					CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				},
 
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -200,8 +211,10 @@ func Test_GroupcallSetAnswerCallID(t *testing.T) {
 
 			responseCurTime: "2023-01-18 03:22:18.995000",
 			expectRes: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
-				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
+					CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+				},
 
 				Source: &commonaddress.Address{
 					Type:   commonaddress.TypeTel,
@@ -289,7 +302,9 @@ func Test_GroupcallSetAnswerGroupcallID(t *testing.T) {
 		{
 			name: "normal",
 			data: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("864ce138-e2b9-11ed-b321-333da5e2b527"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("864ce138-e2b9-11ed-b321-333da5e2b527"),
+				},
 				Source:       &commonaddress.Address{},
 				Destinations: []commonaddress.Address{},
 
@@ -306,7 +321,9 @@ func Test_GroupcallSetAnswerGroupcallID(t *testing.T) {
 
 			responseCurTime: "2023-01-18 03:22:18.995000",
 			expectRes: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("864ce138-e2b9-11ed-b321-333da5e2b527"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("864ce138-e2b9-11ed-b321-333da5e2b527"),
+				},
 				Source:       &commonaddress.Address{},
 				Destinations: []commonaddress.Address{},
 
@@ -379,7 +396,9 @@ func Test_GroupcallDecreaseCallCount(t *testing.T) {
 		{
 			name: "normal",
 			data: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("694c2b84-d913-11ed-82ca-8ffe9f085634"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("694c2b84-d913-11ed-82ca-8ffe9f085634"),
+				},
 				Source:       &commonaddress.Address{},
 				Destinations: []commonaddress.Address{},
 				CallIDs:      []uuid.UUID{},
@@ -391,7 +410,9 @@ func Test_GroupcallDecreaseCallCount(t *testing.T) {
 
 			responseCurTime: "2023-01-18 03:22:18.995000",
 			expectRes: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("694c2b84-d913-11ed-82ca-8ffe9f085634"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("694c2b84-d913-11ed-82ca-8ffe9f085634"),
+				},
 
 				Source:       &commonaddress.Address{},
 				Destinations: []commonaddress.Address{},
@@ -461,7 +482,9 @@ func Test_GroupcallDecreaseGroupcallCount(t *testing.T) {
 		{
 			name: "normal",
 			data: &groupcall.Groupcall{
-				ID:             uuid.FromStringOrNil("00731852-e2c3-11ed-99d8-53674cc4d92d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("00731852-e2c3-11ed-99d8-53674cc4d92d"),
+				},
 				Source:         &commonaddress.Address{},
 				Destinations:   []commonaddress.Address{},
 				CallIDs:        []uuid.UUID{},
@@ -473,7 +496,9 @@ func Test_GroupcallDecreaseGroupcallCount(t *testing.T) {
 
 			responseCurTime: "2023-01-18 03:22:18.995000",
 			expectRes: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("00731852-e2c3-11ed-99d8-53674cc4d92d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("00731852-e2c3-11ed-99d8-53674cc4d92d"),
+				},
 
 				Source:         &commonaddress.Address{},
 				Destinations:   []commonaddress.Address{},
@@ -544,7 +569,9 @@ func Test_GroupcallSetStatus(t *testing.T) {
 		{
 			name: "normal",
 			data: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("ee34fa3e-e123-11ed-92bf-a3c23e7dcb96"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee34fa3e-e123-11ed-92bf-a3c23e7dcb96"),
+				},
 			},
 
 			id:     uuid.FromStringOrNil("ee34fa3e-e123-11ed-92bf-a3c23e7dcb96"),
@@ -552,7 +579,9 @@ func Test_GroupcallSetStatus(t *testing.T) {
 
 			responseCurTime: "2023-01-18 03:22:18.995000",
 			expectRes: &groupcall.Groupcall{
-				ID:     uuid.FromStringOrNil("ee34fa3e-e123-11ed-92bf-a3c23e7dcb96"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ee34fa3e-e123-11ed-92bf-a3c23e7dcb96"),
+				},
 				Status: groupcall.StatusProgressing,
 
 				Source:       &commonaddress.Address{},
@@ -626,7 +655,9 @@ func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
 		{
 			name: "normal",
 			data: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("e8c41e5a-e127-11ed-836a-4777b4880b93"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e8c41e5a-e127-11ed-836a-4777b4880b93"),
+				},
 			},
 
 			id: uuid.FromStringOrNil("e8c41e5a-e127-11ed-836a-4777b4880b93"),
@@ -639,7 +670,9 @@ func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
 
 			responseCurTime: "2023-01-18 03:22:18.995000",
 			expectRes: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("e8c41e5a-e127-11ed-836a-4777b4880b93"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e8c41e5a-e127-11ed-836a-4777b4880b93"),
+				},
 
 				Source:       &commonaddress.Address{},
 				Destinations: []commonaddress.Address{},
@@ -717,12 +750,16 @@ func Test_GroupcallGets(t *testing.T) {
 			"normal",
 			[]*groupcall.Groupcall{
 				{
-					ID:         uuid.FromStringOrNil("fc555ffa-aef0-11ee-b94a-43b5d70aac44"),
-					CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("fc555ffa-aef0-11ee-b94a-43b5d70aac44"),
+						CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("fcb43250-aef0-11ee-9df0-db02730d68b3"),
-					CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("fcb43250-aef0-11ee-9df0-db02730d68b3"),
+						CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					},
 				},
 			},
 
@@ -735,8 +772,10 @@ func Test_GroupcallGets(t *testing.T) {
 
 			[]*groupcall.Groupcall{
 				{
-					ID:         uuid.FromStringOrNil("fc555ffa-aef0-11ee-b94a-43b5d70aac44"),
-					CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("fc555ffa-aef0-11ee-b94a-43b5d70aac44"),
+						CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					},
 
 					Source:       &commonaddress.Address{},
 					Destinations: []commonaddress.Address{},
@@ -748,8 +787,10 @@ func Test_GroupcallGets(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("fcb43250-aef0-11ee-9df0-db02730d68b3"),
-					CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("fcb43250-aef0-11ee-9df0-db02730d68b3"),
+						CustomerID: uuid.FromStringOrNil("fc86423c-aef0-11ee-a9c6-f7e96941fc95"),
+					},
 
 					Source:       &commonaddress.Address{},
 					Destinations: []commonaddress.Address{},

@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -42,8 +43,10 @@ func Test_processV1RecordingsGet(t *testing.T) {
 			},
 			[]*recording.Recording{
 				{
-					ID:            uuid.FromStringOrNil("cfa4d576-6128-11eb-b69b-9f7a738a1ad7"),
-					CustomerID:    uuid.FromStringOrNil("c15af818-7f51-11ec-8eeb-f733ba8df393"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("cfa4d576-6128-11eb-b69b-9f7a738a1ad7"),
+						CustomerID: uuid.FromStringOrNil("c15af818-7f51-11ec-8eeb-f733ba8df393"),
+					},
 					ReferenceType: recording.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 					Status:        recording.StatusEnded,
@@ -120,7 +123,9 @@ func Test_processV1RecordingsPost(t *testing.T) {
 			},
 
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("ccf74444-90b5-11ed-958b-4fac7f75981c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ccf74444-90b5-11ed-958b-4fac7f75981c"),
+				},
 			},
 
 			recording.ReferenceTypeCall,
@@ -183,8 +188,10 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&recording.Recording{
-				ID:            uuid.FromStringOrNil("00c711be-6129-11eb-9404-b73dcf512957"),
-				CustomerID:    uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("00c711be-6129-11eb-9404-b73dcf512957"),
+					CustomerID: uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 				Status:        recording.StatusEnded,
@@ -248,8 +255,10 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 			},
 
 			&recording.Recording{
-				ID:            uuid.FromStringOrNil("3019fe2a-8eba-11ed-809e-bbab8230e905"),
-				CustomerID:    uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3019fe2a-8eba-11ed-809e-bbab8230e905"),
+					CustomerID: uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
 				Status:        recording.StatusEnded,
@@ -313,7 +322,9 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 			},
 
 			&recording.Recording{
-				ID: uuid.FromStringOrNil("2c7e5af4-90d6-11ed-8ba0-c335ddc4049b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2c7e5af4-90d6-11ed-8ba0-c335ddc4049b"),
+				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

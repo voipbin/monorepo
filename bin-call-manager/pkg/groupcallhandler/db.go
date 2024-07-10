@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -17,7 +18,7 @@ func (h *groupcallHandler) Create(
 	ctx context.Context,
 	id uuid.UUID,
 	customerID uuid.UUID,
-	ownerType groupcall.OwnerType,
+	ownerType commonidentity.OwnerType,
 	ownerID uuid.UUID,
 	flowID uuid.UUID,
 	source *commonaddress.Address,
@@ -46,10 +47,14 @@ func (h *groupcallHandler) Create(
 
 	// create groupcall
 	tmp := &groupcall.Groupcall{
-		ID:         id,
-		CustomerID: customerID,
-		OwnerType:  ownerType,
-		OwnerID:    ownerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: ownerType,
+			OwnerID:   ownerID,
+		},
 
 		Status: groupcall.StatusProgressing,
 		FlowID: flowID,

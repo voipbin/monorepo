@@ -92,8 +92,10 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 				"context_type=call,context=call-record,reference_type=call,reference_id=852def0e-f24a-11ed-845f-e32a849e7338,recording_id=8e914000-f24a-11ed-b09f-879b31d16030,recording_name=call_852def0e-f24a-11ed-845f-e32a849e7338_2023-01-05T14:58:05Z,recording_direction=out,recording_format=wav,recording_end_of_silence=0,recording_end_of_key=,recording_duration=0",
 			},
 			expectRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("8e914000-f24a-11ed-b09f-879b31d16030"),
-				CustomerID:    uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8e914000-f24a-11ed-b09f-879b31d16030"),
+					CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
+				},
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("852def0e-f24a-11ed-845f-e32a849e7338"),
 				Status:        recording.StatusInitiating,
@@ -200,13 +202,17 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 			responseUUID:       uuid.FromStringOrNil("4f1ccb00-f24b-11ed-8dc1-6752696fc7aa"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",
 			responseRecording: &recording.Recording{
-				ID: uuid.FromStringOrNil("4f1ccb00-f24b-11ed-8dc1-6752696fc7aa"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4f1ccb00-f24b-11ed-8dc1-6752696fc7aa"),
+				},
 			},
 
 			expectFilename: "confbridge_4eb0b00a-f24b-11ed-8ceb-9f5eb3969704_2023-01-05T14:58:05Z_in",
 			expectRecording: &recording.Recording{
-				ID:            uuid.FromStringOrNil("4f1ccb00-f24b-11ed-8dc1-6752696fc7aa"),
-				CustomerID:    uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4f1ccb00-f24b-11ed-8dc1-6752696fc7aa"),
+					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				},
 				ReferenceType: recording.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("4eb0b00a-f24b-11ed-8ceb-9f5eb3969704"),
 				Status:        recording.StatusInitiating,

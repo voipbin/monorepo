@@ -27,15 +27,6 @@ type Chatroom struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// OnwerType defines
-type OwnerType string
-
-// list of onwer types
-const (
-	OwnerTypeNone  OwnerType = ""
-	OwnerTypeAgent OwnerType = "agent"
-)
-
 // Type define
 type Type string
 

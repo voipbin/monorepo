@@ -42,7 +42,9 @@ func Test_recordingsIDGET(t *testing.T) {
 				},
 			},
 			&cmrecording.WebhookMessage{
-				ID: uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929"),
+				},
 			},
 		},
 	}
@@ -96,7 +98,9 @@ func Test_recordingsIDDELETE(t *testing.T) {
 
 			"/v1.0/recordings/ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c",
 			&cmrecording.WebhookMessage{
-				ID: uuid.FromStringOrNil("ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c"),
+				},
 			},
 		},
 	}

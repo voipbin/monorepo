@@ -67,15 +67,6 @@ type Call struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// OwnerType defines
-type OwnerType string
-
-// list of owner types
-const (
-	OwnerTypeNone  OwnerType = ""
-	OwnerTypeAgent OwnerType = "agent" // the owner id is agent's id.
-)
-
 // Type type
 type Type string
 

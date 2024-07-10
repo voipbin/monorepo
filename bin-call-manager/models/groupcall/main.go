@@ -2,16 +2,15 @@ package groupcall
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
 
 // Groupcall define
 type Groupcall struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	OwnerType  OwnerType `json:"owner_type"`
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
+	commonidentity.Owner
 
 	Status Status    `json:"status"`
 	FlowID uuid.UUID `json:"flow_id"`
@@ -40,15 +39,6 @@ type Groupcall struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
-
-// OwnerType defines
-type OwnerType string
-
-// list of owner types
-const (
-	OwnerTypeNone  OwnerType = ""
-	OwnerTypeAgent OwnerType = "agent" // the owner id is agent's id.
-)
 
 // Status define
 type Status string

@@ -48,15 +48,19 @@ func Test_RecordingGets(t *testing.T) {
 
 			[]cmrecording.Recording{
 				{
-					ID:         uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
 					Filenames: []string{
 						"call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
 					Filenames: []string{
 						"call_2f167946-b2b4-4370-94fa-d6c2c57c84da_2020-12-04T18:48:03Z",
 					},
@@ -69,12 +73,16 @@ func Test_RecordingGets(t *testing.T) {
 			},
 			[]*cmrecording.WebhookMessage{
 				{
-					ID:         uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
 				},
 				{
-					ID:         uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("43259aa4-6146-11eb-acb2-6b996101131d"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
 				},
 			},
 		},
@@ -133,15 +141,19 @@ func Test_RecordingDelete(t *testing.T) {
 			uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
 
 			&cmrecording.Recording{
-				ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 
 			&cmrecording.WebhookMessage{
-				ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}

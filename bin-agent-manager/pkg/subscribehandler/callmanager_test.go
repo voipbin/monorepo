@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
@@ -32,7 +33,9 @@ func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
 			},
 
 			expectGroupcall: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("1a7889cc-8493-4bad-90ee-b80f944349cb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1a7889cc-8493-4bad-90ee-b80f944349cb"),
+				},
 			},
 		},
 	}
@@ -76,7 +79,9 @@ func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 			},
 
 			expectGroupcall: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("1a0d744a-c0c2-4a05-8a72-a508a62ce410"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1a0d744a-c0c2-4a05-8a72-a508a62ce410"),
+				},
 			},
 		},
 	}

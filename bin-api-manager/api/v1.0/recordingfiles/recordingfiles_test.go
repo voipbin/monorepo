@@ -49,7 +49,9 @@ func Test_RecordingfilesIDGET(t *testing.T) {
 				},
 			},
 			recording.Recording{
-				ID: uuid.FromStringOrNil("79bf1fee-61e2-11eb-b0e8-6b21f6734c33"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("79bf1fee-61e2-11eb-b0e8-6b21f6734c33"),
+				},
 			},
 			"https://test.com/call_776c8a94-34bd-11eb-abef-0b279f3eabc1_2020.wav?token=token",
 		},

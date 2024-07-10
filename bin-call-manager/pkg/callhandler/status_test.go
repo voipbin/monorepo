@@ -336,7 +336,9 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 				GroupcallID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
 			},
 			responseGroupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
+				},
 				AnswerMethod: groupcall.AnswerMethodHangupOthers,
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),

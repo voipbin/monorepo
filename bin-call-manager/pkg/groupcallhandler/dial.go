@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -236,7 +236,7 @@ func (h *groupcallHandler) getDialDestinationsAddressAndRingMethodTypeAgent(ctx 
 }
 
 // getAddressOwner returns owner's type and id.
-func (h *groupcallHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (groupcall.OwnerType, uuid.UUID, error) {
+func (h *groupcallHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (commonidentity.OwnerType, uuid.UUID, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "getAddressOwner",
 		"customer_id": customerID,
@@ -251,24 +251,24 @@ func (h *groupcallHandler) getAddressOwner(ctx context.Context, customerID uuid.
 		tmp, err = h.reqHandler.AgentV1AgentGet(ctx, id)
 		if err != nil {
 			log.Errorf("Could not get owner info. err: %v", err)
-			return groupcall.OwnerTypeNone, uuid.Nil, err
+			return commonidentity.OwnerTypeNone, uuid.Nil, err
 		}
 	} else {
 		tmp, err = h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, *addr)
 		if err != nil {
 			log.Errorf("Could not get agent info. err: %v", err)
-			return groupcall.OwnerTypeNone, uuid.Nil, nil
+			return commonidentity.OwnerTypeNone, uuid.Nil, nil
 		}
 	}
 
 	if tmp == nil {
-		return groupcall.OwnerTypeNone, uuid.Nil, nil
+		return commonidentity.OwnerTypeNone, uuid.Nil, nil
 	}
 
 	if tmp.CustomerID != customerID {
 		log.Errorf("The customer id is not valid.")
-		return groupcall.OwnerTypeNone, uuid.Nil, err
+		return commonidentity.OwnerTypeNone, uuid.Nil, err
 	}
 
-	return groupcall.OwnerTypeAgent, tmp.ID, nil
+	return commonidentity.OwnerTypeAgent, tmp.ID, nil
 }

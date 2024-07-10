@@ -69,7 +69,9 @@ func Test_groupcallsPOST(t *testing.T) {
 			},
 
 			responseGroupcall: &cmgroupcall.WebhookMessage{
-				ID: uuid.FromStringOrNil("7fa0708c-bf07-11ed-9dac-f7a8809e6a53"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("7fa0708c-bf07-11ed-9dac-f7a8809e6a53"),
+				},
 			},
 		},
 	}
@@ -140,11 +142,15 @@ func Test_groupcallsGET(t *testing.T) {
 			},
 			[]*cmgroupcall.WebhookMessage{
 				{
-					ID:       uuid.FromStringOrNil("44f67330-bf09-11ed-aba5-3bca63e6a7b4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("44f67330-bf09-11ed-aba5-3bca63e6a7b4"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 				{
-					ID:       uuid.FromStringOrNil("45364456-bf09-11ed-93aa-53f6a09e7fc1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("45364456-bf09-11ed-93aa-53f6a09e7fc1"),
+					},
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
@@ -207,7 +213,9 @@ func Test_groupcallsIDGET(t *testing.T) {
 			"/v1.0/groupcalls/c1423b7c-bf09-11ed-a3f8-cb3f5a42b528",
 
 			&cmgroupcall.WebhookMessage{
-				ID: uuid.FromStringOrNil("c1423b7c-bf09-11ed-a3f8-cb3f5a42b528"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c1423b7c-bf09-11ed-a3f8-cb3f5a42b528"),
+				},
 			},
 			`{"id":"c1423b7c-bf09-11ed-a3f8-cb3f5a42b528","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
@@ -268,7 +276,9 @@ func Test_groupcallsIDHangupPOST(t *testing.T) {
 			"/v1.0/groupcalls/0410089e-bf0a-11ed-93b7-f3a49f2b479f/hangup",
 
 			&cmgroupcall.WebhookMessage{
-				ID: uuid.FromStringOrNil("0410089e-bf0a-11ed-93b7-f3a49f2b479f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0410089e-bf0a-11ed-93b7-f3a49f2b479f"),
+				},
 			},
 			`{"id":"0410089e-bf0a-11ed-93b7-f3a49f2b479f","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
@@ -329,7 +339,9 @@ func Test_groupcallsIDDELETE(t *testing.T) {
 			"/v1.0/groupcalls/487fd892-bf0a-11ed-9f7c-b3eaa708de0a",
 
 			&cmgroupcall.WebhookMessage{
-				ID: uuid.FromStringOrNil("487fd892-bf0a-11ed-9f7c-b3eaa708de0a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("487fd892-bf0a-11ed-9f7c-b3eaa708de0a"),
+				},
 			},
 			`{"id":"487fd892-bf0a-11ed-9f7c-b3eaa708de0a","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
