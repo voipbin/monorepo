@@ -127,3 +127,87 @@ func chatroommessagesGET(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// chatroommessagesIDGET handles GET /service_agents/chatroommessages/{id} request.
+// It returns detail chatroommessage info.
+//
+//	@Summary		Returns detail chatroommessage info.
+//	@Description	Returns detail chatroommessage info of the given chatroommessage id.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the chatroommessage"
+//	@Success		200	{object}	messagechatroom.Messagechatroom
+//	@Router			/v1.0/service_agents/chatroommessages/{id} [get]
+func chatroommessagesIDGET(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroommessagesIDGET",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("chatroommessage_id", id)
+	log.Debug("Executing chatroomsIDGET.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ServiceAgentChatroommessageGet(c.Request.Context(), &a, id)
+	if err != nil {
+		log.Errorf("Could not get a chatroommessage. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// chatroommessagesIDDELETE handles DELETE /service_agents/chatroommessages/{id} request.
+// It deletes the chatroommessage and returns deleted chatroommessage info.
+//
+//	@Summary		Deletes a chatroommessage and returns detail chatroommessage info.
+//	@Description	Deletes a chatroommessage and returns detail chatroommessage info.
+//	@Produce		json
+//	@Param			id	path		string	true	"The ID of the chatroommessage"
+//	@Success		200	{object}	messagechatroom.Messagechatroom
+//	@Router			/v1.0/service_agents/chatroommessages/{id} [delete]
+func chatroommessagesIDDELETE(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroommessagesIDDELETE",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("chatroommessage_id", id)
+	log.Debug("Executing chatroomsIDGET.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ServiceAgentChatroommessageDelete(c.Request.Context(), &a, id)
+	if err != nil {
+		log.Errorf("Could not delete a chatroommessage. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

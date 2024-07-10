@@ -137,3 +137,35 @@ func (h *serviceHandler) ServiceAgentChatroommessageCreate(ctx context.Context, 
 	res := crms[0].ConvertWebhookMessage()
 	return res, nil
 }
+
+// ServiceAgentChatroommessageDelete deletes the chatroom message.
+func (h *serviceHandler) ServiceAgentChatroommessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":               "ServiceAgentChatroommessageDelete",
+		"customer_id":        a.CustomerID,
+		"username":           a.Username,
+		"chatroommessage_id": id,
+	})
+	log.Debug("Deleting a chatroommessage.")
+
+	// get chatroommessage
+	cr, err := h.chatroommessageGet(ctx, a, id)
+	if err != nil {
+		log.Errorf("Could not get chatroommessage info from the chat-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
+	}
+
+	if cr.OwnerID != a.ID {
+		log.Info("The agent has no permission for this agent.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.ChatV1MessagechatroomDelete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete the chatroommessage. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}

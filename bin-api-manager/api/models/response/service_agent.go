@@ -6,6 +6,7 @@ import (
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 )
 
 // BodyServiceAgentsCallsGET is response body define for
@@ -40,5 +41,12 @@ type BodyServiceAgentsConversationsGET struct {
 // GET /v1.0/service_agents/chatroommessages
 type BodyServiceAgentsChatroommessagesGET struct {
 	Result []*chatmessagechatroom.WebhookMessage `json:"result"`
+	Pagination
+}
+
+// BodyServiceAgentsConversationsIDMessagesGET is rquest body define for
+// GET /v1.0/service_agents/conversations/<conversation-id>/messages
+type BodyServiceAgentsConversationsIDMessagesGET struct {
+	Result []*cvmessage.WebhookMessage `json:"result"`
 	Pagination
 }

@@ -2968,6 +2968,21 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroommessageCreate(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroommessageCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroommessageCreate), ctx, a, chatroomID, message, medias)
 }
 
+// ServiceAgentChatroommessageDelete mocks base method.
+func (m *MockServiceHandler) ServiceAgentChatroommessageDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*messagechatroom.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentChatroommessageDelete", ctx, a, id)
+	ret0, _ := ret[0].(*messagechatroom.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentChatroommessageDelete indicates an expected call of ServiceAgentChatroommessageDelete.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroommessageDelete(ctx, a, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroommessageDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroommessageDelete), ctx, a, id)
+}
+
 // ServiceAgentChatroommessageGet mocks base method.
 func (m *MockServiceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*messagechatroom.WebhookMessage, error) {
 	m.ctrl.T.Helper()
