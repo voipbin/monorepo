@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
-	cvmedia "monorepo/bin-conversation-manager/models/media"
-	cvmessage "monorepo/bin-conversation-manager/models/message"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -50,7 +48,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -60,18 +58,42 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 		"customer_id": a.CustomerID.String(),
 	}
 
-	// get tmp
-	tmp, err := h.reqHandler.ConversationV1ConversationGets(ctx, token, size, filters)
+	tmps, err := h.conversationGets(ctx, a, size, token, filters)
 	if err != nil {
-		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
+		log.Errorf("Could not get conversations. err: %v", err)
+		return nil, errors.Wrapf(err, "Could not get conversations.")
 	}
 
 	// create result
 	res := []*cvconversation.WebhookMessage{}
-	for _, f := range tmp {
+	for _, f := range tmps {
 		tmp := f.ConvertWebhookMessage()
 		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
+// conversationGets gets the list of conversations.
+// It returns list of conversations if it succeed.
+func (h *serviceHandler) conversationGets(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]cvconversation.Conversation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "ConversationGetsByCustomerID",
+		"agent": a,
+		"size":  size,
+		"token": token,
+	})
+	log.Debug("Getting a conversations.")
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// gets
+	res, err := h.reqHandler.ConversationV1ConversationGets(ctx, token, size, filters)
+	if err != nil {
+		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
 	}
 
 	return res, nil
@@ -95,7 +117,7 @@ func (h *serviceHandler) ConversationGet(ctx context.Context, a *amagent.Agent, 
 		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -122,7 +144,7 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *amagent.Agen
 		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -131,95 +153,6 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *amagent.Agen
 	if err != nil {
 		log.Errorf("Could not update the conversation. err: %v", err)
 		return nil, errors.Wrap(err, "could not update the conversation")
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
-// ConversationMessageGetsByConversationID gets the list of conversation's messages of the given conversation id.
-// It returns list of conversation messages if it succeed.
-func (h *serviceHandler) ConversationMessageGetsByConversationID(
-	ctx context.Context,
-	a *amagent.Agent,
-	conversationID uuid.UUID,
-	size uint64,
-	token string,
-) ([]*cvmessage.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "ConversationMessageGetsByConversationID",
-		"customer_id":     a.CustomerID,
-		"conversation_id": conversationID,
-		"username":        a.Username,
-		"size":            size,
-		"token":           token,
-	})
-	log.Debug("Getting a conversation messages.")
-
-	// get conversation to check the permission
-	c, err := h.conversationGet(ctx, a, conversationID)
-	if err != nil {
-		log.Errorf("Could not get conversation info. err: %v", err)
-		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
-	}
-
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
-	}
-
-	if token == "" {
-		token = h.utilHandler.TimeGetCurTime()
-	}
-
-	// get tmp
-	tmp, err := h.reqHandler.ConversationV1ConversationMessageGetsByConversationID(ctx, conversationID, token, size)
-	if err != nil {
-		log.Errorf("Could not get conversation messages info from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not get conversation messages info. err: %v", err)
-	}
-
-	// create result
-	res := []*cvmessage.WebhookMessage{}
-	for _, f := range tmp {
-		tmp := f.ConvertWebhookMessage()
-		res = append(res, tmp)
-	}
-
-	return res, nil
-}
-
-// ConversationMessageSend send a message to the conversation.
-func (h *serviceHandler) ConversationMessageSend(
-	ctx context.Context,
-	a *amagent.Agent,
-	conversationID uuid.UUID,
-	text string,
-	medias []cvmedia.Media,
-) (*cvmessage.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "ConversationMessageSend",
-		"customer_id":     a.CustomerID,
-		"conversation_id": conversationID,
-	})
-	log.Debugf("Sending a message. conversation_id: %s", conversationID)
-
-	// get conversation to check the permission
-	c, err := h.conversationGet(ctx, a, conversationID)
-	if err != nil {
-		log.Errorf("Could not get conversation info. err: %v", err)
-		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
-	}
-
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
-	}
-
-	tmp, err := h.reqHandler.ConversationV1MessageSend(ctx, conversationID, text, medias)
-	if err != nil {
-		log.Errorf("Could not send the message correctly. err: %v", err)
-		return nil, fmt.Errorf("could not send the message. err: %v", err)
 	}
 
 	res := tmp.ConvertWebhookMessage()
