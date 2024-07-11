@@ -69,7 +69,7 @@ func chatroomsGET(c *gin.Context) {
 	if len(tmps) > 0 {
 		nextToken = tmps[len(tmps)-1].TMCreate
 	}
-	res := response.BodyServiceAgentChatroomsGET{
+	res := response.BodyServiceAgentsChatroomsGET{
 		Result: tmps,
 		Pagination: response.Pagination{
 			NextPageToken: nextToken,

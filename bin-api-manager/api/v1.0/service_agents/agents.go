@@ -12,19 +12,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// callsGET handles GET service_agents/calls request.
-// It returns list of calls of the given customer.
+// agentsGET handles GET service_agents/agents request.
+// It returns list of agents.
 
 // @Summary		Get list of calls
 // @Description	get calls of the customer
 // @Produce		json
 // @Param			page_size	query		int		false	"The size of results. Max 100"
 // @Param			page_token	query		string	false	"The token. tm_create"
-// @Success		200			{object}	response.BodyCallsGET
-// @Router			/v1.0/service_agents/calls [get]
-func callsGET(c *gin.Context) {
+// @Success		200			{object}	response.BodyServiceAgentsAgentsGET
+// @Router			/v1.0/service_agents/agents [get]
+func agentsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "callsGET",
+		"func":            "agentsGET",
 		"request_address": c.ClientIP,
 	})
 
@@ -39,13 +39,13 @@ func callsGET(c *gin.Context) {
 		"agent": a,
 	})
 
-	var requestParam request.ParamServiceAgentCallsGET
+	var requestParam request.ParamServiceAgentAgentsGET
 	if err := c.BindQuery(&requestParam); err != nil {
 		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
-	log.Debugf("callsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
+	log.Debugf("agentsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
 
 	// set max page size
 	pageSize := requestParam.PageSize
@@ -57,8 +57,8 @@ func callsGET(c *gin.Context) {
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	// get calls
-	calls, err := serviceHandler.ServiceAgentCallGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
+	// get tmps
+	tmps, err := serviceHandler.ServiceAgentAgentGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -66,11 +66,11 @@ func callsGET(c *gin.Context) {
 	}
 
 	nextToken := ""
-	if len(calls) > 0 {
-		nextToken = calls[len(calls)-1].TMCreate
+	if len(tmps) > 0 {
+		nextToken = tmps[len(tmps)-1].TMCreate
 	}
-	res := response.BodyServiceAgentsCallsGET{
-		Result: calls,
+	res := response.BodyServiceAgentsAgentsGET{
+		Result: tmps,
 		Pagination: response.Pagination{
 			NextPageToken: nextToken,
 		},
@@ -79,18 +79,18 @@ func callsGET(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// callsIDGET handles GET /service_agents/calls/{id} request.
+// agentIDGET handles GET /service_agents/agents/{id} request.
 // It returns detail call info.
 //
 //	@Summary		Get detail call info.
 //	@Description	Returns detail call info of the given call id.
 //	@Produce		json
 //	@Param			id	path		string	true	"The ID of the call"
-//	@Success		200	{object}	call.Call
-//	@Router			/v1.0/service_agents/calls/{id} [get]
-func callsIDGET(c *gin.Context) {
+//	@Success		200	{object}	agent.Agent
+//	@Router			/v1.0/service_agents/agents/{id} [get]
+func agentIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "callsIDGET",
+		"func":            "agentIDGET",
 		"request_address": c.ClientIP,
 	})
 
@@ -107,11 +107,10 @@ func callsIDGET(c *gin.Context) {
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	log = log.WithField("call_id", id)
-	log.Debug("Executing callsIDGET.")
+	log = log.WithField("agent_id", id)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ServiceAgentCallGet(c.Request.Context(), &a, id)
+	res, err := serviceHandler.ServiceAgentAgentGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a call. err: %v", err)
 		c.AbortWithStatus(400)

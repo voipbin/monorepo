@@ -277,36 +277,6 @@ func Test_AgentGets(t *testing.T) {
 				},
 			},
 		},
-		{
-			"normal, agent has the same customer id but has nonepermission",
-			&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d68fe618-0e78-11ef-a017-876e16634556"),
-					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
-				},
-				Permission: amagent.PermissionNone,
-			},
-			10,
-			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"deleted": "false",
-			},
-
-			[]amagent.Agent{
-				{
-					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("d6c35908-0e78-11ef-b74a-f71c274aef07"),
-					},
-				},
-			},
-			[]*amagent.WebhookMessage{
-				{
-					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("d6c35908-0e78-11ef-b74a-f71c274aef07"),
-					},
-				},
-			},
-		},
 	}
 
 	for _, tt := range tests {

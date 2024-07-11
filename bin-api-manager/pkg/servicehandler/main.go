@@ -568,6 +568,10 @@ type ServiceHandler interface {
 		target string,
 	) (*rmroute.WebhookMessage, error)
 
+	// service_agent agent
+	ServiceAgentAgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amagent.WebhookMessage, error)
+	ServiceAgentAgentGet(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error)
+
 	// service_agent call
 	ServiceAgentCallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	ServiceAgentCallGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)
@@ -584,6 +588,21 @@ type ServiceHandler interface {
 	ServiceAgentChatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
 	ServiceAgentChatroommessageGets(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error)
 	ServiceAgentChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string, medias []chatmedia.Media) (*chatmessagechatroom.WebhookMessage, error)
+	ServiceAgentChatroommessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
+
+	// service_agent conversation
+	ServiceAgentConversationGet(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)
+	ServiceAgentConversationGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvconversation.WebhookMessage, error)
+
+	// service_agent conversation message
+	ServiceAgentConversationMessageGets(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error)
+	ServiceAgentConversationMessageSend(
+		ctx context.Context,
+		a *amagent.Agent,
+		conversationID uuid.UUID,
+		text string,
+		medias []cvmedia.Media,
+	) (*cvmessage.WebhookMessage, error)
 
 	// storage account
 	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error)

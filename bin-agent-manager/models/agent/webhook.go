@@ -12,7 +12,6 @@ import (
 // WebhookMessage defines
 type WebhookMessage struct {
 	commonidentity.Identity
-	commonidentity.Owner
 
 	Username string `json:"username"` // agent's username
 
@@ -35,7 +34,6 @@ type WebhookMessage struct {
 func (h *Agent) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
-		Owner:    h.Owner,
 
 		Username: h.Username,
 
