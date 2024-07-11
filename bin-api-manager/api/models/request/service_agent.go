@@ -7,6 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// ParamServiceAgentAgentsGET is rquest param define for
+// GET /v1.0/service_agent/agents
+type ParamServiceAgentAgentsGET struct {
+	Pagination
+}
+
 // ParamServiceAgentCallsGET is rquest param define for
 // GET /v1.0/service_agent/calls
 type ParamServiceAgentCallsGET struct {

@@ -1,6 +1,7 @@
 package response
 
 import (
+	amagent "monorepo/bin-agent-manager/models/agent"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
@@ -8,6 +9,13 @@ import (
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 )
+
+// BodyServiceAgentsAgentsGET is response body define for
+// GET /v1.0/service_agent/agents
+type BodyServiceAgentsAgentsGET struct {
+	Result []*amagent.WebhookMessage `json:"result"`
+	Pagination
+}
 
 // BodyServiceAgentsCallsGET is response body define for
 // GET /v1.0/service_agent/calls

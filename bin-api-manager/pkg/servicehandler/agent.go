@@ -110,11 +110,11 @@ func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size u
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmps, err := h.reqHandler.AgentV1AgentGets(ctx, token, size, filters)
+	tmps, err := h.agentGets(ctx, size, token, filters)
 	if err != nil {
 		log.Infof("Could not get agents info. err: %v", err)
 		return nil, err
@@ -125,6 +125,30 @@ func (h *serviceHandler) AgentGets(ctx context.Context, a *amagent.Agent, size u
 	for _, tmp := range tmps {
 		c := tmp.ConvertWebhookMessage()
 		res = append(res, c)
+	}
+
+	return res, nil
+}
+
+// agentGets sends a request to agent-manager
+// to getting a list of agents.
+// it returns list of agents if it succeed.
+func (h *serviceHandler) agentGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]amagent.Agent, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "AgentGets",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
+	})
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	res, err := h.reqHandler.AgentV1AgentGets(ctx, token, size, filters)
+	if err != nil {
+		log.Infof("Could not get agents info. err: %v", err)
+		return nil, err
 	}
 
 	return res, nil

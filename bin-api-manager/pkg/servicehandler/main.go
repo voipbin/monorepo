@@ -568,6 +568,10 @@ type ServiceHandler interface {
 		target string,
 	) (*rmroute.WebhookMessage, error)
 
+	// service_agent agent
+	ServiceAgentAgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amagent.WebhookMessage, error)
+	ServiceAgentAgentGet(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error)
+
 	// service_agent call
 	ServiceAgentCallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	ServiceAgentCallGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)

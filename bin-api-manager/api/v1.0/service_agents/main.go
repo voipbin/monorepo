@@ -6,6 +6,10 @@ import "github.com/gin-gonic/gin"
 func ApplyRoutes(r *gin.RouterGroup) {
 	targets := r.Group("/service_agents")
 
+	// agents
+	targets.GET("/agents", agentsGET)
+	targets.GET("/agents/:id", agentIDGET)
+
 	// calls
 	targets.GET("/calls", callsGET)
 	targets.GET("/calls/:id", callsIDGET)

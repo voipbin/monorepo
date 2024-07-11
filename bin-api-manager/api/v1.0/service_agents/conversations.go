@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// conversationsGET handles GET service_talk/conversations request.
+// conversationsGET handles GET service_agents/conversations request.
 // It returns list of calls of the given agent.
 
 // @Summary		Get list of conversations
