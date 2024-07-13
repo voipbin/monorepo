@@ -287,7 +287,9 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 			detail:       "test detail",
 
 			responseChat: &chatchat.Chat{
-				ID: uuid.FromStringOrNil("6aac6da2-3ba7-11ef-adf3-a3455d849cf3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6aac6da2-3ba7-11ef-adf3-a3455d849cf3"),
+				},
 			},
 			responseCurTime: "",
 			responseChatrooms: []chatchatroom.Chatroom{

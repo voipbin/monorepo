@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -54,7 +55,9 @@ func Test_v1MessagechatsPost(t *testing.T) {
 			[]media.Media{},
 
 			&messagechat.Messagechat{
-				ID: uuid.FromStringOrNil("63c6f11a-3505-11ed-be2a-7bbff41a9a6c"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("63c6f11a-3505-11ed-be2a-7bbff41a9a6c"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -83,7 +86,9 @@ func Test_v1MessagechatsPost(t *testing.T) {
 			[]media.Media{},
 
 			&messagechat.Messagechat{
-				ID: uuid.FromStringOrNil("be7c686a-3cc1-11ed-b98a-cb05fdbf5ebc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("be7c686a-3cc1-11ed-b98a-cb05fdbf5ebc"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -166,7 +171,9 @@ func Test_v1MessagechatsGet(t *testing.T) {
 
 			[]*messagechat.Messagechat{
 				{
-					ID: uuid.FromStringOrNil("123c4966-3506-11ed-be0c-f7d1f54f9992"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("123c4966-3506-11ed-be0c-f7d1f54f9992"),
+					},
 				},
 			},
 
@@ -194,10 +201,14 @@ func Test_v1MessagechatsGet(t *testing.T) {
 
 			[]*messagechat.Messagechat{
 				{
-					ID: uuid.FromStringOrNil("68b5594a-3506-11ed-9414-73dd9e1d2cca"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("68b5594a-3506-11ed-9414-73dd9e1d2cca"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("68e6aebe-3506-11ed-9fd0-635331039efa"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("68e6aebe-3506-11ed-9fd0-635331039efa"),
+					},
 				},
 			},
 
@@ -294,7 +305,9 @@ func Test_v1MessagechatsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("cf9f32fc-3506-11ed-97f5-07ccb6f809de"),
 
 			&messagechat.Messagechat{
-				ID: uuid.FromStringOrNil("cf9f32fc-3506-11ed-97f5-07ccb6f809de"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cf9f32fc-3506-11ed-97f5-07ccb6f809de"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -362,7 +375,9 @@ func Test_v1MessagechatsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("26a0a8c4-3507-11ed-8ced-e36d2e15f350"),
 
 			&messagechat.Messagechat{
-				ID: uuid.FromStringOrNil("26a0a8c4-3507-11ed-8ced-e36d2e15f350"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("26a0a8c4-3507-11ed-8ced-e36d2e15f350"),
+				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

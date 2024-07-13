@@ -1,13 +1,14 @@
 package chat
 
 import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 )
 
 // Chat defines chat.
 type Chat struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	Type Type `json:"type"`
 

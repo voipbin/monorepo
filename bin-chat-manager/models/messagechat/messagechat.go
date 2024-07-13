@@ -2,6 +2,7 @@ package messagechat
 
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
@@ -10,8 +11,7 @@ import (
 
 // Messagechat defines message for the chat
 type Messagechat struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	commonidentity.Identity
 
 	ChatID uuid.UUID `json:"chat_id"`
 

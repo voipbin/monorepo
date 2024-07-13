@@ -136,7 +136,9 @@ func Test_ChatroommessageCreate(t *testing.T) {
 				ChatID: uuid.FromStringOrNil("2fabac6a-bbf8-11ee-9e21-53afa17d17cb"),
 			},
 			responseMessagechat: &chatmessagechat.Messagechat{
-				ID: uuid.FromStringOrNil("2fe4994e-bbf8-11ee-ba94-137f44f6810a"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2fe4994e-bbf8-11ee-ba94-137f44f6810a"),
+				},
 			},
 			responseMessagechatroom: []chatmessagechatroom.Messagechatroom{
 				{

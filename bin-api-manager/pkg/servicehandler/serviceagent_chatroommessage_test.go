@@ -248,7 +248,9 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 				ChatID: uuid.FromStringOrNil("8297bd4e-3bad-11ef-bcfc-abe3935be0e0"),
 			},
 			responseMessageChat: &chatmessagechat.Messagechat{
-				ID: uuid.FromStringOrNil("b3d48d38-3bad-11ef-926f-efbf47b2f0f5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b3d48d38-3bad-11ef-926f-efbf47b2f0f5"),
+				},
 			},
 			responseCurTime: "2021-03-01 01:00:00.995000",
 			responseMessageChatrooms: []chatmessagechatroom.Messagechatroom{

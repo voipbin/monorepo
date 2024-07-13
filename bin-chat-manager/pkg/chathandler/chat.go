@@ -3,9 +3,11 @@ package chathandler
 import (
 	"context"
 	"fmt"
-	"strings"
+
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-chat-manager/models/chat"
@@ -67,28 +69,28 @@ func (h *chatHandler) Create(
 		"participant_ids": participantIDs,
 	})
 
-	tmpParticipantIDs := []string{}
-	for _, id := range participantIDs {
-		tmpParticipantIDs = append(tmpParticipantIDs, id.String())
-	}
-	tmpParticipantIDsString := strings.Join(tmpParticipantIDs, ",")
+	// sort the participants
+	tmpParticipantIDs := sortUUIDs(participantIDs)
 
-	filters := map[string]string{
-		"customer_id":     customerID.String(),
-		"type":            string(chatType),
-		"participant_ids": tmpParticipantIDsString,
-		"deleted":         "false",
-	}
-
-	tmp, err := h.db.ChatGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
-	if err != nil {
-		log.Errorf("Could not get list of chats. err: %v", err)
-		return nil, err
+	// check the chat type.
+	if chatType == chat.TypeNormal {
+		// this is a normal chat type. Need to check the chat is already exists
+		log.Debugf("Checking the existing chat. chat_type: %s", chatType)
+		if h.isExist(ctx, customerID, chatType, tmpParticipantIDs) {
+			return nil, fmt.Errorf("the chat is already exists")
+		}
 	}
 
-	if len(tmp) >= 1 {
-		log.WithField("chat", tmp).Warnf("Already exist.")
-		return nil, fmt.Errorf("already exist")
+	// validate the participants
+	for _, participantID := range tmpParticipantIDs {
+		a, err := h.reqHandler.AgentV1AgentGet(ctx, participantID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Could not get participant info. participant_id: %s", participantID)
+		}
+
+		if a.CustomerID != customerID {
+			return nil, errors.Wrapf(err, "The given pariticipant id not valid. participant_id: %s", participantID)
+		}
 	}
 
 	// create chat
@@ -97,7 +99,7 @@ func (h *chatHandler) Create(
 		customerID,
 		chatType,
 		ownerID,
-		participantIDs,
+		tmpParticipantIDs,
 		name,
 		detail,
 	)
@@ -109,7 +111,7 @@ func (h *chatHandler) Create(
 
 	// create chatrooms
 	chatroomType := chatroom.ConvertType(chatType)
-	for _, participantID := range participantIDs {
+	for _, participantID := range tmpParticipantIDs {
 		tmp, err := h.chatroomHandler.Create(
 			ctx,
 			customerID,
@@ -117,7 +119,7 @@ func (h *chatHandler) Create(
 			chatroomType,
 			res.ID,
 			participantID,
-			participantIDs,
+			tmpParticipantIDs,
 			name,
 			detail,
 		)
@@ -152,8 +154,10 @@ func (h *chatHandler) create(
 	id := h.utilHandler.UUIDCreate()
 	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &chat.Chat{
-		ID:             id,
-		CustomerID:     customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
 		Type:           chatType,
 		RoomOwnerID:    ownerID,
 		ParticipantIDs: participantIDs,
@@ -443,4 +447,29 @@ func (h *chatHandler) Delete(ctx context.Context, id uuid.UUID) (*chat.Chat, err
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chat.EventTypeChatDeleted, res)
 
 	return res, nil
+}
+
+// isExist returns true if the given type and participant are already exist
+func (h *chatHandler) isExist(ctx context.Context, customerID uuid.UUID, chatType chat.Type, participantIDs []uuid.UUID) bool {
+	// sort & generate string
+	tmpParticipantIDs := sortUUIDs(participantIDs)
+	tmpParticipantIDsString := convertUUIDsToCommaSeparatedString(tmpParticipantIDs)
+
+	filters := map[string]string{
+		"customer_id":     customerID.String(),
+		"type":            string(chatType),
+		"participant_ids": tmpParticipantIDsString,
+		"deleted":         "false",
+	}
+
+	tmp, err := h.db.ChatGets(ctx, "", 1, filters)
+	if err != nil {
+		return false
+	}
+
+	if len(tmp) >= 1 {
+		return true
+	}
+
+	return false
 }
