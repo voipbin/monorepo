@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -34,7 +35,9 @@ func Test_Get(t *testing.T) {
 			uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+				},
 			},
 		},
 	}
@@ -93,7 +96,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			[]*chat.Chat{
 				{
-					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+					Identity: commonidentity.Identity{
+						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+					},
 				},
 			},
 		},
@@ -159,7 +164,9 @@ func Test_create(t *testing.T) {
 
 			uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"),
+				},
 			},
 		},
 	}
@@ -232,7 +239,9 @@ func Test_Create(t *testing.T) {
 
 			uuid.FromStringOrNil("05edc666-da33-11ee-b970-ffcf954442da"),
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"),
+				},
 			},
 
 			map[string]string{
@@ -264,8 +273,16 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().ChatGets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return([]*chat.Chat{}, nil)
+			for _, participantID := range tt.participantIDs {
+				tmp := &amagent.Agent{
+					Identity: commonidentity.Identity{
+						ID:         participantID,
+						CustomerID: tt.customerID,
+					},
+				}
+				mockReq.EXPECT().AgentV1AgentGet(ctx, participantID).Return(tmp, nil)
+			}
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
@@ -319,7 +336,9 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			"update detail",
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
+				},
 			},
 		},
 	}
@@ -374,7 +393,9 @@ func Test_UpdateRoomOwnerID(t *testing.T) {
 			uuid.FromStringOrNil("41b0f472-da9f-4a2d-8729-d456686d3930"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("6a9a0ed0-1bcb-46de-a225-e638bbaf2fc1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6a9a0ed0-1bcb-46de-a225-e638bbaf2fc1"),
+				},
 			},
 		},
 	}
@@ -431,7 +452,9 @@ func Test_addParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("2cd8e3b8-200c-4ab3-a9d2-b14788d3e41d"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("02d7e497-8825-4f80-934e-cb01d93270e9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("02d7e497-8825-4f80-934e-cb01d93270e9"),
+				},
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("e4391882-b957-11ee-aaa9-bb3cdf1e2651"),
 					uuid.FromStringOrNil("e4610d9c-b957-11ee-91f3-07311eda30a4"),
@@ -500,7 +523,9 @@ func Test_removeParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("5f16f38b-5d9d-40af-94c2-2bd50d939c28"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("61a94935-5fd4-4091-ab23-49ebc69b9d66"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("61a94935-5fd4-4091-ab23-49ebc69b9d66"),
+				},
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("3bbc8f4a-b957-11ee-b921-8f4469c59011"),
 					uuid.FromStringOrNil("5f16f38b-5d9d-40af-94c2-2bd50d939c28"),
@@ -562,7 +587,9 @@ func Test_Delete(t *testing.T) {
 			uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
+				},
 			},
 		},
 	}
@@ -621,7 +648,9 @@ func Test_AddParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("253abd3a-312e-11ed-9393-0ff58ef4c53f"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("2442834a-312e-11ed-8306-87672e5154fb"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2442834a-312e-11ed-8306-87672e5154fb"),
+				},
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("612a6f48-312e-11ed-ac1d-ab725d46bc95"),
 				},
@@ -728,7 +757,9 @@ func Test_RemoveParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("25fa6e86-3134-11ed-be21-27cdde31883c"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("25d04f5c-3134-11ed-ac20-6f4780413d87"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("25d04f5c-3134-11ed-ac20-6f4780413d87"),
+				},
 				ParticipantIDs: []uuid.UUID{
 					uuid.FromStringOrNil("2622af18-3134-11ed-9fde-a709c229f85c"),
 					uuid.FromStringOrNil("25fa6e86-3134-11ed-be21-27cdde31883c"),

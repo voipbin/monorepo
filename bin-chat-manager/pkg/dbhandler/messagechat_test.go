@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -28,15 +29,19 @@ func Test_MessagechatCreate(t *testing.T) {
 			"empty all",
 
 			&messagechat.Messagechat{
-				ID: uuid.FromStringOrNil("d98a9ab4-20a6-11ed-a34f-631a552935e3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d98a9ab4-20a6-11ed-a34f-631a552935e3"),
+				},
 			},
 		},
 		{
 			"all items",
 
 			&messagechat.Messagechat{
-				ID:         uuid.FromStringOrNil("d9ec3b66-20a6-11ed-9bbf-cbca7996ec6f"),
-				CustomerID: uuid.FromStringOrNil("da1f519a-20a6-11ed-8883-ebcee5b506e9"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d9ec3b66-20a6-11ed-9bbf-cbca7996ec6f"),
+					CustomerID: uuid.FromStringOrNil("da1f519a-20a6-11ed-8883-ebcee5b506e9"),
+				},
 
 				ChatID: uuid.FromStringOrNil("da4e1f7a-20a6-11ed-8bf2-ef7f2470a441"),
 
@@ -113,18 +118,22 @@ func Test_MessagechatGets(t *testing.T) {
 
 			[]*messagechat.Messagechat{
 				{
-					ID:         uuid.FromStringOrNil("1224803c-20b7-11ed-9d6c-f3d58383f709"),
-					CustomerID: uuid.FromStringOrNil("c12a4082-20b5-11ed-8c34-07c2afd5a6ab"),
-					ChatID:     uuid.FromStringOrNil("127a78d4-20b7-11ed-9060-8bc587ee87d7"),
-					TMCreate:   "2020-04-19T03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1224803c-20b7-11ed-9d6c-f3d58383f709"),
+						CustomerID: uuid.FromStringOrNil("c12a4082-20b5-11ed-8c34-07c2afd5a6ab"),
+					},
+					ChatID:   uuid.FromStringOrNil("127a78d4-20b7-11ed-9060-8bc587ee87d7"),
+					TMCreate: "2020-04-19T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("1255f1b2-20b7-11ed-a560-e74d6ef11737"),
-					CustomerID: uuid.FromStringOrNil("c12a4082-20b5-11ed-8c34-07c2afd5a6ab"),
-					ChatID:     uuid.FromStringOrNil("127a78d4-20b7-11ed-9060-8bc587ee87d7"),
-					TMCreate:   "2020-04-18T03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("1255f1b2-20b7-11ed-a560-e74d6ef11737"),
+						CustomerID: uuid.FromStringOrNil("c12a4082-20b5-11ed-8c34-07c2afd5a6ab"),
+					},
+					ChatID:   uuid.FromStringOrNil("127a78d4-20b7-11ed-9060-8bc587ee87d7"),
+					TMCreate: "2020-04-18T03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -172,11 +181,12 @@ func Test_MessagechatDelete(t *testing.T) {
 			"normal",
 
 			&messagechat.Messagechat{
-
-				ID:         uuid.FromStringOrNil("3275aa6a-20b6-11ed-941f-ffa864a78e87"),
-				CustomerID: uuid.FromStringOrNil("c12a4082-20b5-11ed-8c34-07c2afd5a6ab"),
-				TMCreate:   "2020-04-19T03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3275aa6a-20b6-11ed-941f-ffa864a78e87"),
+					CustomerID: uuid.FromStringOrNil("c12a4082-20b5-11ed-8c34-07c2afd5a6ab"),
+				},
+				TMCreate: "2020-04-19T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}

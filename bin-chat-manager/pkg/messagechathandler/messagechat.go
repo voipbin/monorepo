@@ -4,6 +4,7 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -139,16 +140,18 @@ func (h *messagechatHandler) create(
 	id := uuid.Must(uuid.NewV4())
 	curTime := h.utilHandler.TimeGetCurTime()
 	tmp := &messagechat.Messagechat{
-		ID:         id,
-		CustomerID: customerID,
-		ChatID:     chatID,
-		Source:     source,
-		Type:       messageType,
-		Text:       text,
-		Medias:     medias,
-		TMCreate:   curTime,
-		TMUpdate:   curTime,
-		TMDelete:   dbhandler.DefaultTimeStamp,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		ChatID:   chatID,
+		Source:   source,
+		Type:     messageType,
+		Text:     text,
+		Medias:   medias,
+		TMCreate: curTime,
+		TMUpdate: curTime,
+		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	if errCreate := h.db.MessagechatCreate(ctx, tmp); errCreate != nil {
