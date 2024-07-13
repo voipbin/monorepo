@@ -218,6 +218,10 @@ func (h *handler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 // ChatGets returns list of chats.
 func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chat.Chat, error) {
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	// prepare
 	q := fmt.Sprintf(`%s
 		where

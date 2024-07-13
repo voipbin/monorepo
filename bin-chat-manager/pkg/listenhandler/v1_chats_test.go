@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -114,7 +115,9 @@ func Test_v1ChatsGet(t *testing.T) {
 
 			[]*chat.Chat{
 				{
-					ID: uuid.FromStringOrNil("6eb6134c-31dd-11ed-9f6c-f7fa9148cdb6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6eb6134c-31dd-11ed-9f6c-f7fa9148cdb6"),
+					},
 				},
 			},
 
@@ -141,10 +144,14 @@ func Test_v1ChatsGet(t *testing.T) {
 
 			[]*chat.Chat{
 				{
-					ID: uuid.FromStringOrNil("47769404-31de-11ed-9ded-470bba65e75d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("47769404-31de-11ed-9ded-470bba65e75d"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("47b18d0c-31de-11ed-9cfe-afbd2262ab42"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("47b18d0c-31de-11ed-9cfe-afbd2262ab42"),
+					},
 				},
 			},
 
@@ -233,7 +240,9 @@ func Test_v1ChatsIDGet(t *testing.T) {
 			uuid.FromStringOrNil("13b7f120-31df-11ed-8214-63c85c3c8ecf"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("13b7f120-31df-11ed-8214-63c85c3c8ecf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("13b7f120-31df-11ed-8214-63c85c3c8ecf"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -298,7 +307,9 @@ func Test_v1ChatsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("d9967376-31df-11ed-ba8f-e376c0c4f1fc"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("d9967376-31df-11ed-ba8f-e376c0c4f1fc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d9967376-31df-11ed-ba8f-e376c0c4f1fc"),
+				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -367,7 +378,9 @@ func Test_v1ChatsIDPut(t *testing.T) {
 			"update detail",
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("b3f5c700-31f0-11ed-b1a2-bb3854582a08"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b3f5c700-31f0-11ed-b1a2-bb3854582a08"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -435,7 +448,9 @@ func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 			uuid.FromStringOrNil("b45cd102-31f0-11ed-9cd9-3fa1a0f883ef"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("b3f5c700-31f0-11ed-b1a2-bb3854582a08"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b3f5c700-31f0-11ed-b1a2-bb3854582a08"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -503,7 +518,9 @@ func Test_v1ChatsIDParticipantIDsPost(t *testing.T) {
 			uuid.FromStringOrNil("417cdce0-31e1-11ed-b9f2-e3db93506530"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("4131ccfa-31e1-11ed-8ae8-ef5f171c9c8e"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4131ccfa-31e1-11ed-8ae8-ef5f171c9c8e"),
+				},
 			},
 
 			&rabbitmqhandler.Response{
@@ -570,7 +587,9 @@ func Test_v1ChatsIDParticipantIDsIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("1a3923e0-31e2-11ed-93b4-cb9081f9b4ee"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("1a023c40-31e2-11ed-a0dd-3770f2201744"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1a023c40-31e2-11ed-a0dd-3770f2201744"),
+				},
 			},
 
 			&rabbitmqhandler.Response{

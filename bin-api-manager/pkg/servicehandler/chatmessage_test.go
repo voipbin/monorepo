@@ -56,10 +56,14 @@ func Test_ChatmessageCreate(t *testing.T) {
 			[]chatmedia.Media{},
 
 			&chatmessagechat.Messagechat{
-				ID: uuid.FromStringOrNil("17cea962-3774-11ed-88d8-4f22aa82ba39"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17cea962-3774-11ed-88d8-4f22aa82ba39"),
+				},
 			},
 			&chatmessagechat.WebhookMessage{
-				ID: uuid.FromStringOrNil("17cea962-3774-11ed-88d8-4f22aa82ba39"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17cea962-3774-11ed-88d8-4f22aa82ba39"),
+				},
 			},
 		},
 	}
@@ -122,12 +126,16 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 
 			&chatchat.Chat{
-				ID:         uuid.FromStringOrNil("8ec6c9be-3774-11ed-a626-73312e33dc72"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8ec6c9be-3774-11ed-a626-73312e33dc72"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			[]chatmessagechat.Messagechat{
 				{
-					ID: uuid.FromStringOrNil("b45b1da6-3774-11ed-856d-1b95e72acae8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b45b1da6-3774-11ed-856d-1b95e72acae8"),
+					},
 				},
 			},
 
@@ -137,7 +145,9 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 			},
 			[]*chatmessagechat.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("b45b1da6-3774-11ed-856d-1b95e72acae8"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("b45b1da6-3774-11ed-856d-1b95e72acae8"),
+					},
 				},
 			},
 		},
@@ -196,12 +206,16 @@ func Test_ChatmessageGet(t *testing.T) {
 			uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
 
 			&chatmessagechat.Messagechat{
-				ID:         uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 			&chatmessagechat.WebhookMessage{
-				ID:         uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e00fa786-3775-11ed-ac3f-f7eb62abd600"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}
@@ -255,8 +269,10 @@ func Test_ChatmessageDelete(t *testing.T) {
 			uuid.FromStringOrNil("587ecd5a-3776-11ed-b8be-93dc6a90e040"),
 
 			&chatmessagechat.Messagechat{
-				ID:         uuid.FromStringOrNil("587ecd5a-3776-11ed-b8be-93dc6a90e040"),
-				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("587ecd5a-3776-11ed-b8be-93dc6a90e040"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
 			},
 		},
 	}

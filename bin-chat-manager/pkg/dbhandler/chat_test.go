@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	uuid "github.com/gofrs/uuid"
@@ -27,8 +28,10 @@ func Test_ChatCreate(t *testing.T) {
 			"normal",
 
 			&chat.Chat{
-				ID:          uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
-				CustomerID:  uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
+					CustomerID: uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
+				},
 				Type:        chat.TypeNormal,
 				RoomOwnerID: uuid.FromStringOrNil("c4111534-e222-4e0a-9485-f012ea0a9e02"),
 				ParticipantIDs: []uuid.UUID{
@@ -43,8 +46,10 @@ func Test_ChatCreate(t *testing.T) {
 			},
 
 			&chat.Chat{
-				ID:          uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
-				CustomerID:  uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d649c8b5-c5f6-4740-a28c-653a47195a1d"),
+					CustomerID: uuid.FromStringOrNil("4dbf893c-82fe-4dea-8079-272670aea7b4"),
+				},
 				Type:        chat.TypeNormal,
 				RoomOwnerID: uuid.FromStringOrNil("c4111534-e222-4e0a-9485-f012ea0a9e02"),
 				ParticipantIDs: []uuid.UUID{
@@ -62,13 +67,17 @@ func Test_ChatCreate(t *testing.T) {
 			"empty",
 
 			&chat.Chat{
-				ID:             uuid.FromStringOrNil("6127ed80-8f71-4f93-883c-bbeab83f0a10"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6127ed80-8f71-4f93-883c-bbeab83f0a10"),
+				},
 				ParticipantIDs: []uuid.UUID{},
 				TMDelete:       DefaultTimeStamp,
 			},
 
 			&chat.Chat{
-				ID:             uuid.FromStringOrNil("6127ed80-8f71-4f93-883c-bbeab83f0a10"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6127ed80-8f71-4f93-883c-bbeab83f0a10"),
+				},
 				ParticipantIDs: []uuid.UUID{},
 				TMDelete:       DefaultTimeStamp,
 			},
@@ -121,9 +130,11 @@ func Test_ChatGets(t *testing.T) {
 			"normal",
 			[]*chat.Chat{
 				{
-					ID:          uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("837117d8-0c31-11eb-9f9e-6b4ac01a7e66"),
+						CustomerID: uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
+					},
 					Type:        chat.TypeNormal,
-					CustomerID:  uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
 					RoomOwnerID: uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
 					ParticipantIDs: []uuid.UUID{
 						uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
@@ -133,8 +144,10 @@ func Test_ChatGets(t *testing.T) {
 					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:          uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
-					CustomerID:  uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("845e04f8-0c31-11eb-a8cf-6f8836b86b2b"),
+						CustomerID: uuid.FromStringOrNil("20db856a-051f-49d3-986e-3715af514273"),
+					},
 					Type:        chat.TypeNormal,
 					RoomOwnerID: uuid.FromStringOrNil("e90b7010-b936-11ee-8da8-bb61becf0b57"),
 					ParticipantIDs: []uuid.UUID{
@@ -206,7 +219,9 @@ func Test_ChatUpdateBasic(t *testing.T) {
 		{
 			"normal",
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("599b43c2-bb10-45fb-a4f4-00e04ecf4c28"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("599b43c2-bb10-45fb-a4f4-00e04ecf4c28"),
+				},
 			},
 
 			uuid.FromStringOrNil("599b43c2-bb10-45fb-a4f4-00e04ecf4c28"),
@@ -214,7 +229,9 @@ func Test_ChatUpdateBasic(t *testing.T) {
 			"update detail",
 
 			&chat.Chat{
-				ID:             uuid.FromStringOrNil("599b43c2-bb10-45fb-a4f4-00e04ecf4c28"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("599b43c2-bb10-45fb-a4f4-00e04ecf4c28"),
+				},
 				Name:           "update name",
 				Detail:         "update detail",
 				ParticipantIDs: []uuid.UUID{},
@@ -272,7 +289,9 @@ func Test_ChatDelete(t *testing.T) {
 			uuid.FromStringOrNil("66edc48d-d2c0-475f-ad10-9e2fffec8626"),
 
 			&chat.Chat{
-				ID: uuid.FromStringOrNil("66edc48d-d2c0-475f-ad10-9e2fffec8626"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("66edc48d-d2c0-475f-ad10-9e2fffec8626"),
+				},
 			},
 		},
 	}
@@ -331,7 +350,9 @@ func Test_ChatUpdateRoomOwnerID(t *testing.T) {
 		{
 			"normal",
 			&chat.Chat{
-				ID:          uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
+				},
 				Name:        "name",
 				Detail:      "detail",
 				RoomOwnerID: uuid.FromStringOrNil("0497e2dc-4af5-4baa-a986-8ca50bf001fb"),
@@ -341,7 +362,9 @@ func Test_ChatUpdateRoomOwnerID(t *testing.T) {
 			uuid.FromStringOrNil("4b25fe52-02c7-4201-9fa8-91b1bfce068e"),
 
 			&chat.Chat{
-				ID:             uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("48703865-5b0f-4d82-b7de-9267e040996b"),
+				},
 				Name:           "name",
 				Detail:         "detail",
 				RoomOwnerID:    uuid.FromStringOrNil("4b25fe52-02c7-4201-9fa8-91b1bfce068e"),
@@ -403,7 +426,9 @@ func Test_ChatUpdateParticipantID(t *testing.T) {
 		{
 			"normal",
 			&chat.Chat{
-				ID:     uuid.FromStringOrNil("cf217ce0-b953-11ee-be3e-5fa75128cdbf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cf217ce0-b953-11ee-be3e-5fa75128cdbf"),
+				},
 				Name:   "name",
 				Detail: "detail",
 				ParticipantIDs: []uuid.UUID{
@@ -421,7 +446,9 @@ func Test_ChatUpdateParticipantID(t *testing.T) {
 			"2024-01-22 18:27:22.363616708",
 
 			&chat.Chat{
-				ID:     uuid.FromStringOrNil("cf217ce0-b953-11ee-be3e-5fa75128cdbf"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cf217ce0-b953-11ee-be3e-5fa75128cdbf"),
+				},
 				Name:   "name",
 				Detail: "detail",
 				ParticipantIDs: []uuid.UUID{

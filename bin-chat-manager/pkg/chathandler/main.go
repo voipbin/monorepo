@@ -4,6 +4,8 @@ package chathandler
 
 import (
 	"context"
+	"sort"
+	"strings"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -65,10 +67,27 @@ func NewChatHandler(
 	}
 }
 
-// // sortParticipantIDs sort the given participant ids
-// func sortParticipantIDs(participantIDs []uuid.UUID) {
-// 	// sort the participants
-// 	sort.Slice(participantIDs, func(i, j int) bool {
-// 		return participantIDs[i].String() < participantIDs[j].String()
-// 	})
-// }
+// sortByUUID implements sort.Interface for []uuid.UUID based on the string representation of the UUIDs.
+type sortByUUID []uuid.UUID
+
+func (a sortByUUID) Len() int           { return len(a) }
+func (a sortByUUID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a sortByUUID) Less(i, j int) bool { return a[i].String() < a[j].String() }
+
+// sortUUIDs sorts the given list of UUIDs.
+func sortUUIDs(uuids []uuid.UUID) []uuid.UUID {
+	res := make([]uuid.UUID, len(uuids))
+	copy(res, uuids)
+
+	sort.Sort(sortByUUID(res))
+
+	return res
+}
+
+func convertUUIDsToCommaSeparatedString(uuids []uuid.UUID) string {
+	strUUIDs := make([]string, len(uuids))
+	for i, u := range uuids {
+		strUUIDs[i] = u.String()
+	}
+	return strings.Join(strUUIDs, ",")
+}

@@ -90,6 +90,7 @@ func (h *chatroomHandler) Create(
 		TMDelete:       dbhandler.DefaultTimeStamp,
 	}
 
+	log.WithField("chat", tmp).Debugf("Creating a new chatroom.")
 	if errCreate := h.db.ChatroomCreate(ctx, tmp); errCreate != nil {
 		log.Errorf("Could not create a new chatroom correctly. err: %v", errCreate)
 		return nil, errCreate

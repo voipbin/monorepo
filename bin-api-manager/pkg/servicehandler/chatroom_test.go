@@ -364,7 +364,9 @@ func Test_ChatroomCreate(t *testing.T) {
 				},
 			},
 			responseChat: &chatchat.Chat{
-				ID: uuid.FromStringOrNil("3eb7bbde-bc04-11ee-933b-f38aea616771"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3eb7bbde-bc04-11ee-933b-f38aea616771"),
+				},
 			},
 			responseChatrooms: []chatchatroom.Chatroom{
 				{
