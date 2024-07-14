@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -55,7 +56,9 @@ func Test_NumberV1NumberCreate(t *testing.T) {
 				Data:       []byte(`{"id":"3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20"}`),
 			},
 			&nmnumber.Number{
-				ID: uuid.FromStringOrNil("3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20"),
+				},
 			},
 		},
 	}
@@ -124,9 +127,11 @@ func Test_NumberV1NumberGets(t *testing.T) {
 			},
 			[]nmnumber.Number{
 				{
-					ID:                  uuid.FromStringOrNil("0e00bb78-7b19-11eb-a238-9f1154b2c92e"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("0e00bb78-7b19-11eb-a238-9f1154b2c92e"),
+						CustomerID: uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
+					},
 					Number:              "+821021656521",
-					CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 					ProviderName:        "telnyx",
 					ProviderReferenceID: "",
 					Status:              nmnumber.StatusActive,
@@ -199,9 +204,11 @@ func Test_NumberV1NumberGet(t *testing.T) {
 				Data:       []byte(`{"id":"74a2f4bc-7be2-11eb-bb71-c767ac6ed931","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("74a2f4bc-7be2-11eb-bb71-c767ac6ed931"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("74a2f4bc-7be2-11eb-bb71-c767ac6ed931"),
+					CustomerID: uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -270,7 +277,9 @@ func Test_NumberV1NumberGetByNumber(t *testing.T) {
 				Data:       []byte(`{"id":"57cbee68-41f3-11ef-9468-8f6ba3b03753"}`),
 			},
 			&nmnumber.Number{
-				ID: uuid.FromStringOrNil("57cbee68-41f3-11ef-9468-8f6ba3b03753"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("57cbee68-41f3-11ef-9468-8f6ba3b03753"),
+				},
 			},
 		},
 	}
@@ -330,9 +339,11 @@ func Test_NumberV1NumberDelete(t *testing.T) {
 				Data:       []byte(`{"id":"aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5"),
+					CustomerID: uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusDeleted,
@@ -409,11 +420,13 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815","number":"+821021656521","call_flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a","message_flow_id":"b409020e-a873-11ec-bce6-3fcf97b72d44","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 			&nmnumber.Number{
-				ID:                  uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+					CustomerID: uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
+				},
 				CallFlowID:          uuid.FromStringOrNil("d45aae76-7c5b-11eb-9542-eb46d11b1c1a"),
 				MessageFlowID:       uuid.FromStringOrNil("b409020e-a873-11ec-bce6-3fcf97b72d44"),
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "",
 				Status:              nmnumber.StatusActive,
@@ -487,7 +500,9 @@ func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815"}`),
 			},
 			&nmnumber.Number{
-				ID: uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
+				},
 			},
 		},
 	}
@@ -549,10 +564,14 @@ func Test_NumberV1NumberRenewByTmRenew(t *testing.T) {
 			},
 			expectResult: []nmnumber.Number{
 				{
-					ID: uuid.FromStringOrNil("03557c8a-1519-11ee-a0be-83a2eb2e0f67"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("03557c8a-1519-11ee-a0be-83a2eb2e0f67"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("0398e86c-1519-11ee-8664-773e49d76156"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0398e86c-1519-11ee-8664-773e49d76156"),
+					},
 				},
 			},
 		},
@@ -615,10 +634,14 @@ func Test_NumberV1NumberRenewByDays(t *testing.T) {
 			},
 			expectResult: []nmnumber.Number{
 				{
-					ID: uuid.FromStringOrNil("26790cc8-1e3c-11ee-acde-4f8cd0d02ae0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("26790cc8-1e3c-11ee-acde-4f8cd0d02ae0"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("26eca39a-1e3c-11ee-a66a-1b46f3425926"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("26eca39a-1e3c-11ee-a66a-1b46f3425926"),
+					},
 				},
 			},
 		},
@@ -681,10 +704,14 @@ func Test_NumberV1NumberRenewByHours(t *testing.T) {
 			},
 			expectResult: []nmnumber.Number{
 				{
-					ID: uuid.FromStringOrNil("45ebe9cc-1e3c-11ee-9fbd-3f228b2366aa"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("45ebe9cc-1e3c-11ee-9fbd-3f228b2366aa"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("4610db9c-1e3c-11ee-9596-c3e05288283d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4610db9c-1e3c-11ee-9596-c3e05288283d"),
+					},
 				},
 			},
 		},

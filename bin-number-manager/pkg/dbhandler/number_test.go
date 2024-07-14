@@ -8,12 +8,13 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/cachehandler"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
-
-	"monorepo/bin-number-manager/models/number"
-	"monorepo/bin-number-manager/pkg/cachehandler"
 )
 
 func Test_NumberCreate(t *testing.T) {
@@ -30,9 +31,11 @@ func Test_NumberCreate(t *testing.T) {
 		{
 			"test normal",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
+					CustomerID: uuid.FromStringOrNil("31a1ca10-7ff3-11ec-80f5-83db3c8e951b"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("31a1ca10-7ff3-11ec-80f5-83db3c8e951b"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -42,9 +45,11 @@ func Test_NumberCreate(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
+					CustomerID: uuid.FromStringOrNil("31a1ca10-7ff3-11ec-80f5-83db3c8e951b"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("31a1ca10-7ff3-11ec-80f5-83db3c8e951b"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -129,9 +134,11 @@ func Test_NumberGets(t *testing.T) {
 			"normal",
 			[]*number.Number{
 				{
-					ID:         uuid.FromStringOrNil("ca3108a0-eca6-11ee-b06b-4763d2112b09"),
-					CustomerID: uuid.FromStringOrNil("ca8a717e-eca6-11ee-8067-1785c729a82f"),
-					Number:     "+1234567890",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("ca3108a0-eca6-11ee-b06b-4763d2112b09"),
+						CustomerID: uuid.FromStringOrNil("ca8a717e-eca6-11ee-8067-1785c729a82f"),
+					},
+					Number: "+1234567890",
 				},
 			},
 
@@ -144,8 +151,10 @@ func Test_NumberGets(t *testing.T) {
 
 			[]*number.Number{
 				{
-					ID:         uuid.FromStringOrNil("ca3108a0-eca6-11ee-b06b-4763d2112b09"),
-					CustomerID: uuid.FromStringOrNil("ca8a717e-eca6-11ee-8067-1785c729a82f"),
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("ca3108a0-eca6-11ee-b06b-4763d2112b09"),
+						CustomerID: uuid.FromStringOrNil("ca8a717e-eca6-11ee-8067-1785c729a82f"),
+					},
 					Number:     "+1234567890",
 					TMPurchase: "2021-01-01 00:00:00.000",
 					TMRenew:    "2021-01-01 00:00:00.000",
@@ -215,9 +224,11 @@ func Test_NumberDelete(t *testing.T) {
 		{
 			"normal",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
+					CustomerID: uuid.FromStringOrNil("6884d8f6-7ff3-11ec-8b5c-d3aa777ad672"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("6884d8f6-7ff3-11ec-8b5c-d3aa777ad672"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusActive,
@@ -227,9 +238,11 @@ func Test_NumberDelete(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
+					CustomerID: uuid.FromStringOrNil("6884d8f6-7ff3-11ec-8b5c-d3aa777ad672"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("6884d8f6-7ff3-11ec-8b5c-d3aa777ad672"),
 				ProviderName:        "telnyx",
 				ProviderReferenceID: "1580568175064384684",
 				Status:              number.StatusDeleted,
@@ -305,8 +318,10 @@ func Test_NumberUpdateInfo(t *testing.T) {
 		{
 			name: "normal",
 			number: &number.Number{
-				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
-				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
+					CustomerID: uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				},
 				CallFlowID:          uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
 				MessageFlowID:       uuid.FromStringOrNil("734faf76-20a2-11ee-914a-7bd4f24e615d"),
 				Number:              "+821021656521",
@@ -326,8 +341,10 @@ func Test_NumberUpdateInfo(t *testing.T) {
 
 			responseCurTime: "2021-02-26 18:26:49.000",
 			expectNumber: &number.Number{
-				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
-				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
+					CustomerID: uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				},
 				CallFlowID:          uuid.FromStringOrNil("23ff7078-20a2-11ee-934c-8371c4d02f71"),
 				MessageFlowID:       uuid.FromStringOrNil("24477634-20a2-11ee-b62f-4f341e77043b"),
 				Number:              "+821021656521",
@@ -403,9 +420,11 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 		{
 			"normal",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
+					CustomerID: uuid.FromStringOrNil("4aa698da-a85f-11ec-a93a-5fbf7b8302db"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("4aa698da-a85f-11ec-a93a-5fbf7b8302db"),
 				Name:                "test name",
 				Detail:              "test detail",
 				ProviderName:        "telnyx",
@@ -420,9 +439,11 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
+					CustomerID: uuid.FromStringOrNil("4aa698da-a85f-11ec-a93a-5fbf7b8302db"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("4aa698da-a85f-11ec-a93a-5fbf7b8302db"),
 				CallFlowID:          uuid.FromStringOrNil("4acedf84-a85f-11ec-bdc6-27902c5c6987"),
 				MessageFlowID:       uuid.FromStringOrNil("4af49f4e-a85f-11ec-ad06-676681d45adb"),
 				Name:                "test name",
@@ -495,9 +516,11 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 		{
 			"update callflow",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
+					CustomerID: uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
 				Name:                "test name",
 				Detail:              "test detail",
 				ProviderName:        "telnyx",
@@ -511,11 +534,13 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
+					CustomerID: uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				},
 				Number:              "+821021656521",
 				CallFlowID:          uuid.FromStringOrNil("535c0ca4-8801-11ec-accb-7bd692b1c078"),
 				MessageFlowID:       uuid.Nil,
-				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
 				Name:                "test name",
 				Detail:              "test detail",
 				ProviderName:        "telnyx",
@@ -586,9 +611,11 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 		{
 			"normal",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
+					CustomerID: uuid.FromStringOrNil("b3e74570-a85e-11ec-a53b-331bdfd1d2f3"),
+				},
 				Number:              "+821021656521",
-				CustomerID:          uuid.FromStringOrNil("b3e74570-a85e-11ec-a53b-331bdfd1d2f3"),
 				Name:                "test name",
 				Detail:              "test detail",
 				ProviderName:        "telnyx",
@@ -602,10 +629,12 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
-				ID:                  uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
+					CustomerID: uuid.FromStringOrNil("b3e74570-a85e-11ec-a53b-331bdfd1d2f3"),
+				},
 				Number:              "+821021656521",
 				MessageFlowID:       uuid.FromStringOrNil("b416b062-a85e-11ec-a230-7f3aae198503"),
-				CustomerID:          uuid.FromStringOrNil("b3e74570-a85e-11ec-a53b-331bdfd1d2f3"),
 				Name:                "test name",
 				Detail:              "test detail",
 				ProviderName:        "telnyx",
@@ -677,7 +706,9 @@ func Test_NumberSetTMRenew(t *testing.T) {
 		{
 			name: "normal",
 			number: &number.Number{
-				ID: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+				},
 			},
 
 			id: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
@@ -685,7 +716,9 @@ func Test_NumberSetTMRenew(t *testing.T) {
 			responseCurTime:      "2021-02-26 18:26:49.000",
 			responseCurTimeRenew: "2021-02-27 18:26:49.000",
 			expectRes: &number.Number{
-				ID:         uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+				},
 				TMPurchase: "2021-02-26 18:26:49.000",
 				TMRenew:    "2021-02-27 18:26:49.000",
 				TMCreate:   "2021-02-26 18:26:49.000",
@@ -755,16 +788,24 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 			name: "normal",
 			numbers: []number.Number{
 				{
-					ID: uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("93884aa8-144c-11ee-a261-eb324d4a94ab"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("93884aa8-144c-11ee-a261-eb324d4a94ab"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("93ec6588-144c-11ee-ae23-cb2a64c0f80a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("93ec6588-144c-11ee-ae23-cb2a64c0f80a"),
+					},
 				},
 			},
 
@@ -783,7 +824,9 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 			},
 			expectRes: []*number.Number{
 				{
-					ID:         uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
+					},
 					TMPurchase: "2020-04-12 18:26:49.000",
 					TMRenew:    "2020-04-12 18:26:49.000",
 					TMCreate:   "2020-04-12 18:26:49.000",
@@ -791,7 +834,9 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("93884aa8-144c-11ee-a261-eb324d4a94ab"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("93884aa8-144c-11ee-a261-eb324d4a94ab"),
+					},
 					TMPurchase: "2020-04-11 18:26:49.000",
 					TMRenew:    "2020-04-11 18:26:49.000",
 					TMCreate:   "2020-04-11 18:26:49.000",
@@ -799,7 +844,9 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
+					},
 					TMPurchase: "2020-04-10 18:26:49.000",
 					TMRenew:    "2020-04-10 18:26:49.000",
 					TMCreate:   "2020-04-10 18:26:49.000",

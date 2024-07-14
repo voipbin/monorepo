@@ -3,10 +3,11 @@ package numberhandler
 import (
 	"context"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-number-manager/models/number"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
-	"monorepo/bin-number-manager/models/number"
 )
 
 // dbCreate creates a new order numbers of given numbers
@@ -41,8 +42,10 @@ func (h *numberHandler) dbCreate(
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	tmp := &number.Number{
-		ID:                  h.utilHandler.UUIDCreate(),
-		CustomerID:          customerID,
+		Identity: commonidentity.Identity{
+			ID:         h.utilHandler.UUIDCreate(),
+			CustomerID: customerID,
+		},
 		Number:              num,
 		CallFlowID:          callFlowID,
 		MessageFlowID:       messageFlowID,

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -30,8 +31,10 @@ func Test_generateTags(t *testing.T) {
 			name: "normal",
 
 			number: &number.Number{
-				ID:         uuid.FromStringOrNil("7808a85c-f684-11ee-b64f-d3a82dd85406"),
-				CustomerID: uuid.FromStringOrNil("8010617a-f684-11ee-b310-53812305ffd5"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7808a85c-f684-11ee-b64f-d3a82dd85406"),
+					CustomerID: uuid.FromStringOrNil("8010617a-f684-11ee-b310-53812305ffd5"),
+				},
 			},
 			expectRes: []string{
 				"CustomerID_8010617a-f684-11ee-b310-53812305ffd5",

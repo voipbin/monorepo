@@ -7,6 +7,7 @@ import (
 	"time"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -37,13 +38,19 @@ func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 
 			responseNumbers: []*number.Number{
 				{
-					ID: uuid.FromStringOrNil("8928588e-144f-11ee-b7b1-cf2766a4e52b"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8928588e-144f-11ee-b7b1-cf2766a4e52b"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("8a163590-144f-11ee-914a-b7c9a2edb6d0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8a163590-144f-11ee-914a-b7c9a2edb6d0"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("8a3f8b5c-144f-11ee-8f6d-0ba403c732e1"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8a3f8b5c-144f-11ee-8f6d-0ba403c732e1"),
+					},
 				},
 			},
 		},
@@ -111,13 +118,19 @@ func Test_RenewNumbers_renewNumbersByDays(t *testing.T) {
 			responseCurTime: "2021-02-26 18:26:49.000",
 			responseNumbers: []*number.Number{
 				{
-					ID: uuid.FromStringOrNil("e51723ae-1e28-11ee-bdaa-83544a71ef96"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e51723ae-1e28-11ee-bdaa-83544a71ef96"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e54b6cfe-1e28-11ee-bb15-0f79849df0a6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e54b6cfe-1e28-11ee-bb15-0f79849df0a6"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e571504a-1e28-11ee-b2c8-6fd277f0b78a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e571504a-1e28-11ee-b2c8-6fd277f0b78a"),
+					},
 				},
 			},
 
@@ -187,13 +200,19 @@ func Test_RenewNumbers_renewNumbersByHours(t *testing.T) {
 			responseCurTime: "2021-02-26 18:26:49.000",
 			responseNumbers: []*number.Number{
 				{
-					ID: uuid.FromStringOrNil("e51723ae-1e28-11ee-bdaa-83544a71ef96"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e51723ae-1e28-11ee-bdaa-83544a71ef96"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e54b6cfe-1e28-11ee-bb15-0f79849df0a6"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e54b6cfe-1e28-11ee-bb15-0f79849df0a6"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("e571504a-1e28-11ee-b2c8-6fd277f0b78a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e571504a-1e28-11ee-b2c8-6fd277f0b78a"),
+					},
 				},
 			},
 
