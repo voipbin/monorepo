@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -61,7 +62,9 @@ func Test_ChatV1ChatCreate(t *testing.T) {
 				Data:     []byte(`{"customer_id":"95e79972-3697-11ed-85be-5b6792ca4a82","type":"normal","room_owner_id":"96137b14-3697-11ed-b9b4-d7dac3f2b181","participant_ids":["964147e2-3697-11ed-a461-8342afde852e","966f1e74-3697-11ed-aebb-6703f26009c6"],"name":"test name","detail":"test detail"}`),
 			},
 			&chatchat.Chat{
-				ID: uuid.FromStringOrNil("d50945c4-3697-11ed-9ffb-570b42b0ddd4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d50945c4-3697-11ed-9ffb-570b42b0ddd4"),
+				},
 			},
 		},
 	}
@@ -129,7 +132,9 @@ func Test_ChatV1ChatGet(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&chatchat.Chat{
-				ID: uuid.FromStringOrNil("6ccf608c-3698-11ed-9f4b-a7949f21d6b1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("6ccf608c-3698-11ed-9f4b-a7949f21d6b1"),
+				},
 			},
 		},
 	}
@@ -199,7 +204,9 @@ func Test_ChatV1ChatGets(t *testing.T) {
 			},
 			[]chatchat.Chat{
 				{
-					ID: uuid.FromStringOrNil("c7224cde-3698-11ed-b3c4-57ea8ad3e71d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c7224cde-3698-11ed-b3c4-57ea8ad3e71d"),
+					},
 				},
 			},
 		},
@@ -263,7 +270,9 @@ func Test_ChatV1ChatDelete(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&chatchat.Chat{
-				ID: uuid.FromStringOrNil("fb7a2164-3698-11ed-acfd-5b96525f8ec9"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb7a2164-3698-11ed-acfd-5b96525f8ec9"),
+				},
 			},
 		},
 	}
@@ -329,7 +338,9 @@ func Test_ChatV1ChatUpdateBasicInfo(t *testing.T) {
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
 			&chatchat.Chat{
-				ID: uuid.FromStringOrNil("63e29b96-c515-11ec-ba52-ab7d7001913f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("63e29b96-c515-11ec-ba52-ab7d7001913f"),
+				},
 			},
 		},
 	}
@@ -393,7 +404,9 @@ func Test_ChatV1ChatUpdateRoomOwnerID(t *testing.T) {
 				Data:     []byte(`{"room_owner_id":"875e8c42-3699-11ed-9746-a772f54ed917"}`),
 			},
 			&chatchat.Chat{
-				ID: uuid.FromStringOrNil("873465c0-3699-11ed-b0cc-fbee9352367b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("873465c0-3699-11ed-b0cc-fbee9352367b"),
+				},
 			},
 		},
 	}
@@ -457,7 +470,9 @@ func Test_ChatV1ChatAddParticipantID(t *testing.T) {
 				Data:     []byte(`{"participant_id":"268b0e70-369b-11ed-ba58-cb3598f7f7d1"}`),
 			},
 			&chatchat.Chat{
-				ID: uuid.FromStringOrNil("2658828e-369b-11ed-b9c9-5b03f9812b19"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2658828e-369b-11ed-b9c9-5b03f9812b19"),
+				},
 			},
 		},
 	}
@@ -520,7 +535,9 @@ func Test_ChatV1ChatRemoveParticipantID(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 			&chatchat.Chat{
-				ID: uuid.FromStringOrNil("355eda2a-369c-11ed-b5f8-bf163967cc10"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("355eda2a-369c-11ed-b5f8-bf163967cc10"),
+				},
 			},
 		},
 	}

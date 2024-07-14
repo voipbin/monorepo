@@ -573,27 +573,15 @@ func (h *callHandler) outgoingCallGenerateSource(ctx context.Context, source *co
 		return source, nil
 	}
 
-	if strings.HasPrefix(source.Target, "+") {
+	if !strings.HasPrefix(source.Target, "+") {
 		return nil, fmt.Errorf("wrong call number format. the number must be the +E164 format")
 	}
 
 	// get source number
-
-	// h.reqHandler.NumberV1NumberGet()
-
-	var res *commonaddress.Address = nil
-
-	// validate source number
-	if strings.HasPrefix(source.Target, "+") {
-		res = source
-	} else {
-		// invalid source address for the tel type destination. we need to set the caller id to the anonymous
-		res = &commonaddress.Address{
-			Type:       source.Type,
-			TargetName: "Anonymous",
-			Target:     "anonymous",
-		}
+	_, err := h.reqHandler.NumberV1NumberGetByNumber(ctx, source.Target)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get source number info.")
 	}
 
-	return res, nil
+	return source, nil
 }

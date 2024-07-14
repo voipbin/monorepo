@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	nmnumber "monorepo/bin-number-manager/models/number"
 
 	rmprovider "monorepo/bin-route-manager/models/provider"
 	rmroute "monorepo/bin-route-manager/models/route"
@@ -366,6 +367,9 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+
+			// outgoingCallGenerateSource
+			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.source.Target).Return(&nmnumber.Number{}, nil)
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
@@ -1308,7 +1312,7 @@ func Test_getSourceForOutgoingCall(t *testing.T) {
 		expectRes *commonaddress.Address
 	}{
 		{
-			"destination type tel and source target is anonymous",
+			"normal",
 
 			&commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -1322,24 +1326,6 @@ func Test_getSourceForOutgoingCall(t *testing.T) {
 			&commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
-			},
-		},
-		{
-			"destination type is tel but source has + prefix",
-
-			&commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "821100000001",
-			},
-			&commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "+821100000002",
-			},
-
-			&commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				TargetName: "Anonymous",
-				Target:     "anonymous",
 			},
 		},
 	}
@@ -1365,6 +1351,8 @@ func Test_getSourceForOutgoingCall(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 			ctx := context.Background()
+
+			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.source.Target).Return(&nmnumber.Number{}, nil)
 
 			res, err := h.outgoingCallGenerateSource(ctx, tt.source, tt.destination)
 			if err != nil {

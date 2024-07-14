@@ -20,7 +20,31 @@ import (
 func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", numberID)
 
-	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, "number/numbers", 15000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, "number/numbers", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// NumberV1NumberGetByNumber sends a request to number-manager
+// to get a given number of number.
+// Returns number
+func (r *requestHandler) NumberV1NumberGetByNumber(ctx context.Context, num string) (*nmnumber.Number, error) {
+	uri := fmt.Sprintf("/v1/numbers/number/%s", num)
+
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, "number/numbers/number/<number>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

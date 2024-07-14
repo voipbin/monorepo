@@ -3487,6 +3487,21 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberGet(ctx, numberID interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberGet", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberGet), ctx, numberID)
 }
 
+// NumberV1NumberGetByNumber mocks base method.
+func (m *MockRequestHandler) NumberV1NumberGetByNumber(ctx context.Context, num string) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberGetByNumber", ctx, num)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberGetByNumber indicates an expected call of NumberV1NumberGetByNumber.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberGetByNumber(ctx, num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberGetByNumber", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberGetByNumber), ctx, num)
+}
+
 // NumberV1NumberGets mocks base method.
 func (m *MockRequestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]number.Number, error) {
 	m.ctrl.T.Helper()

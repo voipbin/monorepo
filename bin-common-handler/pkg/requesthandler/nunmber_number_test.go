@@ -191,7 +191,7 @@ func Test_NumberV1NumberGet(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      "/v1/numbers/74a2f4bc-7be2-11eb-bb71-c767ac6ed931",
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -229,6 +229,66 @@ func Test_NumberV1NumberGet(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberGet(ctx, tt.numberID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectResult, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			}
+		})
+	}
+}
+
+func Test_NumberV1NumberGetByNumber(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		num string
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectResult *nmnumber.Number
+	}{
+		{
+			"normal",
+
+			"+123456789",
+
+			"bin-manager.number-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/numbers/number/+123456789",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: ContentTypeNone,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"57cbee68-41f3-11ef-9468-8f6ba3b03753"}`),
+			},
+			&nmnumber.Number{
+				ID: uuid.FromStringOrNil("57cbee68-41f3-11ef-9468-8f6ba3b03753"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.NumberV1NumberGetByNumber(ctx, tt.num)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
