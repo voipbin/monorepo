@@ -84,12 +84,27 @@ func Test_NumberCreate(t *testing.T) {
 
 			mockCache.EXPECT().NumberGet(ctx, tt.number.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(ctx, gomock.Any())
+
+			// test NumberGet
 			res, err := h.NumberGet(ctx, tt.number.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectNumber, res) == false {
+			if !reflect.DeepEqual(tt.expectNumber, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectNumber, res)
+			}
+
+			// test NumberGetByNumber
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCache.EXPECT().NumberSet(ctx, gomock.Any())
+			mockCache.EXPECT().NumberGetByNumber(ctx, gomock.Any()).Return(nil, fmt.Errorf(""))
+			resNumber, err := h.NumberGetByNumber(ctx, tt.number.Number)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectNumber, resNumber) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectNumber, res)
 			}
 		})

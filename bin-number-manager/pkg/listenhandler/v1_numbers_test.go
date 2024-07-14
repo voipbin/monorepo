@@ -585,3 +585,63 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1NumbersNumberNumberGet(t *testing.T) {
+	type test struct {
+		name string
+
+		num string
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+
+		responseNumber *number.Number
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			num: "+123456789",
+			request: &rabbitmqhandler.Request{
+				URI:    "/v1/numbers/number/+123456789",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"73222a4c-41ee-11ef-92d0-4fbf65483f71","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+
+			responseNumber: &number.Number{
+				ID: uuid.FromStringOrNil("73222a4c-41ee-11ef-92d0-4fbf65483f71"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:    mockSock,
+				numberHandler: mockNumber,
+			}
+
+			mockNumber.EXPECT().GetByNumber(gomock.Any(), tt.num).Return(tt.responseNumber, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+
+		})
+	}
+}

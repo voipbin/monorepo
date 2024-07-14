@@ -127,6 +127,21 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), countyCode, limit)
 }
 
+// GetByNumber mocks base method.
+func (m *MockNumberHandler) GetByNumber(ctx context.Context, num string) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByNumber", ctx, num)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByNumber indicates an expected call of GetByNumber.
+func (mr *MockNumberHandlerMockRecorder) GetByNumber(ctx, num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetByNumber), ctx, num)
+}
+
 // Gets mocks base method.
 func (m *MockNumberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()

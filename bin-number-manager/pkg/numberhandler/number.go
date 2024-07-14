@@ -127,6 +127,22 @@ func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, 
 	return res, nil
 }
 
+// GetByNumber returns number info of the given num
+func (h *numberHandler) GetByNumber(ctx context.Context, num string) (*number.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "GetByNumber",
+		"number": num,
+	})
+
+	res, err := h.dbGetByNumber(ctx, num)
+	if err != nil {
+		log.Errorf("Could not get number info. err: %v", err)
+		return nil, errors.Wrap(err, "could not get number info")
+	}
+
+	return res, nil
+}
+
 // Gets returns list of numbers info of the given filters
 func (h *numberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	"monorepo/bin-number-manager/models/number"
 )
@@ -245,6 +246,34 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, 
 	return res, nil
 }
 
+// NumberGetByNumber returns number of the given number.
+func (h *handler) NumberGetByNumber(ctx context.Context, num string) (*number.Number, error) {
+
+	tmpCache, err := h.NumberGetFromCacheByNumber(ctx, num)
+	if err == nil {
+		return tmpCache, nil
+	}
+
+	filters := map[string]string{
+		"number":  num,
+		"deleted": "false",
+	}
+
+	tmps, err := h.NumberGets(ctx, 1, "", filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get numbers. filters: %v", filters)
+	}
+
+	if len(tmps) == 0 {
+		return nil, ErrNotFound
+	}
+
+	res := tmps[0]
+	_ = h.numberSetToCache(ctx, res)
+
+	return res, nil
+}
+
 func (h *handler) numberGetsMergeFilters(query string, values []interface{}, filters map[string]string) (string, []interface{}) {
 
 	for k, v := range filters {
@@ -271,6 +300,11 @@ func (h *handler) numberGetsMergeFilters(query string, values []interface{}, fil
 
 // NumberGets returns a list of numbers.
 func (h *handler) NumberGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	// prepare
 	q := fmt.Sprintf(`%s
 	where

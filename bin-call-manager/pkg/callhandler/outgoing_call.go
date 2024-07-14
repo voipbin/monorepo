@@ -166,7 +166,10 @@ func (h *callHandler) CreateCallOutgoing(
 	channelID := h.utilHandler.UUIDCreate().String()
 
 	// get source address for outgoing
-	s := getSourceForOutgoingCall(&source, &destination)
+	s, err := h.outgoingCallGenerateSource(ctx, &source, &destination)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get source address for outgoing call.")
+	}
 
 	// create data
 	data := map[call.DataType]string{
@@ -562,23 +565,35 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
 	variables["CALLERID(num)"] = c.Source.Target
 }
 
-// getSourceForOutgoingCall returns a source address for outgoing call
-func getSourceForOutgoingCall(source *commonaddress.Address, destination *commonaddress.Address) *commonaddress.Address {
+// outgoingCallGenerateSource returns a source address for outgoing call
+func (h *callHandler) outgoingCallGenerateSource(ctx context.Context, source *commonaddress.Address, destination *commonaddress.Address) (*commonaddress.Address, error) {
 
 	if destination.Type != commonaddress.TypeTel {
 		// the only tel type destination need a source address chage
-		return source
+		return source, nil
 	}
+
+	if strings.HasPrefix(source.Target, "+") {
+		return nil, fmt.Errorf("wrong call number format. the number must be the +E164 format")
+	}
+
+	// get source number
+
+	// h.reqHandler.NumberV1NumberGet()
+
+	var res *commonaddress.Address = nil
 
 	// validate source number
 	if strings.HasPrefix(source.Target, "+") {
-		return source
+		res = source
+	} else {
+		// invalid source address for the tel type destination. we need to set the caller id to the anonymous
+		res = &commonaddress.Address{
+			Type:       source.Type,
+			TargetName: "Anonymous",
+			Target:     "anonymous",
+		}
 	}
 
-	// invalid source address for the tel type destination. we need to set the caller id to the anonymous
-	return &commonaddress.Address{
-		Type:       source.Type,
-		TargetName: "Anonymous",
-		Target:     "anonymous",
-	}
+	return res, nil
 }

@@ -50,6 +50,7 @@ var (
 	// numbers
 	regV1NumbersGet       = regexp.MustCompile(`/v1/numbers\?`)
 	regV1Numbers          = regexp.MustCompile(`/v1/numbers$`)
+	regV1NumbersNumber    = regexp.MustCompile(`/v1/numbers/number/`)
 	regV1NumbersID        = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
 	regV1NumbersIDFlowIDs = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
 	regV1NumbersRenew     = regexp.MustCompile(`/v1/numbers/renew$`)
@@ -171,6 +172,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// numbers
 	////////////////////
 
+	// POST /numbers
+	case regV1Numbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1NumbersPost(ctx, m)
+		requestType = "/v1/numbers"
+
+	// GET /numbers
+	case regV1NumbersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1NumbersGet(ctx, m)
+		requestType = "/v1/numbers"
+
 	// DELETE /numbers/<number-id>
 	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1NumbersIDDelete(ctx, m)
@@ -186,7 +197,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1NumbersIDPut(ctx, m)
 		requestType = "/v1/numbers/<number-id>"
 
-	// PUT /numbers/<id>/flow_id
+	// PUT /numbers/<number-id>/flow_id
 	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1NumbersIDFlowIDsPut(ctx, m)
 		requestType = "/v1/numbers/<number-id>/flow_id"
@@ -196,15 +207,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1NumbersRenewPost(ctx, m)
 		requestType = "/v1/numbers/renew"
 
-	// POST /numbers
-	case regV1Numbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1NumbersPost(ctx, m)
-		requestType = "/v1/numbers"
-
-	// GET /numbers
-	case regV1NumbersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1NumbersGet(ctx, m)
-		requestType = "/v1/numbers"
+	// GET /numbers/number/<number>
+	case regV1NumbersNumber.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1NumbersNumberNumberGet(ctx, m)
+		requestType = "/v1/numbers/number/<number>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

@@ -280,3 +280,39 @@ func (h *listenHandler) processV1NumbersRenewPost(ctx context.Context, m *rabbit
 
 	return res, nil
 }
+
+// processV1NumbersNumberNumberGet handles GET /v1/numbers/number/<number> request
+func (h *listenHandler) processV1NumbersNumberNumberGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1NumbersNumberNumberGet",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	num := uriItems[4]
+	log.Debugf("Executing processV1NumbersNumberNumberGet. number: %s", num)
+
+	number, err := h.numberHandler.GetByNumber(ctx, num)
+	if err != nil {
+		log.Debugf("Could not get a number. number: %s, err: %v", num, err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(number)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", number, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

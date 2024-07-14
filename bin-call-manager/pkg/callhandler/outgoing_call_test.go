@@ -1346,8 +1346,31 @@ func Test_getSourceForOutgoingCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res := getSourceForOutgoingCall(tt.source, tt.destination)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+
+			h := &callHandler{
+				utilHandler:      mockUtil,
+				reqHandler:       mockReq,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				channelHandler:   mockChannel,
+				groupcallHandler: mockGroupcall,
+			}
+			ctx := context.Background()
+
+			res, err := h.outgoingCallGenerateSource(ctx, tt.source, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

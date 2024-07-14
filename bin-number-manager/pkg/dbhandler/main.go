@@ -23,6 +23,7 @@ type DBHandler interface {
 	NumberCreate(ctx context.Context, n *number.Number) error
 	NumberDelete(ctx context.Context, id uuid.UUID) error
 	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
+	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
 
 	NumberGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*number.Number, error)
 	NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[string]string) ([]*number.Number, error)

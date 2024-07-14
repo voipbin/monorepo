@@ -170,3 +170,54 @@ func Test_dbUpdateFlowID(t *testing.T) {
 		})
 	}
 }
+
+func Test_dbGetByNumber(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		num string
+
+		responseNumber *number.Number
+	}{
+		{
+			name: "normal",
+
+			num: "+123456789",
+
+			responseNumber: &number.Number{
+				ID: uuid.FromStringOrNil("b4ae4ba4-41ed-11ef-8b21-0315bca47aee"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+
+			h := numberHandler{
+				reqHandler:          mockReq,
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				numberHandlerTelnyx: mockTelnyx,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().NumberGetByNumber(ctx, tt.num).Return(tt.responseNumber, nil)
+			res, err := h.dbGetByNumber(ctx, tt.num)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseNumber, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseNumber, res)
+			}
+		})
+	}
+}

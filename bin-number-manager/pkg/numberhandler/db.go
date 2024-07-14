@@ -107,7 +107,23 @@ func (h *numberHandler) dbGet(ctx context.Context, id uuid.UUID) (*number.Number
 
 	number, err := h.db.NumberGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get number info. number: %s, err:%v", id, err)
+		log.Errorf("Could not get number info. number_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return number, nil
+}
+
+// dbGetByNumber returns number info of the given number
+func (h *numberHandler) dbGetByNumber(ctx context.Context, num string) (*number.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "dbGetByNumber",
+		"number": num,
+	})
+
+	number, err := h.db.NumberGetByNumber(ctx, num)
+	if err != nil {
+		log.Errorf("Could not get number info. number: %s, err: %v", num, err)
 		return nil, err
 	}
 
