@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
@@ -31,7 +32,9 @@ func Test_processEventNMNumberCreated(t *testing.T) {
 			},
 
 			expectNumber: &nmnumber.Number{
-				ID: uuid.FromStringOrNil("cd6fd39a-16a8-11ee-9904-df3ccc63bfb3"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cd6fd39a-16a8-11ee-9904-df3ccc63bfb3"),
+				},
 			},
 		},
 	}
@@ -76,7 +79,9 @@ func Test_processEventNMNumberRenewed(t *testing.T) {
 			},
 
 			expectNumber: &nmnumber.Number{
-				ID: uuid.FromStringOrNil("2ffc1ac8-16a9-11ee-9ed1-ef47bf12e497"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2ffc1ac8-16a9-11ee-9ed1-ef47bf12e497"),
+				},
 			},
 		},
 	}

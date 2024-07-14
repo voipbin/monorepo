@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -97,7 +98,9 @@ func Test_Hook(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("b256f22e-197c-11ee-aadb-2375ad35a2c2"),
 			responseNumbers: []nmnumber.Number{
 				{
-					ID:     uuid.FromStringOrNil("67afdd50-a65d-11ec-84fa-8b61a2028c6a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("67afdd50-a65d-11ec-84fa-8b61a2028c6a"),
+					},
 					Number: "+15734531118",
 				},
 			},
@@ -169,7 +172,9 @@ func Test_executeMessageFlow(t *testing.T) {
 				},
 			},
 			&nmnumber.Number{
-				ID:            uuid.FromStringOrNil("1f2db1da-a8b8-11ec-82b1-2bb474596df1"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1f2db1da-a8b8-11ec-82b1-2bb474596df1"),
+				},
 				MessageFlowID: uuid.FromStringOrNil("275a692a-a8b8-11ec-9de7-d39f5b03faec"),
 			},
 
