@@ -3,8 +3,6 @@ Manage the call resource.
 Handling the call.
 Execute the atomic call actions.
 
-grpc, pubsub
-
 # Usage
 ```
 Usage of ./call-manager:
