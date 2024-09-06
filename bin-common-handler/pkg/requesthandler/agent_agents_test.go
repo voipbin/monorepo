@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/models/address"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -33,8 +34,8 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 		addresses  []address.Address
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 		expectRes     *amagent.Agent
 	}{
 		{
@@ -58,13 +59,13 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 			},
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password":"password1","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","permission":0,"tag_ids":["ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
@@ -128,8 +129,8 @@ func Test_AgentV1AgentGet(t *testing.T) {
 		agentID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 		expectRes     *amagent.Agent
 	}{
 		{
@@ -138,11 +139,11 @@ func Test_AgentV1AgentGet(t *testing.T) {
 			uuid.FromStringOrNil("7ab80df4-4c72-11ec-b095-17146a0e7e4c"),
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents/7ab80df4-4c72-11ec-b095-17146a0e7e4c",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7ab80df4-4c72-11ec-b095-17146a0e7e4c"}`),
@@ -190,8 +191,8 @@ func Test_AgentV1AgentGetByCustomerIDAndAddress(t *testing.T) {
 		addr       commonaddress.Address
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 		expectRes     *amagent.Agent
 	}{
 		{
@@ -205,13 +206,13 @@ func Test_AgentV1AgentGetByCustomerIDAndAddress(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.agent-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/agents/get_by_customer_id_address",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"f68aa290-2d96-11ef-8fda-2b4b95e0d496","address":{"type":"tel","target":"+123456789","target_name":"","name":"","detail":""}}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f79ca5ca-2d96-11ef-8405-bf28df182f51"}`),
@@ -260,8 +261,8 @@ func Test_AgentV1AgentGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 		expectRes     []amagent.Agent
 	}{
 		{
@@ -275,11 +276,11 @@ func Test_AgentV1AgentGets(t *testing.T) {
 
 			"/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d3ce27ac-4c72-11ec-b790-6b79445cbb01"}]`),
@@ -303,11 +304,11 @@ func Test_AgentV1AgentGets(t *testing.T) {
 
 			"/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"11cfd8e8-4c73-11ec-8f06-b73cd86fc9ae"},{"id":"12237ce6-4c73-11ec-8a2a-57b7a8d6a6f4"}]`),
@@ -365,8 +366,8 @@ func Test_AgentV1AgentGetsByTagIDs(t *testing.T) {
 		tagIDs     []uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 		expectRes     []amagent.Agent
 	}{
 		{
@@ -378,11 +379,11 @@ func Test_AgentV1AgentGetsByTagIDs(t *testing.T) {
 			},
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=ef626c46-4e78-11ec-bb14-6fbde14856d4",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ef626c46-4e78-11ec-bb14-6fbde14856d4"}]`),
@@ -405,11 +406,11 @@ func Test_AgentV1AgentGetsByTagIDs(t *testing.T) {
 			},
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=36a057ee-4e79-11ec-a0c6-5fc332a14527,36c77248-4e79-11ec-8aa9-93ecdefec6c9",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"36a057ee-4e79-11ec-a0c6-5fc332a14527"},{"id":"36c77248-4e79-11ec-8aa9-93ecdefec6c9"}]`),
@@ -464,8 +465,8 @@ func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 		status     amagent.Status
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 		expectRes     []amagent.Agent
 	}{
 		{
@@ -478,11 +479,11 @@ func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 			amagent.StatusAvailable,
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=a23822ac-4e79-11ec-935d-335a1fd132e8&status=available",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"a23822ac-4e79-11ec-935d-335a1fd132e8"}]`),
@@ -506,11 +507,11 @@ func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 			amagent.StatusAvailable,
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents?customer_id=7fdb8e66-7fe7-11ec-ac90-878b581c2615&tag_ids=bcde4bea-4e79-11ec-bbc2-4b92f6f04b6a,bd0786ea-4e79-11ec-8ecc-3bc59c72be3b&status=available",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"bcde4bea-4e79-11ec-bbc2-4b92f6f04b6a"},{"id":"bd0786ea-4e79-11ec-8ecc-3bc59c72be3b"}]`),
@@ -563,9 +564,9 @@ func Test_AgentV1AgentDelete(t *testing.T) {
 		id uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *amagent.Agent
 	}{
 		{
@@ -574,12 +575,12 @@ func Test_AgentV1AgentDelete(t *testing.T) {
 			uuid.FromStringOrNil("f4b44b28-4e79-11ec-be3c-73450ec23a51"),
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/agents/f4b44b28-4e79-11ec-be3c-73450ec23a51",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f4b44b28-4e79-11ec-be3c-73450ec23a51"}`),
@@ -626,9 +627,9 @@ func Test_AgentV1AgentUpdateAddresses(t *testing.T) {
 		addresses []address.Address
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *amagent.Agent
 	}{
 		{
@@ -643,13 +644,13 @@ func Test_AgentV1AgentUpdateAddresses(t *testing.T) {
 			},
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/addresses",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}]}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
@@ -697,9 +698,9 @@ func Test_AgentV1AgentUpdatePassword(t *testing.T) {
 		password string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *amagent.Agent
 	}{
 		{
@@ -709,14 +710,14 @@ func Test_AgentV1AgentUpdatePassword(t *testing.T) {
 			"password1",
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/password",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"password":"password1"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
@@ -765,9 +766,9 @@ func Test_AgentV1AgentUpdate(t *testing.T) {
 		ringMethod amagent.RingMethod
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *amagent.Agent
 	}{
 		{
@@ -779,14 +780,14 @@ func Test_AgentV1AgentUpdate(t *testing.T) {
 			amagent.RingMethodRingAll,
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail","ring_method":"ringall"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
@@ -834,9 +835,9 @@ func Test_AgentV1AgentUpdateTagIDs(t *testing.T) {
 		tagIDs []uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *amagent.Agent
 	}{
 		{
@@ -848,14 +849,14 @@ func Test_AgentV1AgentUpdateTagIDs(t *testing.T) {
 			},
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/tag_ids",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"tag_ids":["000c4a82-4e7c-11ec-a7e0-fff54f4ae71d"]}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
@@ -902,9 +903,9 @@ func Test_AgentV1AgentUpdateStatus(t *testing.T) {
 		status amagent.Status
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *amagent.Agent
 	}{
 		{
@@ -914,14 +915,14 @@ func Test_AgentV1AgentUpdateStatus(t *testing.T) {
 			amagent.StatusAvailable,
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/status",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"status":"available"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
@@ -968,9 +969,9 @@ func Test_AgentV1AgentUpdatePermission(t *testing.T) {
 		permission amagent.Permission
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *amagent.Agent
 	}{
 		{
@@ -980,14 +981,14 @@ func Test_AgentV1AgentUpdatePermission(t *testing.T) {
 			amagent.PermissionCustomerAdmin,
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/405fe0fa-9522-11ee-af15-8b79b78b62c2/permission",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"permission":32}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"405fe0fa-9522-11ee-af15-8b79b78b62c2"}`),

@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
@@ -16,14 +17,14 @@ func Test_processEventNMNumberCreated(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectNumber *nmnumber.Number
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "number-manager",
 				Type:      nmnumber.EventTypeNumberCreated,
 				DataType:  "application/json",
@@ -61,14 +62,14 @@ func Test_processEventNMNumberRenewed(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectNumber *nmnumber.Number
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "number-manager",
 				Type:      nmnumber.EventTypeNumberRenewed,
 				DataType:  "application/json",

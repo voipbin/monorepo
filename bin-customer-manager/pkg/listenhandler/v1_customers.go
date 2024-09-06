@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,7 +18,7 @@ import (
 )
 
 // processV1CustomersGet handles GET /v1/customers request
-func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CustomersGet",
 		"request": m,
@@ -51,7 +51,7 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *rabbitmqha
 	}
 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -61,7 +61,7 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *rabbitmqha
 }
 
 // processV1CustomersPost handles Post /v1/customers request
-func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CustomersPost",
 		"request": m,
@@ -97,7 +97,7 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqh
 	}
 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -107,7 +107,7 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqh
 }
 
 // processV1CustomersIDGet handles Get /v1/customers/<customer-id> request
-func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -134,7 +134,7 @@ func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *rabbitmq
 	}
 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -144,7 +144,7 @@ func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *rabbitmq
 }
 
 // processV1CustomersIDDelete handles Delete /v1/customers/<user-id> request
-func (h *listenHandler) processV1CustomersIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CustomersIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -171,7 +171,7 @@ func (h *listenHandler) processV1CustomersIDDelete(ctx context.Context, m *rabbi
 	}
 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -181,7 +181,7 @@ func (h *listenHandler) processV1CustomersIDDelete(ctx context.Context, m *rabbi
 }
 
 // processV1CustomersIDPut handles Put /v1/customers/<customer-id> request
-func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -226,7 +226,7 @@ func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *rabbitmq
 	}
 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -236,7 +236,7 @@ func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *rabbitmq
 }
 
 // processV1CustomersIDIsValidBalance handles Put /v1/customers/<customer-id>/is_valid_balance request
-func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CustomersIDIsValidBalance",
 		"request": m,
@@ -271,7 +271,7 @@ func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, 
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -281,7 +281,7 @@ func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, 
 }
 
 // processV1CustomersIDBillingAccountIDPut handles Put /v1/customers/<customer-id>/billing_account_id request
-func (h *listenHandler) processV1CustomersIDBillingAccountIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CustomersIDBillingAccountIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -313,7 +313,7 @@ func (h *listenHandler) processV1CustomersIDBillingAccountIDPut(ctx context.Cont
 	}
 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -72,8 +73,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -133,10 +134,10 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	ctx := context.Background()
 	log := logrus.WithFields(
@@ -155,37 +156,37 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// customers
 	////////////
 	// GET /customers
-	case regV1CustomersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CustomersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1CustomersGet(ctx, m)
 		requestType = "/v1/customers"
 
 	// POST /customers
-	case regV1Customers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Customers.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CustomersPost(ctx, m)
 		requestType = "/v1/customers"
 
 	// GET /customers/<customer-id>
-	case regV1CustomersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CustomersID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1CustomersIDGet(ctx, m)
 		requestType = "/v1/customers"
 
 	// PUT /customers/<customer-id>
-	case regV1CustomersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CustomersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1CustomersIDPut(ctx, m)
 		requestType = "/v1/customers"
 
 	// DELETE /customers/<customer-id>
-	case regV1CustomersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1CustomersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1CustomersIDDelete(ctx, m)
 		requestType = "/v1/customers"
 
 	// PUT /customers/<customer-id>/billing_account_id
-	case regV1CustomersIDIsBillingAccountID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CustomersIDIsBillingAccountID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1CustomersIDBillingAccountIDPut(ctx, m)
 		requestType = "/v1/customers/<customer_id>/billing_account_id"
 
 	// POST /customers/<customer-id>/is_valid_balance
-	case regV1CustomersIDIsValidBalance.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CustomersIDIsValidBalance.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CustomersIDIsValidBalance(ctx, m)
 		requestType = "/v1/customers/<customer_id>/is_valid_balance"
 

@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-call-manager/pkg/confbridgehandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
@@ -19,14 +20,14 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectCustomer *cucustomer.Customer
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "customer-manager",
 				Type:      cucustomer.EventTypeCustomerDeleted,
 				DataType:  "application/json",

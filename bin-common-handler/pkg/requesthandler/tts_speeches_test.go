@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -24,9 +25,9 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 		language string
 		timeout  int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectURL     string
 		expectRes     *tmtts.TTS
 	}{
@@ -39,14 +40,14 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 			"en-US",
 			3000,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"gender":"male","text":"hello world","language":"en-US","media_filepath":"tts/tmp_filename.wav"}`),
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/speeches",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"call_id":"cf0413d8-921a-11ec-96ed-7f0948b70d4e","text":"hello world","gender":"male","language":"en-US"}`),
 			},

@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken  string
 		pageSize   uint64
@@ -25,13 +26,13 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 
 		responseCampaigns []*campaigncall.Campaigncall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10&campaign_id=d448b208-c849-11ec-8ea9-130b51c62f3e",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -45,7 +46,7 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d4852cba-c849-11ec-986c-e360df927fc5","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -83,7 +84,7 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken  string
 		pageSize   uint64
@@ -91,13 +92,13 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 
 		responseCampaigns []*campaigncall.Campaigncall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=a5b9fbf6-6e31-11ee-98a3-33e454942a48",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			"2020-10-10 03:30:17.000000",
@@ -110,7 +111,7 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"a5fa0f84-6e31-11ee-a6f2-0bb6f14c4687","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -148,19 +149,19 @@ func Test_v1CampaigncallsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		campaigncallID uuid.UUID
 
 		responseCampaigncall *campaigncall.Campaigncall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls/5f7dd038-c84a-11ec-9943-936e5cfdeb4c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -170,7 +171,7 @@ func Test_v1CampaigncallsIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("5f7dd038-c84a-11ec-9943-936e5cfdeb4c"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5f7dd038-c84a-11ec-9943-936e5cfdeb4c","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -208,19 +209,19 @@ func Test_v1CampaigncallsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		campaigncallID uuid.UUID
 
 		responseCampaigncall *campaigncall.Campaigncall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls/ef345db4-d31a-11ee-b584-2f258c86723e",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -230,7 +231,7 @@ func Test_v1CampaigncallsIDDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("ef345db4-d31a-11ee-b584-2f258c86723e"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"ef345db4-d31a-11ee-b584-2f258c86723e","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),

@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/sock"
 	tmtts "monorepo/bin-tts-manager/models/tts"
 	"monorepo/bin-tts-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TTSV1SpeecheCreate create speech-to-text.
@@ -28,7 +27,7 @@ func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUI
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTTS(ctx, uri, rabbitmqhandler.RequestMethodPost, "tts/speeches", timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTTS(ctx, uri, sock.RequestMethodPost, "tts/speeches", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

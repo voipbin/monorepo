@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -58,8 +59,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -100,7 +101,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			if errRPC := h.rabbitSock.ConsumeRPC(queue, "tts-manager", h.processRequest); errRPC != nil {
+			if errRPC := h.rabbitSock.ConsumeRPCOpt(queue, "tts-manager", false, false, false, 10, h.processRequest); errRPC != nil {
 				logrus.Errorf("Could not consume the message correctly. Will try again after 1 second. err: %v", errRPC)
 				time.Sleep(time.Second * 1)
 			}
@@ -111,7 +112,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 // processRequest
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,
@@ -119,7 +120,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	log.Debug("Received request.")
 
@@ -128,7 +129,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
-	case regV1Speeches.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Speeches.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/speeches"
 		response, err = h.v1SpeechesPost(ctx, m)
 

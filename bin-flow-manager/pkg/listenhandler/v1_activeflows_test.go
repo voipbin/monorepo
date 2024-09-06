@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -21,7 +22,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID           uuid.UUID
 		expectRefereceType activeflow.ReferenceType
@@ -29,13 +30,13 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 		expectFlowID       uuid.UUID
 
 		responseActiveflow *activeflow.Activeflow
-		expectRes          *rabbitmqhandler.Response
+		expectRes          *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"id":"a508739b-d98d-40fb-8a47-61e9a70958cd","reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
 			},
@@ -60,7 +61,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				ExecuteCount:    0,
 				ForwardActionID: action.IDEmpty,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a508739b-d98d-40fb-8a47-61e9a70958cd","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","status":"","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -68,9 +69,9 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 		},
 		{
 			"empty id",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_type": "call", "reference_id": "b66c4922-a7a4-11ec-8e1b-6765ceec0323", "flow_id": "24092c98-05ee-11eb-a410-17d716ff3d61"}`),
 			},
@@ -95,7 +96,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				ExecuteCount:    0,
 				ForwardActionID: action.IDEmpty,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7a18e7e0-7d67-44f2-9591-58cc7d8f5610","customer_id":"cd607242-7f4b-11ec-a34f-bb861637ee36","flow_id":"24092c98-05ee-11eb-a410-17d716ff3d61","status":"","reference_type":"call","reference_id":"b66c4922-a7a4-11ec-8e1b-6765ceec0323","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -135,7 +136,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken string
 		pageSize  uint64
@@ -143,13 +144,13 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		responseFilters     map[string]string
 		responseActiveflows []*activeflow.Activeflow
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			"2020-10-10 03:30:17.000000",
@@ -165,7 +166,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ae07a96a-cbda-11ed-bbc9-5324a1a8b94b","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -173,9 +174,9 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			"2020-10-10 03:30:17.000000",
@@ -193,7 +194,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("ae66a7bc-cbda-11ed-81b3-17eb5a6f42b2"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ae3724b0-cbda-11ed-a44c-1be0474024bd","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"ae66a7bc-cbda-11ed-81b3-17eb5a6f42b2","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -201,9 +202,9 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		},
 		{
 			"empty",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -215,7 +216,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				"deleted":     "false",
 			},
 			[]*activeflow.Activeflow{},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -258,7 +259,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		callID          uuid.UUID
 		currentActionID uuid.UUID
@@ -267,9 +268,9 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows/cec5b926-06a7-11eb-967e-fb463343f0a5/next",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"current_action_id": "6a1ce642-06a8-11eb-a632-978be835f982"}`),
 			},
@@ -314,19 +315,19 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		callID          uuid.UUID
 		forwardActionID uuid.UUID
 		forwardNow      bool
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": true}`),
 			},
@@ -335,16 +336,16 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 			uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
 			true,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
 		},
 		{
 			"forward now false",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows/6f14f3b8-5758-11ec-a413-772c32e3e51f/forward_action_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": false}`),
 			},
@@ -353,7 +354,7 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 			uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
 			false,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -391,23 +392,23 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		activeflowID uuid.UUID
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows/07c60d7c-a7ae-11ec-ad69-c3e765668a2b/execute",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
 
 			uuid.FromStringOrNil("07c60d7c-a7ae-11ec-ad69-c3e765668a2b"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -448,18 +449,18 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		activeflowID   uuid.UUID
 		responseDelete *activeflow.Activeflow
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/activeflows/343b6e40-cbdb-11ed-b13d-9f730017f25a",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
@@ -467,7 +468,7 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"343b6e40-cbdb-11ed-b13d-9f730017f25a","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -507,18 +508,18 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		activeflowID   uuid.UUID
 		responseDelete *activeflow.Activeflow
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/activeflows/4356d70a-adde-11ec-bff4-9fc5420b5bcb",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -527,7 +528,7 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("4356d70a-adde-11ec-bff4-9fc5420b5bcb"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4356d70a-adde-11ec-bff4-9fc5420b5bcb","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -566,18 +567,18 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseActiveflow *activeflow.Activeflow
 
 		expectActiveflowID uuid.UUID
-		expectRes          *rabbitmqhandler.Response
+		expectRes          *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/activeflows/1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3/stop",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			responseActiveflow: &activeflow.Activeflow{
@@ -585,7 +586,7 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 			},
 
 			expectActiveflowID: uuid.FromStringOrNil("1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3"),
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1ee42c4c-c8db-11ed-91cd-d30ce2e5c4b3","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -624,19 +625,19 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseActiveflow *activeflow.Activeflow
 
 		expectActiveflowID uuid.UUID
 		expectActions      []action.Action
-		expectRes          *rabbitmqhandler.Response
+		expectRes          *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/activeflows/636c6116-fb00-11ed-8c06-330f0ae26e9b/push_actions",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"actions":[{"type":"answer"}]}`),
 			},
@@ -651,7 +652,7 @@ func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"636c6116-fb00-11ed-8c06-330f0ae26e9b","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),

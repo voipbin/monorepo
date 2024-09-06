@@ -9,6 +9,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -119,14 +120,14 @@ func (h *subscribeHandler) Run() error {
 }
 
 // processEventRun runs the event process handler.
-func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	go h.processEvent(m)
 
 	return nil
 }
 
 // processEvent processes received event
-func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
+func (h *subscribeHandler) processEvent(m *sock.Event) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEvent",
 		"event": m,

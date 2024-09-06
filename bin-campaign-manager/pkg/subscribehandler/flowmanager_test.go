@@ -3,21 +3,20 @@ package subscribehandler
 import (
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"monorepo/bin-campaign-manager/models/campaigncall"
 	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"
 	"monorepo/bin-campaign-manager/pkg/campaignhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 func Test_processEventFMActiveflowDeleted(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		callID uuid.UUID
 
@@ -25,7 +24,7 @@ func Test_processEventFMActiveflowDeleted(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "flow-manager",
 				Type:      "activeflow_deleted",
 				DataType:  "application/json",

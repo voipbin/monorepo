@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 
@@ -13,7 +13,7 @@ import (
 
 // v1SpeechesPost handles /v1/speeches POST request
 // creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
-func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1SpeechesPost",
 	})
@@ -38,7 +38,7 @@ func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *rabbitmqhandler.R
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

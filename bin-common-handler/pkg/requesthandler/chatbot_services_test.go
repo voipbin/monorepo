@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -28,10 +29,10 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 		language       string
 		requestTimeout int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cbservice.Service
 	}{
 		{
@@ -46,16 +47,16 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 			language:       "en-US",
 			requestTimeout: 5000,
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"}`),
 			},
 
 			expectTarget: "bin-manager.chatbot-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/services/type/chatbotcall",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"7654ef82-949f-4f0f-8711-6d1c370537be","chatbot_id":"9469e101-d269-4895-9679-fe49531f7c12","activeflow_id":"db21d8b6-fbab-11ed-8d21-332400f26ee4","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","gender":"female","language":"en-US"}`),
 			},

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +20,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		ownerID    uuid.UUID
@@ -29,13 +30,13 @@ func Test_v1ChatroomsGet(t *testing.T) {
 
 		responseChatrooms []*chatroom.Chatroom
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"gets by owner id return 1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&owner_id=5cc29ca4-3503-11ed-af37-3388a22eea50&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -56,7 +57,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"5cedbefc-3503-11ed-a344-aff6ed0bb63f","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -64,9 +65,9 @@ func Test_v1ChatroomsGet(t *testing.T) {
 		},
 		{
 			"gets by owner id return 2 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&owner_id=5d1a8cca-3503-11ed-88db-57e51b7f708f&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -92,7 +93,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"5d479a4e-3503-11ed-9d61-d375835c6b38","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"5d74efc6-3503-11ed-bf79-4f76cba0af3c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -100,9 +101,9 @@ func Test_v1ChatroomsGet(t *testing.T) {
 		},
 		{
 			"gets by customer id return 0 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&owner_id=5dae1058-3503-11ed-a7d3-df338985d478&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -117,7 +118,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 
 			[]*chatroom.Chatroom{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -159,19 +160,19 @@ func Test_v1ChatroomsGet(t *testing.T) {
 func Test_v1ChatroomsIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatroomID uuid.UUID
 
 		responseChatroom *chatroom.Chatroom
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms/be0b33ea-3503-11ed-9ea4-d3c16293dae7",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -184,7 +185,7 @@ func Test_v1ChatroomsIDGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"be0b33ea-3503-11ed-9ea4-d3c16293dae7","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -227,7 +228,7 @@ func Test_v1ChatroomsIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatroomID   uuid.UUID
 		updateName   string
@@ -235,13 +236,13 @@ func Test_v1ChatroomsIDPut(t *testing.T) {
 
 		responseChatroom *chatroom.Chatroom
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms/d11c222e-bc5b-11ee-940b-d3e8acd4c0d3",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name": "update name", "detail": "update detail"}`),
 			},
@@ -256,7 +257,7 @@ func Test_v1ChatroomsIDPut(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d11c222e-bc5b-11ee-940b-d3e8acd4c0d3","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -299,18 +300,18 @@ func Test_v1ChatroomsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatroomID uuid.UUID
 
 		responseChatroom *chatroom.Chatroom
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms/3ec65848-3504-11ed-bf5e-738f1d450725",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -322,7 +323,7 @@ func Test_v1ChatroomsIDDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("3ec65848-3504-11ed-bf5e-738f1d450725"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3ec65848-3504-11ed-bf5e-738f1d450725","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","type":"","chat_id":"00000000-0000-0000-0000-000000000000","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),

@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -22,8 +23,8 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 		extension  string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectRes []astcontact.AstContact
 	}{
@@ -34,12 +35,12 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 			extension:  "test_exten",
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/contacts?customer_id=390f34ba-57a4-11ee-a22c-d3dbf1f5af19&extension=test_exten",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"uri":"sip:test11@211.200.20.28:48540^3Btransport=udp^3Balias=211.200.20.28~48540~1"},{"uri":"sip:test11@223.38.28.126:48540^3Btransport=udp^3Balias=223.38.28.126~48540~1"},{"uri":"sip:test11@35.204.215.63^3Btransport=udp^3Balias=35.204.215.63~5060~1"}]`),
@@ -92,8 +93,8 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 		extension  string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectRes []astcontact.AstContact
 	}{
@@ -104,12 +105,12 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 			extension:  "test_exten",
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/contacts?customer_id=e168826a-57a4-11ee-818c-73dfee4986c0&extension=test_exten",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeNone,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 		},

@@ -6,14 +6,13 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processEventCMCallHangup handles the call-manager's call_hangup event.
-func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMCallHangup",
 		"event": m,
@@ -34,7 +33,7 @@ func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *rabb
 }
 
 // processEventCMConfbridgeTerminated handles the call-manager's confbridge_terminated event.
-func (h *subscribeHandler) processEventCMConfbridgeTerminated(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMConfbridgeTerminated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMConfbridgeTerminated",
 		"event": m,

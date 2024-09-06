@@ -4,8 +4,7 @@ import (
 	"testing"
 
 	cmcall "monorepo/bin-call-manager/models/call"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -19,7 +18,7 @@ func Test_processEventCMCallHangup(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		callID uuid.UUID
 
@@ -27,7 +26,7 @@ func Test_processEventCMCallHangup(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "call-manager",
 				Type:      cmcall.EventTypeCallHangup,
 				DataType:  "application/json",

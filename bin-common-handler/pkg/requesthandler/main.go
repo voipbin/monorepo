@@ -87,6 +87,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -158,7 +159,7 @@ func initPrometheus(namespace string) {
 type RequestHandler interface {
 
 	// send
-	SendRequest(ctx context.Context, queue commonoutline.QueueName, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
+	SendRequest(ctx context.Context, queue commonoutline.QueueName, uri string, method sock.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*sock.Response, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error

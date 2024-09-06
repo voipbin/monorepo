@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -24,8 +25,8 @@ func Test_processV1MessagesGet(t *testing.T) {
 		pageToken  string
 		resultData []*message.Message
 
-		request  *rabbitmqhandler.Request
-		response *rabbitmqhandler.Response
+		request  *sock.Request
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -39,11 +40,11 @@ func Test_processV1MessagesGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
 				},
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/messages?customer_id=197609d6-a29b-11ec-b884-5b8a227db58a&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"197609d6-a29b-11ec-b884-5b8a227db58a","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -65,11 +66,11 @@ func Test_processV1MessagesGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
 				},
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/messages?customer_id=75dd760a-a29b-11ec-ba70-cb282aa1d594&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"760f30fa-a29b-11ec-87e7-2fc5bdc8739b","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"7639e39a-a29b-11ec-b393-5b239b119501","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -116,8 +117,8 @@ func Test_processV1MessagesPost(t *testing.T) {
 
 		responseSend *message.Message
 
-		request  *rabbitmqhandler.Request
-		response *rabbitmqhandler.Response
+		request  *sock.Request
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -140,13 +141,13 @@ func Test_processV1MessagesPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("5f00c9bc-f176-11ec-bda0-af0b8c9491f5"),
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"fdca8fb4-a22b-11ec-8894-7bfd708fa894", "source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello, world"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -188,8 +189,8 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 		id         uuid.UUID
 		resultData *message.Message
 
-		request  *rabbitmqhandler.Request
-		response *rabbitmqhandler.Response
+		request  *sock.Request
+		response *sock.Response
 	}{
 		{
 			"1 number",
@@ -197,11 +198,11 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			&message.Message{
 				ID: uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/messages/73071e00-a29a-11ec-a43a-079fe08ce740",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -242,8 +243,8 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 		id             uuid.UUID
 		responseDelete *message.Message
 
-		request  *rabbitmqhandler.Request
-		response *rabbitmqhandler.Response
+		request  *sock.Request
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -251,11 +252,11 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 			&message.Message{
 				ID: uuid.FromStringOrNil("63772a08-a2ee-11ec-8c6d-9714fb1cc108"),
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/messages/63772a08-a2ee-11ec-8c6d-9714fb1cc108",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"63772a08-a2ee-11ec-8c6d-9714fb1cc108","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),

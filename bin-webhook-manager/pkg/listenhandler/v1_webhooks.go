@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 
@@ -13,7 +13,7 @@ import (
 )
 
 // processV1WebhooksPost handles POST /v1/webhooks request
-func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "processV1WebhooksPost",
@@ -43,7 +43,7 @@ func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *rabbitmqha
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}
@@ -52,7 +52,7 @@ func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *rabbitmqha
 }
 
 // processV1WebhookDestinationsPost handles POST /v1/webhook_destinations request
-func (h *listenHandler) processV1WebhookDestinationsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1WebhookDestinationsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "processV1WebhookDestinationsPost",
@@ -82,7 +82,7 @@ func (h *listenHandler) processV1WebhookDestinationsPost(ctx context.Context, m 
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}

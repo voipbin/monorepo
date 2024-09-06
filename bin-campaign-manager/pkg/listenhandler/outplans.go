@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ import (
 )
 
 // v1OutplansPost handles /v1/outplans POST request
-func (h *listenHandler) v1OutplansPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutplansPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1OutplansPost",
 		"request": m,
@@ -55,7 +55,7 @@ func (h *listenHandler) v1OutplansPost(ctx context.Context, m *rabbitmqhandler.R
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -65,7 +65,7 @@ func (h *listenHandler) v1OutplansPost(ctx context.Context, m *rabbitmqhandler.R
 }
 
 // v1OutplansGet handles /v1/outplans GET request
-func (h *listenHandler) v1OutplansGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutplansGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1OutplansGet",
 		"request": m,
@@ -98,7 +98,7 @@ func (h *listenHandler) v1OutplansGet(ctx context.Context, m *rabbitmqhandler.Re
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -108,7 +108,7 @@ func (h *listenHandler) v1OutplansGet(ctx context.Context, m *rabbitmqhandler.Re
 }
 
 // v1OutplansIDGet handles /v1/outplans/{id} GET request
-func (h *listenHandler) v1OutplansIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutplansIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1OutplansIDGet",
 		"request": m,
@@ -135,7 +135,7 @@ func (h *listenHandler) v1OutplansIDGet(ctx context.Context, m *rabbitmqhandler.
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -145,7 +145,7 @@ func (h *listenHandler) v1OutplansIDGet(ctx context.Context, m *rabbitmqhandler.
 }
 
 // v1OutplansIDDelete handles /v1/outplans/{id} Delete request
-func (h *listenHandler) v1OutplansIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutplansIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1OutplansIDDelete",
 		"request": m,
@@ -172,7 +172,7 @@ func (h *listenHandler) v1OutplansIDDelete(ctx context.Context, m *rabbitmqhandl
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -182,7 +182,7 @@ func (h *listenHandler) v1OutplansIDDelete(ctx context.Context, m *rabbitmqhandl
 }
 
 // v1OutplansIDPut handles /v1/outplans/<outplan_id> PUT request
-func (h *listenHandler) v1OutplansIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutplansIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1OutplansIDPut",
 		"request": m,
@@ -216,7 +216,7 @@ func (h *listenHandler) v1OutplansIDPut(ctx context.Context, m *rabbitmqhandler.
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -226,7 +226,7 @@ func (h *listenHandler) v1OutplansIDPut(ctx context.Context, m *rabbitmqhandler.
 }
 
 // v1OutplansIDPut handles /v1/outplans/<outplan_id>/dials PUT request
-func (h *listenHandler) v1OutplansIDDialsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutplansIDDialsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1OutplansIDPut",
 		"request": m,
@@ -260,7 +260,7 @@ func (h *listenHandler) v1OutplansIDDialsPut(ctx context.Context, m *rabbitmqhan
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

@@ -8,10 +8,9 @@ import (
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
 	cbservice "monorepo/bin-chatbot-manager/models/service"
 	cbrequest "monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ChatbotV1ServiceTypeChabotcallStart sends a request to chat-manager
@@ -45,7 +44,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPost, "chatbot/services/type/chatbotcall", requestTimeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/services/type/chatbotcall", requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -30,8 +31,8 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 		allowedIPs []string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectRes *rmtrunk.Trunk
 	}{
@@ -48,13 +49,13 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 			allowedIPs: []string{"1.2.3.4"},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"dbb730a8-549a-11ee-a7f3-4f1384f81f27","name":"test name","detail":"test detail","domain_name":"test-domain","auth_types":["basic","ip"],"username":"testusername","password":"testpassword","allowed_ips":["1.2.3.4"]}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dc3b0e5a-549a-11ee-9469-abda3b219d1d"}`),
@@ -99,11 +100,11 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []rmtrunk.Trunk
 	}{
 		{
@@ -115,16 +116,16 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 				"deleted": "false",
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`[{"id":"b215904a-549b-11ee-874c-7f01e2fb3e8c"}]`),
 			},
 
 			expectURL:    "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			expectRes: []rmtrunk.Trunk{
@@ -170,26 +171,26 @@ func Test_RegistrarV1TrunkGet(t *testing.T) {
 
 		trunkID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
 			name: "normal",
 
 			trunkID: uuid.FromStringOrNil("f5547ab0-549b-11ee-a653-93228d9f8207"),
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f5547ab0-549b-11ee-a653-93228d9f8207"}`),
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/f5547ab0-549b-11ee-a653-93228d9f8207",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
@@ -230,26 +231,26 @@ func Test_RegistrarV1TrunkGetByDomainName(t *testing.T) {
 
 		domainName string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
 			name: "normal",
 
 			domainName: "test-domain",
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4b766408-549c-11ee-a5ad-077c11ba6415"}`),
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/domain_name/test-domain",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
@@ -290,26 +291,26 @@ func Test_RegistrarV1TrunkDelete(t *testing.T) {
 
 		trunkID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
 			name: "normal",
 
 			trunkID: uuid.FromStringOrNil("98fbcfba-549c-11ee-8a74-73230f51555d"),
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"98fbcfba-549c-11ee-8a74-73230f51555d"}`),
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/98fbcfba-549c-11ee-8a74-73230f51555d",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
@@ -356,10 +357,10 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 		password   string
 		allowedIPs []string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
@@ -373,16 +374,16 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 			password:   "updatepassword",
 			allowedIPs: []string{"1.2.3.4"},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f27448ce-549c-11ee-b466-57162d71a670"}`),
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/f27448ce-549c-11ee-b466-57162d71a670",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail","auth_types":["basic","ip"],"username":"updateusername","password":"updatepassword","allowed_ips":["1.2.3.4"]}`),
 			},

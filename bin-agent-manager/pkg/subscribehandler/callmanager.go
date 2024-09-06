@@ -5,15 +5,14 @@ import (
 	"encoding/json"
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 // processEventCMGroupcallCreated handles the call-manager's groupcall_created event.
-func (h *subscribeHandler) processEventCMGroupcallCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMGroupcallCreated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMGroupcallCreated",
 		"event": m,
@@ -34,7 +33,7 @@ func (h *subscribeHandler) processEventCMGroupcallCreated(ctx context.Context, m
 }
 
 // processEventCMGroupcallProgressing handles the call-manager's groupcall_answered event.
-func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMGroupcallAnswered",
 		"event": m,

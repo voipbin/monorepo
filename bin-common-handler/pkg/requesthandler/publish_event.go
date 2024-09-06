@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +21,7 @@ func (r *requestHandler) publishEvent(queue commonoutline.QueueName, eventType s
 		"data":       data,
 	})
 
-	evt := &rabbitmqhandler.Event{
+	evt := &sock.Event{
 		Type:      eventType,
 		Publisher: publisher,
 		DataType:  dataType,

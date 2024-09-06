@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	"github.com/pkg/errors"
@@ -13,7 +12,7 @@ import (
 )
 
 // processEventMMMessageCreated handles the message-manager's messages_created event
-func (h *subscribeHandler) processEventMMMessageCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventMMMessageCreated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventMMMessageCreated",
 		"event": m,

@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 // processV1ContactsGet handles /v1/contacts GET request
-func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1ContactsGet",
 	})
@@ -42,7 +42,7 @@ func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *rabbitmqh
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -52,7 +52,7 @@ func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *rabbitmqh
 }
 
 // processV1ContactsPut handles /v1/contatcs PUT request
-func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1ContactsPut",
 	})
@@ -75,7 +75,7 @@ func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *rabbitmqh
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 

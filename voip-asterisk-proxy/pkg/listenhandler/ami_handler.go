@@ -5,10 +5,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
-func (h *listenHandler) listenHandlerAMI(request *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) listenHandlerAMI(request *sock.Request) (*sock.Response, error) {
 	logrus.Debugf("listenHandlerAMI. message: %v", request)
 
 	// send the request to Asterisk
@@ -17,7 +17,7 @@ func (h *listenHandler) listenHandlerAMI(request *rabbitmqhandler.Request) (*rab
 		return nil, err
 	}
 
-	response := &rabbitmqhandler.Response{
+	response := &sock.Response{
 		StatusCode: statusCode,
 		DataType:   "application/json",
 		Data:       resData,
@@ -29,7 +29,7 @@ func (h *listenHandler) listenHandlerAMI(request *rabbitmqhandler.Request) (*rab
 
 // sendRequestToAsteriskAMI sends the request to the Asterisk's AMI.
 // returns status_code, response_message, error
-func (h *listenHandler) sendRequestToAsteriskAMI(m *rabbitmqhandler.Request) (int, []byte, error) {
+func (h *listenHandler) sendRequestToAsteriskAMI(m *sock.Request) (int, []byte, error) {
 
 	var req map[string]string
 	if err := json.Unmarshal(m.Data, &req); err != nil {

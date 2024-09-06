@@ -60,8 +60,8 @@ require (
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.19.1
-	github.com/redis/go-redis/v9 v9.5.3
+	github.com/prometheus/client_golang v1.20.3
+	github.com/redis/go-redis/v9 v9.6.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
@@ -84,13 +84,14 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.55.0 // indirect
+	github.com/prometheus/common v0.59.1 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
-	google.golang.org/genproto v0.0.0-20240709173604-40e1e62336c5 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect

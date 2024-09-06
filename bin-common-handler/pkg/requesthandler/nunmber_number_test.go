@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -27,8 +28,8 @@ func Test_NumberV1NumberCreate(t *testing.T) {
 		detail        string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *nmnumber.Number
 	}{
@@ -43,13 +44,13 @@ func Test_NumberV1NumberCreate(t *testing.T) {
 			"test detail",
 
 			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","number":"+821021656521","call_flow_id":"55b69e86-881c-11ec-8901-3b828e31a38d","message_flow_id":"7cfce5fa-a873-11ec-b620-577094655392","name":"test name","detail":"test detail"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3eda6a34-7b17-11eb-a2fa-8f4c0fd14c20"}`),
@@ -96,8 +97,8 @@ func Test_NumberV1NumberGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult []nmnumber.Number
 	}{
@@ -112,12 +113,12 @@ func Test_NumberV1NumberGets(t *testing.T) {
 
 			"/v1/numbers?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"0e00bb78-7b19-11eb-a238-9f1154b2c92e","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -177,8 +178,8 @@ func Test_NumberV1NumberGet(t *testing.T) {
 		numberID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *nmnumber.Number
 	}{
@@ -188,12 +189,12 @@ func Test_NumberV1NumberGet(t *testing.T) {
 			uuid.FromStringOrNil("74a2f4bc-7be2-11eb-bb71-c767ac6ed931"),
 
 			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers/74a2f4bc-7be2-11eb-bb71-c767ac6ed931",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"74a2f4bc-7be2-11eb-bb71-c767ac6ed931","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -248,8 +249,8 @@ func Test_NumberV1NumberDelete(t *testing.T) {
 		numberID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *nmnumber.Number
 	}{
@@ -259,12 +260,12 @@ func Test_NumberV1NumberDelete(t *testing.T) {
 			uuid.FromStringOrNil("aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5"),
 
 			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers/aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -322,8 +323,8 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 		detail        string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *nmnumber.Number
 	}{
@@ -337,13 +338,13 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 			"test detail",
 
 			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"call_flow_id":"338f6098-2c7d-11ee-86a3-67a8ca2722ce","message_flow_id":"33f5363e-2c7d-11ee-ba15-0762eae47333","name":"test name","detail":"test detail"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815","number":"+821021656521","call_flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a","message_flow_id":"b409020e-a873-11ec-bce6-3fcf97b72d44","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -402,8 +403,8 @@ func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 		messageFlowID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *nmnumber.Number
 	}{
@@ -415,13 +416,13 @@ func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 			uuid.FromStringOrNil("d04e2a5c-a873-11ec-b16f-23f1e4cf842e"),
 
 			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers/d3877fec-7c5b-11eb-bb46-07fe08c74815/flow_ids",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"call_flow_id":"5f69889c-881e-11ec-b32e-93104f30aa92","message_flow_id":"d04e2a5c-a873-11ec-b16f-23f1e4cf842e"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815"}`),
@@ -465,8 +466,8 @@ func Test_NumberV1NumberRenewByTmRenew(t *testing.T) {
 		tmRenew string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult []nmnumber.Number
 	}{
@@ -476,13 +477,13 @@ func Test_NumberV1NumberRenewByTmRenew(t *testing.T) {
 			tmRenew: "2021-02-26 18:26:49.000",
 
 			expectTarget: "bin-manager.number-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/numbers/renew",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"tm_renew":"2021-02-26 18:26:49.000"}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"03557c8a-1519-11ee-a0be-83a2eb2e0f67"},{"id":"0398e86c-1519-11ee-8664-773e49d76156"}]`),
@@ -531,8 +532,8 @@ func Test_NumberV1NumberRenewByDays(t *testing.T) {
 		days int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult []nmnumber.Number
 	}{
@@ -542,13 +543,13 @@ func Test_NumberV1NumberRenewByDays(t *testing.T) {
 			days: 3,
 
 			expectTarget: "bin-manager.number-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/numbers/renew",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"days":3}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"26790cc8-1e3c-11ee-acde-4f8cd0d02ae0"},{"id":"26eca39a-1e3c-11ee-a66a-1b46f3425926"}]`),
@@ -597,8 +598,8 @@ func Test_NumberV1NumberRenewByHours(t *testing.T) {
 		hours int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult []nmnumber.Number
 	}{
@@ -608,13 +609,13 @@ func Test_NumberV1NumberRenewByHours(t *testing.T) {
 			hours: 30,
 
 			expectTarget: "bin-manager.number-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/numbers/renew",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"hours":30}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"45ebe9cc-1e3c-11ee-9fbd-3f228b2366aa"},{"id":"4610db9c-1e3c-11ee-9596-c3e05288283d"}]`),

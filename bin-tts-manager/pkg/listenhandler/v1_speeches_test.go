@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseTTS *tts.TTS
 
@@ -26,14 +27,14 @@ func Test_v1SpeechesPost(t *testing.T) {
 		expectText     string
 		expectLanguage string
 		expectGender   tts.Gender
-		expectRes      *rabbitmqhandler.Response
+		expectRes      *sock.Response
 	}{
 		{
 			"normal test",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/speeches",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"call_id": "107d1f0e-9665-11ed-b3f3-039937430300", "text": "hello world", "gender": "female", "language": "en-US"}`),
 			},
 
@@ -49,7 +50,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 			"hello world",
 			"en-US",
 			tts.GenderFemale,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"gender":"female","text":"hello world","language":"en-US","media_bucket_name":"voipbin-tmp-bucket-europe-west4","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/golang/mock/gomock"
@@ -20,7 +21,7 @@ func Test_CallPublishEvent(t *testing.T) {
 		data      []byte
 
 		expectTarget string
-		expectEvent  *rabbitmqhandler.Event
+		expectEvent  *sock.Event
 	}{
 		{
 			name: "normal",
@@ -31,7 +32,7 @@ func Test_CallPublishEvent(t *testing.T) {
 			data:      []byte(`{"key":"value"}`),
 
 			expectTarget: "bin-manager.call-manager.subscribe",
-			expectEvent: &rabbitmqhandler.Event{
+			expectEvent: &sock.Event{
 				Type:      "test_event",
 				Publisher: "test-manager",
 				DataType:  "application/json",

@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -25,8 +26,8 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectRes []cfconferencecall.Conferencecall
 	}{
@@ -41,11 +42,11 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 			"/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"99d4af42-50c8-11ee-8240-d360bb85c265"},{"id":"9a0b7f2c-50c8-11ee-a3e8-b7c427a82ef8"}]`),
@@ -97,9 +98,9 @@ func Test_ConferenceV1ConferencecallGet(t *testing.T) {
 		conferencecallID uuid.UUID
 
 		expectQueue   string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *cfconferencecall.Conferencecall
 	}
 
@@ -109,13 +110,13 @@ func Test_ConferenceV1ConferencecallGet(t *testing.T) {
 			uuid.FromStringOrNil("7baaa99e-14e8-11ed-8f79-f79014b94b6f"),
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferencecalls/7baaa99e-14e8-11ed-8f79-f79014b94b6f",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"7baaa99e-14e8-11ed-8f79-f79014b94b6f"}`),
@@ -157,10 +158,10 @@ func Test_ConferenceV1ConferencecallKick(t *testing.T) {
 		name string
 
 		conferencecallID uuid.UUID
-		response         *rabbitmqhandler.Response
+		response         *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		expectRes *cfconferencecall.Conferencecall
 	}{
@@ -168,16 +169,16 @@ func Test_ConferenceV1ConferencecallKick(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("dd4ff2e2-14e5-11ed-8eec-97413dd96f29"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dd4ff2e2-14e5-11ed-8eec-97413dd96f29"}`),
 			},
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferencecalls/dd4ff2e2-14e5-11ed-8eec-97413dd96f29",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -222,10 +223,10 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 		retryCount       int
 		delay            int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		expectRes *cfconferencecall.Conferencecall
 	}{
@@ -235,16 +236,16 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 			2,
 			5000,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"23d64db6-94a6-11ed-9b9f-2bfedef352c1"}`),
 			},
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferencecalls/23d64db6-94a6-11ed-9b9f-2bfedef352c1/health-check",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"retry_count":2}`),
 			},

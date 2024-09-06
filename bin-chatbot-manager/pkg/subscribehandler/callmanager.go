@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processEventCMConfbridgeJoined handles the call-manager's call related event
-func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMConfbridgeJoined",
 		"event": m,
@@ -41,7 +40,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 }
 
 // processEventCMConfbridgeLeaved handles the call-manager's call related event
-func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMConfbridgeLeaved",
 		"event": m,

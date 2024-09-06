@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -26,11 +27,11 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 		pageSize   uint64
 		filters    map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []cbchatbotcall.Chatbotcall
 	}{
 		{
@@ -43,7 +44,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 				"deleted": "false",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c3ac26c7-567c-4230-aaf8-d19b6fde4d6c"},{"id":"eb36875a-0d7a-4a8f-92a9-7551f4f29fd6"}]`),
@@ -51,9 +52,9 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 
 			"/v1/chatbotcalls?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a",
 			"bin-manager.chatbot-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a&filter_deleted=false", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			[]cbchatbotcall.Chatbotcall{
 				{
@@ -102,9 +103,9 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 		chatbotcallID uuid.UUID
 
 		expectQueue   string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *cbchatbotcall.Chatbotcall
 	}
 
@@ -114,12 +115,12 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 			uuid.FromStringOrNil("d3937170-ee3b-40d0-8b81-4261e5bb5ba4"),
 
 			"bin-manager.chatbot-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbotcalls/d3937170-ee3b-40d0-8b81-4261e5bb5ba4",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"d3937170-ee3b-40d0-8b81-4261e5bb5ba4"}`),
@@ -162,10 +163,10 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 
 		chatbotcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cbchatbotcall.Chatbotcall
 	}{
 		{
@@ -173,16 +174,16 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"6078c492-25e6-4f31-baa0-2fef98379db7"}`),
 			},
 
 			"bin-manager.chatbot-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbotcalls/6078c492-25e6-4f31-baa0-2fef98379db7",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&cbchatbotcall.Chatbotcall{
 				ID: uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),

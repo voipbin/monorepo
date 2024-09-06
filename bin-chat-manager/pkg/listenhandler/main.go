@@ -11,6 +11,7 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -91,8 +92,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -161,11 +162,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	ctx := context.Background()
 
@@ -181,89 +182,89 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// v1
 	// chats
-	case regV1ChatsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/chats"
 		response, err = h.v1ChatsGet(ctx, m)
 
-	case regV1Chats.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Chats.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/chats"
 		response, err = h.v1ChatsPost(ctx, m)
 
 	// chats/<chat-id>
-	case regV1ChatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/chats/<chat-id>"
 		response, err = h.v1ChatsIDGet(ctx, m)
 
-	case regV1ChatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ChatsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/chats/<chat-id>"
 		response, err = h.v1ChatsIDDelete(ctx, m)
 
-	case regV1ChatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ChatsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/chats/<chat-id>"
 		response, err = h.v1ChatsIDPut(ctx, m)
 
 	// chats/<chat-id>/room_owner_id
-	case regV1ChatsIDRoomOwnerID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ChatsIDRoomOwnerID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/chats/<chat-id>/room_owner_id"
 		response, err = h.v1ChatsIDRoomOwnerIDPut(ctx, m)
 
 	// chats/<chat-id>/participant_ids
-	case regV1ChatsIDParticipantIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ChatsIDParticipantIDs.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/chats/<chat-id>/participant_ids"
 		response, err = h.v1ChatsIDParticipantIDsPost(ctx, m)
 
 	// chats/<chat-id>/participant_ids/<participant-id>
-	case regV1ChatsIDParticipantIDsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ChatsIDParticipantIDsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/chats/<chat-id>/participant_ids/<participant-id>"
 		response, err = h.v1ChatsIDParticipantIDsIDDelete(ctx, m)
 
 	// chatrooms
-	case regV1ChatroomsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatroomsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/chatrooms"
 		response, err = h.v1ChatroomsGet(ctx, m)
 
 	// chatrooms/<chatroom-id>
-	case regV1ChatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatroomsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/chatrooms/<chatroom-id>"
 		response, err = h.v1ChatroomsIDGet(ctx, m)
 
-	case regV1ChatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ChatroomsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/chatrooms/<chatroom-id>"
 		response, err = h.v1ChatroomsIDDelete(ctx, m)
 
-	case regV1ChatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ChatroomsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/chatrooms/<chatroom-id>"
 		response, err = h.v1ChatroomsIDPut(ctx, m)
 
 	// messagechats
-	case regV1MessagechatsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1MessagechatsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/messagechats"
 		response, err = h.v1MessagechatsGet(ctx, m)
 
-	case regV1Messagechats.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Messagechats.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/messagechats"
 		response, err = h.v1MessagechatsPost(ctx, m)
 
 	// messagechats/<messagechat-id>
-	case regV1MessagechatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1MessagechatsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/messagechats/<messagechat-id>"
 		response, err = h.v1MessagechatsIDGet(ctx, m)
 
-	case regV1MessagechatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1MessagechatsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/messagechats/<messagechat-id>"
 		response, err = h.v1MessagechatsIDDelete(ctx, m)
 
 	// messagechatrooms
-	case regV1MessagechatroomsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1MessagechatroomsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/messagechatrooms"
 		response, err = h.v1MessagechatroomsGet(ctx, m)
 
 	// messagechatrooms/<messagechatroom-id>
-	case regV1MessagechatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1MessagechatroomsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/messagechatrooms/<messagechatroom-id>"
 		response, err = h.v1MessagechatroomsIDGet(ctx, m)
 
-	case regV1MessagechatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1MessagechatroomsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/messagechatrooms/<messagechatroom-id>"
 		response, err = h.v1MessagechatroomsIDDelete(ctx, m)
 

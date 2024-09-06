@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -92,8 +93,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -155,7 +156,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 // processRequest handles received request
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":    "processRequest",
@@ -164,7 +165,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	ctx := context.Background()
 
@@ -179,58 +180,58 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// ////////////
 	// /queues
 	// GET /queues
-	case regV1QueuesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1QueuesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuesGet(ctx, m)
 		requestType = "/v1/queues"
 
 	// POST /queues
-	case regV1Queues.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Queues.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuesPost(ctx, m)
 		requestType = "/v1/queues"
 
 	// /queues/<queue-id>/
 	// GET /queues/<queue-id>
-	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case reqV1QueuesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuesIDGet(ctx, m)
 		requestType = "/v1/queues/<queue-id>/"
 
 	// DELETE /queues/<queue-id>
-	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case reqV1QueuesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1QueuesIDDelete(ctx, m)
 		requestType = "/v1/queues/<queue-id>/"
 
 	// PUT /queues/<queue-id>
-	case reqV1QueuesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case reqV1QueuesID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1QueuesIDPut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/"
 
 	// PUT /queues/<queue-id>/tag_ids
-	case reqV1QueuesIDTagIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case reqV1QueuesIDTagIDs.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1QueuesIDTagIDsPut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/tag_ids"
 
 	// PUT /queues/<queue-id>/routing_method
-	case reqV1QueuesIDRoutingMethod.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case reqV1QueuesIDRoutingMethod.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1QueuesIDRoutingMethodPut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/routing_method"
 
 	// PUT /queues/<queue-id>/wait_actions
-	case reqV1QueuesIDWaitActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case reqV1QueuesIDWaitActions.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1QueuesIDWaitActionsPut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/wait_actions"
 
 	// GET /queues/<queue-id>/agents
-	case reqV1QueuesIDAgentsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case reqV1QueuesIDAgentsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuesIDAgentsGet(ctx, m)
 		requestType = "/v1/queues/<queue-id>/agents"
 
 	// PUT /queues/<queue-id>/execute
-	case reqV1QueuesIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case reqV1QueuesIDExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1QueuesIDExecutePut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/execute"
 
 	// POST /queues/<queue-id>/execute_run
-	case reqV1QueuesIDExecuteRun.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case reqV1QueuesIDExecuteRun.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuesIDExecuteRunPost(ctx, m)
 		requestType = "/v1/queues/<queue-id>/execute_run"
 
@@ -239,57 +240,57 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////
 
 	// GET /queuecalls
-	case regV1QueuecallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1QueuecallsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuecallsGet(ctx, m)
 		requestType = "/v1/queuecalls"
 
 	// GET /queuecalls/<queuecall-id>
-	case regV1QueuecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1QueuecallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuecallsIDGet(ctx, m)
 		requestType = "/v1/queuecalls"
 
 	// DELETE /queuecalls/<queuecall-id>
-	case regV1QueuecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1QueuecallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1QueuecallsIDDelete(ctx, m)
 		requestType = "/v1/queuecalls"
 
 	// POST /queuecalls/<queuecall-id>/timeout_wait
-	case regV1QueuecallsIDTimeoutWait.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1QueuecallsIDTimeoutWait.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDTimeoutWaitPost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/timeout_wait"
 
 	// POST /queuecalls/<queuecall-id>/timeout_service
-	case regV1QueuecallsIDTimeoutService.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1QueuecallsIDTimeoutService.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDTimeoutServicePost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/timeout_service"
 
 	// POST /queuecalls/<queuecall-id>/execute
-	case regV1QueuecallsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1QueuecallsIDExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDExecutePost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/execute"
 
 	// POST /queuecalls/<queuecall-id>/health-check
-	case regV1QueuecallsIDHealthCheck.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1QueuecallsIDHealthCheck.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDHealthCheckPost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/health-check"
 
 	// POST /queuecalls/<queuecall-id>/status_waiting
-	case regV1QueuecallsIDStatusWaiting.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1QueuecallsIDStatusWaiting.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDStatusWaitingPost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/status_waiting"
 
 	// POST /queuecalls/<queuecall-id>/kick
-	case regV1QueuecallsIDKick.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1QueuecallsIDKick.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDKickPost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/kick"
 
 	// GET /queuecalls/reference_id/<reference-id>
-	case regV1QueuecallsReferenceIDID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1QueuecallsReferenceIDID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuecallsReferenceIDIDGet(ctx, m)
 		requestType = "/v1/queuecalls/reference_id/<reference-id>"
 
 	// POST /queuecalls/reference_id/<reference-id>/kick
-	case regV1QueuecallsReferenceIDIDKick.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1QueuecallsReferenceIDIDKick.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1QueuecallsReferenceIDIDKickPost(ctx, m)
 		requestType = "/v1/queuecalls/reference_id/<reference-id>/kick"
 
@@ -297,7 +298,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// services
 	////////////////
 	// POST /services/type/queuecall
-	case regV1ServicesTypeQueuecall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ServicesTypeQueuecall.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ServicesTypeQueuecallPost(ctx, m)
 		requestType = "/v1/services/type/queuecall"
 

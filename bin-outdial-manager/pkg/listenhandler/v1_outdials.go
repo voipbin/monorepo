@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ import (
 )
 
 // v1OutdialsPost handles /v1/outdials POST request
-func (h *listenHandler) v1OutdialsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1OutdialsPost",
@@ -50,7 +50,7 @@ func (h *listenHandler) v1OutdialsPost(ctx context.Context, m *rabbitmqhandler.R
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -60,7 +60,7 @@ func (h *listenHandler) v1OutdialsPost(ctx context.Context, m *rabbitmqhandler.R
 }
 
 // v1OutdialsGet handles /v1/outdials GET request
-func (h *listenHandler) v1OutdialsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -94,7 +94,7 @@ func (h *listenHandler) v1OutdialsGet(ctx context.Context, req *rabbitmqhandler.
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -104,7 +104,7 @@ func (h *listenHandler) v1OutdialsGet(ctx context.Context, req *rabbitmqhandler.
 }
 
 // v1OutdialsIDGet handles /v1/outdials/<outdial-id> GET request
-func (h *listenHandler) v1OutdialsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -132,7 +132,7 @@ func (h *listenHandler) v1OutdialsIDGet(ctx context.Context, m *rabbitmqhandler.
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -142,7 +142,7 @@ func (h *listenHandler) v1OutdialsIDGet(ctx context.Context, m *rabbitmqhandler.
 }
 
 // v1OutdialsIDDelete handles /v1/outdials/<outdial-id> DELETE request
-func (h *listenHandler) v1OutdialsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -170,7 +170,7 @@ func (h *listenHandler) v1OutdialsIDDelete(ctx context.Context, m *rabbitmqhandl
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -180,7 +180,7 @@ func (h *listenHandler) v1OutdialsIDDelete(ctx context.Context, m *rabbitmqhandl
 }
 
 // v1OutdialsIDPut handles /v1/outdials/<outdial-id> PUT request
-func (h *listenHandler) v1OutdialsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -216,7 +216,7 @@ func (h *listenHandler) v1OutdialsIDPut(ctx context.Context, m *rabbitmqhandler.
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -226,7 +226,7 @@ func (h *listenHandler) v1OutdialsIDPut(ctx context.Context, m *rabbitmqhandler.
 }
 
 // v1OutdialsIDCampaignIDPut handles /v1/outdials/<outdial-id>/campaign_id PUT request
-func (h *listenHandler) v1OutdialsIDCampaignIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDCampaignIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -262,7 +262,7 @@ func (h *listenHandler) v1OutdialsIDCampaignIDPut(ctx context.Context, m *rabbit
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -272,7 +272,7 @@ func (h *listenHandler) v1OutdialsIDCampaignIDPut(ctx context.Context, m *rabbit
 }
 
 // v1OutdialsIDDataPut handles /v1/outdials/<outdial-id>/data PUT request
-func (h *listenHandler) v1OutdialsIDDataPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDDataPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -308,7 +308,7 @@ func (h *listenHandler) v1OutdialsIDDataPut(ctx context.Context, m *rabbitmqhand
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -318,7 +318,7 @@ func (h *listenHandler) v1OutdialsIDDataPut(ctx context.Context, m *rabbitmqhand
 }
 
 // v1OutdialsIDAvailableGet handles /v1/outdials/<outdial-id>/available GET request
-func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -357,7 +357,7 @@ func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *rabbitm
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -367,7 +367,7 @@ func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *rabbitm
 }
 
 // v1OutdialsIDTargetsPost handles /v1/outdials/<outdial-id>/targets POST request
-func (h *listenHandler) v1OutdialsIDTargetsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDTargetsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -414,7 +414,7 @@ func (h *listenHandler) v1OutdialsIDTargetsPost(ctx context.Context, m *rabbitmq
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -424,7 +424,7 @@ func (h *listenHandler) v1OutdialsIDTargetsPost(ctx context.Context, m *rabbitmq
 }
 
 // v1OutdialsIDTargetsGet handles /v1/outdials/<outdial-id>/targets GET request
-func (h *listenHandler) v1OutdialsIDTargetsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialsIDTargetsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -458,7 +458,7 @@ func (h *listenHandler) v1OutdialsIDTargetsGet(ctx context.Context, m *rabbitmqh
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

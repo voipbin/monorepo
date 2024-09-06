@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,19 +17,19 @@ func Test_v1RecordingsIDGet(t *testing.T) {
 	type test struct {
 		name        string
 		recordingID uuid.UUID
-		request     *rabbitmqhandler.Request
-		expectRes   *rabbitmqhandler.Response
+		request     *sock.Request
+		expectRes   *sock.Response
 	}
 
 	tests := []test{
 		{
 			"normal",
 			uuid.FromStringOrNil("0c920df8-9821-11eb-91f1-976b4da76663"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/recordings/0c920df8-9821-11eb-91f1-976b4da76663",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -60,22 +61,22 @@ func Test_v1RecordingsIDDelete(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectRecordingID uuid.UUID
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/recordings/e1f3eb20-8eaa-11ed-8013-a7cd667479cb",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			uuid.FromStringOrNil("e1f3eb20-8eaa-11ed-8013-a7cd667479cb"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},

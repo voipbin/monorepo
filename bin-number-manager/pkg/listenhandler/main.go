@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -78,8 +79,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -136,11 +137,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 // processRequest handles all of requests of the listen queue.
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	ctx := context.Background()
 
@@ -163,7 +164,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// available_numbers
 	////////////////////
 	// GET /available_numbers
-	case regV1AvailableNumbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AvailableNumbers.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AvailableNumbersGet(ctx, m)
 		requestType = "/v1/available_numbers"
 
@@ -172,37 +173,37 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 
 	// DELETE /numbers/<number-id>
-	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1NumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1NumbersIDDelete(ctx, m)
 		requestType = "/v1/numbers/<number-id>"
 
 	// GET /numbers/<number-id>
-	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1NumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1NumbersIDGet(ctx, m)
 		requestType = "/v1/numbers/<number-id>"
 
 	// PUT /numbers/<number-id>
-	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1NumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1NumbersIDPut(ctx, m)
 		requestType = "/v1/numbers/<number-id>"
 
 	// PUT /numbers/<id>/flow_id
-	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1NumbersIDFlowIDsPut(ctx, m)
 		requestType = "/v1/numbers/<number-id>/flow_id"
 
 	// POST /numbers/renew
-	case regV1NumbersRenew.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1NumbersRenew.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1NumbersRenewPost(ctx, m)
 		requestType = "/v1/numbers/renew"
 
 	// POST /numbers
-	case regV1Numbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Numbers.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1NumbersPost(ctx, m)
 		requestType = "/v1/numbers"
 
 	// GET /numbers
-	case regV1NumbersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1NumbersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1NumbersGet(ctx, m)
 		requestType = "/v1/numbers"
 

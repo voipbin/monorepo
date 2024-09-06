@@ -4,17 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"monorepo/bin-common-handler/models/sock"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
 )
-
-// ConsumeMessage consumes message
-// If the queueName was not defined, then defines with default values.
-func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error {
-
-	return r.ConsumeMessageOpt(queueName, consumerName, false, false, false, 1, messageConsume)
-}
 
 // ConsumeMessageOpt consumes message with given options
 // If the queueName was not defined, then uses with default queue name values.
@@ -64,7 +58,7 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive boo
 
 // executeConsumeMessage runs the callback with the given amqp message
 func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbMsgConsume) error {
-	var event Event
+	var event sock.Event
 
 	if err := json.Unmarshal(message.Body, &event); err != nil {
 		return fmt.Errorf("could out unmarshal the message. err: %v", err)
@@ -75,12 +69,6 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbM
 	}
 
 	return nil
-}
-
-// ConsumeRPC consumes RPC message
-func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) error {
-
-	return r.ConsumeRPCOpt(queueName, consumerName, false, false, false, 1, cbConsume)
 }
 
 // ConsumeRPCOpt consumes RPC message with given options
@@ -131,7 +119,7 @@ func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, n
 func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) error {
 
 	// message parse
-	var req Request
+	var req sock.Request
 	if err := json.Unmarshal(message.Body, &req); err != nil {
 		return fmt.Errorf("could not parse the message. message: %s, err: %v", string(message.Body), err)
 	}

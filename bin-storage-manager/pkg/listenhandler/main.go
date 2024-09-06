@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -77,8 +78,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -122,7 +123,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPC(queue, "storage-manager", h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, "storage-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the message correctly. Will try again after 1 second. err: %v", err)
 				time.Sleep(time.Second * 1)
@@ -133,11 +134,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	ctx := context.Background()
 
@@ -154,50 +155,50 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	///////////////////////////////////////////////////////////////////////
 
 	// accounts /////////////
-	case regV1Accounts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Accounts.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/accounts"
 		response, err = h.v1AccountsPost(ctx, m)
 
-	case regV1AccountsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AccountsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/accounts"
 		response, err = h.v1AccountsGet(ctx, m)
 
-	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/accounts/<account-id>"
 		response, err = h.v1AccountsIDGet(ctx, m)
 
-	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/accounts/<account-id>"
 		response, err = h.v1AccountsIDDelete(ctx, m)
 
 	// compressfiles
-	case regV1Compressfiles.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Compressfiles.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/compressfiles"
 		response, err = h.v1CompressfilesPost(ctx, m)
 
 	// files ////////////////
-	case regV1Files.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Files.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/files"
 		response, err = h.v1FilesPost(ctx, m)
 
-	case regV1FilesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FilesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/files"
 		response, err = h.v1FilesGet(ctx, m)
 
-	case regV1FilesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FilesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/files/<file-id>"
 		response, err = h.v1FilesIDGet(ctx, m)
 
-	case regV1FilesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1FilesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/files/<file-id>"
 		response, err = h.v1FilesIDDelete(ctx, m)
 
 	// recordings /////////////
-	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1RecordingsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/recordings"
 		response, err = h.v1RecordingsIDGet(ctx, m)
 
-	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1RecordingsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/recordings"
 		response, err = h.v1RecordingsIDDelete(ctx, m)
 

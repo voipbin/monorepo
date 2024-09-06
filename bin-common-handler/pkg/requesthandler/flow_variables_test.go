@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -20,10 +21,10 @@ func Test_FlowV1VariableGet(t *testing.T) {
 
 		variableID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *variable.Variable
 	}{
 		{
@@ -31,16 +32,16 @@ func Test_FlowV1VariableGet(t *testing.T) {
 
 			uuid.FromStringOrNil("e25aeb10-cd06-11ec-baba-fb2f8b96ad65"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e25aeb10-cd06-11ec-baba-fb2f8b96ad65","variables":{"key 1": "value 1"}}`),
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/e25aeb10-cd06-11ec-baba-fb2f8b96ad65",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&variable.Variable{
@@ -85,10 +86,10 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 		variableID uuid.UUID
 		variables  map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			"normal",
@@ -99,15 +100,15 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 				"key 2": "value 2",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/4d3c129c-cd07-11ec-bd2f-2fcee708f983/variables",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"variables":{"key 1":"value 1","key 2":"value 2"}}`),
 			},
@@ -143,10 +144,10 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 		variableID uuid.UUID
 		key        string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			"normal",
@@ -154,15 +155,15 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 			uuid.FromStringOrNil("290c673e-db33-11ec-a4d9-bb00659a2a19"),
 			"key1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/290c673e-db33-11ec-a4d9-bb00659a2a19/variables/key1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 		},
@@ -172,15 +173,15 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 			uuid.FromStringOrNil("290c673e-db33-11ec-a4d9-bb00659a2a19"),
 			"key 1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/290c673e-db33-11ec-a4d9-bb00659a2a19/variables/key+1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 		},

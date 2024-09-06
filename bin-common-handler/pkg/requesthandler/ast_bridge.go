@@ -8,8 +8,7 @@ import (
 
 	cmari "monorepo/bin-call-manager/models/ari"
 	cmbridge "monorepo/bin-call-manager/models/bridge"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // AstBridgeCreate sends the bridge create request
@@ -36,7 +35,7 @@ func (r *requestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridge
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -50,7 +49,7 @@ func (r *requestHandler) AstBridgeCreate(ctx context.Context, asteriskID, bridge
 func (r *requestHandler) AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -64,7 +63,7 @@ func (r *requestHandler) AstBridgeDelete(ctx context.Context, asteriskID, bridge
 func (r *requestHandler) AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*cmbridge.Bridge, error) {
 	url := fmt.Sprintf("/ari/bridges/%s", bridgeID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodGet, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodGet, "ast/bridges", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -102,7 +101,7 @@ func (r *requestHandler) AstBridgeAddChannel(ctx context.Context, asteriskID, br
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/bridges/addchannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/addchannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -127,7 +126,7 @@ func (r *requestHandler) AstBridgeRemoveChannel(ctx context.Context, asteriskID,
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/bridges/removechannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/removechannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -164,7 +163,7 @@ func (r *requestHandler) AstBridgeRecord(ctx context.Context, asteriskID string,
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/bridges/removechannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/bridges/removechannel", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

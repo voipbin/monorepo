@@ -4,8 +4,7 @@ import (
 	"testing"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -17,7 +16,7 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 	tests := []struct {
 		name string
 
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		callID       uuid.UUID
 		confbridgeID uuid.UUID
@@ -25,7 +24,7 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      cmconfbridge.EventTypeConfbridgeJoined,
 				Publisher: publisherCallManager,
 				Data:      []byte(`{"id":"318c5626-166b-11ed-b0a0-37590f049313", "joined_call_id":"378067d4-166b-11ed-a602-5744e189ee35"}`),
@@ -57,7 +56,7 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 	tests := []struct {
 		name string
 
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		callID       uuid.UUID
 		confbridgeID uuid.UUID
@@ -65,7 +64,7 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      cmconfbridge.EventTypeConfbridgeLeaved,
 				Publisher: publisherCallManager,
 				Data:      []byte(`{"id":"e2f30ff0-61e6-4922-8ec5-5e6ef2b3510b", "leaved_call_id":"b8d04427-972a-446b-8f03-0ff1ff77673e"}`),

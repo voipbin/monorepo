@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/sock"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // StorageV1RecordingGet sends a request to storage-manager
@@ -19,7 +18,7 @@ import (
 func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, "storage/recording", requestTimeout, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/recording", requestTimeout, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -44,7 +43,7 @@ func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID
 func (r *requestHandler) StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/recordings/%s", recordingID)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodDelete, "storage/recording", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/recording", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

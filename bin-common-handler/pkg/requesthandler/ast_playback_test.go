@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -18,10 +19,10 @@ func Test_AstPlaybackStop(t *testing.T) {
 
 		expectTarget  string
 		expectURI     string
-		expectMethod  rabbitmqhandler.RequestMethod
-		expectRequest *rabbitmqhandler.Request
+		expectMethod  sock.RequestMethod
+		expectRequest *sock.Request
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -30,14 +31,14 @@ func Test_AstPlaybackStop(t *testing.T) {
 
 			"asterisk.00:11:22:33:44:55.request",
 			"/ari/playbacks/5734c890-7f6e-11ea-9520-6f774800cd74",
-			rabbitmqhandler.RequestMethodDelete,
-			&rabbitmqhandler.Request{
+			sock.RequestMethodDelete,
+			&sock.Request{
 				URI:      "/ari/playbacks/5734c890-7f6e-11ea-9520-6f774800cd74",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

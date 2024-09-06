@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -20,10 +21,10 @@ func Test_processV1ContactsGet(t *testing.T) {
 		name             string
 		customerID       uuid.UUID
 		expectExtension  string
-		request          *rabbitmqhandler.Request
+		request          *sock.Request
 		responseContacts []*astcontact.AstContact
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -31,9 +32,9 @@ func Test_processV1ContactsGet(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("2f905272-5653-11ee-b4df-f3faa1c18732"),
 			"test",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/contacts?customer_id=2f905272-5653-11ee-b4df-f3faa1c18732&extension=test",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			[]*astcontact.AstContact{
 				{
@@ -54,7 +55,7 @@ func Test_processV1ContactsGet(t *testing.T) {
 					PruneOnBoot:         "no",
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"test11@2f905272-5653-11ee-b4df-f3faa1c18732.registrar.voipbin.net^3B@c21de7824c22185a665983170d7028b0","uri":"sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22","expiration_time":1613498199,"qualify_frequency":0,"outbound_proxy":"","path":"","user_agent":"Z 5.4.9 rv2.10.11.7-mod","qualify_timeout":3,"reg_server":"asterisk-registrar-b46bf4b67-j5rxz","authenticate_qualify":"no","via_addr":"192.168.0.20","via_port":35551,"call_id":"mX4vXXxJZ_gS4QpMapYfwA..","endpoint":"test@2f905272-5653-11ee-b4df-f3faa1c18732.registrar.sip.voipbin.net","prune_on_boot":"no"}]`),
@@ -64,13 +65,13 @@ func Test_processV1ContactsGet(t *testing.T) {
 			"empty",
 			uuid.FromStringOrNil("4962c82e-5653-11ee-96e1-4fca4502226b"),
 			"test2",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/contacts?customer_id=4962c82e-5653-11ee-96e1-4fca4502226b&extension=test2",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			[]*astcontact.AstContact{},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -114,9 +115,9 @@ func Test_processV1ContactsPut(t *testing.T) {
 
 		customerID uuid.UUID
 		extension  string
-		request    *rabbitmqhandler.Request
+		request    *sock.Request
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -125,12 +126,12 @@ func Test_processV1ContactsPut(t *testing.T) {
 
 			uuid.FromStringOrNil("883ce9bc-5707-11ee-b053-1ba4c0db8a30"),
 			"test-extension",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/contacts?customer_id=883ce9bc-5707-11ee-b053-1ba4c0db8a30&extension=test-extension",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},

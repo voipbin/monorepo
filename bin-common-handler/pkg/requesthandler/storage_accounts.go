@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 	smaccount "monorepo/bin-storage-manager/models/account"
 	smrequest "monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 	"net/url"
@@ -27,7 +27,7 @@ func (r *requestHandler) StorageV1AccountCreate(ctx context.Context, customerID 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -55,7 +55,7 @@ func (r *requestHandler) StorageV1AccountGets(ctx context.Context, pageToken str
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, "storage/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -80,7 +80,7 @@ func (r *requestHandler) StorageV1AccountGets(ctx context.Context, pageToken str
 func (r *requestHandler) StorageV1AccountGet(ctx context.Context, accountID uuid.UUID) (*smaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, "storage/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -105,7 +105,7 @@ func (r *requestHandler) StorageV1AccountGet(ctx context.Context, accountID uuid
 func (r *requestHandler) StorageV1AccountDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", fileID)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodDelete, "storage/accounts/<account-id>", requestTimeout, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/accounts/<account-id>", requestTimeout, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

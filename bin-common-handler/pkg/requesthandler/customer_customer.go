@@ -7,13 +7,12 @@ import (
 	"net/url"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-common-handler/models/sock"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 	csrequest "monorepo/bin-customer-manager/pkg/listenhandler/models/request"
 	csresponse "monorepo/bin-customer-manager/pkg/listenhandler/models/response"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CustomerV1CustomerGet sends a request to customer-manager
@@ -22,7 +21,7 @@ import (
 func (r *requestHandler) CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", customerID)
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -50,7 +49,7 @@ func (r *requestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken s
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -99,7 +98,7 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -121,7 +120,7 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 func (r *requestHandler) CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodDelete, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodDelete, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -169,7 +168,7 @@ func (r *requestHandler) CustomerV1CustomerUpdate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -203,7 +202,7 @@ func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, c
 		return false, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, "customer/customers/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return false, err
@@ -235,7 +234,7 @@ func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Co
 		return nil, err
 	}
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, "customer/customers/<customer-id>/billing_account_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers/<customer-id>/billing_account_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

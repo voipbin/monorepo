@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	gomock "github.com/golang/mock/gomock"
@@ -16,14 +17,14 @@ func Test_processEvent_AsteriskProxy_BridgeCreated(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.BridgeCreated
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -82,14 +83,14 @@ func Test_processEvent_AsteriskProxy_BridgeDestroyed(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.BridgeDestroyed
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -148,14 +149,14 @@ func Test_processEvent_AsteriskProxy_ChannelCreated(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ChannelCreated
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -213,14 +214,14 @@ func Test_processEvent_AsteriskProxy_ChannelDestroyed(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ChannelDestroyed
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -280,14 +281,14 @@ func Test_processEvent_AsteriskProxy_ChannelStateChange(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ChannelStateChange
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -347,14 +348,14 @@ func Test_processEvent_AsteriskProxy_ChannelEnteredBridge(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ChannelEnteredBridge
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -426,14 +427,14 @@ func Test_processEvent_AsteriskProxy_ChannelLeftBridge(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ChannelLeftBridge
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -505,14 +506,14 @@ func Test_processEvent_AsteriskProxy_ChannelDtmfReceived(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ChannelDtmfReceived
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -575,14 +576,14 @@ func Test_processEvent_AsteriskProxy_ChannelVarset(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ChannelVarset
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -644,14 +645,14 @@ func Test_processEvent_AsteriskProxy_ContactStatusChange(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.ContactStatusChange
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -706,14 +707,14 @@ func Test_processEvent_AsteriskProxy_PlaybackFinished(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.PlaybackFinished
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -763,14 +764,14 @@ func Test_processEvent_AsteriskProxy_RecordingStarted(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.RecordingStarted
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -822,14 +823,14 @@ func Test_processEvent_AsteriskProxy_RecordingFinished(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.RecordingFinished
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -881,14 +882,14 @@ func Test_processEvent_AsteriskProxy_StasisStart(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.StasisStart
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
@@ -954,14 +955,14 @@ func Test_ProcessEvent_AsteriskProxy_StasisEnd(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectEvent *ari.StasisEnd
 	}{
 		{
 			"normal",
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",

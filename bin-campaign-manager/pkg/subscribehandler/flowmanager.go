@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	"github.com/sirupsen/logrus"
@@ -14,7 +13,7 @@ import (
 )
 
 // processEventFMActiveflowDeleted handles the flow-manager's activeflow_deleted event.
-func (h *subscribeHandler) processEventFMActiveflowDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventFMActiveflowDeleted(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventFMActiveflowDeleted",
 		"event": m,

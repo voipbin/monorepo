@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -22,11 +23,11 @@ func Test_BillingV1BillingGets(t *testing.T) {
 		token   string
 		filters map[string]string
 
-		responseBillings *rabbitmqhandler.Response
+		responseBillings *sock.Response
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []bmbilling.Billing
 	}{
 		{
@@ -38,7 +39,7 @@ func Test_BillingV1BillingGets(t *testing.T) {
 				"customer_id": "84ec5606-f556-11ee-b9a0-dbdcc291145b",
 			},
 
-			responseBillings: &rabbitmqhandler.Response{
+			responseBillings: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"854608c2-f556-11ee-bcaa-7b93c058e8f6"},{"id":"85fdae46-f556-11ee-ba13-c3b959ad9a23"}]`),
@@ -46,9 +47,9 @@ func Test_BillingV1BillingGets(t *testing.T) {
 
 			expectURL:    "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10&filter_customer_id=84ec5606-f556-11ee-b9a0-dbdcc291145b",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			expectRes: []bmbilling.Billing{
 				{

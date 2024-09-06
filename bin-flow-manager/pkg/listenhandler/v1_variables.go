@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -15,7 +15,7 @@ import (
 )
 
 // v1VariablesIDGet handles /v1/variables/{id} GET request
-func (h *listenHandler) v1VariablesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1VariablesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1VariablesIDGet",
 		"request": m,
@@ -42,7 +42,7 @@ func (h *listenHandler) v1VariablesIDGet(ctx context.Context, m *rabbitmqhandler
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -52,7 +52,7 @@ func (h *listenHandler) v1VariablesIDGet(ctx context.Context, m *rabbitmqhandler
 }
 
 // v1VariablesIDVariablesPost handles /v1/variables/{id}/variables POST request
-func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1VariablesIDVariablesPost",
 		"request": m,
@@ -78,7 +78,7 @@ func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbi
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}
@@ -87,7 +87,7 @@ func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbi
 }
 
 // v1VariablesIDVariablesKeyDelete handles /v1/variables/{id}/variables/{key} POST request
-func (h *listenHandler) v1VariablesIDVariablesKeyDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1VariablesIDVariablesKeyDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1VariablesIDVariablesKeyDelete",
 		"request": m,
@@ -111,7 +111,7 @@ func (h *listenHandler) v1VariablesIDVariablesKeyDelete(ctx context.Context, m *
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}

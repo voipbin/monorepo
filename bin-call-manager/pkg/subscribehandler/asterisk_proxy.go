@@ -4,16 +4,15 @@ import (
 	"context"
 	"time"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // processEventAsteriskProxy handles the events from the asterisk-proxy.
-func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processEventAsteriskProxy",
 		"message": m,

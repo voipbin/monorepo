@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -15,7 +15,7 @@ import (
 )
 
 // v1OutdialtargetsIDGet handles /v1/outdialtargets/<outdialtarget-id> GET request
-func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *rabbitmqha
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -54,7 +54,7 @@ func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *rabbitmqha
 }
 
 // v1OutdialtargetsIDDelete handles /v1/outdialtargets/<outdialtarget-id> DELETE request
-func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *rabbitm
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -93,7 +93,7 @@ func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *rabbitm
 }
 
 // v1OutdialtargetsIDProgressingPost handles /v1/outdialtargets/<outdialtarget-id>/progressing POST request
-func (h *listenHandler) v1OutdialtargetsIDProgressingPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDProgressingPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (h *listenHandler) v1OutdialtargetsIDProgressingPost(ctx context.Context, m
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -138,7 +138,7 @@ func (h *listenHandler) v1OutdialtargetsIDProgressingPost(ctx context.Context, m
 }
 
 // v1OutdialtargetsIDStatusPut handles /v1/outdialtargets/<outdialtarget-id>/status PUT request
-func (h *listenHandler) v1OutdialtargetsIDStatusPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDStatusPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func (h *listenHandler) v1OutdialtargetsIDStatusPut(ctx context.Context, m *rabb
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

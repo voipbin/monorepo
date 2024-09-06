@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -20,7 +21,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageSize        uint64
 		pageToken       string
@@ -28,13 +29,13 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 
 		queuecalls []*queuecall.Queuecall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=f9f94078-7f54-11ec-8387-9fe49204286f&filter_deleted=false&filter_queue_id=d885e09e-b14e-11ee-95f5-37ef89c64b7a&filter_status=waiting",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -53,7 +54,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"4b46ad9c-6152-11ec-a4a6-7b3b226046a5","customer_id":"f9f94078-7f54-11ec-8387-9fe49204286f","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}]`),
@@ -61,9 +62,9 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=13529ca4-7f55-11ec-b445-c3f90a718170&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -83,7 +84,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"4ca0c722-6152-11ec-a0ad-1be04f100fff","customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""},{"id":"4cc9430a-6152-11ec-9295-d783a3ffb68e","customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}]`),
@@ -126,18 +127,18 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id        uuid.UUID
 		queuecall *queuecall.Queuecall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/0bc84788-6153-11ec-b08a-d74a5a04d995",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
@@ -145,7 +146,7 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 				ID:         uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
 				CustomerID: uuid.FromStringOrNil("2ff5fe64-7f55-11ec-8c3c-83bef268c5ed"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0bc84788-6153-11ec-b08a-d74a5a04d995","customer_id":"2ff5fe64-7f55-11ec-8c3c-83bef268c5ed","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -185,18 +186,18 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		queuecallID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/queuecalls/4a76400a-60ab-11ec-aeb8-eb262d80acf1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -205,7 +206,7 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("4a76400a-60ab-11ec-aeb8-eb262d80acf1"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4a76400a-60ab-11ec-aeb8-eb262d80acf1","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -245,18 +246,18 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		queuecallID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/319fec77-0843-4207-8c6a-65bf067e4bac/kick",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
@@ -264,7 +265,7 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"319fec77-0843-4207-8c6a-65bf067e4bac","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -304,19 +305,19 @@ func Test_processV1QueuecallsIDHealthCheckPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		queuecallID uuid.UUID
 		retryCount  int
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/4a85453c-d534-11ee-8746-a3727fdf5678/health-check",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 1}`),
 			},
 
@@ -365,18 +366,18 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		referenceID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/reference_id/c8794c51-4e4d-46ef-bfa1-5220f66aea87/kick",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			uuid.FromStringOrNil("c8794c51-4e4d-46ef-bfa1-5220f66aea87"),
@@ -384,7 +385,7 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b1d4d172-52e3-4927-bf10-77eafebd19d8"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b1d4d172-52e3-4927-bf10-77eafebd19d8","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -423,25 +424,25 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		referenceID       uuid.UUID
 		responseQueuecall *queuecall.Queuecall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/reference_id/b5f73c26-bcb7-11ed-af77-e397b8122b09",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("b5f73c26-bcb7-11ed-af77-e397b8122b09"),
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b673a022-bcb7-11ed-8212-6fef4fabe382"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b673a022-bcb7-11ed-8212-6fef4fabe382","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),

@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	"github.com/pkg/errors"
@@ -13,7 +12,7 @@ import (
 )
 
 // processEventNMNumberCreated handles the number-manager's number_created event
-func (h *subscribeHandler) processEventNMNumberCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventNMNumberCreated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventNMNumberCreated",
 		"event": m,
@@ -40,7 +39,7 @@ func (h *subscribeHandler) processEventNMNumberCreated(ctx context.Context, m *r
 }
 
 // processEventNMNumberRenewed handles the number-manager's number_renewed event
-func (h *subscribeHandler) processEventNMNumberRenewed(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventNMNumberRenewed(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventNMNumberRenewed",
 		"event": m,

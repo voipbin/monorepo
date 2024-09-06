@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -20,19 +21,19 @@ func Test_processV1CustomersGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		size    uint64
 		token   string
 
 		responseFilters   map[string]string
 		responseCustomers []*customer.Customer
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/customers?page_size=10&page_token=2021-11-23%2017:55:39.712000",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			10,
@@ -49,7 +50,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 					TMDelete: "",
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
@@ -57,9 +58,9 @@ func Test_processV1CustomersGet(t *testing.T) {
 		},
 		{
 			"2 customers",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/customers?page_size=10&page_token=2021-11-23%2017:55:39.712000",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			10,
@@ -76,7 +77,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("a032c710-7db2-11ec-bfe0-83fa85a82603"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","billing_account_id":"00000000-0000-0000-0000-000000000000"},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
@@ -121,7 +122,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerName     string
 		detail           string
@@ -133,13 +134,13 @@ func Test_processV1CustomersPost(t *testing.T) {
 		billingAccountID uuid.UUID
 
 		responseCustomer *customer.Customer
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/customers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "email": "test@test.com", "phone_number": "+821100000001", "address": "somewhere", "webhook_method": "POST", "webhook_uri": "test.com", "line_secret": "335671d0-ed3f-11ec-95d5-bb7d97d73379", "line_token": "339c9ebc-ed3f-11ec-bb15-4f3b18e06796", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
 			},
@@ -166,7 +167,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 
 				BillingAccountID: uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
@@ -217,18 +218,18 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id uuid.UUID
 
 		customer  *customer.Customer
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/customers/2cfbb148-7dc7-11ec-85df-47cf2c8492f0",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -237,7 +238,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			&customer.Customer{
 				ID: uuid.FromStringOrNil("2cfbb148-7dc7-11ec-85df-47cf2c8492f0"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
@@ -279,18 +280,18 @@ func Test_processV1UsersIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID       uuid.UUID
 		responseCustomer *customer.Customer
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/customers/5071b05e-7dc8-11ec-9746-5f318f662852",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -299,7 +300,7 @@ func Test_processV1UsersIDDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("5071b05e-7dc8-11ec-9746-5f318f662852"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
@@ -340,7 +341,7 @@ func Test_processV1UsersIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id            uuid.UUID
 		userName      string
@@ -353,13 +354,13 @@ func Test_processV1UsersIDPut(t *testing.T) {
 
 		responseCustomer *customer.Customer
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/customers/5a8fac06-7dd4-11ec-b4e7-ab52242f6b29",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test2", "detail": "detail2", "email": "update@test.com", "phone_number": "+821100000001", "address": "update address", "webhook_method": "POST", "webhook_uri": "test.com"}`),
 			},
@@ -376,7 +377,7 @@ func Test_processV1UsersIDPut(t *testing.T) {
 			&customer.Customer{
 				ID: uuid.FromStringOrNil("5a8fac06-7dd4-11ec-b4e7-ab52242f6b29"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
@@ -417,7 +418,7 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id            uuid.UUID
 		referenceType bmbilling.ReferenceType
@@ -425,13 +426,13 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 		count         int
 
 		responseValid bool
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/customers/dd74462c-0e88-11ee-a276-dbfe542e4ab0/is_valid_balance",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"reference_type":"call","country":"us","count":3}`),
 			},
@@ -442,7 +443,7 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 			count:         3,
 
 			responseValid: true,
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"valid":true}`),
@@ -482,19 +483,19 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id               uuid.UUID
 		billingAccountID uuid.UUID
 
 		responseCustomer *customer.Customer
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/customers/cc2cedde-0f90-11ee-a04e-1723e1a00731/billing_account_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"billing_account_id":"ccdb52d4-0f90-11ee-9ba9-ab40a2fc7434"}`),
 			},
@@ -505,7 +506,7 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 			responseCustomer: &customer.Customer{
 				ID: uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),

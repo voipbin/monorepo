@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -20,7 +21,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatroomID uuid.UUID
 		pageToken  string
@@ -29,13 +30,13 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 
 		responseMessagechatrooms []*messagechatroom.Messagechatroom
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"gets by chatroom id return 1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=d260ac86-3507-11ed-9594-cfe9c21b2ca3&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -55,7 +56,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d3162c64-3507-11ed-afa2-cbb3e904a7b3","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -63,9 +64,9 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		},
 		{
 			"gets by chatroom id return 2 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=3b683b7c-3508-11ed-97bb-9be24437edc2&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -90,7 +91,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"3bacdc46-3508-11ed-8422-1766fe775e1a","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"3c985216-3508-11ed-b760-5bd81cf30313","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -98,9 +99,9 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		},
 		{
 			"gets by chat id return 0 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=4829801e-3503-11ed-aecf-4f1b13ce1b9f&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -114,7 +115,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 
 			[]*messagechatroom.Messagechatroom{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -160,19 +161,19 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 func Test_v1MessagechatroomsIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		messagechatroomID uuid.UUID
 
 		responseMessagechatroom *messagechatroom.Messagechatroom
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms/92c89948-3508-11ed-9b4f-77544678aa39",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -185,7 +186,7 @@ func Test_v1MessagechatroomsIDGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"92c89948-3508-11ed-9b4f-77544678aa39","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -232,18 +233,18 @@ func Test_v1MessagechatroomsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		messagechatroomID uuid.UUID
 
 		responseMessagechatroom *messagechatroom.Messagechatroom
-		expectRes               *rabbitmqhandler.Response
+		expectRes               *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms/ce2b7f32-3508-11ed-8a20-a32e4374af3f",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -255,7 +256,7 @@ func Test_v1MessagechatroomsIDDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("ce2b7f32-3508-11ed-8a20-a32e4374af3f"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"ce2b7f32-3508-11ed-8a20-a32e4374af3f","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),

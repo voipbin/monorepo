@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -83,8 +84,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -147,11 +148,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	ctx := context.Background()
 
@@ -169,98 +170,98 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// v1
 	// campaigns
 	// /v1/campaigns
-	case regV1Campaigns.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Campaigns.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/v1/campaigns"
 		response, err = h.v1CampaignsPost(ctx, m)
 
-	case regV1CampaignsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CampaignsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/v1/campaigns"
 		response, err = h.v1CampaignsGet(ctx, m)
 
 	// /v1/campaigns/<campaign-id>
-	case regV1CampaignsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CampaignsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/v1/campaigns/<campaign-id>"
 		response, err = h.v1CampaignsIDGet(ctx, m)
 
-	case regV1CampaignsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1CampaignsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/v1/campaigns/<campaign-id>"
 		response, err = h.v1CampaignsIDDelete(ctx, m)
 
-	case regV1CampaignsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CampaignsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>"
 		response, err = h.v1CampaignsIDPut(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/execute
-	case regV1CampaignsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1CampaignsIDExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/v1/campaigns/<campaign-id>/execute"
 		response, err = h.v1CampaignsIDExecutePost(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/status
-	case regV1CampaignsIDStatus.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CampaignsIDStatus.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/status"
 		response, err = h.v1CampaignsIDStatusPut(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/service_level
-	case regV1CampaignsIDServiceLevel.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CampaignsIDServiceLevel.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/service_level"
 		response, err = h.v1CampaignsIDServiceLevelPut(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/actions
-	case regV1CampaignsIDActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CampaignsIDActions.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/actions"
 		response, err = h.v1CampaignsIDActionsPut(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/resource_info
-	case regV1CampaignsIDResourceInfo.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CampaignsIDResourceInfo.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/resource_info"
 		response, err = h.v1CampaignsIDResourceInfoPut(ctx, m)
 
 	// /v1/campaigns/<campaign-id>/next_campaign_id
-	case regV1CampaignsIDNextCampaignID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1CampaignsIDNextCampaignID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/next_campaign_id"
 		response, err = h.v1CampaignsIDNextCampaignIDPut(ctx, m)
 
 	// campaigncalls
 	// /v1/campaigncalls
-	case regV1CampaigncallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CampaigncallsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/v1/campaigncalls"
 		response, err = h.v1CampaigncallsGet(ctx, m)
 
 	// /v1/campaigncalls/<campaigncall_id>
-	case regV1CampaigncallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1CampaigncallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/v1/campaigncalls/<campaigncall-id>"
 		response, err = h.v1CampaigncallsIDGet(ctx, m)
 
 	// /v1/campaigncalls/<campaigncall_id>
-	case regV1CampaigncallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1CampaigncallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/v1/campaigncalls/<campaigncall-id>"
 		response, err = h.v1CampaigncallsIDDelete(ctx, m)
 
 	// outplans
 	// /v1/outplans
-	case regV1Outplans.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Outplans.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/v1/outplans"
 		response, err = h.v1OutplansPost(ctx, m)
 
-	case regV1OutplansGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1OutplansGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/v1/outplans"
 		response, err = h.v1OutplansGet(ctx, m)
 
 	// /v1/outplans/<outplan-id>
-	case regV1OutplansID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1OutplansID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/v1/outplans/<outplan-id>"
 		response, err = h.v1OutplansIDGet(ctx, m)
 
-	case regV1OutplansID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1OutplansID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/v1/outplans/<outplan-id>"
 		response, err = h.v1OutplansIDDelete(ctx, m)
 
-	case regV1OutplansID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1OutplansID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/outplans/<outplan-id>"
 		response, err = h.v1OutplansIDPut(ctx, m)
 
 	// /v1/outrplans/<outplan-id>/dials
-	case regV1OutplansIDDials.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1OutplansIDDials.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/outdials/<outplan-id>/dials"
 		response, err = h.v1OutplansIDDialsPut(ctx, m)
 

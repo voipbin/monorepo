@@ -3,15 +3,14 @@ package requesthandler
 import (
 	"context"
 	"fmt"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // AstRecordingStop stops the asterisk recording.
 func (r *requestHandler) AstRecordingStop(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/stop", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/recording/<recording_name>/stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/stop", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -25,7 +24,7 @@ func (r *requestHandler) AstRecordingStop(ctx context.Context, asteriskID, recor
 func (r *requestHandler) AstRecordingPause(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/pause", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/recording/<recording_name>/pause", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/pause", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -39,7 +38,7 @@ func (r *requestHandler) AstRecordingPause(ctx context.Context, asteriskID, reco
 func (r *requestHandler) AstRecordingUnpause(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/pause", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, "ast/recording/<recording_name>/unpause", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/recording/<recording_name>/unpause", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -53,7 +52,7 @@ func (r *requestHandler) AstRecordingUnpause(ctx context.Context, asteriskID, re
 func (r *requestHandler) AstRecordingMute(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/mute", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/recording/<recording_name>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/recording/<recording_name>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -67,7 +66,7 @@ func (r *requestHandler) AstRecordingMute(ctx context.Context, asteriskID, recor
 func (r *requestHandler) AstRecordingUnmute(ctx context.Context, asteriskID, recordingName string) error {
 	url := fmt.Sprintf("/ari/recordings/live/%s/mute", recordingName)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, "ast/recording/<recording_name>/unmute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodDelete, "ast/recording/<recording_name>/unmute", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
