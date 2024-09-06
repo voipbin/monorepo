@@ -59,6 +59,12 @@ The voipbin uses the environment variables for the k8s deployment.
     CC_TELNYX_TOKEN: Telnyx's token
 ```
 
+# Test
+## Update all modules and sync
+```
+$ ls -d */ | xargs -I {} bash -c "cd '{}' && go get -u ./... && go mod vendor && go generate ./... && go test ./..."
+```
+
 # Links
 * http://voipbin.net/ : Voipbin project page
 * https://api.voipbin.net/docs/ : Voipbin API documentation

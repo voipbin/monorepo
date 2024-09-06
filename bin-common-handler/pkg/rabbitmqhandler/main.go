@@ -52,9 +52,7 @@ type Rabbit interface {
 	Close()
 	GetURL() string
 
-	ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error
 	ConsumeMessageOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error
-	ConsumeRPC(queueNqme, consumerName string, cbRPC CbMsgRPC) error
 	ConsumeRPCOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume CbMsgRPC) error
 
 	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error

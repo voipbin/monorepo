@@ -100,7 +100,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			if errRPC := h.rabbitSock.ConsumeRPC(queue, "tts-manager", h.processRequest); errRPC != nil {
+			if errRPC := h.rabbitSock.ConsumeRPCOpt(queue, "tts-manager", false, false, false, 10, h.processRequest); errRPC != nil {
 				logrus.Errorf("Could not consume the message correctly. Will try again after 1 second. err: %v", errRPC)
 				time.Sleep(time.Second * 1)
 			}

@@ -9,13 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ConsumeMessage consumes message
-// If the queueName was not defined, then defines with default values.
-func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error {
-
-	return r.ConsumeMessageOpt(queueName, consumerName, false, false, false, 1, messageConsume)
-}
-
 // ConsumeMessageOpt consumes message with given options
 // If the queueName was not defined, then uses with default queue name values.
 func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error {
@@ -75,12 +68,6 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbM
 	}
 
 	return nil
-}
-
-// ConsumeRPC consumes RPC message
-func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) error {
-
-	return r.ConsumeRPCOpt(queueName, consumerName, false, false, false, 1, cbConsume)
 }
 
 // ConsumeRPCOpt consumes RPC message with given options
