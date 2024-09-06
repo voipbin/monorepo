@@ -5,6 +5,7 @@ import (
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
@@ -18,14 +19,14 @@ func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectGroupcall *cmgroupcall.Groupcall
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "call-manager",
 				Type:      cmgroupcall.EventTypeGroupcallCreated,
 				DataType:  "application/json",
@@ -64,14 +65,14 @@ func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectGroupcall *cmgroupcall.Groupcall
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "call-manager",
 				Type:      cmgroupcall.EventTypeGroupcallProgressing,
 				DataType:  "application/json",

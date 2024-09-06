@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
@@ -16,14 +17,14 @@ func Test_processEventMMMessageCreated(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectMessage *mmmessage.Message
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "message-manager",
 				Type:      mmmessage.EventTypeMessageCreated,
 				DataType:  "application/json",

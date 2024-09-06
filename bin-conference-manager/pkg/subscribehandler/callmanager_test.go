@@ -20,7 +20,7 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		responseConferencecall *conferencecall.Conferencecall
 
@@ -29,7 +29,7 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      cmconfbridge.EventTypeConfbridgeJoined,
 				Publisher: "call-manager",
 				DataType:  "application/json",
@@ -71,7 +71,7 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		responseConferencecall *conferencecall.Conferencecall
 
@@ -81,7 +81,7 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      cmconfbridge.EventTypeConfbridgeLeaved,
 				Publisher: "call-manager",
 				DataType:  "application/json",

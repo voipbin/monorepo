@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 )
@@ -24,7 +25,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 		eventType  string
 		event      *testEvent
 
-		expectEvent   *rabbitmqhandler.Event
+		expectEvent   *sock.Event
 		expectWebhook []byte
 	}{
 		{
@@ -35,7 +36,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
 				DataType:  dataTypeJSON,
@@ -50,7 +51,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
 				DataType:  dataTypeJSON,
@@ -97,7 +98,7 @@ func Test_PublishWebhook(t *testing.T) {
 		eventType  string
 		event      *testEvent
 
-		expectEvent   *rabbitmqhandler.Event
+		expectEvent   *sock.Event
 		expectWebhook []byte
 	}{
 
@@ -109,7 +110,7 @@ func Test_PublishWebhook(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
 				DataType:  dataTypeJSON,
@@ -124,7 +125,7 @@ func Test_PublishWebhook(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
 				DataType:  dataTypeJSON,
@@ -168,7 +169,7 @@ func Test_PublishEvent(t *testing.T) {
 		eventType string
 		event     *testEvent
 
-		expectEvent *rabbitmqhandler.Event
+		expectEvent *sock.Event
 	}{
 
 		{
@@ -178,7 +179,7 @@ func Test_PublishEvent(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 			},
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
 				DataType:  dataTypeJSON,
@@ -220,7 +221,7 @@ func Test_PublishEventRaw(t *testing.T) {
 		dataType  string
 		data      []byte
 
-		expectEvent *rabbitmqhandler.Event
+		expectEvent *sock.Event
 	}{
 		{
 			"normal",
@@ -229,7 +230,7 @@ func Test_PublishEventRaw(t *testing.T) {
 			"application/json",
 			[]byte(`{"type":"ChannelCreated"}`),
 
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      "test_created",
 				Publisher: testPublisher,
 				DataType:  "application/json",

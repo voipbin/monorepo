@@ -10,6 +10,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -117,14 +118,14 @@ func (h *subscribeHandler) Run() error {
 }
 
 // processEventRun runs the processEvent
-func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	go h.processEvent(m)
 
 	return nil
 }
 
 // processEvent processes the event message
-func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
+func (h *subscribeHandler) processEvent(m *sock.Event) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processEvent",
 		"message": m,

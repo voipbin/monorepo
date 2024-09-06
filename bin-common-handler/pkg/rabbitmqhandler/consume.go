@@ -58,7 +58,7 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive boo
 
 // executeConsumeMessage runs the callback with the given amqp message
 func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbMsgConsume) error {
-	var event Event
+	var event sock.Event
 
 	if err := json.Unmarshal(message.Body, &event); err != nil {
 		return fmt.Errorf("could out unmarshal the message. err: %v", err)

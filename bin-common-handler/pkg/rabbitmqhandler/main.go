@@ -4,7 +4,6 @@ package rabbitmqhandler
 
 import (
 	"context"
-	"encoding/json"
 	"monorepo/bin-common-handler/models/sock"
 	"time"
 
@@ -28,13 +27,13 @@ import (
 // 	Data       json.RawMessage `json:"data,omitempty"`
 // }
 
-// Event struct
-type Event struct {
-	Type      string          `json:"type"`
-	Publisher string          `json:"publisher"`
-	DataType  string          `json:"data_type"`
-	Data      json.RawMessage `json:"data,omitempty"`
-}
+// // Event struct
+// type Event struct {
+// 	Type      string          `json:"type"`
+// 	Publisher string          `json:"publisher"`
+// 	DataType  string          `json:"data_type"`
+// 	Data      json.RawMessage `json:"data,omitempty"`
+// }
 
 // RequestMethod type
 type RequestMethod string
@@ -60,10 +59,10 @@ type Rabbit interface {
 	ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error
 
 	PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error
-	PublishExchangeDelayedEvent(exchange, key string, evt *Event, delay int) error
-	PublishExchangeEvent(exchange, key string, evt *Event) error
+	PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error
+	PublishExchangeEvent(exchange, key string, evt *sock.Event) error
 	PublishExchangeRequest(exchange, key string, req *sock.Request) error
-	PublishEvent(queueName string, evt *Event) error
+	PublishEvent(queueName string, evt *sock.Event) error
 	PublishRequest(queueName string, req *sock.Request) error
 	PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
 
@@ -118,7 +117,7 @@ type exchange struct {
 }
 
 // CbMsgConsume is func prototype for message read callback.
-type CbMsgConsume func(*Event) error
+type CbMsgConsume func(*sock.Event) error
 
 // CbMsgRPC is func prototype for RPC callback
 type CbMsgRPC func(*sock.Request) (*sock.Response, error)

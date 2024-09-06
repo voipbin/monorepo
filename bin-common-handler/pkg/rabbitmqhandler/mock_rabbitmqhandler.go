@@ -131,7 +131,7 @@ func (mr *MockRabbitMockRecorder) GetURL() *gomock.Call {
 }
 
 // PublishEvent mocks base method.
-func (m *MockRabbit) PublishEvent(queueName string, evt *Event) error {
+func (m *MockRabbit) PublishEvent(queueName string, evt *sock.Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishEvent", queueName, evt)
 	ret0, _ := ret[0].(error)
@@ -145,7 +145,7 @@ func (mr *MockRabbitMockRecorder) PublishEvent(queueName, evt interface{}) *gomo
 }
 
 // PublishExchangeDelayedEvent mocks base method.
-func (m *MockRabbit) PublishExchangeDelayedEvent(exchange, key string, evt *Event, delay int) error {
+func (m *MockRabbit) PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeDelayedEvent", exchange, key, evt, delay)
 	ret0, _ := ret[0].(error)
@@ -173,7 +173,7 @@ func (mr *MockRabbitMockRecorder) PublishExchangeDelayedRequest(exchange, key, r
 }
 
 // PublishExchangeEvent mocks base method.
-func (m *MockRabbit) PublishExchangeEvent(exchange, key string, evt *Event) error {
+func (m *MockRabbit) PublishExchangeEvent(exchange, key string, evt *sock.Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeEvent", exchange, key, evt)
 	ret0, _ := ret[0].(error)

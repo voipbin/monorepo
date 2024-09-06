@@ -6,14 +6,13 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processEventCMGroupcallProgressing handles the call-manager's groupcall_progressing event
-func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMGroupcallProgressing",
 		"event": m,
@@ -41,7 +40,7 @@ func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Contex
 }
 
 // processEventCMGroupcallHangup handles call-manager's groupcall_hangup event
-func (h *subscribeHandler) processEventCMGroupcallHangup(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMGroupcallHangup(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMGroupcallHangup",
 		"event": m,
@@ -69,7 +68,7 @@ func (h *subscribeHandler) processEventCMGroupcallHangup(ctx context.Context, m 
 }
 
 // processEventCMCallHangup handles call-manager's call_hangup event
-func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMCallHangup",
 		"event": m,

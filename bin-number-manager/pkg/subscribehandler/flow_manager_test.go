@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -17,14 +18,14 @@ func Test_processEvent_processEventFMFlowDeleted(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectFlow *fmflow.Flow
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "flow-manager",
 				Type:      fmflow.EventTypeFlowDeleted,
 				DataType:  "application/json",

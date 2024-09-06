@@ -52,7 +52,7 @@ func (r *rabbit) PublishRequest(queueName string, req *sock.Request) error {
 }
 
 // PublishEvent sends a event to rabbitmq
-func (r *rabbit) PublishEvent(queueName string, evt *Event) error {
+func (r *rabbit) PublishEvent(queueName string, evt *sock.Event) error {
 
 	message, err := json.Marshal(evt)
 	if err != nil {
@@ -138,7 +138,7 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Req
 }
 
 // PublishExchangeEvent sends a message to rabbitmq
-func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *Event) error {
+func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *sock.Event) error {
 	message, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -170,7 +170,7 @@ func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.R
 
 // PublishExchangeDelayedEvent sends a delayed event to the rabbitmq exchange
 // delay is ms.
-func (r *rabbit) PublishExchangeDelayedEvent(exchange, key string, evt *Event, delay int) error {
+func (r *rabbit) PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error {
 	headers := make(amqp.Table)
 	headers["x-delay"] = delay
 

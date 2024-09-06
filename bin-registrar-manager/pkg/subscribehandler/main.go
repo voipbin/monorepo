@@ -8,6 +8,7 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -110,14 +111,14 @@ func (h *subscribeHandler) Run() error {
 }
 
 // processEventRun runs the processEvent
-func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	go h.processEvent(m)
 
 	return nil
 }
 
 // processEvent processes the event message
-func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
+func (h *subscribeHandler) processEvent(m *sock.Event) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processEvent",
 		"message": m,

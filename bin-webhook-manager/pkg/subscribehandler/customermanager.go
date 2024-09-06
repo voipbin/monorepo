@@ -4,15 +4,14 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processEventCSCustomerCreatedUpdated handles the customer-manager's customer_created and customer_updated event.
-func (h *subscribeHandler) processEventCSCustomerCreatedUpdated(m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCSCustomerCreatedUpdated(m *sock.Event) error {
 	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
