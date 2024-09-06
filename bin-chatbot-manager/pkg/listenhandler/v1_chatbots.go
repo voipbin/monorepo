@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ import (
 )
 
 // processV1ChatbotsGet handles GET /v1/chatbots request
-func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ChatbotsGet",
 		"request": m,
@@ -58,7 +57,7 @@ func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -68,7 +67,7 @@ func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *sock.Reques
 }
 
 // processV1ChatbotsPost handles POST /v1/chatbots request
-func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsPost",
 		"request": m,
@@ -92,7 +91,7 @@ func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *sock.Reque
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -102,7 +101,7 @@ func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *sock.Reque
 }
 
 // processV1ChatbotsIDGet handles GET /v1/chatbots/<chatbot-id> request
-func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsIDGet",
 		"request": m,
@@ -127,7 +126,7 @@ func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -137,7 +136,7 @@ func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *sock.Requ
 }
 
 // processV1ChatbotsIDDelete handles DELETE /v1/chatbots/<chatbot-id> request
-func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsIDDelete",
 		"request": m,
@@ -162,7 +161,7 @@ func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *sock.R
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -172,7 +171,7 @@ func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *sock.R
 }
 
 // processV1ChatbotsPost handles PUT /v1/chatbots/<chatbot-id> request
-func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsIDPut",
 		"request": m,
@@ -203,7 +202,7 @@ func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *sock.Requ
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

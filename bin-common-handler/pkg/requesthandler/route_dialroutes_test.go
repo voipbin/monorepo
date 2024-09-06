@@ -24,7 +24,7 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 		customerID uuid.UUID
 		target     string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -36,7 +36,7 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 			uuid.FromStringOrNil("177ca524-52b6-11ed-bc27-67e42188fe83"),
 			"+82",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"8297fc2c-52b7-11ed-b257-2b1bd9fe3671"}]`),

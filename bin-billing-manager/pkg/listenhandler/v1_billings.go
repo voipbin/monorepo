@@ -7,13 +7,12 @@ import (
 	"strconv"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processV1BillingsGet handles GET /v1/billings request
-func (h *listenHandler) processV1BillingsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1BillingsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1BillingsGet",
 		"request": m,
@@ -43,7 +42,7 @@ func (h *listenHandler) processV1BillingsGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

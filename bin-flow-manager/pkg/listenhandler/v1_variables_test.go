@@ -23,7 +23,7 @@ func Test_v1VariablesIDGet(t *testing.T) {
 
 		responseVariable *variable.Variable
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -42,7 +42,7 @@ func Test_v1VariablesIDGet(t *testing.T) {
 					"key1": "val1",
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","variables":{"key1":"val1"}}`),
@@ -85,7 +85,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 		variableID uuid.UUID
 		variables  map[string]string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -102,7 +102,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 				"key2": "value2",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -144,7 +144,7 @@ func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 		variableID uuid.UUID
 		key        string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -157,7 +157,7 @@ func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 			uuid.FromStringOrNil("52905588-db2f-11ec-9813-73dc3a5d302d"),
 			"key1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -173,7 +173,7 @@ func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 			uuid.FromStringOrNil("52905588-db2f-11ec-9813-73dc3a5d302d"),
 			"key 1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

@@ -25,7 +25,7 @@ func Test_processV1HooksPost(t *testing.T) {
 		responseSend *message.Message
 
 		request   *sock.Request
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -61,7 +61,7 @@ func Test_processV1HooksPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"received_uri":"https://hook.voipbin.net/v1.0/conversation/customers/a92e60ea-e85b-11ec-a173-0b1cf8c9d3e9/line","received_data":"ewoJCQkJImRlc3RpbmF0aW9uIjogIlUxMTI5ODIxNDExNmUzYWZiYWQ0MzJiNTc5NGE2ZDNhMCIsCgkJCQkiZXZlbnRzIjogWwoJCQkJCXsKCQkJCQkJInR5cGUiOiAiZm9sbG93IiwKCQkJCQkJIndlYmhvb2tFdmVudElkIjogIjAxRzQ5S0dWM1lZQ1dBMENQWkhQOUFBNkg5IiwKCQkJCQkJImRlbGl2ZXJ5Q29udGV4dCI6IHsKCQkJCQkJCSJpc1JlZGVsaXZlcnkiOiBmYWxzZQoJCQkJCQl9LAoJCQkJCQkidGltZXN0YW1wIjogMTY1Mzg4NDg3MzM0OCwKCQkJCQkJInNvdXJjZSI6IHsKCQkJCQkJCSJ0eXBlIjogInVzZXIiLAoJCQkJCQkJInVzZXJJZCI6ICJVZDg3MWJjYWY3YzNhZDEzZDJhMGIwZDc4YTQyYTI4N2YiCgkJCQkJCX0sCgkJCQkJCSJyZXBseVRva2VuIjogIjQ0YjdlMGI1ZmEwMzRhNThiZmQ3NWM5ZTI1NmFkMmVkIiwKCQkJCQkJIm1vZGUiOiAiYWN0aXZlIgoJCQkJCX0KCQkJCV0KCQkJfQ=="}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -82,7 +82,7 @@ func Test_processV1HooksPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"received_uri":"https://hook.voipbin.net/v1.0/conversation/customers/a92e60ea-e85b-11ec-a173-0b1cf8c9d3e9/line","received_data":"eyJkZXN0aW5hdGlvbiI6IlUxMTI5ODIxNDExNmUzYWZiYWQ0MzJiNTc5NGE2ZDNhMCIsImV2ZW50cyI6W119"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

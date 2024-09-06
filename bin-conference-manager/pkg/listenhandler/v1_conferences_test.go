@@ -27,7 +27,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 
 		responseFilters     map[string]string
 		responseConferences []*conference.Conference
-		expectRes           *rabbitmqhandler.Response
+		expectRes           *sock.Response
 	}{
 		{
 			"normal",
@@ -47,7 +47,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -80,7 +80,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 					TranscribeIDs:     []uuid.UUID{},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","customer_id":"3be94c82-7f49-11ec-814e-ff2a9d84a806","confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":[],"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -115,7 +115,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 					TranscribeIDs:     []uuid.UUID{},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","customer_id":"4d4d8ce0-7f49-11ec-a61f-1358990ed631","confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":[],"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -158,7 +158,7 @@ func Test_processV1ConferencesPost(t *testing.T) {
 		name             string
 		request          *sock.Request
 		expectConference *conference.Conference
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			"type conference",
@@ -186,7 +186,7 @@ func Test_processV1ConferencesPost(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -229,7 +229,7 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 		id      uuid.UUID
 
 		responseConference *conference.Conference
-		expectRes          *rabbitmqhandler.Response
+		expectRes          *sock.Response
 	}{
 		{
 			"type conference",
@@ -243,7 +243,7 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 			&conference.Conference{
 				ID: uuid.FromStringOrNil("8d920096-3bf2-11ec-9ff1-87ad93d2f885"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8d920096-3bf2-11ec-9ff1-87ad93d2f885","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -284,7 +284,7 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 		name       string
 		request    *sock.Request
 		conference *conference.Conference
-		expectRes  *rabbitmqhandler.Response
+		expectRes  *sock.Response
 	}{
 		{
 			"type conference",
@@ -318,7 +318,7 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -359,7 +359,7 @@ func Test_processV1ConferencesIDGet(t *testing.T) {
 		name             string
 		request          *sock.Request
 		expectConference *conference.Conference
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			"type conference",
@@ -385,7 +385,7 @@ func Test_processV1ConferencesIDGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -430,7 +430,7 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 
 		expectID          uuid.UUID
 		expectRecordingID uuid.UUID
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"type conference",
@@ -446,7 +446,7 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 
 			uuid.FromStringOrNil("81d69286-9091-11ed-8036-5f6887716de3"),
 			uuid.FromStringOrNil("822a2c52-9091-11ed-99a1-5f802877affb"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"81d69286-9091-11ed-8036-5f6887716de3","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -489,7 +489,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 		responseConference *conference.Conference
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"type conference",
@@ -503,7 +503,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"17ca9f6a-9102-11ed-9c97-1b1670cb9db9","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -546,7 +546,7 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 		responseConference *conference.Conference
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"type conference",
@@ -560,7 +560,7 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"18033654-9102-11ed-994e-4b9c733834a5","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -604,7 +604,7 @@ func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
 
 		expectID   uuid.UUID
 		expectLang string
-		expectRes  *rabbitmqhandler.Response
+		expectRes  *sock.Response
 	}{
 		{
 			"type conference",
@@ -620,7 +620,7 @@ func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
 
 			uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
 			"en-US",
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"95cf180c-98c6-11ed-8330-bb119cab4678","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -663,7 +663,7 @@ func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
 		responseConference *conference.Conference
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"type conference",
@@ -677,7 +677,7 @@ func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("95fdc09e-98c6-11ed-a6a1-ff3648dce452"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"95fdc09e-98c6-11ed-a6a1-ff3648dce452","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -720,7 +720,7 @@ func Test_processV1ConferencesIDStopPost(t *testing.T) {
 		responseConference *conference.Conference
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"type conference",
@@ -734,7 +734,7 @@ func Test_processV1ConferencesIDStopPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("24883eab-931d-4743-bf26-bd867b52127e"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"24883eab-931d-4743-bf26-bd867b52127e","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),

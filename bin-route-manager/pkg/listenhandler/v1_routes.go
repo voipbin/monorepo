@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -19,7 +18,7 @@ import (
 
 // v1RoutesPost handles /v1/routes POST request
 // creates a new route with given data and return the created route info.
-func (h *listenHandler) v1RoutesPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1RoutesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1RoutesPost",
@@ -54,7 +53,7 @@ func (h *listenHandler) v1RoutesPost(ctx context.Context, m *sock.Request) (*rab
 		return nil, errors.Wrap(err, "could not marshal the res")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -64,7 +63,7 @@ func (h *listenHandler) v1RoutesPost(ctx context.Context, m *sock.Request) (*rab
 }
 
 // v1RoutesGet handles /v1/routes GET request
-func (h *listenHandler) v1RoutesGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1RoutesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1RoutesGet",
@@ -97,7 +96,7 @@ func (h *listenHandler) v1RoutesGet(ctx context.Context, m *sock.Request) (*rabb
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -107,7 +106,7 @@ func (h *listenHandler) v1RoutesGet(ctx context.Context, m *sock.Request) (*rabb
 }
 
 // v1RoutesIDGet handles /v1/routes/{id} GET request
-func (h *listenHandler) v1RoutesIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1RoutesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1RoutesIDGet",
@@ -136,7 +135,7 @@ func (h *listenHandler) v1RoutesIDGet(ctx context.Context, m *sock.Request) (*ra
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -146,7 +145,7 @@ func (h *listenHandler) v1RoutesIDGet(ctx context.Context, m *sock.Request) (*ra
 }
 
 // v1RoutesIDPut handles /v1/routes/{id} PUT request
-func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1RoutesIDPut",
@@ -189,7 +188,7 @@ func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*ra
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -199,7 +198,7 @@ func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*ra
 }
 
 // v1RoutesIDDelete handles /v1/routes/{id} Delete request
-func (h *listenHandler) v1RoutesIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1RoutesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1RoutesIDDelete",
@@ -228,7 +227,7 @@ func (h *listenHandler) v1RoutesIDDelete(ctx context.Context, m *sock.Request) (
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

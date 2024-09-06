@@ -26,7 +26,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 
 		expectSize  uint64
 		expectToken string
-		expectRes   *rabbitmqhandler.Response
+		expectRes   *sock.Response
 	}
 
 	tests := []test{
@@ -51,7 +51,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 
 			expectSize:  10,
 			expectToken: "2023-06-08 03:22:17.995000",
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"69cacd9e-f542-11ee-ab6d-afb3c2c93e56","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","cost_per_unit":0,"cost_total":0,"billing_unit_count":0,"tm_billing_start":"","tm_billing_end":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"6a1d387c-f542-11ee-b2cb-a36ed20fc369","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","cost_per_unit":0,"cost_total":0,"billing_unit_count":0,"tm_billing_start":"","tm_billing_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),

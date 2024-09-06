@@ -29,7 +29,7 @@ func Test_BillingV1AccountGets(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -55,7 +55,7 @@ func Test_BillingV1AccountGets(t *testing.T) {
 				},
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"022bfc94-0b9b-11ee-8ea1-f3e4fbd66309"},{"id":"025e6814-0b9b-11ee-8e8d-93e70b8939a0"}]`),
@@ -105,7 +105,7 @@ func Test_BillingV1AccountCreate(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -127,7 +127,7 @@ func Test_BillingV1AccountCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("8be2a24c-0e7c-11ee-957a-c7e813baceb9"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8be2a24c-0e7c-11ee-957a-c7e813baceb9"}`),
@@ -171,7 +171,7 @@ func Test_BillingV1AccountGet(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -187,7 +187,7 @@ func Test_BillingV1AccountGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("9000392c-0b9b-11ee-aa1d-8b84b3626bc7"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9000392c-0b9b-11ee-aa1d-8b84b3626bc7"}`),
@@ -231,7 +231,7 @@ func Test_BillingV1AccountDelete(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -247,7 +247,7 @@ func Test_BillingV1AccountDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"}`),
@@ -293,7 +293,7 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -312,7 +312,7 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 				ID: uuid.FromStringOrNil("79403360-0dbf-11ee-b1ad-c3eebc4a6196"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"79403360-0dbf-11ee-b1ad-c3eebc4a6196"}`),
@@ -357,7 +357,7 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -376,7 +376,7 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 				ID: uuid.FromStringOrNil("c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"}`),
@@ -423,7 +423,7 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 		expectRequest *sock.Request
 		expectRes     bool
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -442,7 +442,7 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 			},
 			expectRes: true,
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"valid":true}`),
@@ -487,7 +487,7 @@ func Test_BillingV1AccountUpdateBasicInfo(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -507,7 +507,7 @@ func Test_BillingV1AccountUpdateBasicInfo(t *testing.T) {
 				ID: uuid.FromStringOrNil("c1085dc6-4cd5-11ee-8065-a7ccfdd78669"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c1085dc6-4cd5-11ee-8065-a7ccfdd78669"}`),
@@ -553,7 +553,7 @@ func Test_BillingV1AccountUpdatePaymentInfo(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -573,7 +573,7 @@ func Test_BillingV1AccountUpdatePaymentInfo(t *testing.T) {
 				ID: uuid.FromStringOrNil("c149ecbe-4cd5-11ee-bf72-872e67a10683"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c149ecbe-4cd5-11ee-bf72-872e67a10683"}`),

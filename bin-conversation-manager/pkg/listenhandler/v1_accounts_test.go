@@ -28,7 +28,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 		responseFilters  map[string]string
 		responseAccounts []*account.Account
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -51,7 +51,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				},
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -81,7 +81,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				},
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"6b5f9da6-fecb-11ed-a0ea-4fdabd236387","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"6b906c9c-fecb-11ed-a341-f38426e7e737","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -133,7 +133,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 		responseAccount *account.Account
 
 		request  *sock.Request
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -155,7 +155,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"456609ea-fecc-11ed-a717-5f6984c51794","type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"459c19ae-fecc-11ed-9558-fbf54c7aa51e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -199,7 +199,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 		responseAccount *account.Account
 
 		request  *sock.Request
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -214,7 +214,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 				URI:    "/v1/accounts/1793ed06-fecd-11ed-ab65-07ce8687961d",
 				Method: sock.RequestMethodGet,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1793ed06-fecd-11ed-ab65-07ce8687961d","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -262,7 +262,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 		responseAccount *account.Account
 
 		request  *sock.Request
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -283,7 +283,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"17c1c726-fecd-11ed-8139-dff04db7fa05","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -327,7 +327,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 		responseAccount *account.Account
 
 		request  *sock.Request
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -342,7 +342,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 				URI:    "/v1/accounts/17eeb786-fecd-11ed-8113-5f6f4693c29f",
 				Method: sock.RequestMethodDelete,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"17eeb786-fecd-11ed-8113-5f6f4693c29f","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","secret":"","token":"","tm_create":"","tm_update":"","tm_delete":""}`),

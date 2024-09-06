@@ -37,7 +37,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 		expectRingMethod        groupcall.RingMethod
 		expectAnswerMethod      groupcall.AnswerMethod
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -78,7 +78,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 			expectRingMethod:        groupcall.RingMethodRingAll,
 			expectAnswerMethod:      groupcall.AnswerMethodHangupOthers,
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"05a4617c-bb41-11ed-8591-d72108ff17fd","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -138,7 +138,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 
 		expectPageSize  uint64
 		expectPageToken string
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}{
 		{
 			name: "normal",
@@ -165,7 +165,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			},
 			expectPageSize:  10,
 			expectPageToken: "2023-05-03 21:35:02.809",
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d8896324-bd7d-11ed-bdea-5b96b47c0bf4","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"d8ae01d4-bd7d-11ed-b570-236fa9212eba","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -213,7 +213,7 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"basic",
@@ -229,7 +229,7 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("6b59c9a6-bd7d-11ed-98cc-536b0b571118"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"6b59c9a6-bd7d-11ed-98cc-536b0b571118","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -274,7 +274,7 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -290,7 +290,7 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("922b2b46-bd7e-11ed-8754-3772984da05b"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"922b2b46-bd7e-11ed-8754-3772984da05b","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -335,7 +335,7 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -351,7 +351,7 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("b055775c-bd7e-11ed-a2b8-1f2c8369029a"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b055775c-bd7e-11ed-a2b8-1f2c8369029a","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -397,7 +397,7 @@ func Test_processV1GroupcallsIDAnswerGroupcallIDPost(t *testing.T) {
 
 		expectID               uuid.UUID
 		expectAnwerGroupcallID uuid.UUID
-		expectRes              *rabbitmqhandler.Response
+		expectRes              *sock.Response
 	}{
 		{
 			"normal",
@@ -415,7 +415,7 @@ func Test_processV1GroupcallsIDAnswerGroupcallIDPost(t *testing.T) {
 
 			uuid.FromStringOrNil("c5292994-e443-11ed-9d25-f79431094c08"),
 			uuid.FromStringOrNil("c5a12f84-e443-11ed-82ef-47e49bddaa68"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c5292994-e443-11ed-9d25-f79431094c08","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -460,7 +460,7 @@ func Test_processV1GroupcallsIDHangupGroupcallPost(t *testing.T) {
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -475,7 +475,7 @@ func Test_processV1GroupcallsIDHangupGroupcallPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("dd850fba-e445-11ed-a841-9bf7ed18abe2"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dd850fba-e445-11ed-a841-9bf7ed18abe2","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -520,7 +520,7 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -535,7 +535,7 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("0b4d5a38-e446-11ed-9b91-bb8a66b3fb46"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0b4d5a38-e446-11ed-9b91-bb8a66b3fb46","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),

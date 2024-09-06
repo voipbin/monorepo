@@ -24,7 +24,7 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []astcontact.AstContact
 	}{
@@ -40,7 +40,7 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"uri":"sip:test11@211.200.20.28:48540^3Btransport=udp^3Balias=211.200.20.28~48540~1"},{"uri":"sip:test11@223.38.28.126:48540^3Btransport=udp^3Balias=223.38.28.126~48540~1"},{"uri":"sip:test11@35.204.215.63^3Btransport=udp^3Balias=35.204.215.63~5060~1"}]`),
@@ -94,7 +94,7 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []astcontact.AstContact
 	}{
@@ -110,7 +110,7 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeNone,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 		},

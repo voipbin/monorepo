@@ -25,7 +25,7 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult []nmavailablenumber.AvailableNumber
 	}{
@@ -42,7 +42,7 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"number":"+16188850188","provider_name":"telnyx","country":"US","region":"IL","postal_code":"","features":["emergency","fax","voice","sms"],"tm_create":"","tm_update":"","tm_delete":""}]`),

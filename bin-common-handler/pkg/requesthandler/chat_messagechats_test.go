@@ -30,7 +30,7 @@ func Test_ChatV1MessagechatCreate(t *testing.T) {
 		text        string
 		medias      []chatmedia.Media
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -49,7 +49,7 @@ func Test_ChatV1MessagechatCreate(t *testing.T) {
 			"test message",
 			[]chatmedia.Media{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d50945c4-3697-11ed-9ffb-570b42b0ddd4"}`),
@@ -110,7 +110,7 @@ func Test_ChatV1MessagechatGet(t *testing.T) {
 
 		messagechatID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -120,7 +120,7 @@ func Test_ChatV1MessagechatGet(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("9e6997aa-369f-11ed-9453-cb9c81406b8b"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9e6997aa-369f-11ed-9453-cb9c81406b8b"}`),
@@ -174,7 +174,7 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -190,7 +190,7 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 				"chat_id": "fdf8ca74-369f-11ed-b48b-b728ad308b30",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"fe1ec10c-369f-11ed-aa7b-6f4631dff513"}]`),
@@ -248,7 +248,7 @@ func Test_ChatV1MessagechatDelete(t *testing.T) {
 
 		messagechatID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -258,7 +258,7 @@ func Test_ChatV1MessagechatDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("2a3b1862-36a0-11ed-8f05-57a3e81bdcc9"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2a3b1862-36a0-11ed-8f05-57a3e81bdcc9"}`),

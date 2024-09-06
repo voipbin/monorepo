@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ import (
 )
 
 // processV1TrunksPost handles /v1/trunks request
-func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1TrunksPost",
 	})
@@ -45,7 +44,7 @@ func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *sock.Request
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -55,7 +54,7 @@ func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *sock.Request
 }
 
 // processV1TrunksGet handles /v1/trunks GET request
-func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1TrunksGet",
 	})
@@ -91,7 +90,7 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Reques
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -101,7 +100,7 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Reques
 }
 
 // processV1TrunksIDGet handles /v1/trunks/{id} GET request
-func (h *listenHandler) processV1TrunksIDGet(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TrunksIDGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1TrunksIDGet",
 	})
@@ -127,7 +126,7 @@ func (h *listenHandler) processV1TrunksIDGet(ctx context.Context, req *sock.Requ
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -137,7 +136,7 @@ func (h *listenHandler) processV1TrunksIDGet(ctx context.Context, req *sock.Requ
 }
 
 // processV1TrunksIDPut handles /v1/trunks/{id} PUT request
-func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1TrunksIDPut",
 	})
@@ -169,7 +168,7 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -179,7 +178,7 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 }
 
 // processV1TrunksIDDelete handles /v1/trunks/{id} DELETE request
-func (h *listenHandler) processV1TrunksIDDelete(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TrunksIDDelete(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1TrunksIDDelete",
 	})
@@ -205,7 +204,7 @@ func (h *listenHandler) processV1TrunksIDDelete(ctx context.Context, req *sock.R
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -215,7 +214,7 @@ func (h *listenHandler) processV1TrunksIDDelete(ctx context.Context, req *sock.R
 }
 
 // processV1TrunksDomainNameDomainNameGet handles /v1/trunks/domain_name/<domain-name> GET request
-func (h *listenHandler) processV1TrunksDomainNameDomainNameGet(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TrunksDomainNameDomainNameGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1TrunksDomainNameDomainNameGet",
 	})
@@ -240,7 +239,7 @@ func (h *listenHandler) processV1TrunksDomainNameDomainNameGet(ctx context.Conte
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

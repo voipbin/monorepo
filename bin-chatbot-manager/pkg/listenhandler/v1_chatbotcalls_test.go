@@ -26,7 +26,7 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 		expectPageSize   uint64
 		expectPageToken  string
 		expectFilters    map[string]string
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			"normal",
@@ -51,7 +51,7 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 				"deleted": "false",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"64b555fe-a773-11ed-9dc7-2fccabe21218","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","chatbot_engine_type":"","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","messages":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","chatbot_engine_type":"","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","messages":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -94,7 +94,7 @@ func Test_processV1ChatbotcallsIDDelete(t *testing.T) {
 		responseChatbotcall *chatbotcall.Chatbotcall
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -109,7 +109,7 @@ func Test_processV1ChatbotcallsIDDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("d9d804d8-ef03-4a23-906c-c192029b19fc"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d9d804d8-ef03-4a23-906c-c192029b19fc","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","chatbot_engine_type":"","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","messages":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -152,7 +152,7 @@ func Test_processV1ChatbotcallsIDGet(t *testing.T) {
 		responseChatbotcall *chatbotcall.Chatbotcall
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -167,7 +167,7 @@ func Test_processV1ChatbotcallsIDGet(t *testing.T) {
 
 			uuid.FromStringOrNil("3e349bb8-7b31-4533-8e2b-6654ebc84e3e"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3e349bb8-7b31-4533-8e2b-6654ebc84e3e","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","chatbot_engine_type":"","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","messages":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),

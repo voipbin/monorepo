@@ -24,7 +24,7 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 		referenceType cfconferencecall.ReferenceType
 		referenceID   uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -37,7 +37,7 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 			cfconferencecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("ef7fa3e0-ab71-11ed-9a00-3f98e88afb4e"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"efa863ca-ab71-11ed-a65f-0730598fc7d9"}`),

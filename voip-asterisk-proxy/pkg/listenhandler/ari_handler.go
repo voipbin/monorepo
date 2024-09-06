@@ -10,7 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ariSendRequestToAsterisk sends the request to the Asterisk's ARI.
@@ -51,14 +50,14 @@ func (h *listenHandler) ariSendRequestToAsterisk(m *sock.Request) (int, []byte, 
 	return resp.StatusCode, res, nil
 }
 
-func (h *listenHandler) listenHandlerARI(request *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) listenHandlerARI(request *sock.Request) (*sock.Response, error) {
 	// send the request to Asterisk
 	statusCode, resData, err := h.ariSendRequestToAsterisk(request)
 	if err != nil {
 		return nil, err
 	}
 
-	response := &rabbitmqhandler.Response{
+	response := &sock.Response{
 		StatusCode: statusCode,
 		DataType:   "application/json",
 		Data:       resData,

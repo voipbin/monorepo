@@ -56,7 +56,7 @@ func Test_AstChannelAnswer(t *testing.T) {
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelAnswer(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -131,7 +131,7 @@ func Test_AstChannelContinue(t *testing.T) {
 					DataType: ContentTypeJSON,
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelContinue(context.Background(), tt.asteriskID, tt.channelID, tt.context, tt.extension, tt.priority, tt.label)
 			if err != nil {
@@ -149,7 +149,7 @@ func Test_ChannelAstChannelVariableGet(t *testing.T) {
 		channelID  string
 		variable   string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURI    string
 		expectQueue  string
@@ -163,7 +163,7 @@ func Test_ChannelAstChannelVariableGet(t *testing.T) {
 			"bae178e2-7f6f-11ea-809d-b3dec50dc8f3",
 			"test-variable",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"value": "test-value"}`),
@@ -181,7 +181,7 @@ func Test_ChannelAstChannelVariableGet(t *testing.T) {
 			"bae178e2-7f6f-11ea-809d-b3dec50dc8f3",
 			"test-variable",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"value": ""}`),
@@ -287,7 +287,7 @@ func Test_ChannelAstChannelVariableSet(t *testing.T) {
 					DataType: ContentTypeJSON,
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelVariableSet(context.Background(), tt.asteriskID, tt.channelID, tt.variable, tt.value)
 			if err != nil {
@@ -357,7 +357,7 @@ func Test_ChannelAstChannelHangup(t *testing.T) {
 						DataType: ContentTypeJSON,
 						Data:     tt.expectData,
 					},
-				).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+				).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 			} else {
 				mockSock.EXPECT().PublishExchangeDelayedRequest(
 					gomock.Any(),
@@ -391,7 +391,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 		spy        cmchannel.SnoopDirection
 		whisper    cmchannel.SnoopDirection
 
-		responseChannel *rabbitmqhandler.Response
+		responseChannel *sock.Response
 
 		expectURI    string
 		expectQueue  string
@@ -409,7 +409,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			cmchannel.SnoopDirectionIn,
 			cmchannel.SnoopDirectionIn,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"1e5eaa2b-ae8b-412c-b85b-c9d25e70d365"}`),
@@ -435,7 +435,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			cmchannel.SnoopDirectionIn,
 			cmchannel.SnoopDirectionNone,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"1a367dd8-9635-426c-8f76-3bcafdd71b3c"}`),
@@ -461,7 +461,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			cmchannel.SnoopDirectionNone,
 			cmchannel.SnoopDirectionBoth,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"17dea6c7-ce67-452d-82dd-97afabe6f0ee"}`),
@@ -521,7 +521,7 @@ func Test_AstChannelGet(t *testing.T) {
 		name     string
 		asterisk string
 		id       string
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -532,7 +532,7 @@ func Test_AstChannelGet(t *testing.T) {
 			"normal test",
 			"00:11:22:33:44:55",
 			"1589711094.100",
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"1589711094.100","name":"PJSIP/call-in-00000019","state":"Up","caller":{"name":"tttt","number":"pchero"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"call-in","exten":"8872616","priority":2,"app_name":"Stasis","app_data":"voipbin,CONTEXT=call-in,SIP_CALLID=xt1GqgsEfG,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161"},"creationtime":"2020-05-17T10:24:54.396+0000","language":"en"}`),
@@ -599,7 +599,7 @@ func Test_AstChannelDTMF(t *testing.T) {
 		before   int
 		between  int
 		after    int
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -613,7 +613,7 @@ func Test_AstChannelDTMF(t *testing.T) {
 			0,
 			0,
 			0,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 
@@ -634,7 +634,7 @@ func Test_AstChannelDTMF(t *testing.T) {
 			0,
 			0,
 			0,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 
@@ -680,7 +680,7 @@ func Test_AstChannelCreate(t *testing.T) {
 		originator     string
 		formats        string
 		variables      map[string]string
-		response       *rabbitmqhandler.Response
+		response       *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -697,7 +697,7 @@ func Test_AstChannelCreate(t *testing.T) {
 			"",
 			"",
 			nil,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"e28258f0-4267-475c-99a3-348bc580f9dd"}`),
 			},
@@ -726,7 +726,7 @@ func Test_AstChannelCreate(t *testing.T) {
 			"",
 			"",
 			map[string]string{"CALLERID(all)": "+123456789"},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"186d1169-ff9a-4b91-84cd-011585a63dc4"}`),
 			},
@@ -778,7 +778,7 @@ func Test_AstChannelDial(t *testing.T) {
 		channelID string
 		caller    string
 		timeout   int
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -789,7 +789,7 @@ func Test_AstChannelDial(t *testing.T) {
 			"83a188ba-a060-11ea-a777-038b061dfbc3",
 			"",
 			30,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 
@@ -831,7 +831,7 @@ func Test_AstChannelPlay(t *testing.T) {
 		channelID string
 		actionID  uuid.UUID
 		medias    []string
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -842,7 +842,7 @@ func Test_AstChannelPlay(t *testing.T) {
 			"94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
 			uuid.FromStringOrNil("c44864cc-e7d9-11ea-923a-73e96775044d"),
 			[]string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 
@@ -860,7 +860,7 @@ func Test_AstChannelPlay(t *testing.T) {
 			"94bcc2b4-e718-11ea-a8cf-e7d1a61482a8",
 			uuid.FromStringOrNil("dde1c518-e7d9-11ea-902a-2b04669d8a49"),
 			[]string{"sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav", "sound:https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm-test.wav"},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 
@@ -908,7 +908,7 @@ func Test_AstChannelRecord(t *testing.T) {
 		endKey    string
 		ifExist   string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -925,7 +925,7 @@ func Test_AstChannelRecord(t *testing.T) {
 			"",
 			"fail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 
@@ -975,7 +975,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 		data           string
 		variables      map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -995,7 +995,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 			"",
 			nil,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id": "660486e8-ffca-11eb-aef3-6b2e6caea5a5","name": "UnicastRTP/127.0.0.1:5090-0x7f6d54035300","state": "Down","caller": {"name": "","number": ""},"connected": {"name": "","number": ""},"accountcode": "","dialplan": {"context": "default","exten": "s","priority": 1,"app_name": "AppDial2","app_data": "(Outgoing Line)"},"creationtime": "2021-08-22T04:10:10.331+0000","language": "en","channelvars": {"UNICASTRTP_LOCAL_PORT": "10492","UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1"}}`),
 			},
@@ -1087,7 +1087,7 @@ func Test_AstChannelRing(t *testing.T) {
 					DataType: "application/json",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelRing(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -1134,7 +1134,7 @@ func Test_AstChannelHoldOn(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelHoldOn(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -1181,7 +1181,7 @@ func Test_AstChannelHoldOff(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelHoldOff(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -1228,7 +1228,7 @@ func Test_AstChannelMusicOnHoldOn(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelMusicOnHoldOn(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -1275,7 +1275,7 @@ func Test_AstChannelMusicOnHoldOff(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelMusicOnHoldOff(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -1322,7 +1322,7 @@ func Test_AstChannelSilenceOn(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelSilenceOn(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -1369,7 +1369,7 @@ func Test_AstChannelSilenceOff(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelSilenceOff(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
@@ -1420,7 +1420,7 @@ func Test_AstChannelMuteOn(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelMuteOn(context.Background(), tt.asteriskID, tt.channelID, tt.direction)
 			if err != nil {
@@ -1471,7 +1471,7 @@ func Test_AstChannelMuteOff(t *testing.T) {
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstChannelMuteOff(context.Background(), tt.asteriskID, tt.channelID, tt.direction)
 			if err != nil {

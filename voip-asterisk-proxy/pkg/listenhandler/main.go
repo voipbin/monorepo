@@ -125,7 +125,7 @@ func (h *listenHandler) listenRun() error {
 	return nil
 }
 
-func (h *listenHandler) listenHandler(request *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) listenHandler(request *sock.Request) (*sock.Response, error) {
 
 	switch request.URI[0:4] {
 	case "/ari":

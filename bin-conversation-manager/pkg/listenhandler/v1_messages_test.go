@@ -28,7 +28,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 		responseMessages []*message.Message
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -48,7 +48,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				},
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ca8db014-1a1f-407e-9443-54282b975e40","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -75,7 +75,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				},
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"8956ba14-7ac4-45f6-b0fb-97af3a1d2520","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"a72d1b51-aa78-4e86-928d-a18c40da4cac","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),

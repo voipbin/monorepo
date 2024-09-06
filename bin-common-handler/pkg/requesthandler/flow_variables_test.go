@@ -21,7 +21,7 @@ func Test_FlowV1VariableGet(t *testing.T) {
 
 		variableID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -32,7 +32,7 @@ func Test_FlowV1VariableGet(t *testing.T) {
 
 			uuid.FromStringOrNil("e25aeb10-cd06-11ec-baba-fb2f8b96ad65"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e25aeb10-cd06-11ec-baba-fb2f8b96ad65","variables":{"key 1": "value 1"}}`),
@@ -86,7 +86,7 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 		variableID uuid.UUID
 		variables  map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -100,7 +100,7 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 				"key 2": "value 2",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -144,7 +144,7 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 		variableID uuid.UUID
 		key        string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -155,7 +155,7 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 			uuid.FromStringOrNil("290c673e-db33-11ec-a4d9-bb00659a2a19"),
 			"key1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -173,7 +173,7 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 			uuid.FromStringOrNil("290c673e-db33-11ec-a4d9-bb00659a2a19"),
 			"key 1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

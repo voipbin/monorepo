@@ -29,7 +29,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     []cmgroupcall.Groupcall
 	}{
 		{
@@ -47,7 +47,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ac47b7fa-be33-11ed-b247-f381628bad10"}]`),
@@ -75,7 +75,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d789d812-be33-11ed-9f54-1b18b82aa8f8"},{"id":"d7af6dfc-be33-11ed-939f-b3e2f9be4bd5"}]`),
@@ -139,7 +139,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 		ringMethod        cmgroupcall.RingMethod
 		answerMethod      cmgroupcall.AnswerMethod
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -170,7 +170,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 			ringMethod:        cmgroupcall.RingMethodRingAll,
 			answerMethod:      cmgroupcall.AnswerMethodHangupOthers,
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2b7dc4ac-bbae-11ed-b868-f762b6f7fd23"}`),
@@ -224,7 +224,7 @@ func Test_CallV1GroupcallGet(t *testing.T) {
 
 		groupcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -235,7 +235,7 @@ func Test_CallV1GroupcallGet(t *testing.T) {
 
 			uuid.FromStringOrNil("1717ba30-be34-11ed-87e7-5739c7ea8622"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1717ba30-be34-11ed-87e7-5739c7ea8622"}`),
@@ -286,7 +286,7 @@ func Test_CallV1GroupcallDelete(t *testing.T) {
 
 		groupcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -297,7 +297,7 @@ func Test_CallV1GroupcallDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("06d9ec2a-be33-11ed-acc5-876b594da79c"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"06d9ec2a-be33-11ed-acc5-876b594da79c"}`),
@@ -348,7 +348,7 @@ func Test_CallV1GroupcallHangup(t *testing.T) {
 
 		groupcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -359,7 +359,7 @@ func Test_CallV1GroupcallHangup(t *testing.T) {
 
 			uuid.FromStringOrNil("3d82215c-be33-11ed-aed4-7b9daa884e9f"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3d82215c-be33-11ed-aed4-7b9daa884e9f"}`),
@@ -410,7 +410,7 @@ func Test_CallV1GroupcallUpdateAnswerGroupcallID(t *testing.T) {
 		groupcallID       uuid.UUID
 		answerGroupcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -422,7 +422,7 @@ func Test_CallV1GroupcallUpdateAnswerGroupcallID(t *testing.T) {
 			groupcallID:       uuid.FromStringOrNil("e50ab9b0-e328-11ed-abe1-abcb6aaa1b47"),
 			answerGroupcallID: uuid.FromStringOrNil("e5399dc0-e328-11ed-af77-6f6bf2e02462"),
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"e50ab9b0-e328-11ed-abe1-abcb6aaa1b47"}`),
@@ -474,7 +474,7 @@ func Test_CallV1GroupcallHangupOthers(t *testing.T) {
 
 		groupcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -484,7 +484,7 @@ func Test_CallV1GroupcallHangupOthers(t *testing.T) {
 
 			groupcallID: uuid.FromStringOrNil("5bde1332-e32b-11ed-8ed7-ef18f8cb924d"),
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"5bde1332-e32b-11ed-8ed7-ef18f8cb924d"}`),
@@ -524,7 +524,7 @@ func Test_CallV1GroupcallHangupCall(t *testing.T) {
 
 		groupcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -534,7 +534,7 @@ func Test_CallV1GroupcallHangupCall(t *testing.T) {
 
 			groupcallID: uuid.FromStringOrNil("d810fc56-e337-11ed-bdbb-57b799f47676"),
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 
@@ -572,7 +572,7 @@ func Test_CallV1GroupcallHangupGroupcall(t *testing.T) {
 
 		groupcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -582,7 +582,7 @@ func Test_CallV1GroupcallHangupGroupcall(t *testing.T) {
 
 			groupcallID: uuid.FromStringOrNil("02fdbce2-e338-11ed-92cd-7f5633b75bad"),
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 

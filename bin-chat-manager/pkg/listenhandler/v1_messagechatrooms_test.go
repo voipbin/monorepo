@@ -30,7 +30,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 
 		responseMessagechatrooms []*messagechatroom.Messagechatroom
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"gets by chatroom id return 1 item",
@@ -56,7 +56,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d3162c64-3507-11ed-afa2-cbb3e904a7b3","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -91,7 +91,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"3bacdc46-3508-11ed-8422-1766fe775e1a","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"3c985216-3508-11ed-b760-5bd81cf30313","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -115,7 +115,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 
 			[]*messagechatroom.Messagechatroom{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -167,7 +167,7 @@ func Test_v1MessagechatroomsIDGet(t *testing.T) {
 
 		responseMessagechatroom *messagechatroom.Messagechatroom
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -186,7 +186,7 @@ func Test_v1MessagechatroomsIDGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"92c89948-3508-11ed-9b4f-77544678aa39","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -238,7 +238,7 @@ func Test_v1MessagechatroomsIDDelete(t *testing.T) {
 		messagechatroomID uuid.UUID
 
 		responseMessagechatroom *messagechatroom.Messagechatroom
-		expectRes               *rabbitmqhandler.Response
+		expectRes               *sock.Response
 	}{
 		{
 			"normal",
@@ -256,7 +256,7 @@ func Test_v1MessagechatroomsIDDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("ce2b7f32-3508-11ed-8a20-a32e4374af3f"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"ce2b7f32-3508-11ed-8a20-a32e4374af3f","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","chatroom_id":"00000000-0000-0000-0000-000000000000","messagechat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),

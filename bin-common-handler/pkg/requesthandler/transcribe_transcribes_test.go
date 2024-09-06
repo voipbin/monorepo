@@ -24,7 +24,7 @@ func Test_TranscribeV1TranscribeGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult *tmtranscribe.Transcribe
 	}
@@ -41,7 +41,7 @@ func Test_TranscribeV1TranscribeGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"32b71878-8093-11ed-8578-775276ea57cf"}`),
@@ -89,7 +89,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     []tmtranscribe.Transcribe
 	}{
 		{
@@ -108,7 +108,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ae0a7cfe-8093-11ed-963d-abb334c8e6d8"}]`),
@@ -135,7 +135,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"bb6c13bc-8093-11ed-b647-5f3b613e1180"},{"id":"bb8fc46a-8093-11ed-9ea7-9304ab751b40"}]`),
@@ -192,7 +192,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *tmtranscribe.Transcribe
 	}{
@@ -212,7 +212,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"2ab9c63a-8227-11ed-928b-1b90501adbe2","reference_type":"call","reference_id":"2ae8944c-8227-11ed-acb4-c3e23ea3a2a4","language":"en-US","direction":"both"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2b13a4ca-8227-11ed-8bad-b7bb9aa7f185"}`),
@@ -257,7 +257,7 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *tmtranscribe.Transcribe
 	}{
@@ -272,7 +272,7 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2622b04a-8228-11ed-98f0-6bfc284cdb95"}`),
@@ -319,7 +319,7 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			"normal",
@@ -335,7 +335,7 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"retry_count":3}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

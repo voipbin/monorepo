@@ -32,7 +32,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 		expectGender        chatbotcall.Gender
 		expectLanguage      string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -57,7 +57,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 			expectGender:        chatbotcall.GenderFemale,
 			expectLanguage:      "en-US",
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9d5b7e72-2cc9-4868-bfab-c8e758cd5045","type":"","push_actions":null}`),

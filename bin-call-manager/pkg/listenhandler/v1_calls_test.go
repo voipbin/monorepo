@@ -31,7 +31,7 @@ func Test_processV1CallsIDGet(t *testing.T) {
 		name      string
 		request   *sock.Request
 		call      *call.Call
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"basic",
@@ -45,7 +45,7 @@ func Test_processV1CallsIDGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"638769c2-620d-11eb-bd1f-6b576e26b4e6","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -90,7 +90,7 @@ func Test_processV1CallsGet(t *testing.T) {
 
 		responseCalls   []*call.Call
 		responseFilters map[string]string
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}{
 		{
 			"normal",
@@ -114,7 +114,7 @@ func Test_processV1CallsGet(t *testing.T) {
 				"customer_id": "ac03d4ea-7f50-11ec-908d-d39407ab524d",
 				"deleted":     "false",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"ac03d4ea-7f50-11ec-908d-d39407ab524d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -148,7 +148,7 @@ func Test_processV1CallsGet(t *testing.T) {
 				"customer_id": "ac35aeb6-7f50-11ec-b7c5-abac92baf1fb",
 				"deleted":     "false",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"ac35aeb6-7f50-11ec-b7c5-abac92baf1fb","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"095e2ec4-5f6c-11ec-b64c-efe2fb8efcbc","customer_id":"ac35aeb6-7f50-11ec-b7c5-abac92baf1fb","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -256,7 +256,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 		id        uuid.UUID
 		request   *sock.Request
 		action    *fmaction.Action
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -274,7 +274,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				Type:      fmaction.TypeEcho,
 				TMExecute: "2020-05-03T21:35:02.809",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -316,7 +316,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 		connect        bool
 
 		call      *call.Call
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			name: "empty",
@@ -344,7 +344,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				Destination: commonaddress.Address{},
 			},
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","customer_id":"ff0a0722-7f50-11ec-a839-4be463701c2f","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -396,7 +396,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				},
 			},
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","customer_id":"ffeda266-7f50-11ec-8089-df3388aef0cc","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"sip","target":"test_source@127.0.0.1:5061","target_name":"","name":"test_source","detail":""},"destination":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -446,7 +446,7 @@ func Test_processV1CallsPost(t *testing.T) {
 		responseCalls      []*call.Call
 		responseGroupcalls []*groupcall.Groupcall
 		request            *sock.Request
-		expectRes          *rabbitmqhandler.Response
+		expectRes          *sock.Response
 	}
 
 	tests := []test{
@@ -491,7 +491,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "owner_type": "agent", "owner_id": "705556a4-2bff-11ef-ad2b-3358935b1074", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destinations": [{"type":"tel", "target": "+821100000001"}], "early_execution": true, "connect": true}`),
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"calls":[{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}],"groupcalls":[{"id":"4f1e2d54-7d52-4c1f-ad49-5b51feea0055","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}]}`),
@@ -529,7 +529,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "34e72f78-7f51-11ec-a83b-cfc69cd4a641", "owner_type": "agent", "owner_id": "71145ca2-2bff-11ef-868b-17bb55414f44", "flow_id": "78fd1276-f3a8-11ea-9734-6735e73fd720", "master_call_id": "a1c63272-8c91-11ec-8ee7-8b50458d3214", "source": {}, "destinations": []}`),
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"calls":[{"id":"72d56d08-f3a8-11ea-9c0c-ef8258d54f42","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}],"groupcalls":[{"id":"50e70d60-d722-43ce-a6b6-d69a28e36cbe","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}]}`),
@@ -571,7 +571,7 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 		request *sock.Request
 
 		responseCall *call.Call
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}
 
 	tests := []test{
@@ -593,7 +593,7 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8e49788e-fc9e-41a0-a73c-a24c030848ca","customer_id":"6ed4431a-7f51-11ec-8855-73041a5777e8","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -637,7 +637,7 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 		responseCall *call.Call
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -658,7 +658,7 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"91a0b50e-f4ec-11ea-b64c-1bf53742d0d8","customer_id":"6ed4431a-7f51-11ec-8855-73041a5777e8","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -710,7 +710,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 		call      *call.Call
 		force     bool
 		request   *sock.Request
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -729,7 +729,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"force":false}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -751,7 +751,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 				DataType:  "application/json",
 				Data:      []byte(`{"force":true}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -790,7 +790,7 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 		request       *sock.Request
 
 		responseCall *call.Call
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}
 
 	tests := []test{
@@ -815,7 +815,7 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 					ID: uuid.FromStringOrNil("bfcdc03a-25bf-11eb-a9b2-bba80a81835b"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bfcdc03a-25bf-11eb-a9b2-bba80a81835b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -859,7 +859,7 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 		request       *sock.Request
 
 		responseCall *call.Call
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}
 
 	tests := []test{
@@ -881,7 +881,7 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("0eaa2942-25c4-11eb-90a3-63fb2b029bae"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0eaa2942-25c4-11eb-90a3-63fb2b029bae","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -932,7 +932,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 		expectFormat         string
 		expectDirection      string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -960,7 +960,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			"ulaw",
 			"both",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"31255b7c-0a6b-11ec-87e2-afe5a545df76","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1015,7 +1015,7 @@ func Test_processV1CallsIDExternalMediaDelete(t *testing.T) {
 		responseCall *call.Call
 
 		expectCallID uuid.UUID
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}
 
 	tests := []test{
@@ -1033,7 +1033,7 @@ func Test_processV1CallsIDExternalMediaDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("7fcac8d6-9730-11ed-bd80-a764f6bc382e"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7fcac8d6-9730-11ed-bd80-a764f6bc382e","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1080,7 +1080,7 @@ func Test_processV1CallsIDDigitsGet(t *testing.T) {
 		id             uuid.UUID
 		responseDigits string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1094,7 +1094,7 @@ func Test_processV1CallsIDDigitsGet(t *testing.T) {
 			uuid.FromStringOrNil("669e567e-9016-11ec-9190-07c8a63f44a8"),
 			"1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"digits":"1"}`),
@@ -1139,7 +1139,7 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 		id     uuid.UUID
 		digits string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1155,7 +1155,7 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 			uuid.FromStringOrNil("a5ca555a-9912-11ec-ab1a-2b341f06e3c0"),
 			"123",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -1172,7 +1172,7 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 			uuid.FromStringOrNil("a5ca555a-9912-11ec-ab1a-2b341f06e3c0"),
 			"",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -1218,7 +1218,7 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 
 		responseCall *call.Call
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1240,7 +1240,7 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0953474c-8fd2-11ed-a24a-7bf36392fef2","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1264,7 +1264,7 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0977e50c-8fd2-11ed-8684-e34a2113a8cc","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1314,7 +1314,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 		expectEndOfKey     string
 		expectDuration     int
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1339,7 +1339,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 			"#",
 			86400,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1c3dc786-9344-11ed-96a2-17c902204823","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1383,7 +1383,7 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 		responseCall *call.Call
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1403,7 +1403,7 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 
 			uuid.FromStringOrNil("1c73262e-9344-11ed-840d-37569c93274f"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1c73262e-9344-11ed-840d-37569c93274f","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1448,7 +1448,7 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 		expectText     string
 		expectGender   string
 		expectLanguage string
-		expectRes      *rabbitmqhandler.Response
+		expectRes      *sock.Response
 	}
 
 	tests := []test{
@@ -1465,7 +1465,7 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 			"hello world",
 			"female",
 			"en-US",
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1506,7 +1506,7 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 
 		expectID     uuid.UUID
 		expectMedias []string
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}
 
 	tests := []test{
@@ -1524,7 +1524,7 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 				"https://test.com/3d55ea46-5a91-442a-b1bc-d6100be0e11d.wav",
 				"https://test.com/6a094e77-a837-4511-8c4f-e2fec3aac44b.wav",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1539,7 +1539,7 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 
 			uuid.FromStringOrNil("c7d981fc-3119-4733-966c-88bfc61587fb"),
 			nil,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1579,7 +1579,7 @@ func Test_processV1CallsIDMediaStopPost(t *testing.T) {
 		request *sock.Request
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1592,7 +1592,7 @@ func Test_processV1CallsIDMediaStopPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("f2caffa0-ab13-4d7d-857e-a6ea64986f40"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1632,7 +1632,7 @@ func Test_processV1CallsIDHoldPost(t *testing.T) {
 		request *sock.Request
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1644,7 +1644,7 @@ func Test_processV1CallsIDHoldPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("8d724fda-cef4-11ed-97c9-3be39b7e862c"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1684,7 +1684,7 @@ func Test_processV1CallsIDHoldDelete(t *testing.T) {
 		request *sock.Request
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1696,7 +1696,7 @@ func Test_processV1CallsIDHoldDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("8da4a16a-cef4-11ed-875f-d7797c9e2710"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1738,7 +1738,7 @@ func Test_processV1CallsIDMutePost(t *testing.T) {
 		expectID        uuid.UUID
 		expectDirection call.MuteDirection
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1754,7 +1754,7 @@ func Test_processV1CallsIDMutePost(t *testing.T) {
 			uuid.FromStringOrNil("4066ee68-d13c-11ed-b9b3-8fe28137c5ad"),
 			call.MuteDirectionBoth,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1795,7 +1795,7 @@ func Test_processV1CallsIDMuteDelete(t *testing.T) {
 
 		expectID        uuid.UUID
 		expectDirection call.MuteDirection
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}
 
 	tests := []test{
@@ -1811,7 +1811,7 @@ func Test_processV1CallsIDMuteDelete(t *testing.T) {
 			uuid.FromStringOrNil("40979fd6-d13c-11ed-8eb5-37d5f6dccaad"),
 			call.MuteDirectionBoth,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1851,7 +1851,7 @@ func Test_processV1CallsIDMOHPost(t *testing.T) {
 		request *sock.Request
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1863,7 +1863,7 @@ func Test_processV1CallsIDMOHPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("641e256a-d13c-11ed-a8f9-8f52289423ea"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1903,7 +1903,7 @@ func Test_processV1CallsIDMOHDelete(t *testing.T) {
 		request *sock.Request
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1915,7 +1915,7 @@ func Test_processV1CallsIDMOHDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("6445ce6c-d13c-11ed-aed2-0b27c33f8967"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -1955,7 +1955,7 @@ func Test_processV1CallsIDSilencePost(t *testing.T) {
 		request *sock.Request
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -1967,7 +1967,7 @@ func Test_processV1CallsIDSilencePost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("81e16bd4-d13c-11ed-8792-eb55e711e84c"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -2007,7 +2007,7 @@ func Test_processV1CallsIDSilenceDelete(t *testing.T) {
 		request *sock.Request
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -2019,7 +2019,7 @@ func Test_processV1CallsIDSilenceDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("8205fd8c-d13c-11ed-a6fd-f3011f730d2f"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},

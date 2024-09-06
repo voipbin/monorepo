@@ -32,7 +32,7 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *rmtrunk.Trunk
 	}{
@@ -55,7 +55,7 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"dbb730a8-549a-11ee-a7f3-4f1384f81f27","name":"test name","detail":"test detail","domain_name":"test-domain","auth_types":["basic","ip"],"username":"testusername","password":"testpassword","allowed_ips":["1.2.3.4"]}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dc3b0e5a-549a-11ee-9469-abda3b219d1d"}`),
@@ -100,7 +100,7 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -116,7 +116,7 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 				"deleted": "false",
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`[{"id":"b215904a-549b-11ee-874c-7f01e2fb3e8c"}]`),
 			},
@@ -171,7 +171,7 @@ func Test_RegistrarV1TrunkGet(t *testing.T) {
 
 		trunkID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -181,7 +181,7 @@ func Test_RegistrarV1TrunkGet(t *testing.T) {
 			name: "normal",
 
 			trunkID: uuid.FromStringOrNil("f5547ab0-549b-11ee-a653-93228d9f8207"),
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f5547ab0-549b-11ee-a653-93228d9f8207"}`),
@@ -231,7 +231,7 @@ func Test_RegistrarV1TrunkGetByDomainName(t *testing.T) {
 
 		domainName string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -241,7 +241,7 @@ func Test_RegistrarV1TrunkGetByDomainName(t *testing.T) {
 			name: "normal",
 
 			domainName: "test-domain",
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4b766408-549c-11ee-a5ad-077c11ba6415"}`),
@@ -291,7 +291,7 @@ func Test_RegistrarV1TrunkDelete(t *testing.T) {
 
 		trunkID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -301,7 +301,7 @@ func Test_RegistrarV1TrunkDelete(t *testing.T) {
 			name: "normal",
 
 			trunkID: uuid.FromStringOrNil("98fbcfba-549c-11ee-8a74-73230f51555d"),
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"98fbcfba-549c-11ee-8a74-73230f51555d"}`),
@@ -357,7 +357,7 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 		password   string
 		allowedIPs []string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -374,7 +374,7 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 			password:   "updatepassword",
 			allowedIPs: []string{"1.2.3.4"},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f27448ce-549c-11ee-b466-57162d71a670"}`),

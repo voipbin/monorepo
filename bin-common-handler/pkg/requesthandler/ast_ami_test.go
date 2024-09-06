@@ -61,7 +61,7 @@ func Test_AstAMIRedirect(t *testing.T) {
 					DataType: "application/json",
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: []byte(`{"Response":"Success","Message":"Redirect successful"}`)}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: []byte(`{"Response":"Success","Message":"Redirect successful"}`)}, nil)
 
 			err := reqHandler.AstAMIRedirect(context.Background(), tt.asteriskID, tt.channelID, tt.context, tt.exten, tt.priority)
 			if err != nil {

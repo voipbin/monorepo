@@ -28,7 +28,7 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *cvconversation.Conversation
 	}
 
@@ -45,7 +45,7 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 				DataType: ContentTypeNone,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d"}`),
@@ -97,7 +97,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []cvconversation.Conversation
 	}{
@@ -117,7 +117,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"30071608-7e43-11ec-b04a-bb4270e3e223"},{"id":"5ca81a9a-7e43-11ec-b271-5b65823bfdd3"}]`),
@@ -177,7 +177,7 @@ func Test_ConversationV1MessageSend(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *cvmessage.Message
 	}{
@@ -195,7 +195,7 @@ func Test_ConversationV1MessageSend(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"text":"hello world.","medias":[]}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"6d5ed26a-ec62-11ec-9aaa-7b9dc8a28675"}`),
@@ -243,7 +243,7 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []cvmessage.Message
 	}{
@@ -260,7 +260,7 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"1489cedc-ec63-11ec-995f-9361e44de4ab"},{"id":"14b9f530-ec63-11ec-961e-2fc971635023"}]`),
@@ -314,7 +314,7 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *cvconversation.Conversation
 	}{
@@ -332,7 +332,7 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1397bde6-007a-11ee-903f-4b1fc025c9a9"}`),

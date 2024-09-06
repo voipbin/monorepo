@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ import (
 )
 
 // processV1TagsGet handles GET /v1/tags request
-func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -52,7 +51,7 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request)
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -62,7 +61,7 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request)
 }
 
 // processV1TagsIDGet handles Get /v1/tags/<tag-id> request
-func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -88,7 +87,7 @@ func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *sock.Request)
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -98,7 +97,7 @@ func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *sock.Request)
 }
 
 // processV1TagsIDPut handles Put /v1/tags/<tag-id> request
-func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -131,7 +130,7 @@ func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *sock.Request)
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -141,7 +140,7 @@ func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *sock.Request)
 }
 
 // processV1TagPost handles Post /v1/tags request
-func (h *listenHandler) processV1TagsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TagsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "processV1TagPost",
@@ -176,7 +175,7 @@ func (h *listenHandler) processV1TagsPost(ctx context.Context, m *sock.Request) 
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -186,7 +185,7 @@ func (h *listenHandler) processV1TagsPost(ctx context.Context, m *sock.Request) 
 }
 
 // processV1TagsIDDelete handles Delete /v1/tag/<tag_id> request
-func (h *listenHandler) processV1TagsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TagsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -212,7 +211,7 @@ func (h *listenHandler) processV1TagsIDDelete(ctx context.Context, m *sock.Reque
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

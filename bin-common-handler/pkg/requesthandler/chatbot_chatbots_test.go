@@ -25,7 +25,7 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 		pageSize   uint64
 		filters    map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -42,7 +42,7 @@ func Test_ChatbotV1ChatbotGetsByCustomerID(t *testing.T) {
 				"deleted": "false",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"db662396-4449-456c-a6ee-39aa2ec30b55"},{"id":"0ea936d3-c74f-4744-8ca6-44e47178d88a"}]`),
@@ -102,7 +102,7 @@ func Test_ChatbotV1ChatbotGet(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *cbchatbot.Chatbot
 	}
 
@@ -117,7 +117,7 @@ func Test_ChatbotV1ChatbotGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"d628f462-cf28-47d9-ae37-c604c0ea2863"}`),
@@ -164,7 +164,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 		engineType  cbchatbot.EngineType
 		initPrompt  string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -179,7 +179,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 			engineType:  cbchatbot.EngineTypeChatGPT,
 			initPrompt:  "test init prompt",
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e6248322-de4f-4313-bd89-f9de1c6466a8"}`),
@@ -230,7 +230,7 @@ func Test_ConferenceV1ChatbotDelete(t *testing.T) {
 
 		chatbotID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -241,7 +241,7 @@ func Test_ConferenceV1ChatbotDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("5d4c38bf-6cd5-4255-950a-9abf52704472"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"5d4c38bf-6cd5-4255-950a-9abf52704472"}`),
@@ -294,7 +294,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 		engineType  cbchatbot.EngineType
 		initPrompt  string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -309,7 +309,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 			engineType:  cbchatbot.EngineTypeChatGPT,
 			initPrompt:  "test init prompt",
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"76380ede-f84a-11ed-a288-2bf54d8b92e6"}`),

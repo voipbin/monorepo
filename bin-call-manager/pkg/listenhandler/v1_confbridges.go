@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,7 +15,7 @@ import (
 )
 
 // processV1ConfbridgesPost handles /v1/confbriges request
-func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesPost",
 		"request": m,
@@ -45,7 +44,7 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *sock.Re
 		return simpleResponse(400), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       tmp,
@@ -55,7 +54,7 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *sock.Re
 }
 
 // processV1ConfbridgesIDGet handles /v1/confbriges/<id> Get request
-func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDGet",
 		"request": m,
@@ -80,7 +79,7 @@ func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *sock.R
 		return simpleResponse(400), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		Data:       tmp,
 	}
@@ -89,7 +88,7 @@ func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *sock.R
 }
 
 // processV1ConfbridgesIDDelete handles /v1/confbridges/<id> DELETE request
-func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDDelete",
 		"request": m,
@@ -114,7 +113,7 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *soc
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -124,7 +123,7 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *soc
 }
 
 // processV1ConfbridgesIDTerminatePost handles /v1/confbridges/<id>/terminate POST request
-func (h *listenHandler) processV1ConfbridgesIDTerminatePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDTerminatePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDTerminatePost",
 		"request": m,
@@ -149,7 +148,7 @@ func (h *listenHandler) processV1ConfbridgesIDTerminatePost(ctx context.Context,
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -159,7 +158,7 @@ func (h *listenHandler) processV1ConfbridgesIDTerminatePost(ctx context.Context,
 }
 
 // processV1ConfbridgesIDCallsIDDelete handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
-func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDCallsIDDelete",
 		"request": m,
@@ -182,7 +181,7 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context,
 }
 
 // processV1ConfbridgesIDCallsIDPost handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
-func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDCallsIDPost",
 		"request": m,
@@ -205,7 +204,7 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m
 }
 
 // processV1ConfbridgesIDExternalMediaPost handles /v1/confbridges/<confbridge-id>/external-media POST request
-func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDExternalMediaPost",
 		"request": m,
@@ -235,7 +234,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Cont
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -245,7 +244,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Cont
 }
 
 // processV1ConfbridgesIDExternalMediaDelete handles /v1/confbridges/<confbridge-id>/external-media DELETE request
-func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDExternalMediaDelete",
 		"request": m,
@@ -270,7 +269,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Co
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -280,7 +279,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Co
 }
 
 // processV1ConfbridgesIDRecordingStartPost handles /v1/confbridges/<confbridge-id>/recording_start POST request
-func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDRecordingStartPost",
 		"request": m,
@@ -310,7 +309,7 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Con
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -320,7 +319,7 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Con
 }
 
 // processV1ConfbridgesIDRecordingStopPost handles /v1/confbridges/<confbridge-id>/recording_stop POST request
-func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDRecordingStopPost",
 		"request": m,
@@ -345,7 +344,7 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Cont
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -355,7 +354,7 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Cont
 }
 
 // processV1ConfbridgesIDFlagsPost handles /v1/confbridges/<confbridge-id>/flags POST request
-func (h *listenHandler) processV1ConfbridgesIDFlagsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDFlagsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDFlagsPost",
 		"request": m,
@@ -385,7 +384,7 @@ func (h *listenHandler) processV1ConfbridgesIDFlagsPost(ctx context.Context, m *
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -395,7 +394,7 @@ func (h *listenHandler) processV1ConfbridgesIDFlagsPost(ctx context.Context, m *
 }
 
 // processV1ConfbridgesIDFlagsDelete handles /v1/confbridges/<confbridge-id>/flags DELETE request
-func (h *listenHandler) processV1ConfbridgesIDFlagsDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDFlagsDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDFlagsDelete",
 		"request": m,
@@ -425,7 +424,7 @@ func (h *listenHandler) processV1ConfbridgesIDFlagsDelete(ctx context.Context, m
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -435,7 +434,7 @@ func (h *listenHandler) processV1ConfbridgesIDFlagsDelete(ctx context.Context, m
 }
 
 // processV1ConfbridgesIDRingPost handles /v1/confbridges/<confbridge-id>/ring POST request
-func (h *listenHandler) processV1ConfbridgesIDRingPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDRingPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDRingPost",
 		"request": m,
@@ -457,7 +456,7 @@ func (h *listenHandler) processV1ConfbridgesIDRingPost(ctx context.Context, m *s
 }
 
 // processV1ConfbridgesIDAnswerPost handles /v1/confbridges/<confbridge-id>/answer POST request
-func (h *listenHandler) processV1ConfbridgesIDAnswerPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConfbridgesIDAnswerPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConfbridgesIDAnswerPost",
 		"request": m,

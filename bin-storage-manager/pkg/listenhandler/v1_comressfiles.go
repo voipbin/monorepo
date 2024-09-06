@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 
 	"github.com/sirupsen/logrus"
@@ -12,7 +11,7 @@ import (
 
 // v1CompressfilesPost handles /v1/compressfiles POST request
 // creates a new compress with given data and return the created compress info.
-func (h *listenHandler) v1CompressfilesPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CompressfilesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CompressfilesPost",
 		"request": m,
@@ -37,7 +36,7 @@ func (h *listenHandler) v1CompressfilesPost(ctx context.Context, m *sock.Request
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

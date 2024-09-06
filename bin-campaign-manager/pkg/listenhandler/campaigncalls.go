@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ import (
 )
 
 // v1CampaigncallsGet handles /v1/campaigncalls GET request
-func (h *listenHandler) v1CampaigncallsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaigncallsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaigncallsGet",
 		"request": m,
@@ -54,7 +53,7 @@ func (h *listenHandler) v1CampaigncallsGet(ctx context.Context, m *sock.Request)
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -64,7 +63,7 @@ func (h *listenHandler) v1CampaigncallsGet(ctx context.Context, m *sock.Request)
 }
 
 // v1CampaigncallsIDGet handles /v1/campaigncalls/{id} GET request
-func (h *listenHandler) v1CampaigncallsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaigncallsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaigncallsIDGet",
 		"request": m,
@@ -91,7 +90,7 @@ func (h *listenHandler) v1CampaigncallsIDGet(ctx context.Context, m *sock.Reques
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -101,7 +100,7 @@ func (h *listenHandler) v1CampaigncallsIDGet(ctx context.Context, m *sock.Reques
 }
 
 // v1CampaigncallsIDDelete handles /v1/campaigncalls/{id} DELETE request
-func (h *listenHandler) v1CampaigncallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaigncallsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaigncallsIDDelete",
 		"request": m,
@@ -128,7 +127,7 @@ func (h *listenHandler) v1CampaigncallsIDDelete(ctx context.Context, m *sock.Req
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

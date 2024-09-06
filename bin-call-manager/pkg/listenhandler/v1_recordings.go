@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ import (
 )
 
 // processV1RecordingGet handles GET /v1/recordings request
-func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsGet",
 		"request": m,
@@ -47,7 +46,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -57,7 +56,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Requ
 }
 
 // processV1RecordingsPost handles POST /v1/recordings request
-func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsPost",
 		"request": m,
@@ -81,7 +80,7 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Req
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -91,7 +90,7 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Req
 }
 
 // processV1RecordingsIDGet handles GET /v1/recordings/<id> request
-func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDGet",
 		"request": m,
@@ -115,7 +114,7 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *sock.Re
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -125,7 +124,7 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *sock.Re
 }
 
 // processV1RecordingsIDDelete handles DELETE /v1/recordings/<id> request
-func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDDelete",
 		"request": m,
@@ -149,7 +148,7 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *sock
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -159,7 +158,7 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *sock
 }
 
 // processV1RecordingsIDStopPost handles POST /v1/recordings/<id>/stop request
-func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDStopPost",
 		"request": m,
@@ -183,7 +182,7 @@ func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *so
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

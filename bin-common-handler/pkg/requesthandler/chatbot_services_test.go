@@ -29,7 +29,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 		language       string
 		requestTimeout int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -47,7 +47,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 			language:       "en-US",
 			requestTimeout: 5000,
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"}`),

@@ -26,7 +26,7 @@ func Test_TransferV1TransferStart(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *tmtransfer.Transfer
 	}
@@ -51,7 +51,7 @@ func Test_TransferV1TransferStart(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"type":"attended","transferer_call_id":"47ca8e80-dd35-11ed-8213-bf37002f55ef","transferee_addresses":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}]}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"926ea4c6-dd35-11ed-8414-27310fdd3d82"}`),

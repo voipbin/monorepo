@@ -29,7 +29,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 
 		queuecalls []*queuecall.Queuecall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -54,7 +54,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"4b46ad9c-6152-11ec-a4a6-7b3b226046a5","customer_id":"f9f94078-7f54-11ec-8387-9fe49204286f","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}]`),
@@ -84,7 +84,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"4ca0c722-6152-11ec-a0ad-1be04f100fff","customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""},{"id":"4cc9430a-6152-11ec-9295-d783a3ffb68e","customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}]`),
@@ -132,7 +132,7 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 		id        uuid.UUID
 		queuecall *queuecall.Queuecall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -146,7 +146,7 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 				ID:         uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
 				CustomerID: uuid.FromStringOrNil("2ff5fe64-7f55-11ec-8c3c-83bef268c5ed"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0bc84788-6153-11ec-b08a-d74a5a04d995","customer_id":"2ff5fe64-7f55-11ec-8c3c-83bef268c5ed","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -191,7 +191,7 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 		queuecallID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
@@ -206,7 +206,7 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("4a76400a-60ab-11ec-aeb8-eb262d80acf1"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4a76400a-60ab-11ec-aeb8-eb262d80acf1","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -251,7 +251,7 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 		queuecallID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
@@ -265,7 +265,7 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"319fec77-0843-4207-8c6a-65bf067e4bac","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -311,7 +311,7 @@ func Test_processV1QueuecallsIDHealthCheckPost(t *testing.T) {
 		retryCount  int
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
@@ -371,7 +371,7 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 		referenceID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}{
 		{
 			"normal",
@@ -385,7 +385,7 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b1d4d172-52e3-4927-bf10-77eafebd19d8"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b1d4d172-52e3-4927-bf10-77eafebd19d8","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
@@ -429,7 +429,7 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 		referenceID       uuid.UUID
 		responseQueuecall *queuecall.Queuecall
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -442,7 +442,7 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b673a022-bcb7-11ed-8212-6fef4fabe382"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b673a022-bcb7-11ed-8212-6fef4fabe382","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),

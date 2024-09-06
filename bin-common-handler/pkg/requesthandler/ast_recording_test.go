@@ -51,7 +51,7 @@ func Test_AstRecordingStop(t *testing.T) {
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingStop(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -102,7 +102,7 @@ func Test_AstRecordingPause(t *testing.T) {
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingPause(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -153,7 +153,7 @@ func Test_AstRecordingUnpause(t *testing.T) {
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingUnpause(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -204,7 +204,7 @@ func Test_AstRecordingMute(t *testing.T) {
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingMute(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -255,7 +255,7 @@ func Test_AstRecordingUnmute(t *testing.T) {
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingUnmute(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {

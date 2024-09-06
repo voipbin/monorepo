@@ -25,7 +25,7 @@ func Test_ChatV1ChatroomGet(t *testing.T) {
 
 		chatroomID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -35,7 +35,7 @@ func Test_ChatV1ChatroomGet(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b76a30e8-3695-11ed-b331-7f4de361058c"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b76a30e8-3695-11ed-b331-7f4de361058c"}`),
@@ -89,7 +89,7 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -105,7 +105,7 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 				"owner_id": "19de5bc8-3696-11ed-b9b7-3f54f6f0297b",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"1a6c8efc-3696-11ed-b8f6-f7375910007f"}]`),
@@ -163,7 +163,7 @@ func Test_ChatV1ChatroomDelete(t *testing.T) {
 
 		chatroomID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -173,7 +173,7 @@ func Test_ChatV1ChatroomDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("a4113036-3696-11ed-9c58-839c310695a8"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a4113036-3696-11ed-9c58-839c310695a8"}`),
@@ -227,7 +227,7 @@ func Test_ChatV1ChatroomUpdateBasicInfo(t *testing.T) {
 		updateName   string
 		updateDetail string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -240,7 +240,7 @@ func Test_ChatV1ChatroomUpdateBasicInfo(t *testing.T) {
 			"update name",
 			"update detail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"800b6dae-bc60-11ee-94fb-23e2e1876984"}`),

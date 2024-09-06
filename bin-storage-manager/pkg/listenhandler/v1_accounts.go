@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +16,7 @@ import (
 
 // v1AccountsPost handles /v1/accounts POST request
 // creates a new account with given data and return the created account info.
-func (h *listenHandler) v1AccountsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1AccountsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1AccountsPost",
 		"request": m,
@@ -45,7 +44,7 @@ func (h *listenHandler) v1AccountsPost(ctx context.Context, m *sock.Request) (*r
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -55,7 +54,7 @@ func (h *listenHandler) v1AccountsPost(ctx context.Context, m *sock.Request) (*r
 }
 
 // v1AccountsGet handles /v1/accounts GET request
-func (h *listenHandler) v1AccountsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1AccountsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1AccountsGet",
 		"request": m,
@@ -87,7 +86,7 @@ func (h *listenHandler) v1AccountsGet(ctx context.Context, m *sock.Request) (*ra
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -98,7 +97,7 @@ func (h *listenHandler) v1AccountsGet(ctx context.Context, m *sock.Request) (*ra
 
 // v1AccountsIDGet handles /v1/accounts/<id> GET request
 // returns the given id of account.
-func (h *listenHandler) v1AccountsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1AccountsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1AccountsIDGet",
 		"request": m,
@@ -125,7 +124,7 @@ func (h *listenHandler) v1AccountsIDGet(ctx context.Context, m *sock.Request) (*
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -136,7 +135,7 @@ func (h *listenHandler) v1AccountsIDGet(ctx context.Context, m *sock.Request) (*
 
 // v1AccountsIDDelete handles
 // /v1/accounts/{id} DELETE
-func (h *listenHandler) v1AccountsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1AccountsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1AccountsIDDelete",
 		"request": m,
@@ -157,7 +156,7 @@ func (h *listenHandler) v1AccountsIDDelete(ctx context.Context, m *sock.Request)
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

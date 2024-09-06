@@ -32,7 +32,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 		responseFilters       map[string]string
 		responseConversations []*conversation.Conversation
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -58,7 +58,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -93,7 +93,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"b7ac843c-e863-11ec-9652-0ff162b38a15","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"c45aec8c-e863-11ec-9bae-4fcfe883444a","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -140,7 +140,7 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 		resultData *conversation.Conversation
 
 		responseConversation *sock.Request
-		response             *rabbitmqhandler.Response
+		response             *sock.Response
 	}{
 		{
 			"normal",
@@ -157,7 +157,7 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 				URI:    "/v1/conversations/73071e00-a29a-11ec-a43a-079fe08ce740",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -204,7 +204,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 		responseMessages []*message.Message
 
 		request  *sock.Request
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -224,7 +224,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 				URI:    "/v1/conversations/7d83fee0-e866-11ec-bbc3-4b1ea17cf502/messages?customer_id=64a3cbd8-e863-11ec-85de-1bcd09d3872e&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -251,7 +251,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 				URI:    "/v1/conversations/d341b73c-e866-11ec-8b7d-d34da2bad8d5/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d373f1e8-e866-11ec-91ef-7711453397a7","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"d3a1f9f8-e866-11ec-a403-07ca24d89997","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -299,7 +299,7 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 		responseMessage *message.Message
 
 		request  *sock.Request
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -318,7 +318,7 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"text":"hello world", "medias":[]}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bb509f64-ec56-11ec-aa8b-374ae78e9b98","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","direction":"","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -363,7 +363,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 		expectConversationID uuid.UUID
 		expectName           string
 		expectDetail         string
-		expectRes            *rabbitmqhandler.Response
+		expectRes            *sock.Response
 	}{
 		{
 			name: "normal",
@@ -385,7 +385,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 			expectName:           "test name",
 			expectDetail:         "test detail",
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8d8ab6ae-0074-11ee-80d0-df60c15605d7","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),

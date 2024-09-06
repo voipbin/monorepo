@@ -35,7 +35,7 @@ func Test_v1OutplansPost(t *testing.T) {
 
 		responseOutplan *outplan.Outplan
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -65,7 +65,7 @@ func Test_v1OutplansPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("3ca9708e-c463-11ec-95e7-53d07a0e8bb2"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3ca9708e-c463-11ec-95e7-53d07a0e8bb2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -111,7 +111,7 @@ func Test_v1OutplansGet(t *testing.T) {
 
 		responseOutplans []*outplan.Outplan
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -131,7 +131,7 @@ func Test_v1OutplansGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"4d100e66-c467-11ec-b6c1-eb8c7f0b8f24","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -175,7 +175,7 @@ func Test_v1OutplansIDGet(t *testing.T) {
 
 		responseOutplan *outplan.Outplan
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -191,7 +191,7 @@ func Test_v1OutplansIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("a96cd4d2-c467-11ec-b1b4-0f35d821b46c"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a96cd4d2-c467-11ec-b1b4-0f35d821b46c","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -235,7 +235,7 @@ func Test_v1OutplansIDDelete(t *testing.T) {
 
 		responseOutplan *outplan.Outplan
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -251,7 +251,7 @@ func Test_v1OutplansIDDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("dfce10d6-c467-11ec-b1d3-0fb0c67e2f11"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dfce10d6-c467-11ec-b1d3-0fb0c67e2f11","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -297,7 +297,7 @@ func Test_v1OutplansIDPut(t *testing.T) {
 
 		responseOutplan *outplan.Outplan
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -316,7 +316,7 @@ func Test_v1OutplansIDPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("1819e97e-c468-11ec-bf3c-63e7e7c996db"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1819e97e-c468-11ec-bf3c-63e7e7c996db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -368,7 +368,7 @@ func Test_v1OutplansIDDialsPut(t *testing.T) {
 
 		responseOutplan *outplan.Outplan
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -396,7 +396,7 @@ func Test_v1OutplansIDDialsPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("703adb5e-c468-11ec-b8ff-f3c00713cce4"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"703adb5e-c468-11ec-b8ff-f3c00713cce4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`),

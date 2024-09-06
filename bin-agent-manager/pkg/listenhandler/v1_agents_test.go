@@ -29,7 +29,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 
 		responseFilters map[string]string
 		responseAgents  []*agent.Agent
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}{
 		{
 			"normal",
@@ -73,7 +73,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 					TMDelete: "9999-01-01 00:00:00.000000",
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
@@ -122,7 +122,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 		tagIDs     []uuid.UUID
 
 // 		agents    []*agent.Agent
-// 		expectRes *rabbitmqhandler.Response
+// 		expectRes *sock.Response
 // 	}{
 // 		{
 // 			"normal",
@@ -160,7 +160,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 					TMDelete: "9999-01-01 00:00:00.000000",
 // 				},
 // 			},
-// 			&rabbitmqhandler.Response{
+// 			&sock.Response{
 // 				StatusCode: 200,
 // 				DataType:   "application/json",
 // 				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
@@ -224,7 +224,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 					TMDelete: "9999-01-01 00:00:00.000000",
 // 				},
 // 			},
-// 			&rabbitmqhandler.Response{
+// 			&sock.Response{
 // 				StatusCode: 200,
 // 				DataType:   "application/json",
 // 				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
@@ -271,7 +271,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 		status     agent.Status
 
 // 		agents    []*agent.Agent
-// 		expectRes *rabbitmqhandler.Response
+// 		expectRes *sock.Response
 // 	}{
 // 		{
 // 			"normal",
@@ -310,7 +310,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 					TMDelete: "9999-01-01 00:00:00.000000",
 // 				},
 // 			},
-// 			&rabbitmqhandler.Response{
+// 			&sock.Response{
 // 				StatusCode: 200,
 // 				DataType:   "application/json",
 // 				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
@@ -375,7 +375,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 					TMDelete: "9999-01-01 00:00:00.000000",
 // 				},
 // 			},
-// 			&rabbitmqhandler.Response{
+// 			&sock.Response{
 // 				StatusCode: 200,
 // 				DataType:   "application/json",
 // 				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"473248a4-4d90-11ec-976a-172883175eb4","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test2","password_hash":"password","name":"test agent2","detail":"test agent2 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["2e5705ea-4d90-11ec-9352-6326ee2dce20"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
@@ -428,7 +428,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 		addresses  []commonaddress.Address
 
 		agent     *agent.Agent
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -477,7 +477,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
@@ -536,7 +536,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
@@ -603,7 +603,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
@@ -649,7 +649,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 		password string
 
 		agent     *agent.Agent
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -686,7 +686,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
@@ -731,7 +731,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 		id    uuid.UUID
 		agent *agent.Agent
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -749,7 +749,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -797,7 +797,7 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 		ringMethod agent.RingMethod
 
 		resonseAgent *agent.Agent
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
@@ -818,7 +818,7 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -863,7 +863,7 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 		addresses []commonaddress.Address
 
 		responseAgent *agent.Agent
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -887,7 +887,7 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -932,7 +932,7 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 		status agent.Status
 
 		resonseAgent *agent.Agent
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
@@ -951,7 +951,7 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -997,7 +997,7 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 		password string
 
 		responseAgent *agent.Agent
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -1016,7 +1016,7 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1061,7 +1061,7 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 		tagIDs []uuid.UUID
 
 		responseAgent *agent.Agent
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -1082,7 +1082,7 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1126,7 +1126,7 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 		id uuid.UUID
 
 		responseAgent *agent.Agent
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -1143,7 +1143,7 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1189,7 +1189,7 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 		permission agent.Permission
 
 		responseAgent *agent.Agent
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -1208,7 +1208,7 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 					ID: uuid.FromStringOrNil("f1ba04b0-951e-11ee-a0a2-7b8600a1ee45"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f1ba04b0-951e-11ee-a0a2-7b8600a1ee45","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -1254,7 +1254,7 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 		expectCustomerID uuid.UUID
 		expectAddress    *commonaddress.Address
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			name: "normal",
@@ -1277,7 +1277,7 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 				Target: "f27b2198-2d91-11ef-9b01-93e01658c814",
 			},
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f2a28abc-2d91-11ef-823f-b37d45f6968f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),

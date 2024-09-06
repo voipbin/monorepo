@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,7 +17,7 @@ import (
 
 // v1ProvidersPost handles /v1/providers POST request
 // creates a new provider with given data and return the created provider info.
-func (h *listenHandler) v1ProvidersPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ProvidersPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1ProvidersPost",
@@ -54,7 +53,7 @@ func (h *listenHandler) v1ProvidersPost(ctx context.Context, m *sock.Request) (*
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -64,7 +63,7 @@ func (h *listenHandler) v1ProvidersPost(ctx context.Context, m *sock.Request) (*
 }
 
 // v1ProvidersGet handles /v1/providers GET request
-func (h *listenHandler) v1ProvidersGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ProvidersGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1ProvidersGet",
@@ -94,7 +93,7 @@ func (h *listenHandler) v1ProvidersGet(ctx context.Context, m *sock.Request) (*r
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -104,7 +103,7 @@ func (h *listenHandler) v1ProvidersGet(ctx context.Context, m *sock.Request) (*r
 }
 
 // v1ProvidersIDGet handles /v1/providers/{id} GET request
-func (h *listenHandler) v1ProvidersIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ProvidersIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1ProvidersIDGet",
@@ -133,7 +132,7 @@ func (h *listenHandler) v1ProvidersIDGet(ctx context.Context, m *sock.Request) (
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -143,7 +142,7 @@ func (h *listenHandler) v1ProvidersIDGet(ctx context.Context, m *sock.Request) (
 }
 
 // v1ProvidersIDPut handles /v1/providers/{id} PUT request
-func (h *listenHandler) v1ProvidersIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ProvidersIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1ProvidersIDPut",
@@ -188,7 +187,7 @@ func (h *listenHandler) v1ProvidersIDPut(ctx context.Context, m *sock.Request) (
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -198,7 +197,7 @@ func (h *listenHandler) v1ProvidersIDPut(ctx context.Context, m *sock.Request) (
 }
 
 // v1ProvidersIDDelete handles /v1/providers/{id} Delete request
-func (h *listenHandler) v1ProvidersIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ProvidersIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1ProvidersIDDelete",
@@ -227,7 +226,7 @@ func (h *listenHandler) v1ProvidersIDDelete(ctx context.Context, m *sock.Request
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

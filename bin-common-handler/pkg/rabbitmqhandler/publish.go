@@ -67,7 +67,7 @@ func (r *rabbit) PublishEvent(queueName string, evt *Event) error {
 }
 
 // PublishRPC publishes RPC message and returns response.
-func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*Response, error) {
+func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
 
 	reqMsg, err := json.Marshal(req)
 	if err != nil {
@@ -129,7 +129,7 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Req
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case res := <-chanRes:
-		var response Response
+		var response sock.Response
 		if err := json.Unmarshal(res.Body, &response); err != nil {
 			return nil, err
 		}

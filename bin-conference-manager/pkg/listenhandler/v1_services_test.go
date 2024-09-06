@@ -27,7 +27,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 		expectConferenceID  uuid.UUID
 		expectReferenceType conferencecall.ReferenceType
 		expectReferenceID   uuid.UUID
-		expectRes           *rabbitmqhandler.Response
+		expectRes           *sock.Response
 	}{
 		{
 			name: "normal",
@@ -45,7 +45,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 			expectReferenceType: conferencecall.ReferenceTypeCall,
 			expectReferenceID:   uuid.FromStringOrNil("440e58f4-c0ab-11ed-89d9-7340c26c4034"),
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"95cf180c-98c6-11ed-8330-bb119cab4678","type":"","push_actions":null}`),

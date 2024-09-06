@@ -26,7 +26,7 @@ func Test_TagV1TagCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *tmtag.Tag
 	}{
@@ -44,7 +44,7 @@ func Test_TagV1TagCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","name":"test name","detail":"test detail"}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f"}`),
@@ -91,7 +91,7 @@ func Test_TagV1TagUpdate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *tmtag.Tag
 	}{
@@ -109,7 +109,7 @@ func Test_TagV1TagUpdate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8f8b1638-2c75-11ee-89e0-23baf30fef23"}`),
@@ -154,7 +154,7 @@ func Test_TagV1TagDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *tmtag.Tag
 	}{
@@ -169,7 +169,7 @@ func Test_TagV1TagDelete(t *testing.T) {
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8fb8f1fc-2c75-11ee-aa2c-cb07baf2171a"}`),
@@ -214,7 +214,7 @@ func Test_TagV1TagGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *tmtag.Tag
 	}{
@@ -229,7 +229,7 @@ func Test_TagV1TagGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8fe6c136-2c75-11ee-a3a4-37400837e12e"}`),
@@ -276,7 +276,7 @@ func Test_TagV1TagGets(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []tmtag.Tag
 	}{
@@ -293,7 +293,7 @@ func Test_TagV1TagGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"8fe6c136-2c75-11ee-a3a4-37400837e12e"}]`),

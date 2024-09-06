@@ -30,7 +30,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 		providerDetail string
 
 		responseRoute *provider.Provider
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -55,7 +55,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 			&provider.Provider{
 				ID: uuid.FromStringOrNil("997a7752-4872-11ed-be7a-5783111a9092"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"997a7752-4872-11ed-be7a-5783111a9092","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -102,7 +102,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 
 		responseProviders []*provider.Provider
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
@@ -121,7 +121,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"104eef98-7492-473d-b058-579364d20e6b","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -147,7 +147,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"df5c4b4d-a75d-45d3-a27c-ec6686dcd467","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"eac421c0-a0b4-4d33-8184-ffcbe80a92fb","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -166,7 +166,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 
 			[]*provider.Provider{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -211,7 +211,7 @@ func Test_v1ProvidersIDGet(t *testing.T) {
 
 		responseProvider *provider.Provider
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -227,7 +227,7 @@ func Test_v1ProvidersIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("30bc4952-efcc-4944-95d8-df8e7f571479"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"30bc4952-efcc-4944-95d8-df8e7f571479","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -280,7 +280,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 		detail       string
 
 		responseRoute *provider.Provider
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -306,7 +306,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 			&provider.Provider{
 				ID: uuid.FromStringOrNil("83cfba90-d8a4-48e2-a9d0-dae964937163"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"83cfba90-d8a4-48e2-a9d0-dae964937163","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -351,7 +351,7 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 		id      uuid.UUID
 
 		responseProvider *provider.Provider
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			"normal",
@@ -366,7 +366,7 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 			&provider.Provider{
 				ID: uuid.FromStringOrNil("be3be98f-d434-4ce9-9374-71b3932de735"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"be3be98f-d434-4ce9-9374-71b3932de735","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),

@@ -25,7 +25,7 @@ func Test_AgentV1Login(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *amagent.Agent
 	}{
@@ -42,7 +42,7 @@ func Test_AgentV1Login(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"username":"test@test.com","password":"testpassword"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"805adc04-8a2e-11ee-8548-57e4277837c0"}`),

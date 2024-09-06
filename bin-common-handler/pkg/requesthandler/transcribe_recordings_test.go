@@ -11,7 +11,7 @@ package requesthandler
 
 // 		expectTarget  string
 // 		expectRequest *sock.Request
-// 		response      *rabbitmqhandler.Response
+// 		response      *sock.Response
 
 // 		expectResult *tstranscribe.Transcribe
 // 	}{
@@ -29,7 +29,7 @@ package requesthandler
 // 				DataType: ContentTypeJSON,
 // 				Data:     []byte(`{"customer_id":"7ce083de-8734-11ec-82e8-df2232923291","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US"}`),
 // 			},
-// 			&rabbitmqhandler.Response{
+// 			&sock.Response{
 // 				StatusCode: 200,
 // 				DataType:   "application/json",
 // 				Data:       []byte(`{"id":"10e438e2-a3eb-11eb-889c-975ac37d96fe","customer_id":"7ce083de-8734-11ec-82e8-df2232923291","type":"recording","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US","webhook_uri":"","webhook_method":"","transcripts":[{"direction":"both","message":"Hello, this is voipbin. Thank you."}]}`),

@@ -27,7 +27,7 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -43,7 +43,7 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 				"chatroom_id": "15f4abea-369e-11ed-b888-1f2976c17434",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"161eef40-369e-11ed-9e79-fb15c8cb465a"}]`),
@@ -101,7 +101,7 @@ func Test_ChatV1MessagechatroomGet(t *testing.T) {
 
 		messagechatroomID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -111,7 +111,7 @@ func Test_ChatV1MessagechatroomGet(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("677d8888-369e-11ed-84b3-ef10b6d21710"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"677d8888-369e-11ed-84b3-ef10b6d21710"}`),
@@ -163,7 +163,7 @@ func Test_ChatV1MessagechatroomDelete(t *testing.T) {
 
 		messagechatroomID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -173,7 +173,7 @@ func Test_ChatV1MessagechatroomDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("919c4582-369e-11ed-8a8c-77506adf5ffe"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"919c4582-369e-11ed-8a8c-77506adf5ffe"}`),

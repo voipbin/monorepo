@@ -27,7 +27,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 		expectText     string
 		expectLanguage string
 		expectGender   tts.Gender
-		expectRes      *rabbitmqhandler.Response
+		expectRes      *sock.Response
 	}{
 		{
 			"normal test",
@@ -50,7 +50,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 			"hello world",
 			"en-US",
 			tts.GenderFemale,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"gender":"female","text":"hello world","language":"en-US","media_bucket_name":"voipbin-tmp-bucket-europe-west4","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),

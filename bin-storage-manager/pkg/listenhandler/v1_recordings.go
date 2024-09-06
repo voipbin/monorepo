@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,7 +15,7 @@ import (
 
 // v1RecordingsIDGet handles /v1/recordings/<id> GET request
 // creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
-func (h *listenHandler) v1RecordingsIDGet(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1RecordingsIDGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), fmt.Errorf("wrong uri")
@@ -41,7 +40,7 @@ func (h *listenHandler) v1RecordingsIDGet(ctx context.Context, req *sock.Request
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -52,7 +51,7 @@ func (h *listenHandler) v1RecordingsIDGet(ctx context.Context, req *sock.Request
 
 // v1RecordingsIDDelete handles /v1/recordings/<id> DELETE request
 // it deletes a given recording file.
-func (h *listenHandler) v1RecordingsIDDelete(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1RecordingsIDDelete(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1RecordingsIDDelete",
 	})
@@ -73,7 +72,7 @@ func (h *listenHandler) v1RecordingsIDDelete(ctx context.Context, req *sock.Requ
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}

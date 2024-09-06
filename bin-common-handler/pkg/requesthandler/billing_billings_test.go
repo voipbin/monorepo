@@ -23,7 +23,7 @@ func Test_BillingV1BillingGets(t *testing.T) {
 		token   string
 		filters map[string]string
 
-		responseBillings *rabbitmqhandler.Response
+		responseBillings *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -39,7 +39,7 @@ func Test_BillingV1BillingGets(t *testing.T) {
 				"customer_id": "84ec5606-f556-11ee-b9a0-dbdcc291145b",
 			},
 
-			responseBillings: &rabbitmqhandler.Response{
+			responseBillings: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"854608c2-f556-11ee-bcaa-7b93c058e8f6"},{"id":"85fdae46-f556-11ee-ba13-c3b959ad9a23"}]`),

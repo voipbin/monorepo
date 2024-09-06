@@ -18,7 +18,7 @@ func Test_v1RecordingsIDGet(t *testing.T) {
 		name        string
 		recordingID uuid.UUID
 		request     *sock.Request
-		expectRes   *rabbitmqhandler.Response
+		expectRes   *sock.Response
 	}
 
 	tests := []test{
@@ -29,7 +29,7 @@ func Test_v1RecordingsIDGet(t *testing.T) {
 				URI:    "/v1/recordings/0c920df8-9821-11eb-91f1-976b4da76663",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},
@@ -64,7 +64,7 @@ func Test_v1RecordingsIDDelete(t *testing.T) {
 		request *sock.Request
 
 		expectRecordingID uuid.UUID
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}
 
 	tests := []test{
@@ -76,7 +76,7 @@ func Test_v1RecordingsIDDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("e1f3eb20-8eaa-11ed-8013-a7cd667479cb"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 		},

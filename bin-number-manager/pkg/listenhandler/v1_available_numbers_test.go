@@ -33,7 +33,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 		numbers     []*availablenumber.AvailableNumber
 
 		request  *sock.Request
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"empty numbers",
@@ -44,7 +44,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 				URI:    "/v1/available_numbers?country_code=US&page_size=1",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -69,7 +69,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 				URI:    "/v1/available_numbers?country_code=US&page_size=1",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"number":"+16188850188","provider_name":"telnyx","country":"US","region":"IL","postal_code":"","features":["emergency","fax","voice","sms"],"tm_create":"","tm_update":"","tm_delete":""}]`),

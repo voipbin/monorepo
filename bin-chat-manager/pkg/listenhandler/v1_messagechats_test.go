@@ -34,7 +34,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 
 		responseMessagechat *messagechat.Messagechat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -61,7 +61,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"63c6f11a-3505-11ed-be2a-7bbff41a9a6c","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -92,7 +92,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"be7c686a-3cc1-11ed-b98a-cb05fdbf5ebc","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -156,7 +156,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 		responseMessagechats []*messagechat.Messagechat
 
 		expectFilters map[string]string
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"gets by chat id return 1 item",
@@ -182,7 +182,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				"chat_id": "1209ea7a-3506-11ed-9c39-83b3c3ded5a4",
 				"deleted": "false",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"123c4966-3506-11ed-be0c-f7d1f54f9992","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -217,7 +217,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				"chat_id": "6728bcac-3506-11ed-87e1-6b1453c7790c",
 				"deleted": "false",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"68b5594a-3506-11ed-9414-73dd9e1d2cca","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"68e6aebe-3506-11ed-9fd0-635331039efa","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -241,7 +241,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				"chat_id": "925dfbf8-3506-11ed-b4aa-439c6be5c723",
 				"deleted": "false",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -292,7 +292,7 @@ func Test_v1MessagechatsIDGet(t *testing.T) {
 
 		responseMessagechat *messagechat.Messagechat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -311,7 +311,7 @@ func Test_v1MessagechatsIDGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"cf9f32fc-3506-11ed-97f5-07ccb6f809de","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -362,7 +362,7 @@ func Test_v1MessagechatsIDDelete(t *testing.T) {
 		messagechatID uuid.UUID
 
 		responseMessagechat *messagechat.Messagechat
-		expectRes           *rabbitmqhandler.Response
+		expectRes           *sock.Response
 	}{
 		{
 			"normal",
@@ -380,7 +380,7 @@ func Test_v1MessagechatsIDDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("26a0a8c4-3507-11ed-8ced-e36d2e15f350"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"26a0a8c4-3507-11ed-8ced-e36d2e15f350","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,7 +17,7 @@ import (
 )
 
 // processV1AgentsGet handles GET /v1/agents request
-func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -52,7 +51,7 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Reques
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -62,7 +61,7 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Reques
 }
 
 // processV1AgentsIDGet handles Get /v1/agents/<agent-id> request
-func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -87,7 +86,7 @@ func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -97,7 +96,7 @@ func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *sock.Reques
 }
 
 // processV1AgentsPost handles Post /v1/agents request
-func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1AgentsPost",
 	})
@@ -139,7 +138,7 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -149,7 +148,7 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request
 }
 
 // processV1AgentsIDDelete handles Delete /v1/agents/<agent_id> request
-func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -174,7 +173,7 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *sock.Req
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -184,7 +183,7 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *sock.Req
 }
 
 // processV1AgentsGetByCustomerIDAddressPost handles Post /v1/agents/get_by_customer_id_address request
-func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "processV1AgentsGetByCustomerIDAddressPost",
 	})
@@ -218,7 +217,7 @@ func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Co
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -228,7 +227,7 @@ func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Co
 }
 
 // processV1AgentsUsernameLogin handles Post /v1/agents/<agent_username>/login request
-func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -259,7 +258,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *soc
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -269,7 +268,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *soc
 }
 
 // processV1AgentsIDAddressesPut handles Put /v1/agents/<agent_id>/addresses request
-func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -300,7 +299,7 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *so
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -310,7 +309,7 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *so
 }
 
 // processV1AgentsIDPut handles Put /v1/agents/<agent_id> request
-func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -341,7 +340,7 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Reques
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -351,7 +350,7 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Reques
 }
 
 // processV1AgentsIDStatusPut handles Put /v1/agents/<agent_id>/status request
-func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -382,7 +381,7 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *sock.
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -392,7 +391,7 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *sock.
 }
 
 // processV1AgentsIDPasswordPut handles Put /v1/agents/<agent_id>/password request
-func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -423,7 +422,7 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *soc
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -433,7 +432,7 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *soc
 }
 
 // processV1AgentsIDTagIDsPut handles Put /v1/agents/<agent_id>/tag_ids request
-func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -464,7 +463,7 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *sock.
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -474,7 +473,7 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *sock.
 }
 
 // processV1AgentsIDPermissionPut handles Put /v1/agents/<agent_id>/permission request
-func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -505,7 +504,7 @@ func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *s
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

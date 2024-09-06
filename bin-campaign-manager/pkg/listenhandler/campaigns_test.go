@@ -37,7 +37,7 @@ func Test_v1CampaignsPost(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -70,7 +70,7 @@ func Test_v1CampaignsPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("3653adb2-c454-11ec-8c9f-7bcd6924ee69"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -116,7 +116,7 @@ func Test_v1CampaignsGet(t *testing.T) {
 
 		responseCampaigns []*campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -136,7 +136,7 @@ func Test_v1CampaignsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"3653adb2-c454-11ec-8c9f-7bcd6924ee69","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -180,7 +180,7 @@ func Test_v1CampaignsIDGet(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -196,7 +196,7 @@ func Test_v1CampaignsIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("edb1a7ca-c459-11ec-b591-733bb55d7160"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"edb1a7ca-c459-11ec-b591-733bb55d7160","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -240,7 +240,7 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -256,7 +256,7 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("5a797d38-c45a-11ec-95be-bb5e6cfb1d96"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5a797d38-c45a-11ec-95be-bb5e6cfb1d96","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -305,7 +305,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			name: "normal",
@@ -327,7 +327,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
 			},
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"40b95d6c-c466-11ec-88ac-734fd1ce5539","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -371,7 +371,7 @@ func Test_v1CampaignsIDExecutePost(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -387,7 +387,7 @@ func Test_v1CampaignsIDExecutePost(t *testing.T) {
 				ID: uuid.FromStringOrNil("741b122e-c45a-11ec-9a3f-9ba245ef6dec"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -431,7 +431,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"stopping",
@@ -449,7 +449,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 				ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -471,7 +471,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 				ID: uuid.FromStringOrNil("d26b0c58-c45a-11ec-b42d-3b261e615304"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d26b0c58-c45a-11ec-b42d-3b261e615304","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -516,7 +516,7 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"stopping",
@@ -534,7 +534,7 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -579,7 +579,7 @@ func Test_v1CampaignsIDActionsPut(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"stopping",
@@ -601,7 +601,7 @@ func Test_v1CampaignsIDActionsPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("045cdfc4-c45c-11ec-915c-5b6e9c81d305"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"045cdfc4-c45c-11ec-915c-5b6e9c81d305","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -649,7 +649,7 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			name: "stopping",
@@ -670,7 +670,7 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
 			},
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e74223b2-c6af-11ec-9f40-1f88a3e01636","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -715,7 +715,7 @@ func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
 
 		responseCampaign *campaign.Campaign
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"stopping",
@@ -733,7 +733,7 @@ func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("e1f5109e-c6b0-11ec-a87d-1f8fe2380e97"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e1f5109e-c6b0-11ec-a87d-1f8fe2380e97","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),

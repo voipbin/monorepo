@@ -30,7 +30,7 @@ func Test_OutdialV1OutdialCreate(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -48,7 +48,7 @@ func Test_OutdialV1OutdialCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"440529e4-b64f-11ec-9208-ef03201c2688","campaign_id":"476f3e62-b64f-11ec-a49c-bb96b9d8a42d","name":"test name","detail":"test detail","data":"test data"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{}`),
@@ -89,7 +89,7 @@ func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult []omoutdial.Outdial
 	}{
@@ -106,7 +106,7 @@ func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"74e6ced6-b650-11ec-ac88-8f6fc68ead7d"}]`),
@@ -153,7 +153,7 @@ func Test_OutdialV1OutdialGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult *omoutdial.Outdial
 	}{
@@ -168,7 +168,7 @@ func Test_OutdialV1OutdialGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f3ca7112-b650-11ec-aad7-17a0858dadcf"}`),
@@ -213,7 +213,7 @@ func Test_OutdialV1OutdialDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult *omoutdial.Outdial
 	}{
@@ -228,7 +228,7 @@ func Test_OutdialV1OutdialDelete(t *testing.T) {
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d21d8788-b651-11ec-8ada-53590bef4cc1"}`),
@@ -274,7 +274,7 @@ func Test_OutdialV1OutdialUpdateBasicInfo(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult *omoutdial.Outdial
 	}{
@@ -292,7 +292,7 @@ func Test_OutdialV1OutdialUpdateBasicInfo(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e2fd1a18-b652-11ec-9823-efc193bad6bf"}`),
@@ -337,7 +337,7 @@ func Test_OutdialV1OutdialUpdateCampaignID(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult *omoutdial.Outdial
 	}{
@@ -354,7 +354,7 @@ func Test_OutdialV1OutdialUpdateCampaignID(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"campaign_id":"129e1312-b653-11ec-b265-4b6204d435a5"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"127cef34-b653-11ec-94f1-bf920056048a"}`),
@@ -399,7 +399,7 @@ func Test_OutdialV1OutdialUpdateData(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult *omoutdial.Outdial
 	}{
@@ -416,7 +416,7 @@ func Test_OutdialV1OutdialUpdateData(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"data":"test data"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5d0e4cf0-b653-11ec-8e87-af57dbb5c13a"}`),

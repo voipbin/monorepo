@@ -24,7 +24,7 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *cfconference.Conference
 	}
 
@@ -39,7 +39,7 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"c337c4de-4132-11ec-b076-ab42296b65d5","flow_id":"e0e5c2ba-4132-11ec-a38b-c7c6ccec4af6"}`),
@@ -87,7 +87,7 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []cfconference.Conference
 	}{
@@ -106,7 +106,7 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 				URI:    "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_type=conference",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"281c89f0-ec61-11ec-a18d-a7389bd741ca"},{"id":"2886cafe-ec61-11ec-b982-5b047f4851d6"}]`),
@@ -158,7 +158,7 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 
 		conferenceID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -168,7 +168,7 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("2d9227a4-3d17-11ec-ab43-cfdad30eccdf"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2d9227a4-3d17-11ec-ab43-cfdad30eccdf"}`),
@@ -219,7 +219,7 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 		conferenceID uuid.UUID
 		delay        int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -230,7 +230,7 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 			uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
 			0,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9df75377-cffe-448a-825e-7afc7f86f9e6"}`),
@@ -250,7 +250,7 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 			uuid.FromStringOrNil("7b85487d-d251-44e6-b7c6-8cee606c9d00"),
 			100000,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7b85487d-d251-44e6-b7c6-8cee606c9d00"}`),
@@ -305,14 +305,14 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		response         *rabbitmqhandler.Response
+		response         *sock.Response
 		expectTarget     string
 		expectRequest    *sock.Request
 		expectConference *cfconference.Conference
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"04432fd6-3d19-11ec-8ad9-43e6162f0953","name":"test","detail":"test detail","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","timeout":86400000,"type":"connect"}`),
@@ -368,7 +368,7 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 		id          uuid.UUID
 		recordingID uuid.UUID
 
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
@@ -379,7 +379,7 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 			uuid.FromStringOrNil("6a8bb630-909e-11ed-8e51-4ba49096d3f7"),
 			uuid.FromStringOrNil("6ad3b3cc-909e-11ed-b6de-bb34ce55e617"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"6a8bb630-909e-11ed-8e51-4ba49096d3f7"}`),
@@ -429,7 +429,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 
 		id uuid.UUID
 
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
@@ -439,7 +439,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 
 			uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"062311b6-9107-11ed-bd31-fb8ce20a3bd7"}`),
@@ -487,7 +487,7 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 
 		id uuid.UUID
 
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
@@ -497,7 +497,7 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 
 			uuid.FromStringOrNil("0660ce2a-9107-11ed-8c04-93e3837ffdcd"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0660ce2a-9107-11ed-8c04-93e3837ffdcd"}`),
@@ -546,7 +546,7 @@ func Test_ConferenceV1ConferenceTranscribeStart(t *testing.T) {
 		id       uuid.UUID
 		language string
 
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
@@ -557,7 +557,7 @@ func Test_ConferenceV1ConferenceTranscribeStart(t *testing.T) {
 			uuid.FromStringOrNil("dfa5e700-98e7-11ed-a643-4bd2f59007ae"),
 			"en-US",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dfa5e700-98e7-11ed-a643-4bd2f59007ae"}`),
@@ -607,7 +607,7 @@ func Test_ConferenceV1ConferenceTranscribeStop(t *testing.T) {
 
 		id uuid.UUID
 
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
@@ -617,7 +617,7 @@ func Test_ConferenceV1ConferenceTranscribeStop(t *testing.T) {
 
 			uuid.FromStringOrNil("dfda30dc-98e7-11ed-a69c-e781929a3118"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dfda30dc-98e7-11ed-a69c-e781929a3118"}`),

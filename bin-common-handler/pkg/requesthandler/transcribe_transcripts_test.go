@@ -27,7 +27,7 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []tmtranscript.Transcript
 	}
@@ -49,7 +49,7 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"9021680a-8229-11ed-a360-0792bc711080"}]`),

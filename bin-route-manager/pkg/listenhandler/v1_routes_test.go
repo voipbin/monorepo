@@ -29,7 +29,7 @@ func Test_v1RoutesPost(t *testing.T) {
 		target     string
 
 		responseRoute *route.Route
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -50,7 +50,7 @@ func Test_v1RoutesPost(t *testing.T) {
 			&route.Route{
 				ID: uuid.FromStringOrNil("ccb0ceec-4867-11ed-8efb-fb670e6abe45"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"ccb0ceec-4867-11ed-8efb-fb670e6abe45","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -98,7 +98,7 @@ func Test_v1RoutesGet(t *testing.T) {
 
 		responseRoutes []*route.Route
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
@@ -118,7 +118,7 @@ func Test_v1RoutesGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"6af1adee-486b-11ed-abce-07169e2f9488","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -145,7 +145,7 @@ func Test_v1RoutesGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"4d88b648-486c-11ed-be0b-1b6f5fbb7ada","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"4db63b68-486c-11ed-914b-e7864023bf96","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -165,7 +165,7 @@ func Test_v1RoutesGet(t *testing.T) {
 
 			[]*route.Route{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -210,7 +210,7 @@ func Test_v1RoutesIDGet(t *testing.T) {
 
 		responseRoute *route.Route
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -226,7 +226,7 @@ func Test_v1RoutesIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("15f39396-486d-11ed-b993-9fc71f6dfd8f"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"15f39396-486d-11ed-b993-9fc71f6dfd8f","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -276,7 +276,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 		target     string
 
 		responseRoute *route.Route
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -297,7 +297,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 			&route.Route{
 				ID: uuid.FromStringOrNil("a1f4bee0-486f-11ed-ae92-336bd3b7e9e0"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a1f4bee0-486f-11ed-ae92-336bd3b7e9e0","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -342,7 +342,7 @@ func Test_v1RoutesIDDelete(t *testing.T) {
 		routeID uuid.UUID
 
 		responseRoute *route.Route
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -357,7 +357,7 @@ func Test_v1RoutesIDDelete(t *testing.T) {
 			&route.Route{
 				ID: uuid.FromStringOrNil("39e88472-486e-11ed-baee-8b0aad96ce8f"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"39e88472-486e-11ed-baee-8b0aad96ce8f","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),

@@ -21,7 +21,7 @@ func Test_CallV1ChannelHealth(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			"normal",
@@ -37,7 +37,7 @@ func Test_CallV1ChannelHealth(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"retry_count":1}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

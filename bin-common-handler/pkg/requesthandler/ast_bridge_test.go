@@ -23,7 +23,7 @@ func Test_AstBridgeCreate(t *testing.T) {
 		bridgeName  string
 		bridgeTypes []cmbridge.Type
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -35,7 +35,7 @@ func Test_AstBridgeCreate(t *testing.T) {
 			bridgeName:  "reference_type=call,reference_id=67ab1e68-549f-11ee-bab0-575214e7ccd7",
 			bridgeTypes: []cmbridge.Type{cmbridge.TypeMixing, cmbridge.TypeProxyMedia},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"5f573260-549f-11ee-8c9c-a33cb00ec17b"}`),
@@ -78,7 +78,7 @@ func Test_AstBridgeDelete(t *testing.T) {
 		asteriskID string
 		bridgeID   string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -87,7 +87,7 @@ func Test_AstBridgeDelete(t *testing.T) {
 			name:       "normal",
 			asteriskID: "00:11:22:33:44:55",
 			bridgeID:   "8d815688-54a0-11ee-bc4f-6fd312bf1408",
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"8d815688-54a0-11ee-bc4f-6fd312bf1408"}`),
@@ -128,7 +128,7 @@ func Test_AstBridgeGet(t *testing.T) {
 		name       string
 		asteriskID string
 		bridgeID   string
-		response   *rabbitmqhandler.Response
+		response   *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -138,7 +138,7 @@ func Test_AstBridgeGet(t *testing.T) {
 			"normal",
 			"00:11:22:33:44:55",
 			"261a2496-dc28-11ea-b3b2-afa07bdffeb2",
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"3e6eec96-fabe-4041-870d-e1daee11aafb","technology":"softmix","bridge_type":"mixing","bridge_class":"stasis","creator":"Stasis","name":"reference_type=confbridge,reference_id=60d7ee79-78f5-4c86-9d34-4c699e8d5ee7","channels":[],"creationtime":"2020-08-10T22:50:28.085+0000","video_mode":"sfu"}`),
@@ -212,7 +212,7 @@ func Test_AstBridgeAddChannel(t *testing.T) {
 		role       string
 		absorbDTMF bool
 		mute       bool
-		response   *rabbitmqhandler.Response
+		response   *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -226,7 +226,7 @@ func Test_AstBridgeAddChannel(t *testing.T) {
 			absorbDTMF: true,
 			mute:       true,
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 
@@ -267,7 +267,7 @@ func Test_AstBridgeRemoveChannel(t *testing.T) {
 		asteriskID string
 		bridgeID   string
 		channelID  string
-		response   *rabbitmqhandler.Response
+		response   *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -278,7 +278,7 @@ func Test_AstBridgeRemoveChannel(t *testing.T) {
 			bridgeID:   "bd6b2914-54a0-11ee-a509-a725e1be2974",
 			channelID:  "bd928b58-54a0-11ee-8831-ef3bd4ff798f",
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 			},
 
@@ -326,7 +326,7 @@ func Test_AstBridgeRecord(t *testing.T) {
 		endKey   string
 		ifExist  string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -343,7 +343,7 @@ func Test_AstBridgeRecord(t *testing.T) {
 			"",
 			"fail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 

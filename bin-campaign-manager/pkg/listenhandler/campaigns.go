@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ import (
 )
 
 // v1CampaignsPost handles /v1/campaigns POST request
-func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsPost",
 		"request": m,
@@ -57,7 +56,7 @@ func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *sock.Request) (*
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -67,7 +66,7 @@ func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *sock.Request) (*
 }
 
 // v1CampaignsGet handles /v1/campaigns GET request
-func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsGet",
 		"request": m,
@@ -100,7 +99,7 @@ func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *sock.Request) (*r
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -110,7 +109,7 @@ func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *sock.Request) (*r
 }
 
 // v1CampaignsIDGet handles /v1/campaigns/{id} GET request
-func (h *listenHandler) v1CampaignsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsIDGet",
 		"request": m,
@@ -137,7 +136,7 @@ func (h *listenHandler) v1CampaignsIDGet(ctx context.Context, m *sock.Request) (
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -147,7 +146,7 @@ func (h *listenHandler) v1CampaignsIDGet(ctx context.Context, m *sock.Request) (
 }
 
 // v1CampaignsIDDelete handles /v1/campaigns/{id} DELETE request
-func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsIDDelete",
 		"request": m,
@@ -175,7 +174,7 @@ func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *sock.Request
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -185,7 +184,7 @@ func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *sock.Request
 }
 
 // v1CampaignsIDPut handles /v1/campaigns/{id}/service_level PUT request
-func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsIDPut",
 		"request": m,
@@ -219,7 +218,7 @@ func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *sock.Request) (
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -229,7 +228,7 @@ func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *sock.Request) (
 }
 
 // processV1CampaignsIDExecutePost handles /v1/campaigns/{id}/execute POST request
-func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CampaignsIDExecutePost",
 		"request": m,
@@ -247,7 +246,7 @@ func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *sock.Re
 	// execute
 	h.campaignHandler.Execute(ctx, id)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}
@@ -256,7 +255,7 @@ func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *sock.Re
 }
 
 // processV1CampaignsIDStatusPut handles /v1/campaigns/{id}/status PUT request
-func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CampaignsIDStatusPut",
 		"request": m,
@@ -290,7 +289,7 @@ func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *sock.Requ
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -300,7 +299,7 @@ func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *sock.Requ
 }
 
 // processV1CampaignsIDServiceLevelPut handles /v1/campaigns/{id}/service_level PUT request
-func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CampaignsIDServiceLevelPut",
 		"request": m,
@@ -334,7 +333,7 @@ func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *soc
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -344,7 +343,7 @@ func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *soc
 }
 
 // v1CampaignsIDActionsPut handles /v1/campaigns/{id}/actions PUT request
-func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsIDActionsPut",
 		"request": m,
@@ -378,7 +377,7 @@ func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *sock.Req
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -388,7 +387,7 @@ func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *sock.Req
 }
 
 // v1CampaignsIDResourceInfoPut handles /v1/campaigns/{id}/resource_info PUT request
-func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsIDResourceInfoPut",
 		"request": m,
@@ -422,7 +421,7 @@ func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *soc
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -432,7 +431,7 @@ func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *soc
 }
 
 // v1CampaignsIDNextCampaignIDPut handles /v1/campaigns/{id}/next_campaign_id PUT request
-func (h *listenHandler) v1CampaignsIDNextCampaignIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1CampaignsIDNextCampaignIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1CampaignsIDNextCampaignIDPut",
 		"request": m,
@@ -466,7 +465,7 @@ func (h *listenHandler) v1CampaignsIDNextCampaignIDPut(ctx context.Context, m *s
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

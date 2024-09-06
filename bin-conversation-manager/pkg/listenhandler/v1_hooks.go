@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/sirupsen/logrus"
 
@@ -14,7 +13,7 @@ import (
 
 // processV1HooksPost handles
 // POST /v1/hooks request
-func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1HooksPost",
 		"request": m,
@@ -31,7 +30,7 @@ func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request)
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}

@@ -167,7 +167,7 @@ func Test_v1FlowsGet(t *testing.T) {
 
 		responseFlows []*flow.Flow
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
@@ -197,7 +197,7 @@ func Test_v1FlowsGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -232,7 +232,7 @@ func Test_v1FlowsGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"e1acb018-b099-11ee-b942-ebca8278ad69","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -275,7 +275,7 @@ func Test_v1FlowsGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"13a7aeaa-0c4d-11eb-8210-073d8779e386","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""},{"id":"3645134e-0c4d-11eb-a2da-4bb8abe75c48","customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -297,7 +297,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			},
 
 			[]*flow.Flow{},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -331,7 +331,7 @@ func Test_v1FlowsGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c64b621a-6c03-11ec-b44a-c7b5fb85cead","customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -423,7 +423,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 		request *sock.Request
 
 		flow      *flow.Flow
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -443,7 +443,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":false,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -468,7 +468,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"53b8aeb4-822b-11eb-82fe-a3c14b4e38de","customer_id":"00000000-0000-0000-0000-000000000000","type":"flow","name":"","detail":"","persist":true,"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -515,7 +515,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 		actions  []action.Action
 
 		responseFlow *flow.Flow
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
@@ -553,7 +553,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"update name","detail":"update detail","persist":false,"actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -596,7 +596,7 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 		flowID  uuid.UUID
 
 		responseFlow *flow.Flow
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
@@ -611,7 +611,7 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"89ecd1f6-67c6-11eb-815a-a75d4cc3df3e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","persist":false,"actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -656,7 +656,7 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 		actions []action.Action
 
 		responseFlow *flow.Flow
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
@@ -692,7 +692,7 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"update name","detail":"update detail","persist":false,"actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}],"tm_create":"","tm_update":"","tm_delete":""}`),

@@ -23,7 +23,7 @@ func Test_CallV1ConfbridgeCreate(t *testing.T) {
 		customerID     uuid.UUID
 		confbridgeType cmconfbridge.Type
 
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectTarget  string
 		expectRequest *sock.Request
 
@@ -37,7 +37,7 @@ func Test_CallV1ConfbridgeCreate(t *testing.T) {
 			uuid.FromStringOrNil("a72262a0-9978-11ed-bb1a-4745c1dde2fa"),
 			cmconfbridge.TypeConnect,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"700a6ca0-5ba2-11ec-98bd-a3b749617d0b"}`),
@@ -60,7 +60,7 @@ func Test_CallV1ConfbridgeCreate(t *testing.T) {
 			uuid.FromStringOrNil("ac15b0dc-9978-11ed-b5db-a729c9e168dd"),
 			cmconfbridge.TypeConference,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a8d56354-978f-11ec-b4a0-2f9706b7c3ff"}`),
@@ -113,7 +113,7 @@ func Test_CallV1ConfbridgeGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *cmconfbridge.Confbridge
 	}{
 		{
@@ -127,7 +127,7 @@ func Test_CallV1ConfbridgeGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"97e26732-9049-11ed-ac5c-871c69c4583b"}`),
@@ -176,7 +176,7 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 		format         string
 		direction      string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -192,7 +192,7 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 			"ulaw",
 			"both",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8bb7a268-97d0-11ed-bb1d-efd9a3f33560"}`),
@@ -243,7 +243,7 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 
 		callID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -253,7 +253,7 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 
 			uuid.FromStringOrNil("8c21d002-97d0-11ed-9bb5-bf7c25553a09"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8c21d002-97d0-11ed-9bb5-bf7c25553a09"}`),
@@ -306,7 +306,7 @@ func Test_CallV1ConfbridgeRecordingStart(t *testing.T) {
 		endOfKey     string
 		duration     int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -320,7 +320,7 @@ func Test_CallV1ConfbridgeRecordingStart(t *testing.T) {
 			"#",
 			86400,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"9ab869b4-9979-11ed-ae1a-1fd050fd5c80"}`),
@@ -371,7 +371,7 @@ func Test_CallV1ConfbridgeRecordingStop(t *testing.T) {
 
 		confbridgeID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -381,7 +381,7 @@ func Test_CallV1ConfbridgeRecordingStop(t *testing.T) {
 
 			uuid.FromStringOrNil("9aeabe1e-9979-11ed-9bde-bbb0da66dc29"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"9aeabe1e-9979-11ed-9bde-bbb0da66dc29"}`),
@@ -431,7 +431,7 @@ func Test_CallV1ConfbridgeFlagAdd(t *testing.T) {
 		confbridgeID uuid.UUID
 		flag         cmconfbridge.Flag
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -442,7 +442,7 @@ func Test_CallV1ConfbridgeFlagAdd(t *testing.T) {
 			uuid.FromStringOrNil("367d97a2-d7be-11ed-90bb-3354b92cec8a"),
 			cmconfbridge.FlagNoAutoLeave,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"367d97a2-d7be-11ed-90bb-3354b92cec8a"}`),
@@ -494,7 +494,7 @@ func Test_CallV1ConfbridgeFlagRemove(t *testing.T) {
 		confbridgeID uuid.UUID
 		flag         cmconfbridge.Flag
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -505,7 +505,7 @@ func Test_CallV1ConfbridgeFlagRemove(t *testing.T) {
 			uuid.FromStringOrNil("96c67bf6-d7be-11ed-abd3-efffaa03c246"),
 			cmconfbridge.FlagNoAutoLeave,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"96c67bf6-d7be-11ed-abd3-efffaa03c246"}`),
@@ -556,7 +556,7 @@ func Test_CallV1ConfbridgeTerminate(t *testing.T) {
 
 		confbridgeID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -566,7 +566,7 @@ func Test_CallV1ConfbridgeTerminate(t *testing.T) {
 
 			uuid.FromStringOrNil("96d39178-dae9-11ed-92a2-17288622d986"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"96d39178-dae9-11ed-92a2-17288622d986"}`),
@@ -615,7 +615,7 @@ func Test_CallV1ConfbridgeRing(t *testing.T) {
 
 		confbridgeID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -625,7 +625,7 @@ func Test_CallV1ConfbridgeRing(t *testing.T) {
 
 			uuid.FromStringOrNil("2d37d7f0-db8f-11ed-a1f7-53a2bd6a697d"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 
@@ -667,7 +667,7 @@ func Test_CallV1ConfbridgeAnswer(t *testing.T) {
 
 		confbridgeID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectRes     *cmconfbridge.Confbridge
@@ -677,7 +677,7 @@ func Test_CallV1ConfbridgeAnswer(t *testing.T) {
 
 			uuid.FromStringOrNil("2d7289f4-db8f-11ed-8c13-efbe206011b3"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 			},
 

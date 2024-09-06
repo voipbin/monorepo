@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/sirupsen/logrus"
 
@@ -15,7 +14,7 @@ import (
 )
 
 // processV1ChannelsIDHealthPost handles /v1/channels/<id>/health-check request
-func (h *listenHandler) processV1ChannelsIDHealthPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChannelsIDHealthPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ChannelsIDHealthPost",
 		"request": m,

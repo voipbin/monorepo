@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ import (
 )
 
 // processV1ConferencecallsGet handles GET /v1/conferencecalls request
-func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsGet",
 		"request": m,
@@ -48,7 +47,7 @@ func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *sock
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -58,7 +57,7 @@ func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *sock
 }
 
 // processV1ConferencecallsIDGet handles /v1/conferencecalls/<id> GET request
-func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsIDGet",
 		"request": m,
@@ -83,7 +82,7 @@ func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *so
 		return simpleResponse(400), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       tmp,
@@ -93,7 +92,7 @@ func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *so
 }
 
 // processV1ConferencecallsIDDelete handles /v1/conferencecalls/<id> DELETE request
-func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsIDDelete",
 		"request": m,
@@ -118,7 +117,7 @@ func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m 
 		return simpleResponse(400), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       tmp,
@@ -128,7 +127,7 @@ func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m 
 }
 
 // processV1ConferencecallsIDHealthCheckPost handles /v1/conferencecalls/<id>/health-check POST request
-func (h *listenHandler) processV1ConferencecallsIDHealthCheckPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsIDHealthCheckPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsIDHealthCheckPost",
 		"request": m,
@@ -150,7 +149,7 @@ func (h *listenHandler) processV1ConferencecallsIDHealthCheckPost(ctx context.Co
 	// health check run in a go routine
 	go h.conferencecallHandler.HealthCheck(ctx, id, data.RetryCount)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 

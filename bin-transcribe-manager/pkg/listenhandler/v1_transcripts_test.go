@@ -27,7 +27,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 
 		responseFilters     map[string]string
 		responseTranscripts []*transcript.Transcript
-		expectRes           *rabbitmqhandler.Response
+		expectRes           *sock.Response
 	}{
 		{
 			"normal",
@@ -48,7 +48,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"2afd749c-821e-11ed-9ba2-271e7b9600a1","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""}]`),
@@ -75,7 +75,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("440fc214-821e-11ed-b83d-2f241266f784"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"43e2dae2-821e-11ed-8cb9-ff5d144f9d22","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""},{"id":"440fc214-821e-11ed-b83d-2f241266f784","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":"","tm_delete":""}]`),

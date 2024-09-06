@@ -25,7 +25,7 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 		language string
 		timeout  int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectRequest *sock.Request
 		expectURL     string
@@ -40,7 +40,7 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 			"en-US",
 			3000,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"gender":"male","text":"hello world","language":"en-US","media_filepath":"tts/tmp_filename.wav"}`),

@@ -26,7 +26,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 
 		responseFilters    map[string]string
 		responseRecordings []*recording.Recording
-		expectRes          *rabbitmqhandler.Response
+		expectRes          *sock.Response
 	}
 
 	tests := []test{
@@ -56,7 +56,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"cfa4d576-6128-11eb-b69b-9f7a738a1ad7","customer_id":"c15af818-7f51-11ec-8eeb-f733ba8df393","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -111,7 +111,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 		expectEndOfKey      string
 		expectDuration      int
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -136,7 +136,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 			"",
 			0,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"ccf74444-90b5-11ed-958b-4fac7f75981c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -178,7 +178,7 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 		name      string
 		request   *sock.Request
 		recording *recording.Recording
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -200,7 +200,7 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"00c711be-6129-11eb-9404-b73dcf512957","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -244,7 +244,7 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 		request *sock.Request
 
 		responseRecording *recording.Recording
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}
 
 	tests := []test{
@@ -267,7 +267,7 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3019fe2a-8eba-11ed-809e-bbab8230e905","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -311,7 +311,7 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 		request *sock.Request
 
 		responseRecording *recording.Recording
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}
 
 	tests := []test{
@@ -327,7 +327,7 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 					ID: uuid.FromStringOrNil("2c7e5af4-90d6-11ed-8ba0-c335ddc4049b"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2c7e5af4-90d6-11ed-8ba0-c335ddc4049b","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),

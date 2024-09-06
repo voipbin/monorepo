@@ -24,7 +24,7 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectResult *smbucketfile.BucketFile
 	}{
@@ -40,7 +40,7 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"download_uri":"https://example.com/c7878bdc-93bd-11eb-ab3a-a7388c5862f4"}`),
@@ -85,7 +85,7 @@ func Test_StorageV1RecordingDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			"normal",
@@ -98,7 +98,7 @@ func Test_StorageV1RecordingDelete(t *testing.T) {
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

@@ -28,7 +28,7 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes []cscustomer.Customer
 	}{
@@ -48,7 +48,7 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"30071608-7e43-11ec-b04a-bb4270e3e223","username":"test1","name":"test user 1","detail":"test user 1 detail","permission_ids":[]},{"id":"5ca81a9a-7e43-11ec-b271-5b65823bfdd3","username":"test2","name":"test user 2","detail":"test user 2 detail","permission_ids":[]}]`),
@@ -105,7 +105,7 @@ func Test_CustomerV1CustomerGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *cscustomer.Customer
 	}{
@@ -120,7 +120,7 @@ func Test_CustomerV1CustomerGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"951a4038-7e43-11ec-bc59-4f1dc0de20b0","username":"test1","name":"test user 1","detail":"test user 1 detail","permission_ids":[]}`),
@@ -168,7 +168,7 @@ func Test_CustomerV1CustomerDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *cscustomer.Customer
 	}{
@@ -183,7 +183,7 @@ func Test_CustomerV1CustomerDelete(t *testing.T) {
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d6afec8c-7e43-11ec-ab03-ff394ae04b39"}`),
@@ -236,7 +236,7 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *cscustomer.Customer
 	}{
@@ -258,7 +258,7 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"47943ef0-cb2f-11ee-adbd-136bc293c7e1"}`),
@@ -321,7 +321,7 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *cscustomer.Customer
 	}{
 		{
@@ -343,7 +343,7 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"eed8e316-7e45-11ec-bcac-97541487f2c1"}`),
@@ -392,7 +392,7 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     bool
 	}{
 		{
@@ -410,7 +410,7 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"reference_type":"call","country":"us","count":3}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"valid":true}`),
@@ -456,7 +456,7 @@ func Test_CustomerV1CustomerUpdateBillingAccountID(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *cscustomer.Customer
 	}{
 		{
@@ -472,7 +472,7 @@ func Test_CustomerV1CustomerUpdateBillingAccountID(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"billing_account_id":"296b4aba-0f94-11ee-99c9-ab67bb9c534a"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2935091e-0f94-11ee-a5e5-a34227ad44a6"}`),

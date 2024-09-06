@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -23,7 +22,7 @@ import (
 )
 
 // processV1CallsGet handles GET /v1/calls request
-func (h *listenHandler) processV1CallsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsGet",
 		"request": m,
@@ -54,7 +53,7 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, m *sock.Request) 
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -64,7 +63,7 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, m *sock.Request) 
 }
 
 // processV1CallsIDGet handles GET /v1/calls/<call-id> request
-func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDGet",
 		"request": m,
@@ -88,7 +87,7 @@ func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *sock.Request
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -99,7 +98,7 @@ func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *sock.Request
 
 // processV1CallsPost handles POST /v1/calls request
 // It creates a new call.
-func (h *listenHandler) processV1CallsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsPost",
 		"request": m,
@@ -133,7 +132,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *sock.Request)
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -144,7 +143,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *sock.Request)
 
 // processV1CallsIDPost handles POST /v1/calls/<call-id> request
 // It creates a new call.
-func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDPost",
 		"request": m,
@@ -175,7 +174,7 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *sock.Reques
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -186,7 +185,7 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *sock.Reques
 
 // processV1CallsIDDelete handles Post /v1/calls/<call-id> request
 // It hangs up the call.
-func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDDelete",
 		"request": m,
@@ -212,7 +211,7 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *sock.Requ
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -223,7 +222,7 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *sock.Requ
 
 // processV1CallsIDHangupPost handles Post /v1/calls/<call-id>/hangup request
 // It hangs up the call.
-func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDHangupPost",
 		"request": m,
@@ -249,7 +248,7 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *sock.
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -259,7 +258,7 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *sock.
 }
 
 // processV1CallsIDHealthPost handles /v1/calls/<call-id>/health-check request
-func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDHealthPost",
 		"request": m,
@@ -282,7 +281,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *sock.
 }
 
 // processV1CallsIDGet handles /v1/calls/<call-id>/action-timeout request
-func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDActionTimeoutPost",
 		"request": m,
@@ -311,7 +310,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -319,7 +318,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 }
 
 // processV1CallsIDGet handles /v1/calls/<call-id>/action-next request
-func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDActionNextPost",
 		"request": m,
@@ -356,7 +355,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *s
 		}
 	}()
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -364,7 +363,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *s
 }
 
 // processV1CallsIDChainedCallIDsPost handles /v1/calls/<call-id>/chained-call-ids POST request
-func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDChainedCallIDsPost",
 		"request": m,
@@ -393,7 +392,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, 
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -403,7 +402,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, 
 }
 
 // processV1CallsIDChainedCallIDsDelete handles /v1/calls/<call-id>/chained-call-ids/<chained-call-id> DELETE request
-func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDChainedCallIDsDelete",
 		"request": m,
@@ -429,7 +428,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -439,7 +438,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context
 }
 
 // processV1CallsIDExternalMediaPost handles /v1/calls/<call-id>/external-media POST request
-func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDExternalMediaPost",
 		"request": m,
@@ -468,7 +467,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -478,7 +477,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 }
 
 // processV1CallsIDExternalMediaDelete handles /v1/calls/<call-id>/external-media DELETE request
-func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDExternalMediaDelete",
 		"request": m,
@@ -502,7 +501,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context,
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -512,7 +511,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context,
 }
 
 // processV1CallsIDDigitsGet handles /v1/calls/<call-id>/digits GET request
-func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDDigitsGet",
 		"request": m,
@@ -540,7 +539,7 @@ func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *sock.R
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -550,7 +549,7 @@ func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *sock.R
 }
 
 // processV1CallsIDDigitsSet handles /v1/calls/<call-id>/digits POST request
-func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDDigitsSet",
 		"request": m,
@@ -572,7 +571,7 @@ func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *sock.R
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}
@@ -581,7 +580,7 @@ func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *sock.R
 }
 
 // processV1CallsIDRecordingIDPut handles /v1/calls/<call-id>/recording_id PUT request
-func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDRecordingIDPut",
 		"request": m,
@@ -610,7 +609,7 @@ func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *s
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -620,7 +619,7 @@ func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *s
 }
 
 // processV1CallsIDConfbridgeIDPut handles /v1/calls/<call-id>/confbridge_id PUT request
-func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDConfbridgeIDPut",
 		"request": m,
@@ -649,7 +648,7 @@ func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -659,7 +658,7 @@ func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *
 }
 
 // processV1CallsIDRecordingStartPost handles /v1/calls/<call-id>/recording_start POST request
-func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDRecordingStartPost",
 		"request": m,
@@ -688,7 +687,7 @@ func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, 
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -698,7 +697,7 @@ func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, 
 }
 
 // processV1CallsIDRecordingStopPost handles /v1/calls/<call-id>/recording_stop POST request
-func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDRecordingStopPost",
 		"request": m,
@@ -723,7 +722,7 @@ func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -733,7 +732,7 @@ func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m
 }
 
 // processV1CallsIDTalkPost handles /v1/calls/<call-id>/talk POST request
-func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDTalkPost",
 		"request": m,
@@ -756,7 +755,7 @@ func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *sock.Re
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -764,7 +763,7 @@ func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *sock.Re
 }
 
 // processV1CallsIDPlayPost handles /v1/calls/<call-id>/play POST request
-func (h *listenHandler) processV1CallsIDPlayPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDPlayPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDPlayPost",
 		"request": m,
@@ -787,7 +786,7 @@ func (h *listenHandler) processV1CallsIDPlayPost(ctx context.Context, m *sock.Re
 		return nil, errors.Wrap(errPlay, "could not play the medias")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -795,7 +794,7 @@ func (h *listenHandler) processV1CallsIDPlayPost(ctx context.Context, m *sock.Re
 }
 
 // processV1CallsIDMediaStopPost handles /v1/calls/<call-id>/media_stop POST request
-func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDMediaStopPost",
 		"request": m,
@@ -813,7 +812,7 @@ func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *so
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -821,7 +820,7 @@ func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *so
 }
 
 // processV1CallsIDHoldPost handles /v1/calls/<call-id>/hold POST request
-func (h *listenHandler) processV1CallsIDHoldPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDHoldPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDHoldPost",
 		"request": m,
@@ -839,7 +838,7 @@ func (h *listenHandler) processV1CallsIDHoldPost(ctx context.Context, m *sock.Re
 		return nil, errors.Wrap(errHold, "could not hold the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -847,7 +846,7 @@ func (h *listenHandler) processV1CallsIDHoldPost(ctx context.Context, m *sock.Re
 }
 
 // processV1CallsIDHoldDelete handles /v1/calls/<call-id>/hold DELETE request
-func (h *listenHandler) processV1CallsIDHoldDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDHoldDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDHoldDelete",
 		"request": m,
@@ -865,7 +864,7 @@ func (h *listenHandler) processV1CallsIDHoldDelete(ctx context.Context, m *sock.
 		return nil, errors.Wrap(errHold, "could not unhold the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -873,7 +872,7 @@ func (h *listenHandler) processV1CallsIDHoldDelete(ctx context.Context, m *sock.
 }
 
 // processV1CallsIDMutePost handles /v1/calls/<call-id>/mute POST request
-func (h *listenHandler) processV1CallsIDMutePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDMutePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDMutePost",
 		"request": m,
@@ -896,7 +895,7 @@ func (h *listenHandler) processV1CallsIDMutePost(ctx context.Context, m *sock.Re
 		return nil, errors.Wrap(errMute, "could not hold the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -904,7 +903,7 @@ func (h *listenHandler) processV1CallsIDMutePost(ctx context.Context, m *sock.Re
 }
 
 // processV1CallsIDMuteDelete handles /v1/calls/<call-id>/mute DELETE request
-func (h *listenHandler) processV1CallsIDMuteDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDMuteDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDMuteDelete",
 		"request": m,
@@ -927,7 +926,7 @@ func (h *listenHandler) processV1CallsIDMuteDelete(ctx context.Context, m *sock.
 		return nil, errors.Wrap(errMute, "could not unmute the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -935,7 +934,7 @@ func (h *listenHandler) processV1CallsIDMuteDelete(ctx context.Context, m *sock.
 }
 
 // processV1CallsIDMOHPost handles /v1/calls/<call-id>/moh POST request
-func (h *listenHandler) processV1CallsIDMOHPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDMOHPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDMOHPost",
 		"request": m,
@@ -953,7 +952,7 @@ func (h *listenHandler) processV1CallsIDMOHPost(ctx context.Context, m *sock.Req
 		return nil, errors.Wrap(errMOH, "could not hold the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -961,7 +960,7 @@ func (h *listenHandler) processV1CallsIDMOHPost(ctx context.Context, m *sock.Req
 }
 
 // processV1CallsIDMOHDelete handles /v1/calls/<call-id>/moh DELETE request
-func (h *listenHandler) processV1CallsIDMOHDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDMOHDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDMOHDelete",
 		"request": m,
@@ -979,7 +978,7 @@ func (h *listenHandler) processV1CallsIDMOHDelete(ctx context.Context, m *sock.R
 		return nil, errors.Wrap(errMOH, "could not moh off the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -987,7 +986,7 @@ func (h *listenHandler) processV1CallsIDMOHDelete(ctx context.Context, m *sock.R
 }
 
 // processV1CallsIDSilencePost handles /v1/calls/<call-id>/silence POST request
-func (h *listenHandler) processV1CallsIDSilencePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDSilencePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDSilencePost",
 		"request": m,
@@ -1005,7 +1004,7 @@ func (h *listenHandler) processV1CallsIDSilencePost(ctx context.Context, m *sock
 		return nil, errors.Wrap(errSilence, "could not silence the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 
@@ -1013,7 +1012,7 @@ func (h *listenHandler) processV1CallsIDSilencePost(ctx context.Context, m *sock
 }
 
 // processV1CallsIDSilenceDelete handles /v1/calls/<call-id>/silence DELETE request
-func (h *listenHandler) processV1CallsIDSilenceDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsIDSilenceDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDSilenceDelete",
 		"request": m,
@@ -1031,7 +1030,7 @@ func (h *listenHandler) processV1CallsIDSilenceDelete(ctx context.Context, m *so
 		return nil, errors.Wrap(errSilence, "could not silence off the call")
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 	}
 

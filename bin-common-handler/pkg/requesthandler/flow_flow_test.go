@@ -28,7 +28,7 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 		actions    []fmaction.Action
 		persist    bool
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -43,7 +43,7 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 			"test flow detail",
 			[]fmaction.Action{},
 			true,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20T03:23:20.995000","tm_update":"","tm_delete":""}`),
@@ -102,7 +102,7 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 		name string
 
 		requestFlow *fmflow.Flow
-		response    *rabbitmqhandler.Response
+		response    *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -116,7 +116,7 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 				Detail:  "update detail",
 				Actions: []fmaction.Action{},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
@@ -173,7 +173,7 @@ func Test_FlowV1FlowGet(t *testing.T) {
 
 		flowID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -183,7 +183,7 @@ func Test_FlowV1FlowGet(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("be66d9a6-6ed6-11eb-8152-0bb66bad7293"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"be66d9a6-6ed6-11eb-8152-0bb66bad7293","customer_id":"c36412ba-7f4d-11ec-a6ec-67db89124047","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
@@ -240,7 +240,7 @@ func Test_FlowV1FlowDelete(t *testing.T) {
 
 		flowID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -250,7 +250,7 @@ func Test_FlowV1FlowDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("4193c3a2-67ca-11eb-a892-0b6d18cda91a"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"4193c3a2-67ca-11eb-a892-0b6d18cda91a"}`),
 			},
@@ -301,7 +301,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -317,7 +317,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 				"customer_id": "c971cc06-7f4d-11ec-b0dc-5ff21ea97f57",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"c971cc06-7f4d-11ec-b0dc-5ff21ea97f57","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
@@ -352,7 +352,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 				"type": string(fmflow.TypeConference),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"d9fceace-7f4d-11ec-8949-cf7a5dce40c9","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
@@ -415,7 +415,7 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 		flowID  uuid.UUID
 		actions []fmaction.Action
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -431,7 +431,7 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a645703d-4cd7-4c5d-af76-d2f9f2fafcd0","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
@@ -460,7 +460,7 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 			uuid.FromStringOrNil("0fb53139-3e5d-4ce7-8de6-d39420a18cf5"),
 			[]fmaction.Action{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0fb53139-3e5d-4ce7-8de6-d39420a18cf5","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),

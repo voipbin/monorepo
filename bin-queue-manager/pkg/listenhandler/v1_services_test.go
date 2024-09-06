@@ -30,7 +30,7 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 
 		responseService *service.Service
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -51,7 +51,7 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("6299086a-acfa-11ed-a8ff-4f23e0ae71fd"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"6299086a-acfa-11ed-a8ff-4f23e0ae71fd","type":"","push_actions":null}`),

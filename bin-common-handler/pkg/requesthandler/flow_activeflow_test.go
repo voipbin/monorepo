@@ -29,7 +29,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *fmactiveflow.Activeflow
 	}{
 		{
@@ -48,7 +48,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 				Data:     []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -80,7 +80,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 				Data:     []byte(`{"id":"be2255b2-0e47-4db8-956a-2fb9f45417b8","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"be2255b2-0e47-4db8-956a-2fb9f45417b8","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -112,7 +112,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","flow_id":"a929cd00-a7b5-11ec-a2bd-d375b3bee397","reference_type":"message","reference_id":"a8d145b8-a7b5-11ec-ac30-6b8228b173eb","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -167,7 +167,7 @@ func Test_FlowV1ActiveflowGetNextAction(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *fmaction.Action
 	}{
 		{
@@ -184,7 +184,7 @@ func Test_FlowV1ActiveflowGetNextAction(t *testing.T) {
 				Data:     []byte(`{"current_action_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"e52c5766-57c7-11ec-836b-333ce17a1ce6","type":"answer"}`),
@@ -233,7 +233,7 @@ func Test_FlowV1ActiveflowUpdateForwardActionID(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -250,7 +250,7 @@ func Test_FlowV1ActiveflowUpdateForwardActionID(t *testing.T) {
 				Data:     []byte(`{"forward_action_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","forward_now":true}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 			},
@@ -270,7 +270,7 @@ func Test_FlowV1ActiveflowUpdateForwardActionID(t *testing.T) {
 				Data:     []byte(`{"forward_action_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","forward_now":false}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 			},
@@ -307,7 +307,7 @@ func Test_FlowV1ActiveflowExecute(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -321,7 +321,7 @@ func Test_FlowV1ActiveflowExecute(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 			},
@@ -358,7 +358,7 @@ func Test_FlowV1ActiveflowDelete(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *fmactiveflow.Activeflow
 	}{
 		{
@@ -373,7 +373,7 @@ func Test_FlowV1ActiveflowDelete(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"2f4bd474-ade1-11ec-9aca-83684de0c293"}`),
@@ -419,7 +419,7 @@ func Test_FlowV1ActiveflowStop(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *fmactiveflow.Activeflow
 	}{
 		{
@@ -433,7 +433,7 @@ func Test_FlowV1ActiveflowStop(t *testing.T) {
 				Method: sock.RequestMethodPost,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"297ddcce-ca6c-11ed-8fe2-0740927aae87"}`),
@@ -479,7 +479,7 @@ func Test_FlowV1ActiveflowGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *fmactiveflow.Activeflow
 	}{
 		{
@@ -492,7 +492,7 @@ func Test_FlowV1ActiveflowGet(t *testing.T) {
 				URI:    "/v1/activeflows/f7b11e28-ca6f-11ed-9ee2-2f18a39aac42",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f7b11e28-ca6f-11ed-9ee2-2f18a39aac42"}`),
@@ -540,7 +540,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     []fmactiveflow.Activeflow
 	}{
 		{
@@ -558,7 +558,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"559ede26-ca70-11ed-abba-e395946aa2e9"}]`),
@@ -584,7 +584,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"56005566-ca70-11ed-81cf-6f43d9813fe9"},{"id":"5634bf5e-ca70-11ed-8158-03aa1817578a"}]`),
@@ -636,7 +636,7 @@ func Test_FlowV1ActiveflowPushActions(t *testing.T) {
 		activeflowID uuid.UUID
 		actions      []fmaction.Action
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -652,7 +652,7 @@ func Test_FlowV1ActiveflowPushActions(t *testing.T) {
 				},
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0dd10f12-fb1a-11ed-a3e2-dbe67cf6376c"}`),

@@ -25,7 +25,7 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -38,7 +38,7 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"0dccc282-6e23-11ee-8173-23149728867a"}]`),
@@ -92,7 +92,7 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -105,7 +105,7 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"bd6d3594-c859-11ec-b2ed-af1657f376a7"}]`),
@@ -157,7 +157,7 @@ func Test_CampaignV1CampaigncallGet(t *testing.T) {
 
 		campaigncallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -167,7 +167,7 @@ func Test_CampaignV1CampaigncallGet(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("f3cff130-c859-11ec-ba02-4b142bed8c58"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f3cff130-c859-11ec-ba02-4b142bed8c58"}`),
@@ -217,7 +217,7 @@ func Test_CampaignV1CampaigncallDelete(t *testing.T) {
 
 		campaigncallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -227,7 +227,7 @@ func Test_CampaignV1CampaigncallDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("08508d40-c85a-11ec-9a16-531149eb320b"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"08508d40-c85a-11ec-9a16-531149eb320b"}`),

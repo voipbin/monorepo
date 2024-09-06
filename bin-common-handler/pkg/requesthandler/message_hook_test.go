@@ -21,7 +21,7 @@ func Test_MessageV1Hook(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			"normal",
@@ -38,7 +38,7 @@ func Test_MessageV1Hook(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/messages/telnyx","received_data":"eyJrZXkxIjoidmFsMSJ9"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

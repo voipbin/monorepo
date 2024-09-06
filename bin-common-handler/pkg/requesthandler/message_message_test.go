@@ -26,7 +26,7 @@ func Test_MessageV1MessageGets(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     []mmmessage.Message
 	}{
 		{
@@ -42,7 +42,7 @@ func Test_MessageV1MessageGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"29c761de-a2b1-11ec-98af-e7185fc83700"}]`),
@@ -66,7 +66,7 @@ func Test_MessageV1MessageGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"6f3a1e50-a2b1-11ec-a108-33dea3457c3b"},{"id":"6f68ee1a-a2b1-11ec-934e-fb86dd720e70"}]`),
@@ -116,7 +116,7 @@ func Test_MessageV1MessageGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *mmmessage.Message
 	}{
 		{
@@ -130,7 +130,7 @@ func Test_MessageV1MessageGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c6132bfe-a2b1-11ec-a9fd-0f7e4afd00d8"}`),
@@ -175,7 +175,7 @@ func Test_MessageV1MessageDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *mmmessage.Message
 	}{
 		{
@@ -189,7 +189,7 @@ func Test_MessageV1MessageDelete(t *testing.T) {
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b8c3c122-a2c3-11ec-89ee-ebb21f6a7e14"}`),
@@ -238,7 +238,7 @@ func Test_MessageV1MessageSend(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *mmmessage.Message
 	}{
 		{
@@ -265,7 +265,7 @@ func Test_MessageV1MessageSend(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89"}`),
@@ -298,7 +298,7 @@ func Test_MessageV1MessageSend(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"283d6350-f17a-11ec-9277-436d6d821637"}`),
@@ -335,7 +335,7 @@ func Test_MessageV1MessageSend(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"id":"e930839a-f179-11ec-acb5-3f10a4a1c047","customer_id":"333d1508-a2c3-11ec-872d-8796fdc672b5","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3378aa5a-a2c3-11ec-abb8-97d85696ccd9"}`),

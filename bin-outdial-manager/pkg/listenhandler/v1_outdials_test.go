@@ -80,7 +80,7 @@ func Test_v1OutdialsGet(t *testing.T) {
 		request    *sock.Request
 		outdials   []*outdial.Outdial
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
@@ -97,7 +97,7 @@ func Test_v1OutdialsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("5024139c-b36c-11ec-9b26-9b18d7d76e07"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"5024139c-b36c-11ec-9b26-9b18d7d76e07","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -121,7 +121,7 @@ func Test_v1OutdialsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("97a59bd2-b36c-11ec-93c9-eb2b606d229c"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"977b9012-b36c-11ec-bd33-0bcd25d394aa","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"97a59bd2-b36c-11ec-93c9-eb2b606d229c","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -163,7 +163,7 @@ func Test_v1OutdialsIDGet(t *testing.T) {
 		name      string
 		request   *sock.Request
 		outdial   *outdial.Outdial
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -176,7 +176,7 @@ func Test_v1OutdialsIDGet(t *testing.T) {
 			&outdial.Outdial{
 				ID: uuid.FromStringOrNil("323e28ee-b36d-11ec-86bb-6b0ff7646ddc"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"323e28ee-b36d-11ec-86bb-6b0ff7646ddc","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -222,7 +222,7 @@ func Test_v1OutdialsIDPut(t *testing.T) {
 		outdialName string
 		detail      string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -237,7 +237,7 @@ func Test_v1OutdialsIDPut(t *testing.T) {
 			"test name",
 			"test detail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -281,7 +281,7 @@ func Test_v1OutdialsIDDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -293,7 +293,7 @@ func Test_v1OutdialsIDDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("6e918d58-b643-11ec-9263-b35286fcc303"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -344,7 +344,7 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 		limit     uint64
 
 		outdialtargets []*outdialtarget.OutdialTarget
-		expectRes      *rabbitmqhandler.Response
+		expectRes      *sock.Response
 	}{
 		{
 			"normal",
@@ -368,7 +368,7 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("96abf56c-b36e-11ec-a539-d76994cf6863"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"96abf56c-b36e-11ec-a539-d76994cf6863","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -421,7 +421,7 @@ func Test_v1OutdialsIDTargetsPost(t *testing.T) {
 		destination4 *commonaddress.Address
 
 		outdialtarget *outdialtarget.OutdialTarget
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
@@ -460,7 +460,7 @@ func Test_v1OutdialsIDTargetsPost(t *testing.T) {
 			&outdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("be545d6a-b36f-11ec-8ad5-03ccb4c40eeb"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"be545d6a-b36f-11ec-8ad5-03ccb4c40eeb","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -491,7 +491,7 @@ func Test_v1OutdialsIDTargetsPost(t *testing.T) {
 			&outdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("be545d6a-b36f-11ec-8ad5-03ccb4c40eeb"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"be545d6a-b36f-11ec-8ad5-03ccb4c40eeb","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -539,7 +539,7 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 		pageSize       uint64
 		outdialTargets []*outdialtarget.OutdialTarget
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
@@ -557,7 +557,7 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("5024139c-b36c-11ec-9b26-9b18d7d76e07"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"5024139c-b36c-11ec-9b26-9b18d7d76e07","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -582,7 +582,7 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("e84d3828-b372-11ec-9936-af8200c58c02"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"e822590a-b372-11ec-b755-239020a9003b","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e84d3828-b372-11ec-9936-af8200c58c02","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -628,7 +628,7 @@ func Test_v1OutdialsIDCampaignIDPut(t *testing.T) {
 		campaignID uuid.UUID
 
 		outdial   *outdial.Outdial
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -645,7 +645,7 @@ func Test_v1OutdialsIDCampaignIDPut(t *testing.T) {
 			&outdial.Outdial{
 				ID: uuid.FromStringOrNil("643ef1e6-b563-11ec-bacf-d356bc75b302"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"643ef1e6-b563-11ec-bacf-d356bc75b302","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -691,7 +691,7 @@ func Test_v1OutdialsIDDataPut(t *testing.T) {
 		data      string
 
 		outdial   *outdial.Outdial
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
@@ -708,7 +708,7 @@ func Test_v1OutdialsIDDataPut(t *testing.T) {
 			&outdial.Outdial{
 				ID: uuid.FromStringOrNil("beddb5ce-b563-11ec-99e9-dfdfa34a3196"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"beddb5ce-b563-11ec-99e9-dfdfa34a3196","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`),

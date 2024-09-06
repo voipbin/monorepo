@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -18,7 +17,7 @@ import (
 )
 
 // v1ActiveflowsGet handles /v1/activeflows GET request
-func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsGet",
 		"request": m,
@@ -49,7 +48,7 @@ func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *sock.Request) (
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -60,7 +59,7 @@ func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *sock.Request) (
 
 // v1ActiveflowsPost handles /v1/activeflows POST request
 // creates a new activeflow with given data.
-func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsPost",
 		"request": m,
@@ -85,7 +84,7 @@ func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, m *sock.Request) 
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -96,7 +95,7 @@ func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, m *sock.Request) 
 
 // v1ActiveflowsIDGet handles
 // /v1/activeflows/<activeflow-id> GET
-func (h *listenHandler) v1ActiveflowsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsIDGet",
 		"request": m,
@@ -118,7 +117,7 @@ func (h *listenHandler) v1ActiveflowsIDGet(ctx context.Context, m *sock.Request)
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -129,7 +128,7 @@ func (h *listenHandler) v1ActiveflowsIDGet(ctx context.Context, m *sock.Request)
 
 // v1ActiveflowsIDDelete handles
 // /v1/activeflows/{id} DELETE
-func (h *listenHandler) v1ActiveflowsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsIDDelete",
 		"request": m,
@@ -151,7 +150,7 @@ func (h *listenHandler) v1ActiveflowsIDDelete(ctx context.Context, m *sock.Reque
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -162,7 +161,7 @@ func (h *listenHandler) v1ActiveflowsIDDelete(ctx context.Context, m *sock.Reque
 
 // v1ActiveflowsIDNextGet handles
 // /v1/activeflows/{id}/next GET
-func (h *listenHandler) v1ActiveflowsIDNextGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDNextGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsIDNextGet",
 		"request": m,
@@ -189,7 +188,7 @@ func (h *listenHandler) v1ActiveflowsIDNextGet(ctx context.Context, m *sock.Requ
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -200,7 +199,7 @@ func (h *listenHandler) v1ActiveflowsIDNextGet(ctx context.Context, m *sock.Requ
 
 // v1ActiveflowsIDForwardActionIDPut handles
 // /v1/activeflows/{id}/forward_action_id PUT
-func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsIDForwardActionIDPut",
 		"request": m,
@@ -221,7 +220,7 @@ func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(ctx context.Context, m
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}
@@ -231,7 +230,7 @@ func (h *listenHandler) v1ActiveflowsIDForwardActionIDPut(ctx context.Context, m
 
 // v1ActiveflowsIDExecutePost handles
 // /v1/activeflows/{id}/execute Post
-func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsIDExecutePost",
 		"request": m,
@@ -247,7 +246,7 @@ func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *sock.
 		}
 	}()
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}
@@ -257,7 +256,7 @@ func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *sock.
 
 // v1ActiveflowsIDStopPost handles
 // /v1/activeflows/<activeflow-id>/stop Post
-func (h *listenHandler) v1ActiveflowsIDStopPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsIDStopPost",
 		"request": m,
@@ -279,7 +278,7 @@ func (h *listenHandler) v1ActiveflowsIDStopPost(ctx context.Context, m *sock.Req
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -290,7 +289,7 @@ func (h *listenHandler) v1ActiveflowsIDStopPost(ctx context.Context, m *sock.Req
 
 // v1ActiveflowsIDPushActionsPost handles
 // /v1/activeflows/<activeflow-id>/push_actions Post
-func (h *listenHandler) v1ActiveflowsIDPushActionsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ActiveflowsIDPushActionsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1ActiveflowsIDPushActionsPost",
 		"request": m,
@@ -318,7 +317,7 @@ func (h *listenHandler) v1ActiveflowsIDPushActionsPost(ctx context.Context, m *s
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

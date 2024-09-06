@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,7 +17,7 @@ import (
 )
 
 // processV1ExternalMediasGet handles GET /v1/external-medias request
-func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExternalMediasGet",
 		"request": m,
@@ -49,7 +48,7 @@ func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *sock.
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -59,7 +58,7 @@ func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *sock.
 }
 
 // processV1ExternalMediasPost handles POST /v1/external-medias request
-func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExternalMediasPost",
 		"request": m,
@@ -94,7 +93,7 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -104,7 +103,7 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock
 }
 
 // processV1ExternalMediasIDGet handles GET /v1/external-medias/<external-media-id> request
-func (h *listenHandler) processV1ExternalMediasIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExternalMediasIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExternalMediasIDGet",
 		"request": m,
@@ -128,7 +127,7 @@ func (h *listenHandler) processV1ExternalMediasIDGet(ctx context.Context, m *soc
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -138,7 +137,7 @@ func (h *listenHandler) processV1ExternalMediasIDGet(ctx context.Context, m *soc
 }
 
 // processV1ExternalMediasIDDelete handles DELETE /v1/external-medias/<id> request
-func (h *listenHandler) processV1ExternalMediasIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExternalMediasIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExternalMediasIDDelete",
 		"request": m,
@@ -162,7 +161,7 @@ func (h *listenHandler) processV1ExternalMediasIDDelete(ctx context.Context, m *
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

@@ -34,7 +34,7 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 		maxTryCount3 int
 		maxTryCount4 int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -58,7 +58,7 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 			5,
 			5,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"99528bbc-c513-11ec-89b2-e3f0ee0792fc"}`),
@@ -124,7 +124,7 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -137,7 +137,7 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"b654bd9c-c514-11ec-962e-77d79eb3b3fe"}]`),
@@ -189,7 +189,7 @@ func Test_CampaignV1OutplanGet(t *testing.T) {
 
 		outplanID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -199,7 +199,7 @@ func Test_CampaignV1OutplanGet(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("0838f768-c515-11ec-a969-4fec734bbc81"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0838f768-c515-11ec-a969-4fec734bbc81"}`),
@@ -249,7 +249,7 @@ func Test_CampaignV1OutplanDelete(t *testing.T) {
 
 		campaignID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -259,7 +259,7 @@ func Test_CampaignV1OutplanDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("22d9075d-08bd-4eb0-b868-3b102f0bcb39"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"22d9075d-08bd-4eb0-b868-3b102f0bcb39"}`),
@@ -311,7 +311,7 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 		updateName   string
 		updateDetail string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -324,7 +324,7 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 			"update name",
 			"update detail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"63e29b96-c515-11ec-ba52-ab7d7001913f"}`),
@@ -383,7 +383,7 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 		maxTryCount3 int
 		maxTryCount4 int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -405,7 +405,7 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 			5,
 			5,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e2b014d4-c516-11ec-a724-8bf87a1beb50"}`),

@@ -21,12 +21,12 @@ import (
 // 	Data      json.RawMessage `json:"data,omitempty"`
 // }
 
-// Response struct
-type Response struct {
-	StatusCode int             `json:"status_code"`
-	DataType   string          `json:"data_type"`
-	Data       json.RawMessage `json:"data,omitempty"`
-}
+// // Response struct
+// type Response struct {
+// 	StatusCode int             `json:"status_code"`
+// 	DataType   string          `json:"data_type"`
+// 	Data       json.RawMessage `json:"data,omitempty"`
+// }
 
 // Event struct
 type Event struct {
@@ -65,7 +65,7 @@ type Rabbit interface {
 	PublishExchangeRequest(exchange, key string, req *sock.Request) error
 	PublishEvent(queueName string, evt *Event) error
 	PublishRequest(queueName string, req *sock.Request) error
-	PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*Response, error)
+	PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
 
 	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
 	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
@@ -121,7 +121,7 @@ type exchange struct {
 type CbMsgConsume func(*Event) error
 
 // CbMsgRPC is func prototype for RPC callback
-type CbMsgRPC func(*sock.Request) (*Response, error)
+type CbMsgRPC func(*sock.Request) (*sock.Response, error)
 
 // NewRabbit creates queue for Rabbitmq
 func NewRabbit(uri string) Rabbit {

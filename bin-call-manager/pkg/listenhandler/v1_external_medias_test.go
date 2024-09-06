@@ -33,7 +33,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 		expectDirection      string
 
 		responseExternalMedia *externalmedia.ExternalMedia
-		expectRes             *rabbitmqhandler.Response
+		expectRes             *sock.Response
 	}
 
 	tests := []test{
@@ -59,7 +59,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 			&externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("1fc622f4-97b3-11ed-b8f9-bfd2a55f5399"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1fc622f4-97b3-11ed-b8f9-bfd2a55f5399","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),
@@ -116,7 +116,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 
 		responseExternalMedias []*externalmedia.ExternalMedia
 		responseFilters        map[string]string
-		expectRes              *rabbitmqhandler.Response
+		expectRes              *sock.Response
 	}{
 		{
 			"normal",
@@ -136,7 +136,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			map[string]string{
 				"reference_id": "0971d7c4-e829-11ee-a17d-b320c527e478",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"28db3628-e829-11ee-a39e-83e2f12ec29f","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}]`),
@@ -163,7 +163,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			map[string]string{
 				"reference_id": "98d20344-e829-11ee-992d-fbe3942f7a49",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"98fda9f4-e829-11ee-83bd-233ee47d5cb3","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""},{"id":"992a4cca-e829-11ee-83e5-4bc5ace56a63","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}]`),
@@ -212,7 +212,7 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 		expectID uuid.UUID
 
 		responseExternalMedia *externalmedia.ExternalMedia
-		expectRes             *rabbitmqhandler.Response
+		expectRes             *sock.Response
 	}
 
 	tests := []test{
@@ -228,7 +228,7 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 			&externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("86d29aa4-97b3-11ed-a086-eb62e01c6736"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"86d29aa4-97b3-11ed-a086-eb62e01c6736","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),
@@ -272,7 +272,7 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 		expectID uuid.UUID
 
 		responseExternalMedia *externalmedia.ExternalMedia
-		expectRes             *rabbitmqhandler.Response
+		expectRes             *sock.Response
 	}
 
 	tests := []test{
@@ -288,7 +288,7 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 			&externalmedia.ExternalMedia{
 				ID: uuid.FromStringOrNil("bbfd5cdc-97b3-11ed-8caa-e705f8c7d343"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbfd5cdc-97b3-11ed-8caa-e705f8c7d343","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),

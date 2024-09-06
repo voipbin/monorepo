@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/sirupsen/logrus"
 
@@ -14,7 +13,7 @@ import (
 )
 
 // processV1Login handles Post /v1/login request
-func (h *listenHandler) processV1Login(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1Login(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 2 {
 		return simpleResponse(400), nil
@@ -44,7 +43,7 @@ func (h *listenHandler) processV1Login(ctx context.Context, m *sock.Request) (*r
 	}
 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

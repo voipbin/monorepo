@@ -31,7 +31,7 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *rmprovider.Provider
 	}{
@@ -56,7 +56,7 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9f5b518a-e882-49a2-8282-a9d4e95019cf"}`),
@@ -99,7 +99,7 @@ func Test_RouteV1ProviderGet(t *testing.T) {
 
 		providerID uuid.UUID
 
-		responseRoute *rabbitmqhandler.Response
+		responseRoute *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -110,7 +110,7 @@ func Test_RouteV1ProviderGet(t *testing.T) {
 
 			uuid.FromStringOrNil("f15d8304-c13d-40e2-90e6-c602190dc0e1"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f15d8304-c13d-40e2-90e6-c602190dc0e1"}`),
@@ -160,7 +160,7 @@ func Test_RouteV1ProviderDelete(t *testing.T) {
 
 		routeID uuid.UUID
 
-		responseRoute *rabbitmqhandler.Response
+		responseRoute *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -171,7 +171,7 @@ func Test_RouteV1ProviderDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("3f26d6c1-576c-46b3-91ad-1fbc1416b8d1"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3f26d6c1-576c-46b3-91ad-1fbc1416b8d1"}`),
@@ -228,7 +228,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 		providerName string
 		detail       string
 
-		responseRoute *rabbitmqhandler.Response
+		responseRoute *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -249,7 +249,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 			"test name",
 			"test detail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"}`),
@@ -301,7 +301,7 @@ func Test_RouteV1ProviderGets(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -313,7 +313,7 @@ func Test_RouteV1ProviderGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"6eda3fb7-d99b-474a-af80-ebc11a6661cc"}]`),

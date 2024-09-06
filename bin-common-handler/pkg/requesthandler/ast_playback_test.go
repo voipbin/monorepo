@@ -22,7 +22,7 @@ func Test_AstPlaybackStop(t *testing.T) {
 		expectMethod  sock.RequestMethod
 		expectRequest *sock.Request
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			"normal",
@@ -38,7 +38,7 @@ func Test_AstPlaybackStop(t *testing.T) {
 				DataType: ContentTypeJSON,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

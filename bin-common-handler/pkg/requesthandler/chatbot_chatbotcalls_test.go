@@ -27,7 +27,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 		pageSize   uint64
 		filters    map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -44,7 +44,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 				"deleted": "false",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c3ac26c7-567c-4230-aaf8-d19b6fde4d6c"},{"id":"eb36875a-0d7a-4a8f-92a9-7551f4f29fd6"}]`),
@@ -105,7 +105,7 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 		expectQueue   string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *cbchatbotcall.Chatbotcall
 	}
 
@@ -120,7 +120,7 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 				Method: sock.RequestMethodGet,
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"d3937170-ee3b-40d0-8b81-4261e5bb5ba4"}`),
@@ -163,7 +163,7 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 
 		chatbotcallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -174,7 +174,7 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"6078c492-25e6-4f31-baa0-2fef98379db7"}`),

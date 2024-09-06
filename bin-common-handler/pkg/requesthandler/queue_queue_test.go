@@ -33,7 +33,7 @@ func Test_QueueV1QueueGets(t *testing.T) {
 		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     []qmqueue.Queue
 	}{
 		{
@@ -52,7 +52,7 @@ func Test_QueueV1QueueGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"07e42460-6159-11ec-8191-3b89ed95cdb5"}]`),
@@ -79,7 +79,7 @@ func Test_QueueV1QueueGets(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"08a7c974-6159-11ec-9b3d-0f52d15f98f7"},{"id":"08c9ef2c-6159-11ec-9540-8b38d1cb2283"}]`),
@@ -132,7 +132,7 @@ func Test_QueueV1QueueGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *qmqueue.Queue
 	}{
 		{
@@ -146,7 +146,7 @@ func Test_QueueV1QueueGet(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a2764422-6159-11ec-8d87-975236f7d7b7"}`),
@@ -192,7 +192,7 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     []amagent.Agent
 	}{
 		{
@@ -207,7 +207,7 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"2faae1f4-b4a2-11ec-a519-77ff3160d5e2"}]`),
@@ -232,7 +232,7 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"300c0740-b4a2-11ec-9751-632ef9ed0b46"}]`),
@@ -288,7 +288,7 @@ func Test_QueueV1QueueCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 		expectRes     *qmqueue.Queue
 	}{
 		{
@@ -316,7 +316,7 @@ func Test_QueueV1QueueCreate(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"6cf22a94-7ff1-11ec-9254-5371564adf91","name":"name","detail":"detail","routing_method":"random","tag_ids":["fdbf3fdc-6159-11ec-9263-734d393b9759"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"}`),
@@ -362,7 +362,7 @@ func Test_QueueV1QueueDelete(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *qmqueue.Queue
 	}{
 		{
@@ -377,7 +377,7 @@ func Test_QueueV1QueueDelete(t *testing.T) {
 				DataType: "application/json",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a2764422-6159-11ec-8d87-975236f7d7b7"}`),
@@ -431,7 +431,7 @@ func Test_QueueV1QueueUpdate(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *qmqueue.Queue
 	}{
 		{
@@ -461,7 +461,7 @@ func Test_QueueV1QueueUpdate(t *testing.T) {
 				Data:     []byte(`{"name":"name","detail":"detail","routing_method":"random","tag_ids":["5c4085f4-4a81-11ee-a137-b7953610070d","5ca5f42a-4a81-11ee-b6ba-7b5ab1c95600"],"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":60000,"service_timeout":6000000}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"bacc13d4-615a-11ec-a73d-ff4194d49ef7"}`),
@@ -508,7 +508,7 @@ func Test_QueueV1QueueUpdateTagIDs(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *qmqueue.Queue
 	}{
 		{
@@ -527,7 +527,7 @@ func Test_QueueV1QueueUpdateTagIDs(t *testing.T) {
 				Data:     []byte(`{"tag_ids":["2c07e118-615b-11ec-a5cd-0fb1d1ab5c67"]}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
@@ -575,7 +575,7 @@ func Test_QueueV1QueueUpdateRoutingMethod(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *qmqueue.Queue
 	}{
 		{
@@ -592,7 +592,7 @@ func Test_QueueV1QueueUpdateRoutingMethod(t *testing.T) {
 				Data:     []byte(`{"routing_method":"random"}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
@@ -642,7 +642,7 @@ func Test_QueueV1QueueUpdateActions(t *testing.T) {
 		expectTarget  string
 		expectRequest *sock.Request
 
-		response  *rabbitmqhandler.Response
+		response  *sock.Response
 		expectRes *qmqueue.Queue
 	}{
 		{
@@ -665,7 +665,7 @@ func Test_QueueV1QueueUpdateActions(t *testing.T) {
 				Data:     []byte(`{"wait_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":10000,"service_timeout":100000}`),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2bdd3418-615b-11ec-80a9-a73788a62c03"}`),
@@ -715,7 +715,7 @@ func Test_QueueV1QueueCreateQueuecall(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *qmqueuecall.Queuecall
 	}{
@@ -735,7 +735,7 @@ func Test_QueueV1QueueCreateQueuecall(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"reference_type":"call","reference_id":"72beeeac-615c-11ec-bb63-4b76d4878b1d","reference_activeflow_id":"8b4d5618-af57-11ec-ba45-7fed62f4b346","exit_action_id":"7aa3cc0a-615c-11ec-89fc-3f90491bf4e4"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"ad7799f4-615c-11ec-b77c-87ab9fdc627c"}`),
@@ -782,7 +782,7 @@ func Test_QueueV1QueueExecuteRun(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			"normal",
@@ -796,7 +796,7 @@ func Test_QueueV1QueueExecuteRun(t *testing.T) {
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -838,7 +838,7 @@ func Test_QueueV1QueueUpdateExecute(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *sock.Request
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 
 		expectRes *qmqueue.Queue
 	}{
@@ -855,7 +855,7 @@ func Test_QueueV1QueueUpdateExecute(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"execute":"run"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"7f72fd14-d263-11ec-8a58-ef9e846046ae"}`),

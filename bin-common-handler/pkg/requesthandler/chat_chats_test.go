@@ -30,7 +30,7 @@ func Test_ChatV1ChatCreate(t *testing.T) {
 		chatName       string
 		detail         string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -49,7 +49,7 @@ func Test_ChatV1ChatCreate(t *testing.T) {
 			"test name",
 			"test detail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d50945c4-3697-11ed-9ffb-570b42b0ddd4"}`),
@@ -110,7 +110,7 @@ func Test_ChatV1ChatGet(t *testing.T) {
 
 		chatID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -120,7 +120,7 @@ func Test_ChatV1ChatGet(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("6ccf608c-3698-11ed-9f4b-a7949f21d6b1"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"6ccf608c-3698-11ed-9f4b-a7949f21d6b1"}`),
@@ -174,7 +174,7 @@ func Test_ChatV1ChatGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
@@ -190,7 +190,7 @@ func Test_ChatV1ChatGets(t *testing.T) {
 				"customer_id": "c6ebf88c-3698-11ed-a6e1-7f172e23f5ea",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c7224cde-3698-11ed-b3c4-57ea8ad3e71d"}]`),
@@ -248,7 +248,7 @@ func Test_ChatV1ChatDelete(t *testing.T) {
 
 		chatID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -258,7 +258,7 @@ func Test_ChatV1ChatDelete(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("fb7a2164-3698-11ed-acfd-5b96525f8ec9"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"fb7a2164-3698-11ed-acfd-5b96525f8ec9"}`),
@@ -312,7 +312,7 @@ func Test_ChatV1ChatUpdateBasicInfo(t *testing.T) {
 		updateName   string
 		updateDetail string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -325,7 +325,7 @@ func Test_ChatV1ChatUpdateBasicInfo(t *testing.T) {
 			"update name",
 			"update detail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"63e29b96-c515-11ec-ba52-ab7d7001913f"}`),
@@ -379,7 +379,7 @@ func Test_ChatV1ChatUpdateRoomOwnerID(t *testing.T) {
 		chatID            uuid.UUID
 		updateRoomOwnerID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -391,7 +391,7 @@ func Test_ChatV1ChatUpdateRoomOwnerID(t *testing.T) {
 			uuid.FromStringOrNil("873465c0-3699-11ed-b0cc-fbee9352367b"),
 			uuid.FromStringOrNil("875e8c42-3699-11ed-9746-a772f54ed917"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"873465c0-3699-11ed-b0cc-fbee9352367b"}`),
@@ -445,7 +445,7 @@ func Test_ChatV1ChatAddParticipantID(t *testing.T) {
 		chatID        uuid.UUID
 		participantID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -457,7 +457,7 @@ func Test_ChatV1ChatAddParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("2658828e-369b-11ed-b9c9-5b03f9812b19"),
 			uuid.FromStringOrNil("268b0e70-369b-11ed-ba58-cb3598f7f7d1"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2658828e-369b-11ed-b9c9-5b03f9812b19"}`),
@@ -511,7 +511,7 @@ func Test_ChatV1ChatRemoveParticipantID(t *testing.T) {
 		chatID        uuid.UUID
 		participantID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -523,7 +523,7 @@ func Test_ChatV1ChatRemoveParticipantID(t *testing.T) {
 			uuid.FromStringOrNil("355eda2a-369c-11ed-b5f8-bf163967cc10"),
 			uuid.FromStringOrNil("358a2298-369c-11ed-aa26-0fc0067a8829"),
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"355eda2a-369c-11ed-b5f8-bf163967cc10"}`),

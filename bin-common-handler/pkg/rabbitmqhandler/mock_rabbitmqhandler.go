@@ -201,10 +201,10 @@ func (mr *MockRabbitMockRecorder) PublishExchangeRequest(exchange, key, req inte
 }
 
 // PublishRPC mocks base method.
-func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*Response, error) {
+func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRPC", ctx, queueName, req)
-	ret0, _ := ret[0].(*Response)
+	ret0, _ := ret[0].(*sock.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
