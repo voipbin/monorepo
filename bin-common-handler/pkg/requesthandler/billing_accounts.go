@@ -10,11 +10,10 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	bmrequest "monorepo/bin-billing-manager/pkg/listenhandler/models/request"
 	bmresponse "monorepo/bin-billing-manager/pkg/listenhandler/models/response"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // BillingV1AccountGets returns list of billing accounts.
@@ -24,7 +23,7 @@ func (r *requestHandler) BillingV1AccountGets(ctx context.Context, pageToken str
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -57,7 +56,7 @@ func (r *requestHandler) BillingV1AccountCreate(ctx context.Context, custoerID u
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -79,7 +78,7 @@ func (r *requestHandler) BillingV1AccountCreate(ctx context.Context, custoerID u
 func (r *requestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -109,7 +108,7 @@ func (r *requestHandler) BillingV1AccountUpdateBasicInfo(ctx context.Context, ac
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPut, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPut, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -139,7 +138,7 @@ func (r *requestHandler) BillingV1AccountUpdatePaymentInfo(ctx context.Context, 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPut, "billing/accounts/<account-id>/payment_info", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPut, "billing/accounts/<account-id>/payment_info", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -161,7 +160,7 @@ func (r *requestHandler) BillingV1AccountUpdatePaymentInfo(ctx context.Context, 
 func (r *requestHandler) BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodDelete, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodDelete, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -190,7 +189,7 @@ func (r *requestHandler) BillingV1AccountAddBalanceForce(ctx context.Context, ac
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts/<account-id>/balance_add", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/balance_add", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -219,7 +218,7 @@ func (r *requestHandler) BillingV1AccountSubtractBalanceForce(ctx context.Contex
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts/<account-id>/balance_subtract", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/balance_subtract", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -250,7 +249,7 @@ func (r *requestHandler) BillingV1AccountIsValidBalance(ctx context.Context, acc
 		return false, err
 	}
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts/<account-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return false, err

@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,19 +17,19 @@ import (
 func Test_v1VariablesIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		variableID uuid.UUID
 
 		responseVariable *variable.Variable
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/0d58c9cc-ccfd-11ec-8807-cb5ce3bc2a68",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -41,7 +42,7 @@ func Test_v1VariablesIDGet(t *testing.T) {
 					"key1": "val1",
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"01677a56-0c2d-11eb-96cb-eb2cd309ca81","variables":{"key1":"val1"}}`),
@@ -79,18 +80,18 @@ func Test_v1VariablesIDGet(t *testing.T) {
 func Test_v1VariablesIDVariablesPost(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		variableID uuid.UUID
 		variables  map[string]string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/f842de3c-ccfd-11ec-bfcb-670259cb01f7/variables",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"variables":{"key1": "value1", "key2": "value2"}}`),
 			},
@@ -101,7 +102,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 				"key2": "value2",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -138,41 +139,41 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		variableID uuid.UUID
 		key        string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/52905588-db2f-11ec-9813-73dc3a5d302d/variables/key1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
 			uuid.FromStringOrNil("52905588-db2f-11ec-9813-73dc3a5d302d"),
 			"key1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
 		},
 		{
 			"key has a space",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/52905588-db2f-11ec-9813-73dc3a5d302d/variables/key+1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
 			uuid.FromStringOrNil("52905588-db2f-11ec-9813-73dc3a5d302d"),
 			"key 1",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

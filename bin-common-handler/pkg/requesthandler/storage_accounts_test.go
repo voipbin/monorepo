@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	smaccount "monorepo/bin-storage-manager/models/account"
@@ -20,8 +21,8 @@ func Test_StorageV1AccountCreate(t *testing.T) {
 		customerID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *smaccount.Account
 	}{
@@ -31,14 +32,14 @@ func Test_StorageV1AccountCreate(t *testing.T) {
 			customerID: uuid.FromStringOrNil("445c6bd8-1bc8-11ef-9397-5b14b39c0d70"),
 
 			expectTarget: "bin-manager.storage-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"445c6bd8-1bc8-11ef-9397-5b14b39c0d70"}`),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"44bd87a6-1bc8-11ef-b7ba-0f0f1468177a"}`),
@@ -83,11 +84,11 @@ func Test_StorageV1AccountGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []smaccount.Account
 	}{
 		{
@@ -99,7 +100,7 @@ func Test_StorageV1AccountGets(t *testing.T) {
 				"deleted": "false",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"44e914de-1bc8-11ef-ad71-0be6fe3f98ef"},{"id":"45176d8e-1bc8-11ef-9ab1-b3373adf14ce"}]`),
@@ -107,9 +108,9 @@ func Test_StorageV1AccountGets(t *testing.T) {
 
 			"/v1/accounts?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/accounts?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			[]smaccount.Account{
@@ -158,26 +159,26 @@ func Test_StorageV1AccountGet(t *testing.T) {
 
 		accountID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *smaccount.Account
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("454865b0-1bc8-11ef-b131-932f42455765"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"454865b0-1bc8-11ef-b131-932f42455765"}`),
 			},
 
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/accounts/454865b0-1bc8-11ef-b131-932f42455765",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			&smaccount.Account{
@@ -219,10 +220,10 @@ func Test_StorageV1AccountDelete(t *testing.T) {
 		accountID      uuid.UUID
 		requestTimeout int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *smaccount.Account
 	}{
 		{
@@ -230,15 +231,15 @@ func Test_StorageV1AccountDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("bbef2ad2-1bc8-11ef-98ff-c36b990c2e2f"),
 			5000,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"bbef2ad2-1bc8-11ef-98ff-c36b990c2e2f"}`),
 			},
 
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/accounts/bbef2ad2-1bc8-11ef-98ff-c36b990c2e2f",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			&smaccount.Account{

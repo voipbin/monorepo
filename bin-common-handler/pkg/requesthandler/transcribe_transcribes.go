@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmrequest "monorepo/bin-transcribe-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TranscribeV1TranscribeGet sends a request to transcribe-manager
@@ -20,7 +19,7 @@ import (
 func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes/%s", transcribeID)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, "transcribe/transcribes/<transcribe-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcribes/<transcribe-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -48,7 +47,7 @@ func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageTok
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -93,7 +92,7 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -118,7 +117,7 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 func (r *requestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes/%s/stop", transcribeID)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -142,7 +141,7 @@ func (r *requestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcr
 func (r *requestHandler) TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes/%s", transcribeID)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodDelete, "transcribe/transcribes/<transcribe-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodDelete, "transcribe/transcribes/<transcribe-id>", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -178,7 +177,7 @@ func (r *requestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, 
 		return err
 	}
 
-	res, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, "transcribe/transcribes/<transcribe-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes/<transcribe-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,20 +19,20 @@ func Test_v1DialroutesGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		target     string
 
 		responseDialroutes []*route.Route
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/dialroutes?customer_id=ad06dadc-9694-4179-920c-d0bbaf6bedc3&target=%2b82",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -44,7 +45,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"79f2705e-b57f-4957-8ad6-6e162802b115","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -52,9 +53,9 @@ func Test_v1DialroutesGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/dialroutes?customer_id=555a5772-517a-45fa-b489-c0104dc0b993&target=%2b82",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -70,7 +71,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"ea23a015-6d11-4014-894d-2aaa96cbd851","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"3bb96c6e-1526-4628-806a-dc780b43a82a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -78,9 +79,9 @@ func Test_v1DialroutesGet(t *testing.T) {
 		},
 		{
 			"empty response",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/dialroutes?customer_id=d66690be-777b-4cb4-8419-9334ceb57bd8&target=%2b82",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -89,7 +90,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 
 			[]*route.Route{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),

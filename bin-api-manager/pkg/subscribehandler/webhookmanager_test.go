@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
 	gomock "github.com/golang/mock/gomock"
 
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
@@ -17,7 +16,7 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Event
+		request *sock.Event
 
 		expectTopics []string
 		expectEvent  string
@@ -27,7 +26,7 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 		{
 			name: "customer level normal",
 
-			request: &rabbitmqhandler.Event{
+			request: &sock.Event{
 				Type:      "webhook_published",
 				Publisher: "webhook-manager",
 				DataType:  "application/json",
@@ -64,7 +63,7 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 		{
 			name: "agent level normal",
 
-			request: &rabbitmqhandler.Event{
+			request: &sock.Event{
 				Type:      "webhook_published",
 				Publisher: "webhook-manager",
 				DataType:  "application/json",

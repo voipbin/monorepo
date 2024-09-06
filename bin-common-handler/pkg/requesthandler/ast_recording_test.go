@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -18,7 +19,7 @@ func Test_AstRecordingStop(t *testing.T) {
 
 		expectQueue  string
 		expectURI    string
-		expectMethod rabbitmqhandler.RequestMethod
+		expectMethod sock.RequestMethod
 	}{
 		{
 			"normal",
@@ -27,7 +28,7 @@ func Test_AstRecordingStop(t *testing.T) {
 
 			"asterisk.00:11:22:33:44:55.request",
 			"/ari/recordings/live/74b441de-90be-11ed-a5ab-eff9d8e46ebe/stop",
-			rabbitmqhandler.RequestMethodPost,
+			sock.RequestMethodPost,
 		},
 	}
 
@@ -44,13 +45,13 @@ func Test_AstRecordingStop(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
-				&rabbitmqhandler.Request{
+				&sock.Request{
 					URI:      tt.expectURI,
 					Method:   tt.expectMethod,
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingStop(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -69,7 +70,7 @@ func Test_AstRecordingPause(t *testing.T) {
 
 		expectQueue  string
 		expectURI    string
-		expectMethod rabbitmqhandler.RequestMethod
+		expectMethod sock.RequestMethod
 	}{
 		{
 			"normal",
@@ -78,7 +79,7 @@ func Test_AstRecordingPause(t *testing.T) {
 
 			"asterisk.00:11:22:33:44:55.request",
 			"/ari/recordings/live/ac61de34-90be-11ed-9fd7-b3becbae66ed/pause",
-			rabbitmqhandler.RequestMethodPost,
+			sock.RequestMethodPost,
 		},
 	}
 
@@ -95,13 +96,13 @@ func Test_AstRecordingPause(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
-				&rabbitmqhandler.Request{
+				&sock.Request{
 					URI:      tt.expectURI,
 					Method:   tt.expectMethod,
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingPause(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -120,7 +121,7 @@ func Test_AstRecordingUnpause(t *testing.T) {
 
 		expectQueue  string
 		expectURI    string
-		expectMethod rabbitmqhandler.RequestMethod
+		expectMethod sock.RequestMethod
 	}{
 		{
 			"normal",
@@ -129,7 +130,7 @@ func Test_AstRecordingUnpause(t *testing.T) {
 
 			"asterisk.00:11:22:33:44:55.request",
 			"/ari/recordings/live/ac61de34-90be-11ed-9fd7-b3becbae66ed/pause",
-			rabbitmqhandler.RequestMethodDelete,
+			sock.RequestMethodDelete,
 		},
 	}
 
@@ -146,13 +147,13 @@ func Test_AstRecordingUnpause(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
-				&rabbitmqhandler.Request{
+				&sock.Request{
 					URI:      tt.expectURI,
 					Method:   tt.expectMethod,
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingUnpause(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -171,7 +172,7 @@ func Test_AstRecordingMute(t *testing.T) {
 
 		expectQueue  string
 		expectURI    string
-		expectMethod rabbitmqhandler.RequestMethod
+		expectMethod sock.RequestMethod
 	}{
 		{
 			"normal",
@@ -180,7 +181,7 @@ func Test_AstRecordingMute(t *testing.T) {
 
 			"asterisk.00:11:22:33:44:55.request",
 			"/ari/recordings/live/e73398fe-90be-11ed-821f-0fa720b0f3ab/mute",
-			rabbitmqhandler.RequestMethodPost,
+			sock.RequestMethodPost,
 		},
 	}
 
@@ -197,13 +198,13 @@ func Test_AstRecordingMute(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
-				&rabbitmqhandler.Request{
+				&sock.Request{
 					URI:      tt.expectURI,
 					Method:   tt.expectMethod,
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingMute(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {
@@ -222,7 +223,7 @@ func Test_AstRecordingUnmute(t *testing.T) {
 
 		expectQueue  string
 		expectURI    string
-		expectMethod rabbitmqhandler.RequestMethod
+		expectMethod sock.RequestMethod
 	}{
 		{
 			"normal",
@@ -231,7 +232,7 @@ func Test_AstRecordingUnmute(t *testing.T) {
 
 			"asterisk.00:11:22:33:44:55.request",
 			"/ari/recordings/live/f8feed4a-90be-11ed-aa76-c7eb32286c6d/mute",
-			rabbitmqhandler.RequestMethodDelete,
+			sock.RequestMethodDelete,
 		},
 	}
 
@@ -248,13 +249,13 @@ func Test_AstRecordingUnmute(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
-				&rabbitmqhandler.Request{
+				&sock.Request{
 					URI:      tt.expectURI,
 					Method:   tt.expectMethod,
 					DataType: "",
 					Data:     nil,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 
 			err := reqHandler.AstRecordingUnmute(context.Background(), tt.asteriskID, tt.recordingID)
 			if err != nil {

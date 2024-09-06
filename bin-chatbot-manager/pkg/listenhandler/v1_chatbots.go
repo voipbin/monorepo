@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ import (
 )
 
 // processV1ChatbotsGet handles GET /v1/chatbots request
-func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ChatbotsGet",
 		"request": m,
@@ -57,7 +57,7 @@ func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *rabbitmqhan
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -67,7 +67,7 @@ func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *rabbitmqhan
 }
 
 // processV1ChatbotsPost handles POST /v1/chatbots request
-func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsPost",
 		"request": m,
@@ -91,7 +91,7 @@ func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *rabbitmqha
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -101,7 +101,7 @@ func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *rabbitmqha
 }
 
 // processV1ChatbotsIDGet handles GET /v1/chatbots/<chatbot-id> request
-func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsIDGet",
 		"request": m,
@@ -126,7 +126,7 @@ func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *rabbitmqh
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -136,7 +136,7 @@ func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1ChatbotsIDDelete handles DELETE /v1/chatbots/<chatbot-id> request
-func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsIDDelete",
 		"request": m,
@@ -161,7 +161,7 @@ func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *rabbit
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -171,7 +171,7 @@ func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *rabbit
 }
 
 // processV1ChatbotsPost handles PUT /v1/chatbots/<chatbot-id> request
-func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsIDPut",
 		"request": m,
@@ -202,7 +202,7 @@ func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *rabbitmqh
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

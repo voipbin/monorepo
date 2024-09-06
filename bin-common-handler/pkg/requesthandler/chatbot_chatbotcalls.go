@@ -7,10 +7,9 @@ import (
 	"net/url"
 
 	cbchatbotcall "monorepo/bin-chatbot-manager/models/chatbotcall"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ChatbotV1ChatbotcallGetsByCustomerID sends a request to chatbot-manager
@@ -22,7 +21,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Contex
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, "chatbot/chatbotcalls", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbotcalls", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -46,7 +45,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcal
 
 	uri := fmt.Sprintf("/v1/chatbotcalls/%s", chatbotcallID)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcal
 func (r *requestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error) {
 	uri := fmt.Sprintf("/v1/chatbotcalls/%s", chatbotcallID)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodDelete, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodDelete, "chatbot/chatbotcalls/<chatbotcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

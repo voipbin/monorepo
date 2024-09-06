@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/pkg/errors"
@@ -13,7 +12,7 @@ import (
 )
 
 // processEventCUCustomerDeleted handles the customer-manager's customer_deleted event.
-func (h *subscribeHandler) processEventCUCustomerDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCUCustomerDeleted(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCUCustomerDeleted",
 		"event": m,

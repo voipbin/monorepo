@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/golang/mock/gomock"
@@ -31,19 +32,19 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 		pageSize    uint
 		numbers     []*availablenumber.AvailableNumber
 
-		request  *rabbitmqhandler.Request
-		response *rabbitmqhandler.Response
+		request  *sock.Request
+		response *sock.Response
 	}{
 		{
 			"empty numbers",
 			"US",
 			1,
 			[]*availablenumber.AvailableNumber{},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/available_numbers?country_code=US&page_size=1",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -64,11 +65,11 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/available_numbers?country_code=US&page_size=1",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"number":"+16188850188","provider_name":"telnyx","country":"US","region":"IL","postal_code":"","features":["emergency","fax","voice","sms"],"tm_create":"","tm_update":"","tm_delete":""}]`),

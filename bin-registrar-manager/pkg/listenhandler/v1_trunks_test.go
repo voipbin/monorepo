@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,8 +32,8 @@ func Test_processV1TrunksPost(t *testing.T) {
 		allowedIPs []string
 
 		resTrunk  *trunk.Trunk
-		request   *rabbitmqhandler.Request
-		expectRes *rabbitmqhandler.Response
+		request   *sock.Request
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -53,13 +54,13 @@ func Test_processV1TrunksPost(t *testing.T) {
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("1744ccb4-6e13-11eb-b08d-bb42431b2fb3"),
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c", "name": "test name", "detail": "test detail", "domain_name": "21b7ae32-5231-11ee-b7da-7f436158317b", "auth_types": ["basic"], "username": "testusername", "password": "testpassword", "allowed_ips": ["1.2.3.4"]}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1744ccb4-6e13-11eb-b08d-bb42431b2fb3","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -102,12 +103,12 @@ func Test_processV1TrunksGet(t *testing.T) {
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
-		request    *rabbitmqhandler.Request
+		request    *sock.Request
 
 		responseFilters map[string]string
 		responseTrunks  []*trunk.Trunk
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -116,9 +117,9 @@ func Test_processV1TrunksGet(t *testing.T) {
 			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 			"2020-10-10T03:30:17.000000",
 			10,
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -134,7 +135,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("af6488da-6ee6-11eb-8d4d-0f848f8e1aee"),
 					CustomerID: uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 				}},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"abd3467a-6ee6-11eb-824f-c386fbaad128","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"af6488da-6ee6-11eb-8d4d-0f848f8e1aee","customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -145,9 +146,9 @@ func Test_processV1TrunksGet(t *testing.T) {
 			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 			"2020-10-10T03:30:17.000000",
 			10,
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -155,7 +156,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 				"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
 			},
 			[]*trunk.Trunk{},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -208,9 +209,9 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 		password   string
 		allowedIPs []string
 
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		resTrunk  *trunk.Trunk
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -229,16 +230,16 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 				"1.2.3.4",
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks/a3e97272-5232-11ee-acd9-bbb3933eed48",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name", "detail":"update detail", "auth_types": ["basic"], "username": "testusername", "password": "testpassword", "allowed_ips": ["1.2.3.4"]}`),
 			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("a3e97272-5232-11ee-acd9-bbb3933eed48"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a3e97272-5232-11ee-acd9-bbb3933eed48","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -281,9 +282,9 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 
 		id uuid.UUID
 
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		resTrunk  *trunk.Trunk
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
@@ -292,14 +293,14 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 
 			uuid.FromStringOrNil("4e1f3c12-5234-11ee-ad7f-ef5be37113b2"),
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/trunks/4e1f3c12-5234-11ee-ad7f-ef5be37113b2",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("4e1f3c12-5234-11ee-ad7f-ef5be37113b2"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4e1f3c12-5234-11ee-ad7f-ef5be37113b2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -340,26 +341,26 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 	type test struct {
 		name string
 
-		request       *rabbitmqhandler.Request
+		request       *sock.Request
 		responseTrunk *trunk.Trunk
 
 		expectDomainName string
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/trunks/domain_name/testdomain",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("d5829769-dacf-420e-9260-c8931560331e"),
 			},
 
 			"testdomain",
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d5829769-dacf-420e-9260-c8931560331e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -401,25 +402,25 @@ func Test_processV1TrunksDelete(t *testing.T) {
 		name    string
 		trunkID uuid.UUID
 
-		request       *rabbitmqhandler.Request
+		request       *sock.Request
 		responseTrunk *trunk.Trunk
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
 		{
 			"normal",
 			uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/trunks/09e94cb4-6f32-11eb-af29-27dcd65a7064",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"09e94cb4-6f32-11eb-af29-27dcd65a7064","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"realm":"","username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`),

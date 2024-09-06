@@ -8,10 +8,9 @@ import (
 
 	cbchatbot "monorepo/bin-chatbot-manager/models/chatbot"
 	cbrequest "monorepo/bin-chatbot-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ChatbotV1ChatbotGetsByCustomerID sends a request to chatbot-manager
@@ -23,7 +22,7 @@ func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, c
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, "chatbot/chatbots", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -47,7 +46,7 @@ func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid
 
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID.String())
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodGet, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +89,7 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPost, "chatbot/chatbots", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPost, "chatbot/chatbots", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -115,7 +114,7 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID)
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodDelete, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodDelete, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -159,7 +158,7 @@ func (r *requestHandler) ChatbotV1ChatbotUpdate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPut, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChatbot(ctx, uri, sock.RequestMethodPut, "chatbot/chatbots/<chatbot-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

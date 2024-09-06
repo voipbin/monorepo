@@ -7,8 +7,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amrequest "monorepo/bin-agent-manager/pkg/listenhandler/models/request"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // AgentV1Login sends a request to agent-manager
@@ -28,7 +27,7 @@ func (r *requestHandler) AgentV1Login(ctx context.Context, timeout int, username
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPost, "agent/login", timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPost, "agent/login", timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

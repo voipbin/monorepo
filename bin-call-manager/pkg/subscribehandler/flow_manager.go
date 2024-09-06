@@ -4,15 +4,14 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processEventFMActiveflowUpdated handles the activeflow updated event.
-func (h *subscribeHandler) processEventFMActiveflowUpdated(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventFMActiveflowUpdated(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processEventFMActiveflowUpdated",
 		"message": m,

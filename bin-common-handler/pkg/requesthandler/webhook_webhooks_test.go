@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -23,8 +24,8 @@ func Test_WebhookV1WebhookSend(t *testing.T) {
 		messageData []byte
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 	}{
 		{
 			"normal",
@@ -35,13 +36,13 @@ func Test_WebhookV1WebhookSend(t *testing.T) {
 			[]byte(`{}`),
 
 			"bin-manager.webhook-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/webhooks",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","data_type":"application/json","data":{"type":"application/json","data":{}}}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -82,8 +83,8 @@ func Test_WebhookV1WebhookDestinationSend(t *testing.T) {
 		data        []byte
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -94,13 +95,13 @@ func Test_WebhookV1WebhookDestinationSend(t *testing.T) {
 			dataType:    wmwebhook.DataTypeJSON,
 
 			expectTarget: "bin-manager.webhook-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/webhook_destinations",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","uri":"test.com","method":"POST","data_type":"application/json","data":"test webhook."}`),
 			},
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

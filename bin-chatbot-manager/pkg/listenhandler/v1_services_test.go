@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +20,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseService *service.Service
 
@@ -31,15 +32,15 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 		expectGender        chatbotcall.Gender
 		expectLanguage      string
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/services/type/chatbotcall",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"71db8f9c-abde-475e-a060-dc95e63281c3","chatbot_id":"e7f085d0-c7d9-4da4-9992-eda14282cb86","activeflow_id":"80a5199e-fba5-11ed-90aa-6b9821d2ad5b","reference_type":"call","reference_id":"10662882-5ff8-4788-a605-55614dc8d330","gender":"female","language":"en-US"}`),
 			},
@@ -56,7 +57,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 			expectGender:        chatbotcall.GenderFemale,
 			expectLanguage:      "en-US",
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9d5b7e72-2cc9-4868-bfab-c8e758cd5045","type":"","push_actions":null}`),

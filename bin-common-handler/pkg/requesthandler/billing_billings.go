@@ -7,10 +7,9 @@ import (
 	"net/url"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/pkg/errors"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // BillingV1BillingGets returns list of billings.
@@ -20,7 +19,7 @@ func (r *requestHandler) BillingV1BillingGets(ctx context.Context, pageToken str
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/billings", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodGet, "billing/billings", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

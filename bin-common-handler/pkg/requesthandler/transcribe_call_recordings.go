@@ -16,7 +16,7 @@ package requesthandler
 // 		return nil, err
 // 	}
 
-// 	res, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeCallRecordings, timeout, delay, ContentTypeJSON, m)
+// 	res, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, resourceTranscribeCallRecordings, timeout, delay, ContentTypeJSON, m)
 // 	switch {
 // 	case err != nil:
 // 		return nil, err

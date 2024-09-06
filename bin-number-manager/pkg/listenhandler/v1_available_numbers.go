@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"strconv"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processV1AvailableNumbersGet handles GET /v1/avaliable_numbers request
-func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AvailableNumbersGet",
 		"request": m,
@@ -47,7 +47,7 @@ func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *rab
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

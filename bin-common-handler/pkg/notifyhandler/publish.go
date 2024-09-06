@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // PublishWebhookEvent publishs the given event type of notification to the webhook and event queue.
@@ -104,7 +104,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	log.Debugf("Publishing the event. type: %s", eventType)
 
 	// create a event
-	evt := &rabbitmqhandler.Event{
+	evt := &sock.Event{
 		Type:      eventType,
 		Publisher: string(h.publisher),
 		DataType:  dataType,
@@ -140,7 +140,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 }
 
 // publishDirectEvent publish the event to the target without delay
-func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *rabbitmqhandler.Event) error {
+func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *sock.Event) error {
 
 	start := time.Now()
 	err := h.sock.PublishExchangeEvent(string(h.queueNotify), "", evt)
@@ -152,7 +152,7 @@ func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *rabbitmqhan
 
 // publishDelayedEvent sends the delayed event
 // delay unit is millisecond.
-func (h *notifyHandler) publishDelayedEvent(ctx context.Context, delay int, evt *rabbitmqhandler.Event) error {
+func (h *notifyHandler) publishDelayedEvent(ctx context.Context, delay int, evt *sock.Event) error {
 
 	start := time.Now()
 	err := h.sock.PublishExchangeDelayedEvent(string(commonoutline.QueueNameDelay), string(h.queueNotify), evt, delay)

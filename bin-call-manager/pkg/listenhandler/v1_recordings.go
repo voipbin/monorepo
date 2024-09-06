@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ import (
 )
 
 // processV1RecordingGet handles GET /v1/recordings request
-func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsGet",
 		"request": m,
@@ -46,7 +46,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *rabbitmqh
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -56,7 +56,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1RecordingsPost handles POST /v1/recordings request
-func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsPost",
 		"request": m,
@@ -80,7 +80,7 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmq
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -90,7 +90,7 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmq
 }
 
 // processV1RecordingsIDGet handles GET /v1/recordings/<id> request
-func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDGet",
 		"request": m,
@@ -114,7 +114,7 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitm
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -124,7 +124,7 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitm
 }
 
 // processV1RecordingsIDDelete handles DELETE /v1/recordings/<id> request
-func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDDelete",
 		"request": m,
@@ -148,7 +148,7 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabb
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -158,7 +158,7 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabb
 }
 
 // processV1RecordingsIDStopPost handles POST /v1/recordings/<id>/stop request
-func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDStopPost",
 		"request": m,
@@ -182,7 +182,7 @@ func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *ra
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

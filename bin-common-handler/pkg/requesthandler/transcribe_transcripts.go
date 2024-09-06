@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // TranscribeV1TranscriptGets sends a request to transcribe-manager
@@ -20,7 +19,7 @@ func (r *requestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageTok
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, "transcribe/transcripts", 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcripts", 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

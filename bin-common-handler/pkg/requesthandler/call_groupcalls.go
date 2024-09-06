@@ -12,7 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // CallV1GroupcallCreate sends a request to call-manager
@@ -49,7 +49,7 @@ func (r *requestHandler) CallV1GroupcallCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -77,7 +77,7 @@ func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken stri
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/groupcalls", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/groupcalls", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -102,7 +102,7 @@ func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken stri
 func (r *requestHandler) CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls/%s", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -127,7 +127,7 @@ func (r *requestHandler) CallV1GroupcallGet(ctx context.Context, groupcallID uui
 func (r *requestHandler) CallV1GroupcallDelete(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls/%s", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/groupcalls/<groupcall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -152,7 +152,7 @@ func (r *requestHandler) CallV1GroupcallDelete(ctx context.Context, groupcallID 
 func (r *requestHandler) CallV1GroupcallHangup(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -188,7 +188,7 @@ func (r *requestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Cont
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/answer_groupcall_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/answer_groupcall_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -213,7 +213,7 @@ func (r *requestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Cont
 func (r *requestHandler) CallV1GroupcallHangupOthers(ctx context.Context, groupcallID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup_others", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_others", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_others", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -233,7 +233,7 @@ func (r *requestHandler) CallV1GroupcallHangupOthers(ctx context.Context, groupc
 func (r *requestHandler) CallV1GroupcallHangupCall(ctx context.Context, groupcallID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup_call", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_call", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_call", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -253,7 +253,7 @@ func (r *requestHandler) CallV1GroupcallHangupCall(ctx context.Context, groupcal
 func (r *requestHandler) CallV1GroupcallHangupGroupcall(ctx context.Context, groupcallID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup_groupcall", groupcallID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_groupcall", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_groupcall", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err

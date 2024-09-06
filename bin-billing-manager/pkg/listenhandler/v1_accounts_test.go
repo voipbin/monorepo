@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -20,7 +21,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseFilters  map[string]string
 		responseAccounts []*account.Account
@@ -28,15 +29,15 @@ func Test_processV1AccountsGet(t *testing.T) {
 		expectCustomerID uuid.UUID
 		expectSize       uint64
 		expectToken      string
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000&filter_customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			responseFilters: map[string]string{
@@ -54,7 +55,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			expectCustomerID: uuid.FromStringOrNil("bc8f9070-0e5a-11ee-b22e-97ef303987a3"),
 			expectSize:       10,
 			expectToken:      "2023-06-08 03:22:17.995000",
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"dafc10d0-0b97-11ee-af30-2fb7811295dd","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"db4e7e24-0b97-11ee-91f9-c7d5620abcd7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -95,7 +96,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAccount *account.Account
 
@@ -104,15 +105,15 @@ func Test_processV1AccountsPost(t *testing.T) {
 		expectDetail        string
 		expectPaymentType   account.PaymentType
 		expectPaymentMethod account.PaymentMethod
-		expectRes           *rabbitmqhandler.Response
+		expectRes           *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"c28443b6-0e75-11ee-90ec-1bb28081d375","name":"test name","detail":"test detail","payment_type": "prepaid", "payment_method": ""}`),
 			},
@@ -127,7 +128,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 			expectPaymentType:   account.PaymentTypePrepaid,
 			expectPaymentMethod: account.PaymentMethodNone,
 
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c28443b6-0e75-11ee-90ec-1bb28081d375","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -165,20 +166,20 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAccount *account.Account
 
 		expectID  uuid.UUID
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/accounts/922907b6-0942-11ee-960e-f31d2cc10daa",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			responseAccount: &account.Account{
@@ -186,7 +187,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			},
 
 			expectID: uuid.FromStringOrNil("922907b6-0942-11ee-960e-f31d2cc10daa"),
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"922907b6-0942-11ee-960e-f31d2cc10daa","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -224,20 +225,20 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 
 // 	type test struct {
 // 		name    string
-// 		request *rabbitmqhandler.Request
+// 		request *sock.Request
 
 // 		responseAccount *account.Account
 
 // 		expectCustomerID uuid.UUID
-// 		expectRes        *rabbitmqhandler.Response
+// 		expectRes        *sock.Response
 // 	}
 
 // 	tests := []test{
 // 		{
 // 			name: "normal",
-// 			request: &rabbitmqhandler.Request{
+// 			request: &sock.Request{
 // 				URI:    "/v1/accounts/customer_id/6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7",
-// 				Method: rabbitmqhandler.RequestMethodGet,
+// 				Method: sock.RequestMethodGet,
 // 			},
 
 // 			responseAccount: &account.Account{
@@ -245,7 +246,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 // 			},
 
 // 			expectCustomerID: uuid.FromStringOrNil("6b16ec0c-09ff-11ee-bd17-1f6f65cee5c7"),
-// 			expectRes: &rabbitmqhandler.Response{
+// 			expectRes: &sock.Response{
 // 				StatusCode: 200,
 // 				DataType:   "application/json",
 // 				Data:       []byte(`{"id":"6b76f5ac-09ff-11ee-b6ff-8790f56e5a46","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -283,22 +284,22 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAccount *account.Account
 
 		expectAccountID uuid.UUID
 		expectName      string
 		expectDetail    string
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts/3a952284-4ccf-11ee-bd5e-03a7d7220fad",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
@@ -310,7 +311,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			expectAccountID: uuid.FromStringOrNil("3a952284-4ccf-11ee-bd5e-03a7d7220fad"),
 			expectName:      "update name",
 			expectDetail:    "update detail",
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"3a952284-4ccf-11ee-bd5e-03a7d7220fad","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -348,20 +349,20 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAccount *account.Account
 
 		expectAccountID uuid.UUID
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/accounts/a9e3587c-4ccf-11ee-9872-8b9300051977",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			responseAccount: &account.Account{
@@ -369,7 +370,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			},
 
 			expectAccountID: uuid.FromStringOrNil("a9e3587c-4ccf-11ee-9872-8b9300051977"),
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a9e3587c-4ccf-11ee-9872-8b9300051977","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -407,21 +408,21 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAccount *account.Account
 
 		expectAccountID uuid.UUID
 		expectBalance   float32
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts/42d34adc-0dbb-11ee-a41b-eb337ba453c8/balance_add_force",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"balance":20}`),
 			},
@@ -432,7 +433,7 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 
 			expectAccountID: uuid.FromStringOrNil("42d34adc-0dbb-11ee-a41b-eb337ba453c8"),
 			expectBalance:   20,
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"42d34adc-0dbb-11ee-a41b-eb337ba453c8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -470,21 +471,21 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAccount *account.Account
 
 		expectAccountID uuid.UUID
 		expectBalance   float32
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts/43180e06-0dbb-11ee-8124-17d122da2950/balance_subtract_force",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"balance":20}`),
 			},
@@ -495,7 +496,7 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 
 			expectAccountID: uuid.FromStringOrNil("43180e06-0dbb-11ee-8124-17d122da2950"),
 			expectBalance:   20,
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"43180e06-0dbb-11ee-8124-17d122da2950","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -533,7 +534,7 @@ func Test_processV1AccountsIDIsValidBalancePost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseValid bool
 
@@ -541,15 +542,15 @@ func Test_processV1AccountsIDIsValidBalancePost(t *testing.T) {
 		expectBillingType billing.ReferenceType
 		expectCountry     string
 		expectCount       int
-		expectRes         *rabbitmqhandler.Response
+		expectRes         *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts/5a687db0-133e-11ee-b2ff-2f0139f4ec84/is_valid_balance",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"billing_type":"call","country":"us","count":3}`),
 			},
@@ -560,7 +561,7 @@ func Test_processV1AccountsIDIsValidBalancePost(t *testing.T) {
 			expectBillingType: billing.ReferenceTypeCall,
 			expectCountry:     "us",
 			expectCount:       3,
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"valid":true}`),
@@ -598,22 +599,22 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAccount *account.Account
 
 		expectAccountID     uuid.UUID
 		expectPaymentType   account.PaymentType
 		expectPaymentMethod account.PaymentMethod
-		expectRes           *rabbitmqhandler.Response
+		expectRes           *sock.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts/512ab538-4cd2-11ee-91be-7779c29dd4f8/payment_info",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"payment_type":"prepaid","payment_method":""}`),
 			},
@@ -625,7 +626,7 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 			expectAccountID:     uuid.FromStringOrNil("512ab538-4cd2-11ee-91be-7779c29dd4f8"),
 			expectPaymentType:   account.PaymentTypePrepaid,
 			expectPaymentMethod: account.PaymentMethodNone,
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"512ab538-4cd2-11ee-91be-7779c29dd4f8","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),

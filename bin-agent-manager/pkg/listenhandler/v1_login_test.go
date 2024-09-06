@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,18 +19,18 @@ func Test_ProcessV1LoginPost(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		username string
 		password string
 
 		responseAgent *agent.Agent
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/login",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"username":"test@test.com","password":"password"}`),
 			},
@@ -42,7 +43,7 @@ func Test_ProcessV1LoginPost(t *testing.T) {
 				},
 				Username: "test@test.com",
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e58a9424-7dc0-11ec-82b6-d387115f2157","customer_id":"00000000-0000-0000-0000-000000000000","username":"test@test.com","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),

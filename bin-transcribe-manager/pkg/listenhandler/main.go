@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -81,8 +82,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -216,7 +217,7 @@ func (h *listenHandler) Run(queue, queueVolatile, exchangeDelay string) error {
 }
 
 // processRequest handles all of requests of the listen queue.
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,
@@ -225,7 +226,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
@@ -239,32 +240,32 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// transcribes
 	////////////////////
 	// POST /transcribes
-	case regV1Transcribes.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Transcribes.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1TranscribesPost(ctx, m)
 		requestType = "/v1/transcribes"
 
 	// GET /transcribes
-	case regV1TranscribesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TranscribesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TranscribesGet(ctx, m)
 		requestType = "/v1/transcribes"
 
 	// GET /transcribes/<transcribe-id>
-	case regV1TranscribesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TranscribesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TranscribesIDGet(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>"
 
 	// DELETE /transcribes/<transcribe-id>
-	case regV1TranscribesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1TranscribesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1TranscribesIDDelete(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>"
 
 	// POST /transcribes/<transcribe-id>/stop
-	case regV1TranscribesIDStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1TranscribesIDStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1TranscribesIDStopPost(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>/stop"
 
 	// POST /transcribes/<transcribe-id>/health-check
-	case regV1TranscribesIDHealthCheck.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1TranscribesIDHealthCheck.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1TranscribesIDHealthCheckPost(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>/health-check"
 
@@ -272,7 +273,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// transcripts
 	////////////////////
 	// GET /transcripts
-	case regV1TranscriptsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TranscriptsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TranscriptsGet(ctx, m)
 		requestType = "/v1/transcripts"
 

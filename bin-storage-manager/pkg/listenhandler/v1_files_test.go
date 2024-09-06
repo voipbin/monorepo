@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/file"
@@ -16,7 +17,7 @@ func Test_v1FilesPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID    uuid.UUID
 		ownerID       uuid.UUID
@@ -29,13 +30,13 @@ func Test_v1FilesPost(t *testing.T) {
 		filepath      string
 
 		responseFile *file.File
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/files",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"4d85dc7a-153e-11ef-9221-13c46bd56c4c", "owner_id":"4dc51b42-153e-11ef-94b6-63fbe2cffaae", "reference_type":"recording", "reference_id":"4df207d8-153e-11ef-8e6d-9fc4e34455ba","name":"test","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"test/file/path"}`),
 			},
@@ -53,7 +54,7 @@ func Test_v1FilesPost(t *testing.T) {
 			responseFile: &file.File{
 				ID: uuid.FromStringOrNil("9de3d544-1739-11ef-acf1-e7fe99b5d7d0"),
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9de3d544-1739-11ef-acf1-e7fe99b5d7d0","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -92,7 +93,7 @@ func Test_v1FilesGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken string
 		pageSize  uint64
@@ -100,13 +101,13 @@ func Test_v1FilesGet(t *testing.T) {
 		responseFilters map[string]string
 		responseFiles   []*file.File
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/files?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=bd47c576-15ea-11ef-93f4-7b6a665b785d&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -122,7 +123,7 @@ func Test_v1FilesGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("bec1be20-15ea-11ef-ab62-ab3b98e4ee3c"),
 					CustomerID: uuid.FromStringOrNil("bd47c576-15ea-11ef-93f4-7b6a665b785d")},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"bec1be20-15ea-11ef-ab62-ab3b98e4ee3c","customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -162,16 +163,16 @@ func Test_v1FilesGet(t *testing.T) {
 func Test_v1FilesIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseFile *file.File
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/files/2a5db58a-15eb-11ef-b669-bba0fb7a717d",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -179,7 +180,7 @@ func Test_v1FilesIDGet(t *testing.T) {
 			&file.File{
 				ID: uuid.FromStringOrNil("2a5db58a-15eb-11ef-b669-bba0fb7a717d"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"2a5db58a-15eb-11ef-b669-bba0fb7a717d","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -218,17 +219,17 @@ func Test_v1FilesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		fileID  uuid.UUID
 
 		responseFile *file.File
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/files/97a4e91a-15eb-11ef-bf44-eb05a9976a61",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -237,7 +238,7 @@ func Test_v1FilesIDDelete(t *testing.T) {
 			&file.File{
 				ID: uuid.FromStringOrNil("97a4e91a-15eb-11ef-bf44-eb05a9976a61"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"97a4e91a-15eb-11ef-bf44-eb05a9976a61","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),

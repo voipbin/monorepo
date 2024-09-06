@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	smfile "monorepo/bin-storage-manager/models/file"
@@ -29,8 +30,8 @@ func Test_StorageV1FileCreate(t *testing.T) {
 		requestTimeout int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *smfile.File
 	}{
@@ -49,14 +50,14 @@ func Test_StorageV1FileCreate(t *testing.T) {
 			requestTimeout: 5000,
 
 			expectTarget: "bin-manager.storage-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/files",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"4edf2f7e-160e-11ef-9cee-7f2de117897d","owner_id":"4f3b8ecc-160e-11ef-8ec2-0bcbadd66f6f","reference_type":"recording","reference_id":"4f6d6000-160e-11ef-a051-a7a6e34953db","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e4784552-160e-11ef-b04c-73e4a6f7f798"}`),
@@ -109,8 +110,8 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 		delay         int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 
 		expectResult *smfile.File
 	}{
@@ -129,14 +130,14 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 			delay:         5000,
 
 			expectTarget: "bin-manager.storage-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/files",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"785e19ca-1d91-11ef-8d6a-3bfa80d939d5","owner_id":"78a2b97c-1d91-11ef-8897-bb58d4f1853d","reference_type":"recording","reference_id":"78d6f98a-1d91-11ef-80d5-937f9fac88bd","name":"test name","detail":"test detail","filename":"test_filename.txt","bucket_name":"test_bucket","filepath":"tmp/file/path"}`),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"790613d2-1d91-11ef-b443-1f88ddd0d95b"}`),
@@ -177,11 +178,11 @@ func Test_StorageV1FileGets(t *testing.T) {
 		pageSize  uint64
 		filters   map[string]string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []smfile.File
 	}{
 		{
@@ -193,7 +194,7 @@ func Test_StorageV1FileGets(t *testing.T) {
 				"customer_id": "31237c7c-1610-11ef-84b3-f728e90c5c3e",
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"308d1de0-1610-11ef-af26-cf10522110e0"},{"id":"30f09a46-1610-11ef-99a4-4b9fef0d8729"}]`),
@@ -201,9 +202,9 @@ func Test_StorageV1FileGets(t *testing.T) {
 
 			"/v1/files?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/files?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=31237c7c-1610-11ef-84b3-f728e90c5c3e",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			[]smfile.File{
@@ -252,26 +253,26 @@ func Test_StorageV1FileGet(t *testing.T) {
 
 		fileID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *smfile.File
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("846be5e0-1610-11ef-9d6d-cfa226c15144"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"846be5e0-1610-11ef-9d6d-cfa226c15144"}`),
 			},
 
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/files/846be5e0-1610-11ef-9d6d-cfa226c15144",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			&smfile.File{
@@ -313,10 +314,10 @@ func Test_StorageV1FileDelete(t *testing.T) {
 		fileID         uuid.UUID
 		requestTimeout int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *smfile.File
 	}{
 		{
@@ -324,15 +325,15 @@ func Test_StorageV1FileDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("b0cf0e3c-1610-11ef-8e33-0b8cfeddd4f8"),
 			5000,
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				Data:       []byte(`{"id":"b0cf0e3c-1610-11ef-8e33-0b8cfeddd4f8"}`),
 			},
 
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/files/b0cf0e3c-1610-11ef-8e33-0b8cfeddd4f8",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			&smfile.File{

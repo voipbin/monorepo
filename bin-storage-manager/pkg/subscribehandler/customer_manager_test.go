@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/filehandler"
@@ -17,14 +18,14 @@ func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectCustomer *cmcustomer.Customer
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "customer-manager",
 				Type:      cmcustomer.EventTypeCustomerCreated,
 				DataType:  "application/json",
@@ -63,14 +64,14 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectCustomer *cmcustomer.Customer
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "customer-manager",
 				Type:      cmcustomer.EventTypeCustomerDeleted,
 				DataType:  "application/json",

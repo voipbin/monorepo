@@ -10,6 +10,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -115,7 +116,7 @@ func (h *subscribeHandler) Run() error {
 }
 
 // processEventRun runs the processEvent
-func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventRun",
 		"event": m,
@@ -129,7 +130,7 @@ func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
 }
 
 // processEvent processes the event message
-func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEvent(m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processEvent",
 		"message": m,

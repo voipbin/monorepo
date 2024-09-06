@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_v1RoutesPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		routeName  string
@@ -28,13 +29,13 @@ func Test_v1RoutesPost(t *testing.T) {
 		target     string
 
 		responseRoute *route.Route
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5ec129cc-4867-11ed-ac2b-fb6ace3e2e29","name":"test name","detail":"test detail","provider_id": "5eea5d92-4867-11ed-a013-bbe5c1f759ec", "priority": 1, "target": "+82"}`),
 			},
@@ -49,7 +50,7 @@ func Test_v1RoutesPost(t *testing.T) {
 			&route.Route{
 				ID: uuid.FromStringOrNil("ccb0ceec-4867-11ed-8efb-fb670e6abe45"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"ccb0ceec-4867-11ed-8efb-fb670e6abe45","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -89,7 +90,7 @@ func Test_v1RoutesGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		pageToken  string
@@ -97,13 +98,13 @@ func Test_v1RoutesGet(t *testing.T) {
 
 		responseRoutes []*route.Route
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=e2d763cc-486a-11ed-8d55-e34391ad9311",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -117,7 +118,7 @@ func Test_v1RoutesGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"6af1adee-486b-11ed-abce-07169e2f9488","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -125,9 +126,9 @@ func Test_v1RoutesGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=4d4b055a-486c-11ed-9e9a-8f788b18b04c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -144,7 +145,7 @@ func Test_v1RoutesGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"4d88b648-486c-11ed-be0b-1b6f5fbb7ada","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"4db63b68-486c-11ed-914b-e7864023bf96","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -152,9 +153,9 @@ func Test_v1RoutesGet(t *testing.T) {
 		},
 		{
 			"empty response",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=7a484950-486c-11ed-8224-b3c5db4f575e",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -164,7 +165,7 @@ func Test_v1RoutesGet(t *testing.T) {
 
 			[]*route.Route{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -204,18 +205,18 @@ func Test_v1RoutesGet(t *testing.T) {
 func Test_v1RoutesIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		routeID uuid.UUID
 
 		responseRoute *route.Route
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes/15f39396-486d-11ed-b993-9fc71f6dfd8f",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -225,7 +226,7 @@ func Test_v1RoutesIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("15f39396-486d-11ed-b993-9fc71f6dfd8f"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"15f39396-486d-11ed-b993-9fc71f6dfd8f","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -265,7 +266,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		id      uuid.UUID
 
 		routeName  string
@@ -275,13 +276,13 @@ func Test_v1RoutesIDPut(t *testing.T) {
 		target     string
 
 		responseRoute *route.Route
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes/a1f4bee0-486f-11ed-ae92-336bd3b7e9e0",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail","provider_id":"0bf6c090-4870-11ed-bba4-6f6a8a7d8553", "priority": 1, "target": "+82"}`),
 			},
@@ -296,7 +297,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 			&route.Route{
 				ID: uuid.FromStringOrNil("a1f4bee0-486f-11ed-ae92-336bd3b7e9e0"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"a1f4bee0-486f-11ed-ae92-336bd3b7e9e0","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -337,17 +338,17 @@ func Test_v1RoutesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		routeID uuid.UUID
 
 		responseRoute *route.Route
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes/39e88472-486e-11ed-baee-8b0aad96ce8f",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -356,7 +357,7 @@ func Test_v1RoutesIDDelete(t *testing.T) {
 			&route.Route{
 				ID: uuid.FromStringOrNil("39e88472-486e-11ed-baee-8b0aad96ce8f"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"39e88472-486e-11ed-baee-8b0aad96ce8f","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),

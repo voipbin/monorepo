@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -68,8 +69,8 @@ func init() {
 }
 
 // simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
+func simpleResponse(code int) *sock.Response {
+	return &sock.Response{
 		StatusCode: code,
 	}
 }
@@ -129,10 +130,10 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	var requestType string
 	var err error
-	var response *rabbitmqhandler.Response
+	var response *sock.Response
 
 	ctx := context.Background()
 	log := logrus.WithFields(
@@ -151,27 +152,27 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// tags
 	////////////
 	// GET /tags
-	case regV1TagsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TagsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TagsGet(ctx, m)
 		requestType = "/v1/tags"
 
 	// POST /tags
-	case regV1Tags.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Tags.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1TagsPost(ctx, m)
 		requestType = "/v1/tags"
 
 	// DELETE /tags/<tag-id>
-	case regV1TagsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1TagsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1TagsIDDelete(ctx, m)
 		requestType = "/v1/tags"
 
 	// GET /tags/<tag-id>
-	case regV1TagsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TagsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TagsIDGet(ctx, m)
 		requestType = "/v1/tags"
 
 	// PUT /tags/<tag-id>
-	case regV1TagsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1TagsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1TagsIDPut(ctx, m)
 		requestType = "/v1/tags"
 

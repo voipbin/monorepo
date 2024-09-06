@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -63,13 +64,13 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 
 	type test struct {
 		name    string
-		message *rabbitmqhandler.Request
+		message *sock.Request
 	}
 
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/channels?endpoint=pjsip/test@sippuas&app=test",
 				Method:   "POST",
 				DataType: "application/json",

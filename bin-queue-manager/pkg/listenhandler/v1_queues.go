@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -19,7 +19,7 @@ import (
 )
 
 // processV1QueuesPost handles Post /v1/queues request
-func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesPost",
 		"request": m,
@@ -54,7 +54,7 @@ func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *rabbitmqhand
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -64,7 +64,7 @@ func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *rabbitmqhand
 }
 
 // processV1QueuesGet handles Get /v1/queues request
-func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesGet",
 		"request": m,
@@ -95,7 +95,7 @@ func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *rabbitmqhandl
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -105,7 +105,7 @@ func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *rabbitmqhandl
 }
 
 // processV1QueuesIDGet handles Get /v1/queues/<queue-id> request
-func (h *listenHandler) processV1QueuesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDGet",
 		"request": m,
@@ -131,7 +131,7 @@ func (h *listenHandler) processV1QueuesIDGet(ctx context.Context, m *rabbitmqhan
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -141,7 +141,7 @@ func (h *listenHandler) processV1QueuesIDGet(ctx context.Context, m *rabbitmqhan
 }
 
 // processV1QueuesIDDelete handles Delete /v1/queues/<queue-id> request
-func (h *listenHandler) processV1QueuesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDDelete",
 		"request": m,
@@ -166,7 +166,7 @@ func (h *listenHandler) processV1QueuesIDDelete(ctx context.Context, m *rabbitmq
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -176,7 +176,7 @@ func (h *listenHandler) processV1QueuesIDDelete(ctx context.Context, m *rabbitmq
 }
 
 // processV1QueuesIDPut handles Put /v1/queues/<queue-id> request
-func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDPut",
 		"request": m,
@@ -218,7 +218,7 @@ func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhan
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -228,7 +228,7 @@ func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhan
 }
 
 // processV1QueuesIDTagIDsPut handles Put /v1/queues/<queue-id>/tag_ids request
-func (h *listenHandler) processV1QueuesIDTagIDsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDTagIDsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDTagIDsPut",
 		"request": m,
@@ -260,7 +260,7 @@ func (h *listenHandler) processV1QueuesIDTagIDsPut(ctx context.Context, m *rabbi
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -270,7 +270,7 @@ func (h *listenHandler) processV1QueuesIDTagIDsPut(ctx context.Context, m *rabbi
 }
 
 // processV1QueuesIDRoutingMethodPut handles Put /v1/queues/<queue-id>/routing_method request
-func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDRoutingMethodPut",
 		"request": m,
@@ -302,7 +302,7 @@ func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -312,7 +312,7 @@ func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m
 }
 
 // processV1QueuesIDWaitActionsPut handles Put /v1/queues/<queue-id>/wait_actions request
-func (h *listenHandler) processV1QueuesIDWaitActionsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDWaitActionsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDWaitActionsPut",
 		"request": m,
@@ -344,7 +344,7 @@ func (h *listenHandler) processV1QueuesIDWaitActionsPut(ctx context.Context, m *
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -354,7 +354,7 @@ func (h *listenHandler) processV1QueuesIDWaitActionsPut(ctx context.Context, m *
 }
 
 // processV1QueuesIDAgentsGet handles Get /v1/queues/<queue-id>/agents request
-func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDAgentsGet",
 		"request": m,
@@ -385,7 +385,7 @@ func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *rabbi
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -395,7 +395,7 @@ func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *rabbi
 }
 
 // processV1QueuesIDExecuteRunPost handles Post /v1/queues/<queue-id>/execute_run request
-func (h *listenHandler) processV1QueuesIDExecuteRunPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDExecuteRunPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDExecuteRunPost",
 		"request": m,
@@ -411,7 +411,7 @@ func (h *listenHandler) processV1QueuesIDExecuteRunPost(ctx context.Context, m *
 
 	h.queueHandler.Execute(ctx, id)
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 	}
@@ -420,7 +420,7 @@ func (h *listenHandler) processV1QueuesIDExecuteRunPost(ctx context.Context, m *
 }
 
 // processV1QueuesIDExecutePut handles Put /v1/queues/<queue-id>/execute request
-func (h *listenHandler) processV1QueuesIDExecutePut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuesIDExecutePut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDExecutePut",
 		"request": m,
@@ -451,7 +451,7 @@ func (h *listenHandler) processV1QueuesIDExecutePut(ctx context.Context, m *rabb
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -461,7 +461,7 @@ func (h *listenHandler) processV1QueuesIDExecutePut(ctx context.Context, m *rabb
 }
 
 // processV1QueuecallsIDStatusWaitingPost handles Post /v1/queuecalls/<queuecall-id>/status_waiting request
-func (h *listenHandler) processV1QueuecallsIDStatusWaitingPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDStatusWaitingPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDStatusWaitingPost",
 		"request": m,
@@ -486,7 +486,7 @@ func (h *listenHandler) processV1QueuecallsIDStatusWaitingPost(ctx context.Conte
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -24,10 +25,10 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []cacampaigncall.Campaigncall
 	}{
 		{
@@ -37,16 +38,16 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"0dccc282-6e23-11ee-8173-23149728867a"}]`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10&customer_id=61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			[]cacampaigncall.Campaigncall{
@@ -91,10 +92,10 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []cacampaigncall.Campaigncall
 	}{
 		{
@@ -104,16 +105,16 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"bd6d3594-c859-11ec-b2ed-af1657f376a7"}]`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10&campaign_id=b2b0be5a-c859-11ec-acc0-c75b05c4cd00", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]cacampaigncall.Campaigncall{
@@ -156,26 +157,26 @@ func Test_CampaignV1CampaigncallGet(t *testing.T) {
 
 		campaigncallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *cacampaigncall.Campaigncall
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("f3cff130-c859-11ec-ba02-4b142bed8c58"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f3cff130-c859-11ec-ba02-4b142bed8c58"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls/f3cff130-c859-11ec-ba02-4b142bed8c58",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&cacampaigncall.Campaigncall{
@@ -216,26 +217,26 @@ func Test_CampaignV1CampaigncallDelete(t *testing.T) {
 
 		campaigncallID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *cacampaigncall.Campaigncall
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("08508d40-c85a-11ec-9a16-531149eb320b"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"08508d40-c85a-11ec-9a16-531149eb320b"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls/08508d40-c85a-11ec-9a16-531149eb320b",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&cacampaigncall.Campaigncall{

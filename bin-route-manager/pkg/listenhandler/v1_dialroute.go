@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 // v1DialroutesGet handles /v1/dialroutes GET request
-func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1DialroutesGet",
@@ -41,7 +41,7 @@ func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *rabbitmqhandler.
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

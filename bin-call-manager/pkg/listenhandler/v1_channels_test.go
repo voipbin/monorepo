@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/golang/mock/gomock"
@@ -16,7 +17,7 @@ func Test_processV1ChannelsIDHealthPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		asteriskID    string
 		channelID     string
@@ -27,9 +28,9 @@ func Test_processV1ChannelsIDHealthPost(t *testing.T) {
 		{
 			"channel id is uuid",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`),
 			},
 
@@ -42,9 +43,9 @@ func Test_processV1ChannelsIDHealthPost(t *testing.T) {
 		{
 			"channel id is not uuid",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/channels/asterisk-call-58f54b64c7-d7sv7-1676744879.1115/health-check",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`),
 			},
 

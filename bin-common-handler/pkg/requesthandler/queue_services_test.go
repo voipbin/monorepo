@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -26,8 +27,8 @@ func Test_QueueV1ServiceTypeQueuecallStart(t *testing.T) {
 		exitActionID  uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+		expectRequest *sock.Request
+		response      *sock.Response
 		expectRes     *qmservice.Service
 	}{
 		{
@@ -40,13 +41,13 @@ func Test_QueueV1ServiceTypeQueuecallStart(t *testing.T) {
 			uuid.FromStringOrNil("c273699c-acff-11ed-9a0a-e7ea36c32ff0"),
 
 			"bin-manager.queue-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/services/type/queuecall",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"queue_id":"c1f0da68-acff-11ed-8d64-a311f65c0693","activeflow_id":"c216db46-acff-11ed-b9df-5b096e3173b4","reference_type":"call","reference_id":"c246902a-acff-11ed-bf99-3f8e11dad28d","exit_action_id":"c273699c-acff-11ed-9a0a-e7ea36c32ff0"}`),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c2a26184-acff-11ed-a0ae-236e54ac3818"}`),

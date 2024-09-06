@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/sock"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 	qmservice "monorepo/bin-queue-manager/models/service"
 	qmrequest "monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // QueueV1ServiceTypeQueuecallStart sends a request to queue-manager
@@ -33,7 +32,7 @@ func (r *requestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, q
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/services/type/queuecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/services/type/queuecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

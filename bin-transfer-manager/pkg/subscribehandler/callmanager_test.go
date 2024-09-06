@@ -7,6 +7,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -20,7 +21,7 @@ func Test_processEventCMGroupcallProgressing(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		responseTransfer *transfer.Transfer
 
@@ -28,7 +29,7 @@ func Test_processEventCMGroupcallProgressing(t *testing.T) {
 	}{
 		{
 			name: "type conference",
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Type:      cmgroupcall.EventTypeGroupcallProgressing,
 				Publisher: "call-manager",
 				DataType:  "application/json",
@@ -73,14 +74,14 @@ func Test_processEventCMGroupcallHangup(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		responseTransfer *transfer.Transfer
 		expectGroupcall  *cmgroupcall.Groupcall
 	}{
 		{
 			name: "normal",
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Type:      cmgroupcall.EventTypeGroupcallHangup,
 				Publisher: "call-manager",
 				DataType:  "application/json",
@@ -123,14 +124,14 @@ func Test_processEventCMCallHangup(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		responseTransfer *transfer.Transfer
 		expectCall       *cmcall.Call
 	}{
 		{
 			name: "normal",
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Type:      cmcall.EventTypeCallHangup,
 				Publisher: "call-manager",
 				DataType:  "application/json",

@@ -6,6 +6,7 @@ package rabbitmqhandler
 
 import (
 	context "context"
+	sock "monorepo/bin-common-handler/models/sock"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -59,20 +60,6 @@ func (mr *MockRabbitMockRecorder) Connect() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockRabbit)(nil).Connect))
 }
 
-// ConsumeMessage mocks base method.
-func (m *MockRabbit) ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConsumeMessage", queueName, consumerName, messageConsume)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConsumeMessage indicates an expected call of ConsumeMessage.
-func (mr *MockRabbitMockRecorder) ConsumeMessage(queueName, consumerName, messageConsume interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeMessage", reflect.TypeOf((*MockRabbit)(nil).ConsumeMessage), queueName, consumerName, messageConsume)
-}
-
 // ConsumeMessageOpt mocks base method.
 func (m *MockRabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive, noLocal, noWait bool, numWorkers int, messageConsume CbMsgConsume) error {
 	m.ctrl.T.Helper()
@@ -85,20 +72,6 @@ func (m *MockRabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive
 func (mr *MockRabbitMockRecorder) ConsumeMessageOpt(queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeMessageOpt", reflect.TypeOf((*MockRabbit)(nil).ConsumeMessageOpt), queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume)
-}
-
-// ConsumeRPC mocks base method.
-func (m *MockRabbit) ConsumeRPC(queueNqme, consumerName string, cbRPC CbMsgRPC) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConsumeRPC", queueNqme, consumerName, cbRPC)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConsumeRPC indicates an expected call of ConsumeRPC.
-func (mr *MockRabbitMockRecorder) ConsumeRPC(queueNqme, consumerName, cbRPC interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPC", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPC), queueNqme, consumerName, cbRPC)
 }
 
 // ConsumeRPCOpt mocks base method.
@@ -158,7 +131,7 @@ func (mr *MockRabbitMockRecorder) GetURL() *gomock.Call {
 }
 
 // PublishEvent mocks base method.
-func (m *MockRabbit) PublishEvent(queueName string, evt *Event) error {
+func (m *MockRabbit) PublishEvent(queueName string, evt *sock.Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishEvent", queueName, evt)
 	ret0, _ := ret[0].(error)
@@ -172,7 +145,7 @@ func (mr *MockRabbitMockRecorder) PublishEvent(queueName, evt interface{}) *gomo
 }
 
 // PublishExchangeDelayedEvent mocks base method.
-func (m *MockRabbit) PublishExchangeDelayedEvent(exchange, key string, evt *Event, delay int) error {
+func (m *MockRabbit) PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeDelayedEvent", exchange, key, evt, delay)
 	ret0, _ := ret[0].(error)
@@ -186,7 +159,7 @@ func (mr *MockRabbitMockRecorder) PublishExchangeDelayedEvent(exchange, key, evt
 }
 
 // PublishExchangeDelayedRequest mocks base method.
-func (m *MockRabbit) PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error {
+func (m *MockRabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeDelayedRequest", exchange, key, req, delay)
 	ret0, _ := ret[0].(error)
@@ -200,7 +173,7 @@ func (mr *MockRabbitMockRecorder) PublishExchangeDelayedRequest(exchange, key, r
 }
 
 // PublishExchangeEvent mocks base method.
-func (m *MockRabbit) PublishExchangeEvent(exchange, key string, evt *Event) error {
+func (m *MockRabbit) PublishExchangeEvent(exchange, key string, evt *sock.Event) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeEvent", exchange, key, evt)
 	ret0, _ := ret[0].(error)
@@ -214,7 +187,7 @@ func (mr *MockRabbitMockRecorder) PublishExchangeEvent(exchange, key, evt interf
 }
 
 // PublishExchangeRequest mocks base method.
-func (m *MockRabbit) PublishExchangeRequest(exchange, key string, req *Request) error {
+func (m *MockRabbit) PublishExchangeRequest(exchange, key string, req *sock.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeRequest", exchange, key, req)
 	ret0, _ := ret[0].(error)
@@ -228,10 +201,10 @@ func (mr *MockRabbitMockRecorder) PublishExchangeRequest(exchange, key, req inte
 }
 
 // PublishRPC mocks base method.
-func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error) {
+func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRPC", ctx, queueName, req)
-	ret0, _ := ret[0].(*Response)
+	ret0, _ := ret[0].(*sock.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -243,7 +216,7 @@ func (mr *MockRabbitMockRecorder) PublishRPC(ctx, queueName, req interface{}) *g
 }
 
 // PublishRequest mocks base method.
-func (m *MockRabbit) PublishRequest(queueName string, req *Request) error {
+func (m *MockRabbit) PublishRequest(queueName string, req *sock.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRequest", queueName, req)
 	ret0, _ := ret[0].(error)

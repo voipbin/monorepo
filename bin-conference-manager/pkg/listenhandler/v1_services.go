@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 
@@ -12,7 +12,7 @@ import (
 )
 
 // processV1ServicesTypeConferencecallPost handles POST /v1/services/type/conferencecall request
-func (h *listenHandler) processV1ServicesTypeConferencecallPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ServicesTypeConferencecallPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ServicesTypeConferencecallPost",
 		"request": m,
@@ -37,7 +37,7 @@ func (h *listenHandler) processV1ServicesTypeConferencecallPost(ctx context.Cont
 		return simpleResponse(500), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

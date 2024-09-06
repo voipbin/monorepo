@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -23,10 +24,10 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 		customerID uuid.UUID
 		target     string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []rmroute.Route
 	}{
 		{
@@ -35,16 +36,16 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 			uuid.FromStringOrNil("177ca524-52b6-11ed-bc27-67e42188fe83"),
 			"+82",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"8297fc2c-52b7-11ed-b257-2b1bd9fe3671"}]`),
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/dialroutes?customer_id=177ca524-52b6-11ed-bc27-67e42188fe83&target=%s", url.QueryEscape("+82")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			[]rmroute.Route{

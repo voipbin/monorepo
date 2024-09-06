@@ -3,6 +3,7 @@ package subscribehandler
 import (
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -18,7 +19,7 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		exectActiveflow *fmactiveflow.Activeflow
 		// expectCallID uuid.UUID
@@ -26,7 +27,7 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "flow-manager",
 				Type:      "activeflow_updated",
 				DataType:  "application/json",

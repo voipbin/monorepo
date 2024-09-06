@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RouteV1DialrouteGets sends a request to route-manager
@@ -19,7 +18,7 @@ import (
 func (r *requestHandler) RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/dialroutes?customer_id=%s&target=%s", customerID, url.QueryEscape(target))
 
-	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, "route/dialroutes", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/dialroutes", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-registrar-manager/models/astcontact"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RegistrarV1ContactGets sends the /v1/contacts GET request to registrar-manager
@@ -18,7 +17,7 @@ func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, customerID 
 
 	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +39,7 @@ func (r *requestHandler) RegistrarV1ContactRefresh(ctx context.Context, customer
 
 	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPut, "call/channels/health", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPut, "call/channels/health", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err

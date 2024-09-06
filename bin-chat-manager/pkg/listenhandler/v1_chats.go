@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,7 +18,7 @@ import (
 
 // v1ChatsPost handles /v1/chats POST request
 // creates a new chat with given data and return the created chat info.
-func (h *listenHandler) v1ChatsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsPost",
 	})
@@ -51,7 +51,7 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m *rabbitmqhandler.Requ
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -61,7 +61,7 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m *rabbitmqhandler.Requ
 }
 
 // v1ChatsGet handles /v1/chats GET request
-func (h *listenHandler) v1ChatsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsGet",
 	})
@@ -98,7 +98,7 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m *rabbitmqhandler.Reque
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -108,7 +108,7 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m *rabbitmqhandler.Reque
 }
 
 // v1ChatsIDGet handles /v1/chats/{id} GET request
-func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsIDGet",
 	})
@@ -135,7 +135,7 @@ func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m *rabbitmqhandler.Req
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -145,7 +145,7 @@ func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m *rabbitmqhandler.Req
 }
 
 // v1ChatsIDPut handles /v1/chats/{id} PUT request
-func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsIDPut",
 	})
@@ -178,7 +178,7 @@ func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m *rabbitmqhandler.Req
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -188,7 +188,7 @@ func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m *rabbitmqhandler.Req
 }
 
 // v1ChatsIDDelete handles /v1/chats/{id} Delete request
-func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsIDDelete",
 	})
@@ -215,7 +215,7 @@ func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m *rabbitmqhandler.
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -225,7 +225,7 @@ func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m *rabbitmqhandler.
 }
 
 // v1ChatsIDRoomOwnerIDPut handles /v1/chats/{id}/owner_id PUT request
-func (h *listenHandler) v1ChatsIDRoomOwnerIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsIDRoomOwnerIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsIDOwnerIDPut",
 	})
@@ -258,7 +258,7 @@ func (h *listenHandler) v1ChatsIDRoomOwnerIDPut(ctx context.Context, m *rabbitmq
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -269,7 +269,7 @@ func (h *listenHandler) v1ChatsIDRoomOwnerIDPut(ctx context.Context, m *rabbitmq
 
 // v1ChatsIDParticipantIDsPost handles /v1/chats/<chat-id>/participant_ids POST request
 // add a new participant to the chat.
-func (h *listenHandler) v1ChatsIDParticipantIDsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsIDParticipantIDsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsIDParticipantIDsPost",
 	})
@@ -303,7 +303,7 @@ func (h *listenHandler) v1ChatsIDParticipantIDsPost(ctx context.Context, m *rabb
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -314,7 +314,7 @@ func (h *listenHandler) v1ChatsIDParticipantIDsPost(ctx context.Context, m *rabb
 
 // v1ChatsIDParticipantIDsIDDelete handles /v1/chats/<chat-id>/participant_ids/<participant-id> POST request
 // add a new participant to the chat.
-func (h *listenHandler) v1ChatsIDParticipantIDsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1ChatsIDParticipantIDsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ChatsIDParticipantIDsIDDelete",
 	})
@@ -350,7 +350,7 @@ func (h *listenHandler) v1ChatsIDParticipantIDsIDDelete(ctx context.Context, m *
 		return nil, err
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

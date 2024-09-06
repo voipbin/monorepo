@@ -5,6 +5,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -19,16 +20,16 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		responseConferencecall *conferencecall.Conferencecall
 
 		expectConferencecallID uuid.UUID
-		expectRes              *rabbitmqhandler.Response
+		expectRes              *sock.Response
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      cmconfbridge.EventTypeConfbridgeJoined,
 				Publisher: "call-manager",
 				DataType:  "application/json",
@@ -39,7 +40,7 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("2abecb4c-9368-11ed-9130-b74b5a76b8d3"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},
@@ -70,17 +71,17 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		responseConferencecall *conferencecall.Conferencecall
 
 		expectConferenceID uuid.UUID
 		expectCallID       uuid.UUID
-		expectRes          *rabbitmqhandler.Response
+		expectRes          *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Event{
+			&sock.Event{
 				Type:      cmconfbridge.EventTypeConfbridgeLeaved,
 				Publisher: "call-manager",
 				DataType:  "application/json",
@@ -93,7 +94,7 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 
 			uuid.FromStringOrNil("3ea3ebe6-9369-11ed-b4e3-075af58c7edb"),
 			uuid.FromStringOrNil("3ec70a68-9369-11ed-bdfa-efc27d3a6df7"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 			},

@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 
 	cmcall "monorepo/bin-call-manager/models/call"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processEventCMCallHungup handles the call-manager's confbridge_leaved event.
-func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMCallHungup",
 		"event": m,

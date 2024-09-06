@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +20,7 @@ func Test_v1ChatsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID     uuid.UUID
 		chatType       chat.Type
@@ -30,9 +31,9 @@ func Test_v1ChatsPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"e0ab1d48-31d9-11ed-bbc5-27681ded85a1","type":"normal","room_owner_id":"5f66bb7e-31da-11ed-ae71-377183eb19a3","participant_ids":["5f66bb7e-31da-11ed-ae71-377183eb19a3","6ebc6880-31da-11ed-8e95-a3bc92af9795"],"name":"test name","detail":"test detail"}`),
 			},
@@ -87,7 +88,7 @@ func Test_v1ChatsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken string
 		pageSize  uint64
@@ -95,13 +96,13 @@ func Test_v1ChatsGet(t *testing.T) {
 
 		responseChats []*chat.Chat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"gets by customer id return 1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=0c21c67c-31dd-11ed-9f27-cb7cefee3726&filter_deleted=false&filter_participant_ids=1cc7bc1a-b95a-11ee-9129-5771eb8762a7,1cf5a562-b95a-11ee-ac01-7b660d7215d6",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -121,7 +122,7 @@ func Test_v1ChatsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"6eb6134c-31dd-11ed-9f6c-f7fa9148cdb6","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -129,9 +130,9 @@ func Test_v1ChatsGet(t *testing.T) {
 		},
 		{
 			"gets by customer id return 2 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=472ad5d2-31de-11ed-8f3b-7fbd0e2b1f81&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -155,7 +156,7 @@ func Test_v1ChatsGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"47769404-31de-11ed-9ded-470bba65e75d","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"47b18d0c-31de-11ed-9cfe-afbd2262ab42","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -163,9 +164,9 @@ func Test_v1ChatsGet(t *testing.T) {
 		},
 		{
 			"gets by customer id return 0 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=77a3e140-31de-11ed-b4d0-3323833e9231&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -178,7 +179,7 @@ func Test_v1ChatsGet(t *testing.T) {
 
 			[]*chat.Chat{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -220,19 +221,19 @@ func Test_v1ChatsGet(t *testing.T) {
 func Test_v1ChatsIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatID uuid.UUID
 
 		responseChat *chat.Chat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats/13b7f120-31df-11ed-8214-63c85c3c8ecf",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -245,7 +246,7 @@ func Test_v1ChatsIDGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"13b7f120-31df-11ed-8214-63c85c3c8ecf","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -288,18 +289,18 @@ func Test_v1ChatsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatID uuid.UUID
 
 		responseChat *chat.Chat
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats/d9967376-31df-11ed-ba8f-e376c0c4f1fc",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -311,7 +312,7 @@ func Test_v1ChatsIDDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("d9967376-31df-11ed-ba8f-e376c0c4f1fc"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"d9967376-31df-11ed-ba8f-e376c0c4f1fc","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -354,7 +355,7 @@ func Test_v1ChatsIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatID       uuid.UUID
 		updateName   string
@@ -362,13 +363,13 @@ func Test_v1ChatsIDPut(t *testing.T) {
 
 		responseChat *chat.Chat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats/f340e606-31f0-11ed-ae93-eba096967cda",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name": "update name", "detail": "update detail"}`),
 			},
@@ -383,7 +384,7 @@ func Test_v1ChatsIDPut(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b3f5c700-31f0-11ed-b1a2-bb3854582a08","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -426,20 +427,20 @@ func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatID      uuid.UUID
 		roomOwnerID uuid.UUID
 
 		responseChat *chat.Chat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats/b3f5c700-31f0-11ed-b1a2-bb3854582a08/room_owner_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"room_owner_id": "b45cd102-31f0-11ed-9cd9-3fa1a0f883ef"}`),
 			},
@@ -453,7 +454,7 @@ func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b3f5c700-31f0-11ed-b1a2-bb3854582a08","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -496,20 +497,20 @@ func Test_v1ChatsIDParticipantIDsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatID        uuid.UUID
 		participantID uuid.UUID
 
 		responseChat *chat.Chat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats/4131ccfa-31e1-11ed-8ae8-ef5f171c9c8e/participant_ids",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"participant_id": "417cdce0-31e1-11ed-b9f2-e3db93506530"}`),
 			},
@@ -523,7 +524,7 @@ func Test_v1ChatsIDParticipantIDsPost(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"4131ccfa-31e1-11ed-8ae8-ef5f171c9c8e","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -566,20 +567,20 @@ func Test_v1ChatsIDParticipantIDsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatID        uuid.UUID
 		participantID uuid.UUID
 
 		responseChat *chat.Chat
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chats/1a023c40-31e2-11ed-a0dd-3770f2201744/participant_ids/1a3923e0-31e2-11ed-93b4-cb9081f9b4ee",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -592,7 +593,7 @@ func Test_v1ChatsIDParticipantIDsIDDelete(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"1a023c40-31e2-11ed-a0dd-3770f2201744","customer_id":"00000000-0000-0000-0000-000000000000","type":"","room_owner_id":"00000000-0000-0000-0000-000000000000","participant_ids":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),

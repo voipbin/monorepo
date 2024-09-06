@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -26,9 +27,9 @@ func Test_BillingV1AccountGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -41,9 +42,9 @@ func Test_BillingV1AccountGets(t *testing.T) {
 
 			expectURL:    "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10&filter_customer_id=33a95f94-0e7c-11ee-aeb3-57a93b9f70fd",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			expectRes: []bmaccount.Account{
 				{
@@ -54,7 +55,7 @@ func Test_BillingV1AccountGets(t *testing.T) {
 				},
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"022bfc94-0b9b-11ee-8ea1-f3e4fbd66309"},{"id":"025e6814-0b9b-11ee-8e8d-93e70b8939a0"}]`),
@@ -102,9 +103,9 @@ func Test_BillingV1AccountCreate(t *testing.T) {
 		paymentMethod bmaccount.PaymentMethod
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -116,9 +117,9 @@ func Test_BillingV1AccountCreate(t *testing.T) {
 			paymentMethod: bmaccount.PaymentMethodCreditCard,
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"513712d6-0e7c-11ee-9a95-1b0696a625b6","name":"test name","detail":"test detail","payment_type":"prepaid","payment_method":"credit card"}`),
 			},
@@ -126,7 +127,7 @@ func Test_BillingV1AccountCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("8be2a24c-0e7c-11ee-957a-c7e813baceb9"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"8be2a24c-0e7c-11ee-957a-c7e813baceb9"}`),
@@ -168,9 +169,9 @@ func Test_BillingV1AccountGet(t *testing.T) {
 		accountID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -178,15 +179,15 @@ func Test_BillingV1AccountGet(t *testing.T) {
 			accountID: uuid.FromStringOrNil("9000392c-0b9b-11ee-aa1d-8b84b3626bc7"),
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/accounts/9000392c-0b9b-11ee-aa1d-8b84b3626bc7",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			expectRes: &bmaccount.Account{
 				ID: uuid.FromStringOrNil("9000392c-0b9b-11ee-aa1d-8b84b3626bc7"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9000392c-0b9b-11ee-aa1d-8b84b3626bc7"}`),
@@ -228,9 +229,9 @@ func Test_BillingV1AccountDelete(t *testing.T) {
 		accountID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -238,15 +239,15 @@ func Test_BillingV1AccountDelete(t *testing.T) {
 			accountID: uuid.FromStringOrNil("9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"),
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/accounts/9c2bd1f6-0e80-11ee-91d4-37bdb8051fad",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			expectRes: &bmaccount.Account{
 				ID: uuid.FromStringOrNil("9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"}`),
@@ -289,10 +290,10 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 		balance   float32
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -301,9 +302,9 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 			balance:   20,
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/79403360-0dbf-11ee-b1ad-c3eebc4a6196/balance_add_force",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"balance":20}`),
 			},
@@ -311,7 +312,7 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 				ID: uuid.FromStringOrNil("79403360-0dbf-11ee-b1ad-c3eebc4a6196"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"79403360-0dbf-11ee-b1ad-c3eebc4a6196"}`),
@@ -353,10 +354,10 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 		balance   float32
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -365,9 +366,9 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 			balance:   20,
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/c7b00aa2-0dbf-11ee-ab39-b7ac15120be3/balance_subtract_force",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"balance":20}`),
 			},
@@ -375,7 +376,7 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 				ID: uuid.FromStringOrNil("c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"}`),
@@ -419,10 +420,10 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 		Count       int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     bool
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 	}{
 		{
 			name: "normal",
@@ -433,15 +434,15 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 			Count:       3,
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/6ec4c6cc-134f-11ee-acb1-83e6a5d0d5cf/is_valid_balance",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"billing_type":"call","country":"us","count":3}`),
 			},
 			expectRes: true,
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"valid":true}`),
@@ -484,9 +485,9 @@ func Test_BillingV1AccountUpdateBasicInfo(t *testing.T) {
 		detail      string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -496,9 +497,9 @@ func Test_BillingV1AccountUpdateBasicInfo(t *testing.T) {
 			detail:      "test detail",
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/c1085dc6-4cd5-11ee-8065-a7ccfdd78669",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
@@ -506,7 +507,7 @@ func Test_BillingV1AccountUpdateBasicInfo(t *testing.T) {
 				ID: uuid.FromStringOrNil("c1085dc6-4cd5-11ee-8065-a7ccfdd78669"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c1085dc6-4cd5-11ee-8065-a7ccfdd78669"}`),
@@ -550,9 +551,9 @@ func Test_BillingV1AccountUpdatePaymentInfo(t *testing.T) {
 		paymentMethod bmaccount.PaymentMethod
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *bmaccount.Account
-		response      *rabbitmqhandler.Response
+		response      *sock.Response
 	}{
 		{
 			name: "normal",
@@ -562,9 +563,9 @@ func Test_BillingV1AccountUpdatePaymentInfo(t *testing.T) {
 			paymentMethod: bmaccount.PaymentMethodCreditCard,
 
 			expectTarget: "bin-manager.billing-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/c149ecbe-4cd5-11ee-bf72-872e67a10683/payment_info",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"payment_type":"prepaid","payment_method":"credit card"}`),
 			},
@@ -572,7 +573,7 @@ func Test_BillingV1AccountUpdatePaymentInfo(t *testing.T) {
 				ID: uuid.FromStringOrNil("c149ecbe-4cd5-11ee-bf72-872e67a10683"),
 			},
 
-			response: &rabbitmqhandler.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c149ecbe-4cd5-11ee-bf72-872e67a10683"}`),

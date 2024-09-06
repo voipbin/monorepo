@@ -5,6 +5,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
@@ -18,14 +19,14 @@ func Test_processEventCMCallProgressing(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectCall *cmcall.Call
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "call-manager",
 				Type:      cmcall.EventTypeCallProgressing,
 				DataType:  "application/json",
@@ -66,14 +67,14 @@ func Test_processEventCMCallHangup(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectCall *cmcall.Call
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: "call-manager",
 				Type:      cmcall.EventTypeCallHangup,
 				DataType:  "application/json",

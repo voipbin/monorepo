@@ -12,8 +12,8 @@ package requesthandler
 // 		delay      int
 
 // 		expectTarget  string
-// 		expectRequest *rabbitmqhandler.Request
-// 		response      *rabbitmqhandler.Response
+// 		expectRequest *sock.Request
+// 		response      *sock.Response
 
 // 		expectResult []tstranscribe.Transcribe
 // 	}{
@@ -27,13 +27,13 @@ package requesthandler
 // 			0,
 
 // 			"bin-manager.transcribe-manager.request",
-// 			&rabbitmqhandler.Request{
+// 			&sock.Request{
 // 				URI:      "/v1/call_recordings",
-// 				Method:   rabbitmqhandler.RequestMethodPost,
+// 				Method:   sock.RequestMethodPost,
 // 				DataType: ContentTypeJSON,
 // 				Data:     []byte(`{"customer_id":"7ce083de-8734-11ec-82e8-df2232923291","reference_id":"c52a575e-8735-11ec-87b6-d3b5433e0e30","language":"en-US"}`),
 // 			},
-// 			&rabbitmqhandler.Response{
+// 			&sock.Response{
 // 				StatusCode: 200,
 // 				DataType:   "application/json",
 // 				Data:       []byte(`[{"id":"10e438e2-a3eb-11eb-889c-975ac37d96fe"}]`),

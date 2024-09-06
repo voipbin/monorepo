@@ -5,15 +5,14 @@ import (
 	"encoding/json"
 
 	cmcall "monorepo/bin-call-manager/models/call"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 // processEventCMCallProgressing handles the call-manager's call_created event
-func (h *subscribeHandler) processEventCMCallProgressing(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMCallProgressing(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMCallProgressing",
 		"event": m,
@@ -40,7 +39,7 @@ func (h *subscribeHandler) processEventCMCallProgressing(ctx context.Context, m 
 }
 
 // processEventCMCallHangup handles the call-manager's call_hangup event
-func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMCallHangup",
 		"event": m,

@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		providerType   provider.Type
 		hostname       string
@@ -29,13 +30,13 @@ func Test_v1ProvidersPost(t *testing.T) {
 		providerDetail string
 
 		responseRoute *provider.Provider
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type": "sip", "hostname": "test.com", "tech_prefix":"0001", "tech_postfix":"1000", "tech_headers":{"HEADER1":"val1", "HEADER2":"val2"}, "name":"test name", "detail": "test detail"}`),
 			},
@@ -54,7 +55,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 			&provider.Provider{
 				ID: uuid.FromStringOrNil("997a7752-4872-11ed-be7a-5783111a9092"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"997a7752-4872-11ed-be7a-5783111a9092","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -94,20 +95,20 @@ func Test_v1ProvidersGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken string
 		pageSize  uint64
 
 		responseProviders []*provider.Provider
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -120,7 +121,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"104eef98-7492-473d-b058-579364d20e6b","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -128,9 +129,9 @@ func Test_v1ProvidersGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -146,7 +147,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"df5c4b4d-a75d-45d3-a27c-ec6686dcd467","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"eac421c0-a0b4-4d33-8184-ffcbe80a92fb","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -154,9 +155,9 @@ func Test_v1ProvidersGet(t *testing.T) {
 		},
 		{
 			"empty response",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -165,7 +166,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 
 			[]*provider.Provider{},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -205,18 +206,18 @@ func Test_v1ProvidersGet(t *testing.T) {
 func Test_v1ProvidersIDGet(t *testing.T) {
 	tests := []struct {
 		name       string
-		request    *rabbitmqhandler.Request
+		request    *sock.Request
 		providerID uuid.UUID
 
 		responseProvider *provider.Provider
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/30bc4952-efcc-4944-95d8-df8e7f571479",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -226,7 +227,7 @@ func Test_v1ProvidersIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("30bc4952-efcc-4944-95d8-df8e7f571479"),
 			},
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"30bc4952-efcc-4944-95d8-df8e7f571479","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -266,7 +267,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		id      uuid.UUID
 
 		providerType provider.Type
@@ -279,13 +280,13 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 		detail       string
 
 		responseRoute *provider.Provider
-		expectRes     *rabbitmqhandler.Response
+		expectRes     *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/83cfba90-d8a4-48e2-a9d0-dae964937163",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"sip", "hostname":"test.com", "tech_prefix":"0001", "tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail"}`),
 			},
@@ -305,7 +306,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 			&provider.Provider{
 				ID: uuid.FromStringOrNil("83cfba90-d8a4-48e2-a9d0-dae964937163"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"83cfba90-d8a4-48e2-a9d0-dae964937163","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -346,17 +347,17 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		id      uuid.UUID
 
 		responseProvider *provider.Provider
-		expectRes        *rabbitmqhandler.Response
+		expectRes        *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/be3be98f-d434-4ce9-9374-71b3932de735",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -365,7 +366,7 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 			&provider.Provider{
 				ID: uuid.FromStringOrNil("be3be98f-d434-4ce9-9374-71b3932de735"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"be3be98f-d434-4ce9-9374-71b3932de735","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),

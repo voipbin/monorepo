@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/ivahaev/amigo"
@@ -124,7 +125,7 @@ func (h *listenHandler) listenRun() error {
 	return nil
 }
 
-func (h *listenHandler) listenHandler(request *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) listenHandler(request *sock.Request) (*sock.Response, error) {
 
 	switch request.URI[0:4] {
 	case "/ari":

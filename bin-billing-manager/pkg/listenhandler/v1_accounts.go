@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,7 +18,7 @@ import (
 )
 
 // processV1AccountsGet handles GET /v1/accounts request
-func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsGet",
 		"request": m,
@@ -48,7 +48,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhan
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -58,7 +58,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhan
 }
 
 // processV1AccountsPost handles POST /v1/accounts request
-func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsPost",
 		"request": m,
@@ -80,7 +80,7 @@ func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *rabbitmqha
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -90,7 +90,7 @@ func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *rabbitmqha
 }
 
 // processV1AccountsIDGet handles GET /v1/accounts/<account-id> request
-func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDGet",
 		"request": m,
@@ -114,7 +114,7 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqh
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -124,7 +124,7 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1AccountsIDPut handles PUT /v1/accounts/<account-id> request
-func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDPut",
 		"request": m,
@@ -153,7 +153,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *rabbitmqh
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -163,7 +163,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *rabbitmqh
 }
 
 // processV1AccountsIDDelete handles DELETE /v1/accounts/<account-id> request
-func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDDelete",
 		"request": m,
@@ -187,7 +187,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbit
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -197,7 +197,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbit
 }
 
 // // processV1AccountsCustomerIDIDGet handles GET /v1/accounts/customer_id/<cusotmer-id> request
-// func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 // 	log := logrus.WithFields(logrus.Fields{
 // 		"func":    "processV1AccountsCustomerIDIDGet",
 // 		"request": m,
@@ -221,7 +221,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbit
 // 		return simpleResponse(404), nil
 // 	}
 
-// 	res := &rabbitmqhandler.Response{
+// 	res := &sock.Response{
 // 		StatusCode: 200,
 // 		DataType:   "application/json",
 // 		Data:       data,
@@ -231,7 +231,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbit
 // }
 
 // processV1AccountsIDBalanceAddForcePost handles POST /v1/accounts/<account-id>/balance_add_force request
-func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDBalanceAddForcePost",
 		"request": m,
@@ -260,7 +260,7 @@ func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Conte
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -270,7 +270,7 @@ func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Conte
 }
 
 // processV1AccountsIDBalanceSubtractForcePost handles POST /v1/accounts/<account-id>/balance_subtract_force request
-func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDBalanceSubtractForcePost",
 		"request": m,
@@ -299,7 +299,7 @@ func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -309,7 +309,7 @@ func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.
 }
 
 // processV1AccountsIDIsValidBalancePost handles POST /v1/accounts/<account-id>/is_valid_balance request
-func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDIsValidBalancePost",
 		"request": m,
@@ -342,7 +342,7 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
@@ -352,7 +352,7 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 }
 
 // processV1AccountsIDPaymentInfoPut handles PUT /v1/accounts/<account-id>/payment_info request
-func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDPaymentInfoPut",
 		"request": m,
@@ -381,7 +381,7 @@ func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m
 		return simpleResponse(404), nil
 	}
 
-	res := &rabbitmqhandler.Response{
+	res := &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,

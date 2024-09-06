@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/account"
@@ -17,18 +18,18 @@ func Test_v1AccountsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 
 		responseAccount *account.Account
-		expectRes       *rabbitmqhandler.Response
+		expectRes       *sock.Response
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"020a406a-1b38-11ef-87b2-037eaf8e3a2f"}`),
 			},
@@ -38,7 +39,7 @@ func Test_v1AccountsPost(t *testing.T) {
 			responseAccount: &account.Account{
 				ID: uuid.FromStringOrNil("023f0570-1b38-11ef-86b9-57db70737f8f"),
 			},
-			expectRes: &rabbitmqhandler.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"023f0570-1b38-11ef-86b9-57db70737f8f","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -77,7 +78,7 @@ func Test_v1AccountsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken string
 		pageSize  uint64
@@ -85,13 +86,13 @@ func Test_v1AccountsGet(t *testing.T) {
 		responseFilters  map[string]string
 		responseAccounts []*account.Account
 
-		expectRes *rabbitmqhandler.Response
+		expectRes *sock.Response
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/accounts?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -106,7 +107,7 @@ func Test_v1AccountsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("d1eec710-1b38-11ef-a425-47a057cb03ee"),
 				},
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"d1eec710-1b38-11ef-a425-47a057cb03ee","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
@@ -148,16 +149,16 @@ func Test_v1AccountsGet(t *testing.T) {
 func Test_v1AccountsIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseFile *account.Account
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/accounts/0c3d3d16-1b39-11ef-92ec-df76bb16f7c7",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -165,7 +166,7 @@ func Test_v1AccountsIDGet(t *testing.T) {
 			&account.Account{
 				ID: uuid.FromStringOrNil("0c3d3d16-1b39-11ef-92ec-df76bb16f7c7"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0c3d3d16-1b39-11ef-92ec-df76bb16f7c7","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`),
@@ -204,16 +205,16 @@ func Test_v1AccountsIDGet(t *testing.T) {
 func Test_v1AccountsIDDelete(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseFile *account.Account
-		expectRes    *rabbitmqhandler.Response
+		expectRes    *sock.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/accounts/308ed81e-1b39-11ef-addf-af55fc0db7b7",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -221,7 +222,7 @@ func Test_v1AccountsIDDelete(t *testing.T) {
 			&account.Account{
 				ID: uuid.FromStringOrNil("308ed81e-1b39-11ef-addf-af55fc0db7b7"),
 			},
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"308ed81e-1b39-11ef-addf-af55fc0db7b7","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`),

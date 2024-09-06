@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/pkg/errors"
@@ -13,7 +12,7 @@ import (
 )
 
 // processEventFMFlowDeleted handles the flow-manager's flow_deleted event.
-func (h *subscribeHandler) processEventFMFlowDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventFMFlowDeleted(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventFMFlowDeleted",
 		"event": m,

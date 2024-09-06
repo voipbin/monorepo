@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	cfrequest "monorepo/bin-conference-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ConferenceV1ConferencecallGets sends a request to conference-manager
@@ -23,7 +22,7 @@ func (r *requestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pag
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -47,7 +46,7 @@ func (r *requestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conf
 
 	uri := fmt.Sprintf("/v1/conferencecalls/%s", conferencecallID)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +69,7 @@ func (r *requestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conf
 func (r *requestHandler) ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error) {
 	uri := fmt.Sprintf("/v1/conferencecalls/%s", conferencecallID)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodDelete, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -102,7 +101,7 @@ func (r *requestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Conte
 		return err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/conferencecalls", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/conferencecalls", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

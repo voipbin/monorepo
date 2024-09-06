@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	qmqueue "monorepo/bin-queue-manager/models/queue"
@@ -15,8 +16,6 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // QueueV1QueueGets sends a request to queue-manager
@@ -28,7 +27,7 @@ func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string,
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -52,7 +51,7 @@ func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string,
 func (r *requestHandler) QueueV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -91,7 +90,7 @@ func (r *requestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid
 		return nil, err
 	}
 
-	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -115,7 +114,7 @@ func (r *requestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid
 func (r *requestHandler) QueueV1QueueDelete(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodDelete, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodDelete, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -162,7 +161,7 @@ func (r *requestHandler) QueueV1QueueUpdate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -193,7 +192,7 @@ func (r *requestHandler) QueueV1QueueUpdateTagIDs(ctx context.Context, queueID u
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -215,7 +214,7 @@ func (r *requestHandler) QueueV1QueueUpdateTagIDs(ctx context.Context, queueID u
 func (r *requestHandler) QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/agents?status=%s", queueID, status)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -246,7 +245,7 @@ func (r *requestHandler) QueueV1QueueUpdateRoutingMethod(ctx context.Context, qu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -279,7 +278,7 @@ func (r *requestHandler) QueueV1QueueUpdateActions(ctx context.Context, queueID 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -320,7 +319,7 @@ func (r *requestHandler) QueueV1QueueCreateQueuecall(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -344,7 +343,7 @@ func (r *requestHandler) QueueV1QueueCreateQueuecall(
 func (r *requestHandler) QueueV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
 	uri := fmt.Sprintf("/v1/queues/%s/execute_run", queueID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queues", requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues", requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -370,7 +369,7 @@ func (r *requestHandler) QueueV1QueueUpdateExecute(ctx context.Context, queueID 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

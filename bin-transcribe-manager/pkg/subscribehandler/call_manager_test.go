@@ -8,6 +8,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"monorepo/bin-transcribe-manager/pkg/transcribehandler"
@@ -20,14 +21,14 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectCall *cmcall.Call
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: string(commonoutline.ServiceNameCallManager),
 				Type:      cmcall.EventTypeCallHangup,
 				DataType:  "application/json",
@@ -68,14 +69,14 @@ func Test_processEvent_processEventCMConfbridgeTerminated(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		event *rabbitmqhandler.Event
+		event *sock.Event
 
 		expectConfbridge *cmconfbridge.Confbridge
 	}{
 		{
 			name: "normal",
 
-			event: &rabbitmqhandler.Event{
+			event: &sock.Event{
 				Publisher: string(commonoutline.ServiceNameCallManager),
 				Type:      cmconfbridge.EventTypeConfbridgeTerminated,
 				DataType:  "application/json",

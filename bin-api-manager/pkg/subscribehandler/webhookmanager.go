@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
-
+	"monorepo/bin-common-handler/models/sock"
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/gofrs/uuid"
@@ -22,7 +21,7 @@ type commonWebhookData struct {
 }
 
 // processEventWebhookManagerWebhookPublished handles the webhook-manager's webhook_published event.
-func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx context.Context, m *rabbitmqhandler.Event) error {
+func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventWebhookManagerWebhookPublished",
 		"event": m,

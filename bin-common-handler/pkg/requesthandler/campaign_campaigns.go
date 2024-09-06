@@ -8,12 +8,11 @@ import (
 
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
 	carequest "monorepo/bin-campaign-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-common-handler/models/sock"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CampaignV1CampaignCreate creates a new campaign.
@@ -55,7 +54,7 @@ func (r *requestHandler) CampaignV1CampaignCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPost, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPost, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +77,7 @@ func (r *requestHandler) CampaignV1CampaignCreate(
 func (r *requestHandler) CampaignV1CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodGet, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -103,7 +102,7 @@ func (r *requestHandler) CampaignV1CampaignGetsByCustomerID(ctx context.Context,
 func (r *requestHandler) CampaignV1CampaignGet(ctx context.Context, id uuid.UUID) (*cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns/%s", id)
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodGet, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -127,7 +126,7 @@ func (r *requestHandler) CampaignV1CampaignGet(ctx context.Context, id uuid.UUID
 func (r *requestHandler) CampaignV1CampaignDelete(ctx context.Context, campaignID uuid.UUID) (*cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns/%s", campaignID)
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodDelete, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodDelete, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -152,7 +151,7 @@ func (r *requestHandler) CampaignV1CampaignDelete(ctx context.Context, campaignI
 func (r *requestHandler) CampaignV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/campaigns/%s/execute", id)
 
-	res, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPost, "campaign/campaigns", requestTimeoutDefault, delay, ContentTypeJSON, nil)
+	res, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPost, "campaign/campaigns", requestTimeoutDefault, delay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -192,7 +191,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateBasicInfo(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -226,7 +225,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateStatus(ctx context.Context, id 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -260,7 +259,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateServiceLevel(ctx context.Contex
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -294,7 +293,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateActions(ctx context.Context, id
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -331,7 +330,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateResourceInfo(ctx context.Contex
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -365,7 +364,7 @@ func (r *requestHandler) CampaignV1CampaignUpdateNextCampaignID(ctx context.Cont
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodPut, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

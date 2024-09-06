@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -33,10 +34,10 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 		maxTryCount3 int
 		maxTryCount4 int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -57,16 +58,16 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 			5,
 			5,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"99528bbc-c513-11ec-89b2-e3f0ee0792fc"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"6a9320a2-c513-11ec-8d26-bfc178781416","name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
@@ -123,10 +124,10 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []caoutplan.Outplan
 	}{
 		{
@@ -136,16 +137,16 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			10,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"b654bd9c-c514-11ec-962e-77d79eb3b3fe"}]`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/outplans?page_token=%s&page_size=10&customer_id=4b1deb60-a784-4207-b1d8-a96df6bae951", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]caoutplan.Outplan{
@@ -188,26 +189,26 @@ func Test_CampaignV1OutplanGet(t *testing.T) {
 
 		outplanID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("0838f768-c515-11ec-a969-4fec734bbc81"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"0838f768-c515-11ec-a969-4fec734bbc81"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/0838f768-c515-11ec-a969-4fec734bbc81",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&caoutplan.Outplan{
@@ -248,26 +249,26 @@ func Test_CampaignV1OutplanDelete(t *testing.T) {
 
 		campaignID uuid.UUID
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("22d9075d-08bd-4eb0-b868-3b102f0bcb39"),
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"22d9075d-08bd-4eb0-b868-3b102f0bcb39"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/22d9075d-08bd-4eb0-b868-3b102f0bcb39",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&caoutplan.Outplan{
@@ -310,10 +311,10 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 		updateName   string
 		updateDetail string
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -323,16 +324,16 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 			"update name",
 			"update detail",
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"63e29b96-c515-11ec-ba52-ab7d7001913f"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/63e29b96-c515-11ec-ba52-ab7d7001913f",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
@@ -382,10 +383,10 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 		maxTryCount3 int
 		maxTryCount4 int
 
-		response *rabbitmqhandler.Response
+		response *sock.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -404,16 +405,16 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 			5,
 			5,
 
-			&rabbitmqhandler.Response{
+			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e2b014d4-c516-11ec-a724-8bf87a1beb50"}`),
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/e2b014d4-c516-11ec-a724-8bf87a1beb50/dials",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
