@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -25,7 +26,7 @@ func Test_AstBridgeCreate(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			name:        "normal",
@@ -41,9 +42,9 @@ func Test_AstBridgeCreate(t *testing.T) {
 			},
 
 			expectTarget: "asterisk.00:11:22:33:44:55.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/ari/bridges",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"type":"mixing,proxy_media","bridgeId":"5f573260-549f-11ee-8c9c-a33cb00ec17b","name":"reference_type=call,reference_id=67ab1e68-549f-11ee-bab0-575214e7ccd7"}`),
 			},
@@ -80,7 +81,7 @@ func Test_AstBridgeDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			name:       "normal",
@@ -93,9 +94,9 @@ func Test_AstBridgeDelete(t *testing.T) {
 			},
 
 			expectTarget: "asterisk.00:11:22:33:44:55.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/ari/bridges/8d815688-54a0-11ee-bc4f-6fd312bf1408",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 		},
@@ -130,7 +131,7 @@ func Test_AstBridgeGet(t *testing.T) {
 		response   *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectBridge  *cmbridge.Bridge
 	}{
 		{
@@ -144,9 +145,9 @@ func Test_AstBridgeGet(t *testing.T) {
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/ari/bridges/261a2496-dc28-11ea-b3b2-afa07bdffeb2",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 				Data:     nil,
 			},
@@ -214,7 +215,7 @@ func Test_AstBridgeAddChannel(t *testing.T) {
 		response   *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			name:       "normal",
@@ -230,9 +231,9 @@ func Test_AstBridgeAddChannel(t *testing.T) {
 			},
 
 			expectTarget: "asterisk.00:11:22:33:44:55.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/ari/bridges/4175719c-54a1-11ee-89d8-d3ee36ac6a81/addChannel",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"channel":"41a2da42-54a1-11ee-84ac-7b1cf34a10d3","absorbDTMF":true,"mute":true}`),
 			},
@@ -269,7 +270,7 @@ func Test_AstBridgeRemoveChannel(t *testing.T) {
 		response   *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			name:       "normal",
@@ -282,9 +283,9 @@ func Test_AstBridgeRemoveChannel(t *testing.T) {
 			},
 
 			expectTarget: "asterisk.00:11:22:33:44:55.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/ari/bridges/bd6b2914-54a0-11ee-a509-a725e1be2974/removeChannel",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"channel":"bd928b58-54a0-11ee-8831-ef3bd4ff798f"}`),
 			},
@@ -328,7 +329,7 @@ func Test_AstBridgeRecord(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			"normal",
@@ -347,9 +348,9 @@ func Test_AstBridgeRecord(t *testing.T) {
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/ari/bridges/67708fbc-904d-11ed-beba-4f35dd737a8d/record",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"conference_67708fbc-904d-11ed-beba-4f35dd737a8d_2020-05-17T10:24:54.396+0000","format":"wav","maxDurationSeconds":0,"maxSilenceSeconds":0,"beep":false,"terminateOn":"","ifExists":"fail"}`),
 			},

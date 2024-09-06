@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/sock"
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 	wmrequest "monorepo/bin-webhook-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // WebhookV1WebhookSend sends the webhook.
@@ -30,7 +29,7 @@ func (r *requestHandler) WebhookV1WebhookSend(ctx context.Context, customerID uu
 		return err
 	}
 
-	res, err := r.sendRequestWebhook(ctx, uri, rabbitmqhandler.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWebhook(ctx, uri, sock.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
@@ -58,7 +57,7 @@ func (r *requestHandler) WebhookV1WebhookSendToDestination(ctx context.Context, 
 		return err
 	}
 
-	res, err := r.sendRequestWebhook(ctx, uri, rabbitmqhandler.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWebhook(ctx, uri, sock.RequestMethodPost, "webhook/webhooks", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

@@ -8,10 +8,9 @@ import (
 
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CallV1RecordingGets sends a request to call-manager
@@ -23,7 +22,7 @@ func (r *requestHandler) CallV1RecordingGets(ctx context.Context, pageToken stri
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -48,7 +47,7 @@ func (r *requestHandler) CallV1RecordingGets(ctx context.Context, pageToken stri
 func (r *requestHandler) CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -73,7 +72,7 @@ func (r *requestHandler) CallV1RecordingGet(ctx context.Context, id uuid.UUID) (
 func (r *requestHandler) CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -120,7 +119,7 @@ func (r *requestHandler) CallV1RecordingStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/recordings", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -145,7 +144,7 @@ func (r *requestHandler) CallV1RecordingStart(
 func (r *requestHandler) CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s/stop", recordingID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/recordings", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/recordings", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

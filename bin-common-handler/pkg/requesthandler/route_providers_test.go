@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	rmprovider "monorepo/bin-route-manager/models/provider"
@@ -29,7 +30,7 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 		detail       string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *rmprovider.Provider
@@ -49,9 +50,9 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 			"test detail",
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail"}`),
 			},
@@ -101,7 +102,7 @@ func Test_RouteV1ProviderGet(t *testing.T) {
 		responseRoute *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmprovider.Provider
 	}{
 		{
@@ -116,9 +117,9 @@ func Test_RouteV1ProviderGet(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/f15d8304-c13d-40e2-90e6-c602190dc0e1",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			&rmprovider.Provider{
@@ -162,7 +163,7 @@ func Test_RouteV1ProviderDelete(t *testing.T) {
 		responseRoute *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmprovider.Provider
 	}{
 		{
@@ -177,9 +178,9 @@ func Test_RouteV1ProviderDelete(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/3f26d6c1-576c-46b3-91ad-1fbc1416b8d1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			&rmprovider.Provider{
@@ -230,7 +231,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 		responseRoute *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmprovider.Provider
 	}{
 		{
@@ -255,9 +256,9 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/c5e7f18c-fc5a-4520-8326-e534e2ca0b8f",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail"}`),
 			},
@@ -303,7 +304,7 @@ func Test_RouteV1ProviderGets(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []rmprovider.Provider
 	}{
 		{
@@ -319,9 +320,9 @@ func Test_RouteV1ProviderGets(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/providers?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			[]rmprovider.Provider{

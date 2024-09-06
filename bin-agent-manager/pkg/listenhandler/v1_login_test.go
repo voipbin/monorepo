@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_ProcessV1LoginPost(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		username string
 		password string
 
@@ -27,9 +28,9 @@ func Test_ProcessV1LoginPost(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/login",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"username":"test@test.com","password":"password"}`),
 			},

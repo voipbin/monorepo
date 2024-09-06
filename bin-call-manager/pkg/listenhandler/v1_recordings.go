@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 )
 
 // processV1RecordingGet handles GET /v1/recordings request
-func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsGet",
 		"request": m,
@@ -56,7 +57,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1RecordingsPost handles POST /v1/recordings request
-func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsPost",
 		"request": m,
@@ -90,7 +91,7 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmq
 }
 
 // processV1RecordingsIDGet handles GET /v1/recordings/<id> request
-func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDGet",
 		"request": m,
@@ -124,7 +125,7 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitm
 }
 
 // processV1RecordingsIDDelete handles DELETE /v1/recordings/<id> request
-func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDDelete",
 		"request": m,
@@ -158,7 +159,7 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabb
 }
 
 // processV1RecordingsIDStopPost handles POST /v1/recordings/<id>/stop request
-func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1RecordingsIDStopPost",
 		"request": m,

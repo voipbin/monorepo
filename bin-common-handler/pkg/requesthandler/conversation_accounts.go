@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ConversationV1AccountGet sends a request to conversation-manager
@@ -20,7 +19,7 @@ import (
 func (r *requestHandler) ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/accounts/<account-id>", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/accounts/<account-id>", 30000, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +45,7 @@ func (r *requestHandler) ConversationV1AccountGets(ctx context.Context, pageToke
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/accounts", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/accounts", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -85,7 +84,7 @@ func (r *requestHandler) ConversationV1AccountCreate(ctx context.Context, custom
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPost, "conversation/accounts", 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/accounts", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -122,7 +121,7 @@ func (r *requestHandler) ConversationV1AccountUpdate(ctx context.Context, accoun
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPut, "conversation/conversations", 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPut, "conversation/conversations", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -147,7 +146,7 @@ func (r *requestHandler) ConversationV1AccountUpdate(ctx context.Context, accoun
 func (r *requestHandler) ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodDelete, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodDelete, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

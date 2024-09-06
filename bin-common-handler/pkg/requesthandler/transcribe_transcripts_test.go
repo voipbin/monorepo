@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -25,7 +26,7 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []tmtranscript.Transcript
@@ -43,9 +44,9 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 
 			"/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_transcribe_id=8fe05f90-8229-11ed-a215-a78ed418d1c0",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{

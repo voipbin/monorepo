@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -22,7 +23,7 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 		extension  string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []astcontact.AstContact
@@ -34,9 +35,9 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 			extension:  "test_exten",
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/contacts?customer_id=390f34ba-57a4-11ee-a22c-d3dbf1f5af19&extension=test_exten",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			response: &rabbitmqhandler.Response{
@@ -92,7 +93,7 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 		extension  string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []astcontact.AstContact
@@ -104,9 +105,9 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 			extension:  "test_exten",
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/contacts?customer_id=e168826a-57a4-11ee-818c-73dfee4986c0&extension=test_exten",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeNone,
 			},
 			response: &rabbitmqhandler.Response{

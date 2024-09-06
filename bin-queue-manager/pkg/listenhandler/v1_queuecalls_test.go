@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -20,7 +21,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageSize        uint64
 		pageToken       string
@@ -32,9 +33,9 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=f9f94078-7f54-11ec-8387-9fe49204286f&filter_deleted=false&filter_queue_id=d885e09e-b14e-11ee-95f5-37ef89c64b7a&filter_status=waiting",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -61,9 +62,9 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=13529ca4-7f55-11ec-b445-c3f90a718170&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -126,7 +127,7 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id        uuid.UUID
 		queuecall *queuecall.Queuecall
@@ -135,9 +136,9 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/0bc84788-6153-11ec-b08a-d74a5a04d995",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("0bc84788-6153-11ec-b08a-d74a5a04d995"),
@@ -185,7 +186,7 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		queuecallID uuid.UUID
 
@@ -194,9 +195,9 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/queuecalls/4a76400a-60ab-11ec-aeb8-eb262d80acf1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -245,7 +246,7 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		queuecallID uuid.UUID
 
@@ -254,9 +255,9 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/319fec77-0843-4207-8c6a-65bf067e4bac/kick",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
@@ -304,7 +305,7 @@ func Test_processV1QueuecallsIDHealthCheckPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		queuecallID uuid.UUID
 		retryCount  int
@@ -314,9 +315,9 @@ func Test_processV1QueuecallsIDHealthCheckPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/4a85453c-d534-11ee-8746-a3727fdf5678/health-check",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 1}`),
 			},
 
@@ -365,7 +366,7 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		referenceID uuid.UUID
 
@@ -374,9 +375,9 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/reference_id/c8794c51-4e4d-46ef-bfa1-5220f66aea87/kick",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			uuid.FromStringOrNil("c8794c51-4e4d-46ef-bfa1-5220f66aea87"),
@@ -423,7 +424,7 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		referenceID       uuid.UUID
 		responseQueuecall *queuecall.Queuecall
@@ -432,9 +433,9 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/queuecalls/reference_id/b5f73c26-bcb7-11ed-af77-e397b8122b09",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("b5f73c26-bcb7-11ed-af77-e397b8122b09"),

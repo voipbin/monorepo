@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		providerType   provider.Type
 		hostname       string
@@ -33,9 +34,9 @@ func Test_v1ProvidersPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type": "sip", "hostname": "test.com", "tech_prefix":"0001", "tech_postfix":"1000", "tech_headers":{"HEADER1":"val1", "HEADER2":"val2"}, "name":"test name", "detail": "test detail"}`),
 			},
@@ -94,7 +95,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken string
 		pageSize  uint64
@@ -105,9 +106,9 @@ func Test_v1ProvidersGet(t *testing.T) {
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -128,9 +129,9 @@ func Test_v1ProvidersGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -154,9 +155,9 @@ func Test_v1ProvidersGet(t *testing.T) {
 		},
 		{
 			"empty response",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -205,7 +206,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 func Test_v1ProvidersIDGet(t *testing.T) {
 	tests := []struct {
 		name       string
-		request    *rabbitmqhandler.Request
+		request    *sock.Request
 		providerID uuid.UUID
 
 		responseProvider *provider.Provider
@@ -214,9 +215,9 @@ func Test_v1ProvidersIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/30bc4952-efcc-4944-95d8-df8e7f571479",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -266,7 +267,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		id      uuid.UUID
 
 		providerType provider.Type
@@ -283,9 +284,9 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/83cfba90-d8a4-48e2-a9d0-dae964937163",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"sip", "hostname":"test.com", "tech_prefix":"0001", "tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail"}`),
 			},
@@ -346,7 +347,7 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		id      uuid.UUID
 
 		responseProvider *provider.Provider
@@ -354,9 +355,9 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/providers/be3be98f-d434-4ce9-9374-71b3932de735",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},

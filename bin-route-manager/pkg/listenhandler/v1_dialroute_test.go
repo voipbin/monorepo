@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		target     string
@@ -29,9 +30,9 @@ func Test_v1DialroutesGet(t *testing.T) {
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/dialroutes?customer_id=ad06dadc-9694-4179-920c-d0bbaf6bedc3&target=%2b82",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -52,9 +53,9 @@ func Test_v1DialroutesGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/dialroutes?customer_id=555a5772-517a-45fa-b489-c0104dc0b993&target=%2b82",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -78,9 +79,9 @@ func Test_v1DialroutesGet(t *testing.T) {
 		},
 		{
 			"empty response",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/dialroutes?customer_id=d66690be-777b-4cb4-8419-9334ceb57bd8&target=%2b82",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 

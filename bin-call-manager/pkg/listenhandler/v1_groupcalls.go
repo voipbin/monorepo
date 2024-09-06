@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ import (
 
 // processV1GroupcallsGet handles POST /v1/groupcalls request
 // It gets list of groupcalls.
-func (h *listenHandler) processV1GroupcallsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1GroupcallsGet",
 		"request": m,
@@ -59,7 +60,7 @@ func (h *listenHandler) processV1GroupcallsGet(ctx context.Context, m *rabbitmqh
 
 // processV1GroupcallsPost handles POST /v1/groupcalls request
 // It creates a new groupcall.
-func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsPost",
 		"request": m,
@@ -111,7 +112,7 @@ func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *rabbitmq
 
 // processV1GroupcallsIDGet handles GET /v1/groupcalls/<groupcall-id> request
 // It returns a groupcall.
-func (h *listenHandler) processV1GroupcallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1GroupcallsIDGet",
 		"request": m,
@@ -147,7 +148,7 @@ func (h *listenHandler) processV1GroupcallsIDGet(ctx context.Context, m *rabbitm
 
 // processV1GroupcallsIDDelete handles DELETE /v1/groupcalls/<groupcall-id> request
 // It deletes the groupcall.
-func (h *listenHandler) processV1GroupcallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1GroupcallsIDDelete",
 		"request": m,
@@ -183,7 +184,7 @@ func (h *listenHandler) processV1GroupcallsIDDelete(ctx context.Context, m *rabb
 
 // processV1GroupcallsIDHangupPost handles POST /v1/groupcalls/<groupcall-id>/hangup request
 // It hangup the groupcall.
-func (h *listenHandler) processV1GroupcallsIDHangupPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsIDHangupPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1GroupcallsIDHangupPost",
 		"request": m,
@@ -219,7 +220,7 @@ func (h *listenHandler) processV1GroupcallsIDHangupPost(ctx context.Context, m *
 
 // processV1GroupcallsIDAnswerGroupcallIDPost handles POST /v1/groupcalls/<groupcall-id>/answer_groupcall_id request
 // It hangup the groupcall.
-func (h *listenHandler) processV1GroupcallsIDAnswerGroupcallIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsIDAnswerGroupcallIDPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1GroupcallsIDAnswerGroupcallIDPost",
 		"request": m,
@@ -261,7 +262,7 @@ func (h *listenHandler) processV1GroupcallsIDAnswerGroupcallIDPost(ctx context.C
 
 // processV1GroupcallsIDHangupGroupcallPost handles POST /v1/groupcalls/<groupcall-id>/hangup_groupcall request
 // It handles hangup the groupcall.
-func (h *listenHandler) processV1GroupcallsIDHangupGroupcallPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsIDHangupGroupcallPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1GroupcallsIDHangupGroupcallPost",
 		"request": m,
@@ -297,7 +298,7 @@ func (h *listenHandler) processV1GroupcallsIDHangupGroupcallPost(ctx context.Con
 
 // processV1GroupcallsIDHangupCallPost handles POST /v1/groupcalls/<groupcall-id>/hangup_call request
 // It handles hangup the groupcall.
-func (h *listenHandler) processV1GroupcallsIDHangupCallPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1GroupcallsIDHangupCallPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1GroupcallsIDHangupCallPost",
 		"request": m,

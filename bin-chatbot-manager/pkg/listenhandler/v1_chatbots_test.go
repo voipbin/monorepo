@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ func Test_processV1ChatbotsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbots []*chatbot.Chatbot
 
@@ -29,9 +30,9 @@ func Test_processV1ChatbotsGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbots?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			[]*chatbot.Chatbot{
@@ -88,7 +89,7 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbot *chatbot.Chatbot
 
@@ -101,9 +102,9 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/chatbots",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"chatGPT", "init_prompt": "test init prompt"}`),
 			},
@@ -155,7 +156,7 @@ func Test_processV1ChatbotsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbot *chatbot.Chatbot
 
@@ -164,9 +165,9 @@ func Test_processV1ChatbotsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbots/de740384-a770-11ed-afab-5f9c8a447889",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			&chatbot.Chatbot{
@@ -213,7 +214,7 @@ func Test_processV1ChatbotsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbot *chatbot.Chatbot
 
@@ -222,9 +223,9 @@ func Test_processV1ChatbotsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbots/de99e522-a770-11ed-a0ab-5b39ee2db203",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			&chatbot.Chatbot{
@@ -271,7 +272,7 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbot *chatbot.Chatbot
 
@@ -284,9 +285,9 @@ func Test_processV1ChatbotsIDPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/chatbots/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"new name","detail":"new detail","engine_type":"chatGPT","init_prompt":"new prompt"}`),
 			},

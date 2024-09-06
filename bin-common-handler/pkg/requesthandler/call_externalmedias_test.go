@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -25,7 +26,7 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     []cmexternalmedia.ExternalMedia
 	}{
@@ -40,9 +41,9 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 
 			"/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=6ddd7aa8-e82c-11ee-9ae3-23cca4c32454",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -66,9 +67,9 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 
 			"/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=a188209c-e82c-11ee-9a12-2f13b7edeb5f",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -131,7 +132,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 
 		response *rabbitmqhandler.Response
 
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cmexternalmedia.ExternalMedia
 	}{
 		{
@@ -153,9 +154,9 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 				Data:       []byte(`{"id":"e8337d9a-97c2-11ed-93ad-5bcba5332622"}`),
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/external-medias",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"reference_type":"call","reference_id":"94a6ec48-97c2-11ed-bd66-afb196d5c598","no_insert_media":true,"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
@@ -199,7 +200,7 @@ func Test_CallV1ExternalMediaGet(t *testing.T) {
 		externalMediaID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     *cmexternalmedia.ExternalMedia
 	}{
@@ -209,9 +210,9 @@ func Test_CallV1ExternalMediaGet(t *testing.T) {
 			uuid.FromStringOrNil("0a90d6b2-97c3-11ed-a114-3b7fc4677d36"),
 
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias/0a90d6b2-97c3-11ed-a114-3b7fc4677d36",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -257,7 +258,7 @@ func Test_CallV1ExternalMediaStop(t *testing.T) {
 		externalMediaID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     *cmexternalmedia.ExternalMedia
 	}{
@@ -267,9 +268,9 @@ func Test_CallV1ExternalMediaStop(t *testing.T) {
 			uuid.FromStringOrNil("2f4d5390-97c3-11ed-9dc6-47ce92d2b198"),
 
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias/2f4d5390-97c3-11ed-9dc6-47ce92d2b198",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

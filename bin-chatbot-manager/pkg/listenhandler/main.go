@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -165,7 +166,7 @@ func (h *listenHandler) Run() error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,
@@ -188,27 +189,27 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// chatbots
 	////////////
 	// GET /chatbots
-	case regV1ChatbotsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatbotsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ChatbotsGet(ctx, m)
 		requestType = "/v1/chatbotcalls"
 
 	// POST /chatbots
-	case regV1Chatbots.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Chatbots.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ChatbotsPost(ctx, m)
 		requestType = "/v1/chatbotcalls"
 
 	// GET /chatbots/<chatbot-id>
-	case regV1ChatbotsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatbotsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ChatbotsIDGet(ctx, m)
 		requestType = "/v1/chatbots/<chatbot-id>"
 
 	// DELETE /chatbots/<chatbot-id>
-	case regV1ChatbotsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ChatbotsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ChatbotsIDDelete(ctx, m)
 		requestType = "/v1/chatbots/<chatbot-id>"
 
 	// PUT /chatbots/<chatbot-id>
-	case regV1ChatbotsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ChatbotsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1ChatbotsIDPut(ctx, m)
 		requestType = "/v1/chatbots/<chatbot-id>"
 
@@ -216,17 +217,17 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// chatbotcalls
 	///////////////
 	// GET /chatbotcalls
-	case regV1ChatbotcallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatbotcallsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ChatbotcallsGet(ctx, m)
 		requestType = "/v1/chatbotcalls"
 
 	// GET /chatbotcalls/<chatbotcall-id>
-	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ChatbotcallsIDGet(ctx, m)
 		requestType = "/v1/chatbotcalls/<chatbotcall-id>"
 
 	// DELETE /chatbotcalls/<chatbotcall-id>
-	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ChatbotcallsIDDelete(ctx, m)
 		requestType = "/v1/chatbotcalls/<chatbotcall-id>"
 
@@ -234,7 +235,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// services
 	////////////////
 	// POST
-	case regV1ServicesTypeChatbotcall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ServicesTypeChatbotcall.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ServicesTypeChatbotcallPost(ctx, m)
 		requestType = "/v1/services/type/chatbotcall"
 

@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -18,7 +19,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseFilters  map[string]string
 		responseBillings []*billing.Billing
@@ -31,9 +32,9 @@ func Test_processV1BillingsGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/billings?page_size=10&page_token=2023-06-08%2003:22:17.995000&filter_customer_id=6a93f71e-f542-11ee-9a48-7f8011d36229",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			responseFilters: map[string]string{

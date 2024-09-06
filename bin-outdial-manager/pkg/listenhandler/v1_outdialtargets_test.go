@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ func Test_v1OutdialtargetsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		outdialtargetID       uuid.UUID
 		responseOutdialtarget *outdialtarget.OutdialTarget
@@ -26,9 +27,9 @@ func Test_v1OutdialtargetsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/50d5c500-c51a-11ec-9c67-eb2ec9b83a3b",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -76,7 +77,7 @@ func Test_v1OutdialtargetsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		outdialtargetID uuid.UUID
 
@@ -84,9 +85,9 @@ func Test_v1OutdialtargetsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/0681ad52-b57a-11ec-824c-8353dafd28f1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -131,7 +132,7 @@ func Test_v1OutdialtargetsIDProgressingPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		outdialtargetID  uuid.UUID
 		destinationIndex int
@@ -140,9 +141,9 @@ func Test_v1OutdialtargetsIDProgressingPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/58a99808-b57d-11ec-8d82-d75af383ea0d/progressing",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"destination_index": 0}`),
 			},
@@ -190,7 +191,7 @@ func Test_v1OutdialtargetsIDStatusPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		outdialtargetID uuid.UUID
 		status          outdialtarget.Status
@@ -199,9 +200,9 @@ func Test_v1OutdialtargetsIDStatusPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/7a3b6b22-b62c-11ec-9ded-cb7b1f5f8878/status",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"status": "idle"}`),
 			},

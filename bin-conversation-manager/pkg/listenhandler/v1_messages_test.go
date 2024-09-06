@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"monorepo/bin-conversation-manager/models/message"
@@ -19,7 +20,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectConversationID uuid.UUID
 		expectPageSize       uint64
@@ -32,9 +33,9 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "normal",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/messages?conversation_id=22f83522-0a74-4a91-813b-1fc45e5bd9fa&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			expectConversationID: uuid.FromStringOrNil("22f83522-0a74-4a91-813b-1fc45e5bd9fa"),
@@ -56,9 +57,9 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "multiple results",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/messages?conversation_id=813840b3-9055-449c-b97b-558a0472f6bb&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			expectConversationID: uuid.FromStringOrNil("813840b3-9055-449c-b97b-558a0472f6bb"),

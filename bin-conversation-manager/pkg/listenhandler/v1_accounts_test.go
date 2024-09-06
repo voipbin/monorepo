@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -19,7 +20,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectPageSize  uint64
 		expectPageToken string
@@ -32,9 +33,9 @@ func Test_processV1AccountsGet(t *testing.T) {
 		{
 			name: "normal",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=6af495b0-fecb-11ed-b59e-e70b3afff8a1&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			expectPageSize:  10,
@@ -59,9 +60,9 @@ func Test_processV1AccountsGet(t *testing.T) {
 		{
 			name: "2 results",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/accounts?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=6b2efe9e-fecb-11ed-aa65-ff71705cd816&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			expectPageSize:  10,
@@ -131,7 +132,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 
 		responseAccount *account.Account
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
@@ -148,9 +149,9 @@ func Test_processV1AccountsPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("459c19ae-fecc-11ed-9558-fbf54c7aa51e"),
 			},
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"456609ea-fecc-11ed-a717-5f6984c51794","type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
@@ -197,7 +198,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 
 		responseAccount *account.Account
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
@@ -209,9 +210,9 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("1793ed06-fecd-11ed-ab65-07ce8687961d"),
 			},
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/accounts/1793ed06-fecd-11ed-ab65-07ce8687961d",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -260,7 +261,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 
 		responseAccount *account.Account
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
@@ -276,9 +277,9 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("17c1c726-fecd-11ed-8139-dff04db7fa05"),
 			},
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/accounts/17c1c726-fecd-11ed-8139-dff04db7fa05",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
@@ -325,7 +326,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 
 		responseAccount *account.Account
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
@@ -337,9 +338,9 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("17eeb786-fecd-11ed-8113-5f6f4693c29f"),
 			},
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/accounts/17eeb786-fecd-11ed-8113-5f6f4693c29f",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,

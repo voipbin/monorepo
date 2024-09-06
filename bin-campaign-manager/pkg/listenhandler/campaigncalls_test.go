@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken  string
 		pageSize   uint64
@@ -29,9 +30,9 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10&campaign_id=d448b208-c849-11ec-8ea9-130b51c62f3e",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -83,7 +84,7 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken  string
 		pageSize   uint64
@@ -95,9 +96,9 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=a5b9fbf6-6e31-11ee-98a3-33e454942a48",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			"2020-10-10 03:30:17.000000",
@@ -148,7 +149,7 @@ func Test_v1CampaigncallsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		campaigncallID uuid.UUID
 
@@ -158,9 +159,9 @@ func Test_v1CampaigncallsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls/5f7dd038-c84a-11ec-9943-936e5cfdeb4c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -208,7 +209,7 @@ func Test_v1CampaigncallsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		campaigncallID uuid.UUID
 
@@ -218,9 +219,9 @@ func Test_v1CampaigncallsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/campaigncalls/ef345db4-d31a-11ee-b584-2f258c86723e",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 

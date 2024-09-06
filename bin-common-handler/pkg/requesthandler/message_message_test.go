@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -24,7 +25,7 @@ func Test_MessageV1MessageGets(t *testing.T) {
 		pageSize   uint64
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     []mmmessage.Message
 	}{
@@ -36,9 +37,9 @@ func Test_MessageV1MessageGets(t *testing.T) {
 			10,
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=2970f4e8-a2b1-11ec-b21d-a7848e946530",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			&rabbitmqhandler.Response{
@@ -60,9 +61,9 @@ func Test_MessageV1MessageGets(t *testing.T) {
 			10,
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6f0e7d2c-a2b1-11ec-88c4-af58c97aff78",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			&rabbitmqhandler.Response{
@@ -114,7 +115,7 @@ func Test_MessageV1MessageGet(t *testing.T) {
 		id uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     *mmmessage.Message
 	}{
@@ -124,9 +125,9 @@ func Test_MessageV1MessageGet(t *testing.T) {
 			uuid.FromStringOrNil("c6132bfe-a2b1-11ec-a9fd-0f7e4afd00d8"),
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages/c6132bfe-a2b1-11ec-a9fd-0f7e4afd00d8",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			&rabbitmqhandler.Response{
@@ -173,7 +174,7 @@ func Test_MessageV1MessageDelete(t *testing.T) {
 		id uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     *mmmessage.Message
 	}{
@@ -183,9 +184,9 @@ func Test_MessageV1MessageDelete(t *testing.T) {
 			uuid.FromStringOrNil("b8c3c122-a2c3-11ec-89ee-ebb21f6a7e14"),
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages/b8c3c122-a2c3-11ec-89ee-ebb21f6a7e14",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 			&rabbitmqhandler.Response{
@@ -236,7 +237,7 @@ func Test_MessageV1MessageSend(t *testing.T) {
 		text         string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     *mmmessage.Message
 	}{
@@ -258,9 +259,9 @@ func Test_MessageV1MessageSend(t *testing.T) {
 			"hello world",
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},
@@ -291,9 +292,9 @@ func Test_MessageV1MessageSend(t *testing.T) {
 			"hello world",
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},
@@ -328,9 +329,9 @@ func Test_MessageV1MessageSend(t *testing.T) {
 			"hello world",
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messages",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"id":"e930839a-f179-11ec-acb5-3f10a4a1c047","customer_id":"333d1508-a2c3-11ec-872d-8796fdc672b5","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},

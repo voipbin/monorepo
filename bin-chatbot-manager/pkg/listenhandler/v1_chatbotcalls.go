@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +15,7 @@ import (
 )
 
 // processV1ChatbotcallsGet handles GET /v1/chatbotcall request
-func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotcallsGet",
 		"request": m,
@@ -65,7 +66,7 @@ func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *rabbitm
 }
 
 // processV1ChatbotcallsIDGet handles GET /v1/chatbotcalls/<chatbotcall-id> request
-func (h *listenHandler) processV1ChatbotcallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotcallsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotcallsIDGet",
 		"request": m,
@@ -100,7 +101,7 @@ func (h *listenHandler) processV1ChatbotcallsIDGet(ctx context.Context, m *rabbi
 }
 
 // processV1ChatbotcallsIDDelete handles DELETE /v1/chatbotcalls/<chatbotcall-id> request
-func (h *listenHandler) processV1ChatbotcallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ChatbotcallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotcallsIDDelete",
 		"request": m,

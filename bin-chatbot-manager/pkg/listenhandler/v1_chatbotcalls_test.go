@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbotcalls []*chatbotcall.Chatbotcall
 
@@ -29,9 +30,9 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbotcalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=645e65c8-a773-11ed-b5ae-df76e94347ad&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			[]*chatbotcall.Chatbotcall{
@@ -88,7 +89,7 @@ func Test_processV1ChatbotcallsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbotcall *chatbotcall.Chatbotcall
 
@@ -97,9 +98,9 @@ func Test_processV1ChatbotcallsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbotcalls/d9d804d8-ef03-4a23-906c-c192029b19fc",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			&chatbotcall.Chatbotcall{
@@ -146,7 +147,7 @@ func Test_processV1ChatbotcallsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseChatbotcall *chatbotcall.Chatbotcall
 
@@ -155,9 +156,9 @@ func Test_processV1ChatbotcallsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/chatbotcalls/3e349bb8-7b31-4533-8e2b-6654ebc84e3e",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			&chatbotcall.Chatbotcall{

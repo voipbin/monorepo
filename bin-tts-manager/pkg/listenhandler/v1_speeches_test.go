@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseTTS *tts.TTS
 
@@ -31,9 +32,9 @@ func Test_v1SpeechesPost(t *testing.T) {
 		{
 			"normal test",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/speeches",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"call_id": "107d1f0e-9665-11ed-b3f3-039937430300", "text": "hello world", "gender": "female", "language": "en-US"}`),
 			},
 

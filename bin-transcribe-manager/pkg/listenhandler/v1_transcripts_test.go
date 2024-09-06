@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -19,7 +20,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageSize  uint64
 		pageToken string
@@ -30,9 +31,9 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_transcribe_id=4f08e520-821d-11ed-844e-67fdcb950f6f",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -55,9 +56,9 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_transcribe_id=43b608e6-821e-11ed-9611-e329cba76cc9",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,

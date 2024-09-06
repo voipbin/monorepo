@@ -8,10 +8,9 @@ import (
 
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // CallV1ExternalMediaGets sends a request to call-manager
@@ -23,7 +22,7 @@ func (r *requestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken 
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/calls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -48,7 +47,7 @@ func (r *requestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken 
 func (r *requestHandler) CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error) {
 	uri := fmt.Sprintf("/v1/external-medias/%s", externalMediaID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, "call/external-medias", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/external-medias", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -90,7 +89,7 @@ func (r *requestHandler) CallV1ExternalMediaStart(ctx context.Context, reference
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/external-medias", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/external-medias", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -115,7 +114,7 @@ func (r *requestHandler) CallV1ExternalMediaStart(ctx context.Context, reference
 func (r *requestHandler) CallV1ExternalMediaStop(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error) {
 	uri := fmt.Sprintf("/v1/external-medias/%s", externalMediaID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/external-medias", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodDelete, "call/external-medias", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

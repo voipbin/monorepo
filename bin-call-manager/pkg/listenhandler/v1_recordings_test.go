@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -19,7 +20,7 @@ import (
 func Test_processV1RecordingsGet(t *testing.T) {
 	type test struct {
 		name      string
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		pageSize  uint64
 		pageToken string
 
@@ -31,9 +32,9 @@ func Test_processV1RecordingsGet(t *testing.T) {
 	tests := []test{
 		{
 			"basic",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=c15af818-7f51-11ec-8eeb-f733ba8df393",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -99,7 +100,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseRecording *recording.Recording
 
@@ -115,9 +116,9 @@ func Test_processV1RecordingsPost(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/recordings",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_type": "call", "reference_id": "30e259e0-90b5-11ed-9ca7-836b535a4622", "format": "wav", "end_of_silence": 0, "end_of_key": "", "duration": 0}`),
 			},
@@ -175,7 +176,7 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 
 	type test struct {
 		name      string
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		recording *recording.Recording
 		expectRes *rabbitmqhandler.Response
 	}
@@ -183,9 +184,9 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"basic",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/recordings/00c711be-6129-11eb-9404-b73dcf512957",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&recording.Recording{
 				Identity: commonidentity.Identity{
@@ -240,7 +241,7 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseRecording *recording.Recording
 		expectRes         *rabbitmqhandler.Response
@@ -249,9 +250,9 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			"basic",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/recordings/3019fe2a-8eba-11ed-809e-bbab8230e905",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			&recording.Recording{
@@ -307,7 +308,7 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseRecording *recording.Recording
 		expectRes         *rabbitmqhandler.Response
@@ -316,9 +317,9 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/recordings/2c7e5af4-90d6-11ed-8ba0-c335ddc4049b/stop",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			&recording.Recording{

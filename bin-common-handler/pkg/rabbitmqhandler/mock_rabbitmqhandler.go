@@ -6,6 +6,7 @@ package rabbitmqhandler
 
 import (
 	context "context"
+	sock "monorepo/bin-common-handler/models/sock"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -158,7 +159,7 @@ func (mr *MockRabbitMockRecorder) PublishExchangeDelayedEvent(exchange, key, evt
 }
 
 // PublishExchangeDelayedRequest mocks base method.
-func (m *MockRabbit) PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error {
+func (m *MockRabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeDelayedRequest", exchange, key, req, delay)
 	ret0, _ := ret[0].(error)
@@ -186,7 +187,7 @@ func (mr *MockRabbitMockRecorder) PublishExchangeEvent(exchange, key, evt interf
 }
 
 // PublishExchangeRequest mocks base method.
-func (m *MockRabbit) PublishExchangeRequest(exchange, key string, req *Request) error {
+func (m *MockRabbit) PublishExchangeRequest(exchange, key string, req *sock.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishExchangeRequest", exchange, key, req)
 	ret0, _ := ret[0].(error)
@@ -200,7 +201,7 @@ func (mr *MockRabbitMockRecorder) PublishExchangeRequest(exchange, key, req inte
 }
 
 // PublishRPC mocks base method.
-func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error) {
+func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRPC", ctx, queueName, req)
 	ret0, _ := ret[0].(*Response)
@@ -215,7 +216,7 @@ func (mr *MockRabbitMockRecorder) PublishRPC(ctx, queueName, req interface{}) *g
 }
 
 // PublishRequest mocks base method.
-func (m *MockRabbit) PublishRequest(queueName string, req *Request) error {
+func (m *MockRabbit) PublishRequest(queueName string, req *sock.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishRequest", queueName, req)
 	ret0, _ := ret[0].(error)

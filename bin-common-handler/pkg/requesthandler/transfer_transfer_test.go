@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -24,7 +25,7 @@ func Test_TransferV1TransferStart(t *testing.T) {
 		transfereeAddresses []commonaddress.Address
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *tmtransfer.Transfer
@@ -44,9 +45,9 @@ func Test_TransferV1TransferStart(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.transfer-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/transfers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"type":"attended","transferer_call_id":"47ca8e80-dd35-11ed-8213-bf37002f55ef","transferee_addresses":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}]}`),
 			},

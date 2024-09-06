@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +20,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseService *service.Service
 
@@ -30,9 +31,9 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/services/type/conferencecall",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"conference_id":"43c7671e-c0ab-11ed-a8bc-6f436b081030","reference_type":"call","reference_id":"440e58f4-c0ab-11ed-89d9-7340c26c4034"}`),
 			},

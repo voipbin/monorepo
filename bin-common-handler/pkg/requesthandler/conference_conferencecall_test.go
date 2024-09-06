@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -25,7 +26,7 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []cfconferencecall.Conferencecall
@@ -41,9 +42,9 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 			"/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -97,7 +98,7 @@ func Test_ConferenceV1ConferencecallGet(t *testing.T) {
 		conferencecallID uuid.UUID
 
 		expectQueue   string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response  *rabbitmqhandler.Response
 		expectRes *cfconferencecall.Conferencecall
@@ -109,9 +110,9 @@ func Test_ConferenceV1ConferencecallGet(t *testing.T) {
 			uuid.FromStringOrNil("7baaa99e-14e8-11ed-8f79-f79014b94b6f"),
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferencecalls/7baaa99e-14e8-11ed-8f79-f79014b94b6f",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 
@@ -160,7 +161,7 @@ func Test_ConferenceV1ConferencecallKick(t *testing.T) {
 		response         *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		expectRes *cfconferencecall.Conferencecall
 	}{
@@ -175,9 +176,9 @@ func Test_ConferenceV1ConferencecallKick(t *testing.T) {
 			},
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferencecalls/dd4ff2e2-14e5-11ed-8eec-97413dd96f29",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -225,7 +226,7 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		expectRes *cfconferencecall.Conferencecall
 	}{
@@ -242,9 +243,9 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 			},
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferencecalls/23d64db6-94a6-11ed-9b9f-2bfedef352c1/health-check",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"retry_count":2}`),
 			},

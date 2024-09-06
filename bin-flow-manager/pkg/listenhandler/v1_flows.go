@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 )
 
 // v1FlowsIDGet handles /v1/flows/{id} GET request
-func (h *listenHandler) v1FlowsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FlowsIDGet",
 		"request": m,
@@ -53,7 +54,7 @@ func (h *listenHandler) v1FlowsIDGet(ctx context.Context, m *rabbitmqhandler.Req
 }
 
 // v1FlowsIDPut handles /v1/flows/{id} PUT request
-func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FlowsIDPut",
 		"request": m,
@@ -96,7 +97,7 @@ func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *rabbitmqhandler.Req
 }
 
 // v1FlowsIDDelete handles /v1/flows/{id} Delete request
-func (h *listenHandler) v1FlowsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FlowsIDDelete",
 		"request": m,
@@ -133,7 +134,7 @@ func (h *listenHandler) v1FlowsIDDelete(ctx context.Context, m *rabbitmqhandler.
 
 // v1FlowsPost handles /v1/flows POST request
 // creates a new flow with given data and return the created flow info.
-func (h *listenHandler) v1FlowsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FlowsPost",
 		"request": m,
@@ -176,7 +177,7 @@ func (h *listenHandler) v1FlowsPost(ctx context.Context, m *rabbitmqhandler.Requ
 }
 
 // v1FlowsGet handles /v1/flows GET request
-func (h *listenHandler) v1FlowsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FlowsGet",
 		"request": m,
@@ -218,7 +219,7 @@ func (h *listenHandler) v1FlowsGet(ctx context.Context, m *rabbitmqhandler.Reque
 }
 
 // v1FlowsIDActionsPut handles /v1/flows/{id}/actions PUT request
-func (h *listenHandler) v1FlowsIDActionsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsIDActionsPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FlowsIDActionsPut",
 		"request": m,
@@ -262,7 +263,7 @@ func (h *listenHandler) v1FlowsIDActionsPut(ctx context.Context, m *rabbitmqhand
 
 // v1FlowsIDActionsIDGet handles
 // /v1/flows/{id}/actions/{id} GET
-func (h *listenHandler) v1FlowsIDActionsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FlowsIDActionsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FlowsIDActionsIDGet",
 		"request": m,

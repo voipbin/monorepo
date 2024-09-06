@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 )
 
 // processV1QueuecallsGet handles Get /v1/queuecalls request
-func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsGet",
 		"request": m,
@@ -57,7 +58,7 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1QueuecallsIDGet handles Get /v1/queuecalls/reference_id/<reference-id> request
-func (h *listenHandler) processV1QueuecallsReferenceIDIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsReferenceIDIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsReferenceIDIDGet",
 		"request": m,
@@ -93,7 +94,7 @@ func (h *listenHandler) processV1QueuecallsReferenceIDIDGet(ctx context.Context,
 }
 
 // processV1QueuecallsIDGet handles Get /v1/queuecalls/<queue-id> request
-func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDGet",
 		"request": m,
@@ -129,7 +130,7 @@ func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *rabbitm
 }
 
 // processV1QueuecallsIDDelete handles Delete /v1/queuecalls/<queuecall-id> request
-func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDDelete",
 		"request": m,
@@ -164,7 +165,7 @@ func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabb
 }
 
 // processV1QueuecallsIDTimeoutWaitPost handles Post /v1/queuecalls/<queuecall-id>/timeout_wait request
-func (h *listenHandler) processV1QueuecallsIDTimeoutWaitPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDTimeoutWaitPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDTimeoutWaitPost",
 		"request": m,
@@ -188,7 +189,7 @@ func (h *listenHandler) processV1QueuecallsIDTimeoutWaitPost(ctx context.Context
 }
 
 // processV1QueuecallsIDTimeoutServicePost handles Post /v1/queuecalls/<queuecall-id>/timeout_service request
-func (h *listenHandler) processV1QueuecallsIDTimeoutServicePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDTimeoutServicePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDTimeoutServicePost",
 		"request": m,
@@ -212,7 +213,7 @@ func (h *listenHandler) processV1QueuecallsIDTimeoutServicePost(ctx context.Cont
 }
 
 // processV1QueuecallsIDExecutePost handles Post /v1/queuecalls/<queuecall-id>/execute request
-func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDExecutePost",
 		"request": m,
@@ -253,7 +254,7 @@ func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m 
 }
 
 // processV1QueuecallsIDKickPost handles Post /v1/queuecalls/<queuecall-id>/kick request
-func (h *listenHandler) processV1QueuecallsIDKickPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDKickPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDIDKickPost",
 		"request": m,
@@ -288,7 +289,7 @@ func (h *listenHandler) processV1QueuecallsIDKickPost(ctx context.Context, m *ra
 }
 
 // processV1QueuecallsIDKickPost handles Post /v1/queuecalls/reference_id/<reference-id>/kick request
-func (h *listenHandler) processV1QueuecallsReferenceIDIDKickPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsReferenceIDIDKickPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsReferenceIDKickPost",
 		"request": m,
@@ -323,7 +324,7 @@ func (h *listenHandler) processV1QueuecallsReferenceIDIDKickPost(ctx context.Con
 }
 
 // processV1QueuecallsIDHealthCheckPost handles Post /v1/queuecalls/<queuecall-id>/health-check request
-func (h *listenHandler) processV1QueuecallsIDHealthCheckPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1QueuecallsIDHealthCheckPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuecallsIDHealthCheckPost",
 		"request": m,

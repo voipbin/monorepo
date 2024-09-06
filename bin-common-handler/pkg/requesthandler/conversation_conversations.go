@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 	cvrequest "monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ConversationV1ConversationGet gets the conversation
@@ -21,7 +20,7 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 
 	uri := fmt.Sprintf("/v1/conversations/%s", conversationID)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/conversations", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +46,7 @@ func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, pag
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -81,7 +80,7 @@ func (r *requestHandler) ConversationV1ConversationUpdate(ctx context.Context, c
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPut, "conversation/conversations/<conversation_id>", 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPut, "conversation/conversations/<conversation_id>", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -116,7 +115,7 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPost, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -141,7 +140,7 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 func (r *requestHandler) ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/conversations/%s/messages?page_token=%s&page_size=%d", conversationID, url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodGet, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations/<conversation-id>/messages", 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

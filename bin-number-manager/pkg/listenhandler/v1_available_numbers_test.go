@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/golang/mock/gomock"
@@ -31,7 +32,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 		pageSize    uint
 		numbers     []*availablenumber.AvailableNumber
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
@@ -39,9 +40,9 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 			"US",
 			1,
 			[]*availablenumber.AvailableNumber{},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/available_numbers?country_code=US&page_size=1",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -64,9 +65,9 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 					},
 				},
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/available_numbers?country_code=US&page_size=1",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,

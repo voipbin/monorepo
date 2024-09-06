@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/sock"
 	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // NumberV1AvailableNumberGets sends a request to number-manager
@@ -17,7 +16,7 @@ import (
 func (r *requestHandler) NumberV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error) {
 	uri := fmt.Sprintf("/v1/available_numbers?page_size=%d&customer_id=%s&country_code=%s", pageSize, customerID, countryCode)
 
-	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, "number/available-number", 15000, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/available-number", 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

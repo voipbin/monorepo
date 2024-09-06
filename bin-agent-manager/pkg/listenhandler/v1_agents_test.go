@@ -7,6 +7,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -21,7 +22,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageSize  uint64
 		pageToken string
@@ -32,9 +33,9 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents?page_size=10&page_token=2021-11-23%2017:55:39.712000&filter_customer_id=5fd7f9b8-cb37-11ee-bd29-f30560a6ac86&filter_tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91&filter_deleted=false&filter_status=available",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -115,7 +116,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 
 // 	tests := []struct {
 // 		name    string
-// 		request *rabbitmqhandler.Request
+// 		request *sock.Request
 
 // 		customerID uuid.UUID
 // 		tagIDs     []uuid.UUID
@@ -125,9 +126,9 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 	}{
 // 		{
 // 			"normal",
-// 			&rabbitmqhandler.Request{
+// 			&sock.Request{
 // 				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a",
-// 				Method:   rabbitmqhandler.RequestMethodGet,
+// 				Method:   sock.RequestMethodGet,
 // 				DataType: "application/json",
 // 			},
 
@@ -167,9 +168,9 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 		},
 // 		{
 // 			"have 2 tag ids",
-// 			&rabbitmqhandler.Request{
+// 			&sock.Request{
 // 				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,2e5705ea-4d90-11ec-9352-6326ee2dce20",
-// 				Method:   rabbitmqhandler.RequestMethodGet,
+// 				Method:   sock.RequestMethodGet,
 // 				DataType: "application/json",
 // 			},
 
@@ -263,7 +264,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 
 // 	tests := []struct {
 // 		name    string
-// 		request *rabbitmqhandler.Request
+// 		request *sock.Request
 
 // 		customerID uuid.UUID
 // 		tagIDs     []uuid.UUID
@@ -274,9 +275,9 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 	}{
 // 		{
 // 			"normal",
-// 			&rabbitmqhandler.Request{
+// 			&sock.Request{
 // 				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a&status=available",
-// 				Method:   rabbitmqhandler.RequestMethodGet,
+// 				Method:   sock.RequestMethodGet,
 // 				DataType: "application/json",
 // 			},
 
@@ -317,9 +318,9 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 		},
 // 		{
 // 			"have 2 tag ids",
-// 			&rabbitmqhandler.Request{
+// 			&sock.Request{
 // 				URI:      "/v1/agents?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,2e5705ea-4d90-11ec-9352-6326ee2dce20&status=available",
-// 				Method:   rabbitmqhandler.RequestMethodGet,
+// 				Method:   sock.RequestMethodGet,
 // 				DataType: "application/json",
 // 			},
 
@@ -414,7 +415,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		username   string
@@ -431,9 +432,9 @@ func TestProcessV1AgentsPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["27d3bc3e-4d88-11ec-a61d-af78fdede455"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
 			},
@@ -484,9 +485,9 @@ func TestProcessV1AgentsPost(t *testing.T) {
 		},
 		{
 			"have 2 tags",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["159623f0-4d8c-11ec-85da-432863b96d60", "15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"], "addresses":[{"type": "tel", "target":"+821021656521"}]}`),
 			},
@@ -543,9 +544,9 @@ func TestProcessV1AgentsPost(t *testing.T) {
 		},
 		{
 			"have 2 tags and addresses",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username": "test1", "password":"password", "name": "test agent1", "detail": "test agent1 detail", "ring_method": "ringall", "permission": 1, "tag_ids": ["e7b166ec-4d8c-11ec-8c61-0b9e85603e10", "e82a311c-4d8c-11ec-9411-3382b1284325"], "addresses":[{"type": "tel", "target":"+821021656521"},{"type": "tel", "target":"+821021656522"}]}`),
 			},
@@ -642,7 +643,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		username string
 		password string
@@ -652,9 +653,9 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/test1/login",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","password":"password"}`),
 			},
@@ -725,7 +726,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id    uuid.UUID
 		agent *agent.Agent
@@ -734,9 +735,9 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -788,7 +789,7 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id         uuid.UUID
 		agentName  string
@@ -800,9 +801,9 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"name1","detail":"detail1","ring_method":"ringall"}`),
 			},
@@ -856,7 +857,7 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id        uuid.UUID
 		addresses []commonaddress.Address
@@ -866,9 +867,9 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/addresses",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"addresses":[{"type":"tel","target":"+821021656521"}]}`),
 			},
@@ -925,7 +926,7 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id     uuid.UUID
 		status agent.Status
@@ -935,9 +936,9 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/status",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"status":"available"}`),
 			},
@@ -990,7 +991,7 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id       uuid.UUID
 		password string
@@ -1000,9 +1001,9 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/password",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"password":"password1"}`),
 			},
@@ -1054,7 +1055,7 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id     uuid.UUID
 		tagIDs []uuid.UUID
@@ -1064,9 +1065,9 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/tag_ids",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"tag_ids":["f196163c-4da3-11ec-bd6c-27b1ed6735b3"]}`),
 			},
@@ -1120,7 +1121,7 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id uuid.UUID
 
@@ -1129,9 +1130,9 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -1182,7 +1183,7 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id         uuid.UUID
 		permission agent.Permission
@@ -1192,9 +1193,9 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/agents/f1ba04b0-951e-11ee-a0a2-7b8600a1ee45/permission",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"permission":32}`),
 			},
@@ -1246,7 +1247,7 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseAgent *agent.Agent
 
@@ -1257,9 +1258,9 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/agents/get_by_customer_id_address",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"e30eaa4a-2d91-11ef-88e9-bf9e5d130578","address":{"type":"extension","target":"f27b2198-2d91-11ef-9b01-93e01658c814"}}`),
 			},

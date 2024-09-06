@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -36,7 +37,7 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -64,9 +65,9 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"6a9320a2-c513-11ec-8d26-bfc178781416","name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
@@ -126,7 +127,7 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []caoutplan.Outplan
 	}{
 		{
@@ -143,9 +144,9 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/outplans?page_token=%s&page_size=10&customer_id=4b1deb60-a784-4207-b1d8-a96df6bae951", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]caoutplan.Outplan{
@@ -191,7 +192,7 @@ func Test_CampaignV1OutplanGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -205,9 +206,9 @@ func Test_CampaignV1OutplanGet(t *testing.T) {
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/0838f768-c515-11ec-a969-4fec734bbc81",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&caoutplan.Outplan{
@@ -251,7 +252,7 @@ func Test_CampaignV1OutplanDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -265,9 +266,9 @@ func Test_CampaignV1OutplanDelete(t *testing.T) {
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/22d9075d-08bd-4eb0-b868-3b102f0bcb39",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&caoutplan.Outplan{
@@ -313,7 +314,7 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -330,9 +331,9 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/63e29b96-c515-11ec-ba52-ab7d7001913f",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
@@ -385,7 +386,7 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *caoutplan.Outplan
 	}{
 		{
@@ -411,9 +412,9 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 			},
 
 			"bin-manager.campaign-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/e2b014d4-c516-11ec-a724-8bf87a1beb50/dials",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},

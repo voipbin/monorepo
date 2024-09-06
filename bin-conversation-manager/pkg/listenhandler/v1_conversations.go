@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ import (
 
 // processV1ConversationsGet handles
 // /v1/conversations GET
-func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConversationsGet",
 		"request": m,
@@ -59,7 +60,7 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *rabbit
 
 // processV1ConversationsIDGet handles
 // /v1/conversations/{id} GET
-func (h *listenHandler) processV1ConversationsIDGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConversationsIDGet(ctx context.Context, req *sock.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -95,7 +96,7 @@ func (h *listenHandler) processV1ConversationsIDGet(ctx context.Context, req *ra
 
 // processV1ConversationsIDPut handles
 // /v1/conversations/{id} PUT
-func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -137,7 +138,7 @@ func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *rabb
 
 // processV1ConversationsIDMessagesGet handles
 // /v1/conversations/<conversation-id>/messages GET
-func (h *listenHandler) processV1ConversationsIDMessagesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConversationsIDMessagesGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConversationsIDMessagesGet",
 		"request": m,
@@ -181,7 +182,7 @@ func (h *listenHandler) processV1ConversationsIDMessagesGet(ctx context.Context,
 
 // processV1ConversationsIDMessagesPost handles
 // /v1/conversations/<conversation-id>/messages POST
-func (h *listenHandler) processV1ConversationsIDMessagesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConversationsIDMessagesPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConversationsIDMessagesPost",
 		"request": m,

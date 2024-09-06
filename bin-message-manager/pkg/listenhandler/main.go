@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -129,7 +130,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 // processRequest handles all of requests of the listen queue.
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,
@@ -152,22 +153,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// messages
 	////////////////////
 	// GET /messages
-	case regV1MessagesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1MessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1MessagesGet(ctx, m)
 		requestType = "/v1/messages"
 
 	// POST /messages
-	case regV1Messages.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1MessagesPost(ctx, m)
 		requestType = "/v1/messages"
 
 	// GET /messages/<id>
-	case regV1MessagesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1MessagesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1MessagesIDGet(ctx, m)
 		requestType = "/v1/messages"
 
 	// DELETE /messages/<id>
-	case regV1MessagesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1MessagesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1MessagesIDDelete(ctx, m)
 		requestType = "/v1/messages"
 
@@ -175,7 +176,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// hooks
 	////////////////////
 	// POST /hooks
-	case regV1Hooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Hooks.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1HooksPost(ctx, m)
 		requestType = "/v1/hooks"
 

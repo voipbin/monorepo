@@ -6,13 +6,14 @@ import (
 	"net/url"
 	"strconv"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/sirupsen/logrus"
 )
 
 // processV1AvailableNumbersGet handles GET /v1/avaliable_numbers request
-func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AvailableNumbersGet",
 		"request": m,

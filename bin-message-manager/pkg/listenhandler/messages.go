@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 )
 
 // processV1MessagesGet handles GET /v1/messages request
-func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1MessagesGet",
 		"request": m,
@@ -57,7 +58,7 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhan
 }
 
 // processV1MessagesPost handles POST /v1/messages request
-func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1MessagesPost",
 		"request": m,
@@ -92,7 +93,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *rabbitmqha
 }
 
 // processV1MessagesIDGet handles GET /v1/messages/<id> request
-func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1MessagesIDGet",
 		"request": m,
@@ -127,7 +128,7 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1MessagesIDDelete handles DELETE /v1/messages/<id> request
-func (h *listenHandler) processV1MessagesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1MessagesIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1MessagesIDDelete",
 		"request": m,

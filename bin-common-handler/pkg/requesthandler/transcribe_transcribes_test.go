@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -22,7 +23,7 @@ func Test_TranscribeV1TranscribeGet(t *testing.T) {
 		transcribeID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *tmtranscribe.Transcribe
@@ -35,9 +36,9 @@ func Test_TranscribeV1TranscribeGet(t *testing.T) {
 			uuid.FromStringOrNil("32b71878-8093-11ed-8578-775276ea57cf"),
 
 			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes/32b71878-8093-11ed-8578-775276ea57cf",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -87,7 +88,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     []tmtranscribe.Transcribe
 	}{
@@ -102,9 +103,9 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 
 			"/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=adddce70-8093-11ed-9a79-530f80f428d8",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			&rabbitmqhandler.Response{
@@ -129,9 +130,9 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 
 			"/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			&rabbitmqhandler.Response{
@@ -190,7 +191,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 		direction     tmtranscribe.Direction
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *tmtranscribe.Transcribe
@@ -205,9 +206,9 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 			tmtranscribe.DirectionBoth,
 
 			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"2ab9c63a-8227-11ed-928b-1b90501adbe2","reference_type":"call","reference_id":"2ae8944c-8227-11ed-acb4-c3e23ea3a2a4","language":"en-US","direction":"both"}`),
 			},
@@ -255,7 +256,7 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 		transcribeID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *tmtranscribe.Transcribe
@@ -266,9 +267,9 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 			uuid.FromStringOrNil("2622b04a-8228-11ed-98f0-6bfc284cdb95"),
 
 			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes/2622b04a-8228-11ed-98f0-6bfc284cdb95/stop",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -317,7 +318,7 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 		retryCount   int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 	}{
 		{
@@ -328,9 +329,9 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 			3,
 
 			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes/273d1fa4-e9ac-46cc-920e-34e163eb0e73/health-check",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"retry_count":3}`),
 			},

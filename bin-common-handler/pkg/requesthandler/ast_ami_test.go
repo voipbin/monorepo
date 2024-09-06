@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -22,7 +23,7 @@ func Test_AstAMIRedirect(t *testing.T) {
 
 		expectQueue  string
 		expectURI    string
-		expectMethod rabbitmqhandler.RequestMethod
+		expectMethod sock.RequestMethod
 		expectData   []byte
 	}{
 		{
@@ -36,7 +37,7 @@ func Test_AstAMIRedirect(t *testing.T) {
 
 			"asterisk.00:11:22:33:44:55.request",
 			"/ami",
-			rabbitmqhandler.RequestMethodPost,
+			sock.RequestMethodPost,
 			[]byte(`{"Action":"Redirect","Channel":"6b79ae28-e3f1-11ea-bf62-7f539c6300fc","Context":"svc-echo","Exten":"s","Priority":"1"}`),
 		},
 	}
@@ -54,7 +55,7 @@ func Test_AstAMIRedirect(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
-				&rabbitmqhandler.Request{
+				&sock.Request{
 					URI:      tt.expectURI,
 					Method:   tt.expectMethod,
 					DataType: "application/json",

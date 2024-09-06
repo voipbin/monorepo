@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -155,7 +156,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,
@@ -178,93 +179,93 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// v1
 	// activeflows
-	case regV1ActiveflowsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ActiveflowsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/activeflows"
 		response, err = h.v1ActiveflowsGet(ctx, m)
 
 	// activeflows
-	case regV1Activeflows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Activeflows.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/activeflows"
 		response, err = h.v1ActiveflowsPost(ctx, m)
 
 	// activeflows/<activeflow-id>
-	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/activeflows/<activeflow-id>"
 		response, err = h.v1ActiveflowsIDDelete(ctx, m)
 
 	// activeflows/<activeflow-id>
-	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/activeflows/<activeflow-id>"
 		response, err = h.v1ActiveflowsIDGet(ctx, m)
 
 	// activeflows/<activeflow-id>/next
-	case regV1ActiveflowsIDNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ActiveflowsIDNext.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/activeflows/<activeflow-id>/next"
 		response, err = h.v1ActiveflowsIDNextGet(ctx, m)
 
 	// activeflows/<activeflow-id>/forward_action_id
-	case regV1ActiveflowsIDForwardActionID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ActiveflowsIDForwardActionID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/activeflows/<activeflow-id>/forward_action_id"
 		response, err = h.v1ActiveflowsIDForwardActionIDPut(ctx, m)
 
 	// activeflows/<activeflow-id>/execute
-	case regV1ActiveflowsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ActiveflowsIDExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/activeflows/<activeflow-id>/execute"
 		response, err = h.v1ActiveflowsIDExecutePost(ctx, m)
 
 	// activeflows/<activeflow-id>/stop
-	case regV1ActiveflowsIDStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ActiveflowsIDStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/activeflows/<activeflow-id>/stop"
 		response, err = h.v1ActiveflowsIDStopPost(ctx, m)
 
 	// activeflows/<activeflow-id>/push_actions
-	case regV1ActiveflowsIDPushActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ActiveflowsIDPushActions.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/activeflows/<activeflow-id>/push_actions"
 		response, err = h.v1ActiveflowsIDPushActionsPost(ctx, m)
 
 	// flows
-	case regV1Flows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Flows.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/flows"
 		response, err = h.v1FlowsPost(ctx, m)
 
-	case regV1FlowsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FlowsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/flows"
 		response, err = h.v1FlowsGet(ctx, m)
 
 	// flows/<flow-id>
-	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FlowsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/flows/<flow-id>"
 		response, err = h.v1FlowsIDGet(ctx, m)
 
-	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1FlowsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/flows/<flow-id>"
 		response, err = h.v1FlowsIDPut(ctx, m)
 
-	case regV1FlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1FlowsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/flows/<flow-id>"
 		response, err = h.v1FlowsIDDelete(ctx, m)
 
 	// flows/<flow-id>/actions
-	case regV1FlowsIDActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1FlowsIDActions.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/flows/<flow-id>/actions"
 		response, err = h.v1FlowsIDActionsPut(ctx, m)
 
-	case regV1FlowsIDActionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1FlowsIDActionsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/flows/<flow-id>/actions/<action-id>"
 		response, err = h.v1FlowsIDActionsIDGet(ctx, m)
 
 	// variables/<variable-id>
-	case regV1VariablesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1VariablesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/variables/<variable-id>"
 		response, err = h.v1VariablesIDGet(ctx, m)
 
 	// variables/<variable-id>/variables
-	case regV1VariablesIDVariables.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1VariablesIDVariables.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/variables/<variable-id>/variables"
 		response, err = h.v1VariablesIDVariablesPost(ctx, m)
 
 	// variables/<variable-id>/variables/key
-	case regV1VariablesIDVariablesKey.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1VariablesIDVariablesKey.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/variables/<variable-id>/variables/key"
 		response, err = h.v1VariablesIDVariablesKeyDelete(ctx, m)
 

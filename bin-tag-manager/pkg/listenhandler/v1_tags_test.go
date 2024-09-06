@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -17,7 +18,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		pageSize   uint64
@@ -28,9 +29,9 @@ func TestProcessV1TagsGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -57,9 +58,9 @@ func TestProcessV1TagsGet(t *testing.T) {
 		},
 		{
 			"have 2 results",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -128,7 +129,7 @@ func TestProcessV1TagsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		tagName    string
@@ -139,9 +140,9 @@ func TestProcessV1TagsPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/tags",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name": "test tag1", "detail": "test tag1 detail"}`),
 			},
@@ -201,7 +202,7 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id uuid.UUID
 
@@ -210,9 +211,9 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/tags/c31676f0-4e69-11ec-afe3-77ba49fae527",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -269,7 +270,7 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id      uuid.UUID
 		tagName string
@@ -280,9 +281,9 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/tags/c31676f0-4e69-11ec-afe3-77ba49fae527",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name", "detail": "update detail"}`),
 			},
@@ -333,7 +334,7 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id uuid.UUID
 
@@ -342,9 +343,9 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/tags/c31676f0-4e69-11ec-afe3-77ba49fae527",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 

@@ -5,20 +5,21 @@ package rabbitmqhandler
 import (
 	"context"
 	"encoding/json"
+	"monorepo/bin-common-handler/models/sock"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
 )
 
-// Request struct
-type Request struct {
-	URI       string          `json:"uri"`
-	Method    RequestMethod   `json:"method"`
-	Publisher string          `json:"publisher"`
-	DataType  string          `json:"data_type"`
-	Data      json.RawMessage `json:"data,omitempty"`
-}
+// // Request struct
+// type Request struct {
+// 	URI       string          `json:"uri"`
+// 	Method    RequestMethod   `json:"method"`
+// 	Publisher string          `json:"publisher"`
+// 	DataType  string          `json:"data_type"`
+// 	Data      json.RawMessage `json:"data,omitempty"`
+// }
 
 // Response struct
 type Response struct {
@@ -58,13 +59,13 @@ type Rabbit interface {
 	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
 	ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error
 
-	PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error
+	PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error
 	PublishExchangeDelayedEvent(exchange, key string, evt *Event, delay int) error
 	PublishExchangeEvent(exchange, key string, evt *Event) error
-	PublishExchangeRequest(exchange, key string, req *Request) error
+	PublishExchangeRequest(exchange, key string, req *sock.Request) error
 	PublishEvent(queueName string, evt *Event) error
-	PublishRequest(queueName string, req *Request) error
-	PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error)
+	PublishRequest(queueName string, req *sock.Request) error
+	PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*Response, error)
 
 	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
 	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
@@ -120,7 +121,7 @@ type exchange struct {
 type CbMsgConsume func(*Event) error
 
 // CbMsgRPC is func prototype for RPC callback
-type CbMsgRPC func(*Request) (*Response, error)
+type CbMsgRPC func(*sock.Request) (*Response, error)
 
 // NewRabbit creates queue for Rabbitmq
 func NewRabbit(uri string) Rabbit {

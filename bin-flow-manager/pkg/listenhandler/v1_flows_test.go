@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -19,7 +20,7 @@ func Test_v1FlowsPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID uuid.UUID
 		flowType   flow.Type
@@ -30,9 +31,9 @@ func Test_v1FlowsPost(t *testing.T) {
 	}{
 		{
 			"empty actions",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","type":"flow","name":"test","detail":"test detail","actions":[]}`),
 			},
@@ -46,9 +47,9 @@ func Test_v1FlowsPost(t *testing.T) {
 		},
 		{
 			"has actions echo",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"echo"}]}`),
 			},
@@ -65,9 +66,9 @@ func Test_v1FlowsPost(t *testing.T) {
 		},
 		{
 			"has 2 actions",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
@@ -87,9 +88,9 @@ func Test_v1FlowsPost(t *testing.T) {
 		},
 		{
 			"has 2 actions with customer_id",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"flow","name":"test","detail":"test detail","customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
@@ -109,9 +110,9 @@ func Test_v1FlowsPost(t *testing.T) {
 		},
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"conference","name":"test","detail":"test detail","customer_id":"a356975a-8055-11ec-9c11-37c0ba53de51","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
@@ -157,7 +158,7 @@ func Test_v1FlowsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		flowType        flow.Type
 		pageToken       string
@@ -170,9 +171,9 @@ func Test_v1FlowsGet(t *testing.T) {
 	}{
 		{
 			"1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -204,9 +205,9 @@ func Test_v1FlowsGet(t *testing.T) {
 		},
 		{
 			"has various filters",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false&filter_type=flow",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -239,9 +240,9 @@ func Test_v1FlowsGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -282,9 +283,9 @@ func Test_v1FlowsGet(t *testing.T) {
 		},
 		{
 			"empty",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -304,9 +305,9 @@ func Test_v1FlowsGet(t *testing.T) {
 		},
 		{
 			"type flow",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&filter_type=flow",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -371,16 +372,16 @@ func Test_v1FlowsGet(t *testing.T) {
 func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectFlowID   uuid.UUID
 		expectActionID uuid.UUID
 	}{
 		{
 			"empty actions",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/c71bba06-8a77-11ea-93c7-47dc226c8c31/actions/00000000-0000-0000-0000-000000000001",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -419,16 +420,16 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 func Test_v1FlowsIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		flow      *flow.Flow
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/01677a56-0c2d-11eb-96cb-eb2cd309ca81",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -450,9 +451,9 @@ func Test_v1FlowsIDGet(t *testing.T) {
 		},
 		{
 			"persist true",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/53b8aeb4-822b-11eb-82fe-a3c14b4e38de",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -506,7 +507,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id       uuid.UUID
 		flowName string
@@ -518,9 +519,9 @@ func Test_v1FlowsIDPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/b6768dd6-676f-11eb-8f00-7fb6aa43e2dc",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},
@@ -591,7 +592,7 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		flowID  uuid.UUID
 
 		responseFlow *flow.Flow
@@ -599,9 +600,9 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/89ecd1f6-67c6-11eb-815a-a75d4cc3df3e",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -649,7 +650,7 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id      uuid.UUID
 		actions []action.Action
@@ -659,9 +660,9 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/b6768dd6-676f-11eb-8f00-7fb6aa43e2dc/actions",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"actions":[{"type":"answer"},{"type":"echo"}]}`),
 			},

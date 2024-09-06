@@ -12,6 +12,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -27,7 +28,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 		expectRes     []cmgroupcall.Groupcall
 	}{
@@ -42,9 +43,9 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 
 			"/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -70,9 +71,9 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 
 			"/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -141,7 +142,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cmgroupcall.Groupcall
 	}{
 		{
@@ -176,9 +177,9 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.call-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/groupcalls",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"id":"812e519b-bbf6-415f-9c49-b4db5c76f68d","customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","master_groupcall_id":"e6310999-eab1-48fc-b0ce-f5ee55743864","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
@@ -226,7 +227,7 @@ func Test_CallV1GroupcallGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cmgroupcall.Groupcall
 	}{
 		{
@@ -241,9 +242,9 @@ func Test_CallV1GroupcallGet(t *testing.T) {
 			},
 
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/1717ba30-be34-11ed-87e7-5739c7ea8622",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&cmgroupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -288,7 +289,7 @@ func Test_CallV1GroupcallDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cmgroupcall.Groupcall
 	}{
 		{
@@ -303,9 +304,9 @@ func Test_CallV1GroupcallDelete(t *testing.T) {
 			},
 
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/06d9ec2a-be33-11ed-acc5-876b594da79c",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&cmgroupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -350,7 +351,7 @@ func Test_CallV1GroupcallHangup(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cmgroupcall.Groupcall
 	}{
 		{
@@ -365,9 +366,9 @@ func Test_CallV1GroupcallHangup(t *testing.T) {
 			},
 
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/3d82215c-be33-11ed-aed4-7b9daa884e9f/hangup",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&cmgroupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -412,7 +413,7 @@ func Test_CallV1GroupcallUpdateAnswerGroupcallID(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cmgroupcall.Groupcall
 	}{
 		{
@@ -428,9 +429,9 @@ func Test_CallV1GroupcallUpdateAnswerGroupcallID(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.call-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/groupcalls/e50ab9b0-e328-11ed-abe1-abcb6aaa1b47/answer_groupcall_id",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"answer_groupcall_id":"e5399dc0-e328-11ed-af77-6f6bf2e02462"}`),
 			},
@@ -476,7 +477,7 @@ func Test_CallV1GroupcallHangupOthers(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			name: "normal",
@@ -490,9 +491,9 @@ func Test_CallV1GroupcallHangupOthers(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.call-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/groupcalls/5bde1332-e32b-11ed-8ed7-ef18f8cb924d/hangup_others",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 		},
 	}
@@ -526,7 +527,7 @@ func Test_CallV1GroupcallHangupCall(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			name: "normal",
@@ -538,9 +539,9 @@ func Test_CallV1GroupcallHangupCall(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.call-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/groupcalls/d810fc56-e337-11ed-bdbb-57b799f47676/hangup_call",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 		},
 	}
@@ -574,7 +575,7 @@ func Test_CallV1GroupcallHangupGroupcall(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			name: "normal",
@@ -586,9 +587,9 @@ func Test_CallV1GroupcallHangupGroupcall(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.call-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/groupcalls/02fdbce2-e338-11ed-92cd-7f5633b75bad/hangup_groupcall",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 		},
 	}

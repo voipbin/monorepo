@@ -6,8 +6,7 @@ import (
 	"fmt"
 
 	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // CallV1ChannelHealth sends the request to the call-manager for channel health-check
@@ -21,7 +20,7 @@ func (r *requestHandler) CallV1ChannelHealth(ctx context.Context, channelID stri
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/channels/health", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(ctx, uri, sock.RequestMethodPost, "call/channels/health", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

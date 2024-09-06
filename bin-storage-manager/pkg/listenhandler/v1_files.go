@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 
@@ -16,7 +17,7 @@ import (
 
 // v1FilesPost handles /v1/files POST request
 // creates a new file with given data and return the created file info.
-func (h *listenHandler) v1FilesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FilesPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FilesPost",
 		"request": m,
@@ -62,7 +63,7 @@ func (h *listenHandler) v1FilesPost(ctx context.Context, m *rabbitmqhandler.Requ
 }
 
 // v1FilesGet handles /v1/files GET request
-func (h *listenHandler) v1FilesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FilesGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FilesGet",
 		"request": m,
@@ -105,7 +106,7 @@ func (h *listenHandler) v1FilesGet(ctx context.Context, m *rabbitmqhandler.Reque
 
 // v1FilesIDGet handles /v1/files/<id> GET request
 // creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
-func (h *listenHandler) v1FilesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FilesIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FilesIDGet",
 		"request": m,
@@ -143,7 +144,7 @@ func (h *listenHandler) v1FilesIDGet(ctx context.Context, m *rabbitmqhandler.Req
 
 // v1FilesIDDelete handles
 // /v1/files/{id} DELETE
-func (h *listenHandler) v1FilesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1FilesIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "v1FilesIDDelete",
 		"request": m,

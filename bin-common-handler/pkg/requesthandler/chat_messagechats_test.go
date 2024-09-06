@@ -13,6 +13,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -32,7 +33,7 @@ func Test_ChatV1MessagechatCreate(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatmessagechat.Messagechat
 	}{
 		{
@@ -55,9 +56,9 @@ func Test_ChatV1MessagechatCreate(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechats",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"e0a01384-369e-11ed-94ec-3f100d0d2c9f","chat_id":"e0fbacbc-369e-11ed-9ba0-b3dcc584c182","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"message_type":"normal","text":"test message","medias":[]}`),
 			},
@@ -112,7 +113,7 @@ func Test_ChatV1MessagechatGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatmessagechat.Messagechat
 	}{
 		{
@@ -126,9 +127,9 @@ func Test_ChatV1MessagechatGet(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechats/9e6997aa-369f-11ed-9453-cb9c81406b8b",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&chatmessagechat.Messagechat{
@@ -177,7 +178,7 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []chatmessagechat.Messagechat
 	}{
 		{
@@ -197,9 +198,9 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 
 			"/v1/messagechats?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechats?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_chat_id=fdf8ca74-369f-11ed-b48b-b728ad308b30",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]chatmessagechat.Messagechat{
@@ -250,7 +251,7 @@ func Test_ChatV1MessagechatDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatmessagechat.Messagechat
 	}{
 		{
@@ -264,9 +265,9 @@ func Test_ChatV1MessagechatDelete(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechats/2a3b1862-36a0-11ed-8f05-57a3e81bdcc9",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&chatmessagechat.Messagechat{

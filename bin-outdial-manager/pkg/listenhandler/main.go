@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -136,7 +137,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
@@ -156,66 +157,66 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// v1
 	// outdials
-	case regV1Outdials.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Outdials.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/outdials"
 		response, err = h.v1OutdialsPost(ctx, m)
 
-	case regV1OutdialsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1OutdialsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/outdials"
 		response, err = h.v1OutdialsGet(ctx, m)
 
 	// outdials/<outdial-id>
-	case regV1OutdialsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1OutdialsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/outdials/<outdial-id>"
 		response, err = h.v1OutdialsIDGet(ctx, m)
 
-	case regV1OutdialsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1OutdialsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/outdials/<outdial-id>"
 		response, err = h.v1OutdialsIDPut(ctx, m)
 
-	case regV1OutdialsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1OutdialsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/outdials/<outdial-id>"
 		response, err = h.v1OutdialsIDDelete(ctx, m)
 
 	// outdials/<outdial-id>/available
-	case regV1OutdialsIDAvailable.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1OutdialsIDAvailable.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/outdials/<outdial-id>/available"
 		response, err = h.v1OutdialsIDAvailableGet(ctx, m)
 
 	// outdials/<outdial-id>/targets
-	case regV1OutdialsIDTargets.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1OutdialsIDTargets.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/outdials/<outdial-id>/targets"
 		response, err = h.v1OutdialsIDTargetsPost(ctx, m)
 
-	case regV1OutdialsIDTargetsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1OutdialsIDTargetsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/outdials/<outdial-id>/targets"
 		response, err = h.v1OutdialsIDTargetsGet(ctx, m)
 
-	case regV1OutdialsIDCampaignID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1OutdialsIDCampaignID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/outdials/<outdial-id>/campaign_id"
 		response, err = h.v1OutdialsIDCampaignIDPut(ctx, m)
 
-	case regV1OutdialsIDData.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1OutdialsIDData.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/outdials/<outdial-id>/data"
 		response, err = h.v1OutdialsIDDataPut(ctx, m)
 
 	// outdialtargets
 	// /v1/outdialtargets/<outdialtarget-id>
-	case regV1OutdialtargetsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1OutdialtargetsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/outdialtargets/<outdialtarget-id>"
 		response, err = h.v1OutdialtargetsIDGet(ctx, m)
 
-	case regV1OutdialtargetsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1OutdialtargetsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/outdialtargets/<outdialtarget-id>"
 		response, err = h.v1OutdialtargetsIDDelete(ctx, m)
 
 	// /v1/outdialtargets/<outdialtarget-id>/progressing
-	case regV1OutdialtargetsIDProgressing.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1OutdialtargetsIDProgressing.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/outdialtargets/<outdialtarget-id>/progressing"
 		response, err = h.v1OutdialtargetsIDProgressingPost(ctx, m)
 
 	// /v1/outdialtargets/<outdialtarget-id>/status
-	case regV1OutdialtargetsIDStatus.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1OutdialtargetsIDStatus.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/outdialtargets/<outdialtarget-id>/status"
 		response, err = h.v1OutdialtargetsIDStatusPut(ctx, m)
 

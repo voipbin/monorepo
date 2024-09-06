@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -31,7 +32,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 		allowedIPs []string
 
 		resTrunk  *trunk.Trunk
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		expectRes *rabbitmqhandler.Response
 	}
 
@@ -53,9 +54,9 @@ func Test_processV1TrunksPost(t *testing.T) {
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("1744ccb4-6e13-11eb-b08d-bb42431b2fb3"),
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c", "name": "test name", "detail": "test detail", "domain_name": "21b7ae32-5231-11ee-b7da-7f436158317b", "auth_types": ["basic"], "username": "testusername", "password": "testpassword", "allowed_ips": ["1.2.3.4"]}`),
 			},
@@ -102,7 +103,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
-		request    *rabbitmqhandler.Request
+		request    *sock.Request
 
 		responseFilters map[string]string
 		responseTrunks  []*trunk.Trunk
@@ -116,9 +117,9 @@ func Test_processV1TrunksGet(t *testing.T) {
 			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 			"2020-10-10T03:30:17.000000",
 			10,
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -145,9 +146,9 @@ func Test_processV1TrunksGet(t *testing.T) {
 			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
 			"2020-10-10T03:30:17.000000",
 			10,
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -208,7 +209,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 		password   string
 		allowedIPs []string
 
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		resTrunk  *trunk.Trunk
 		expectRes *rabbitmqhandler.Response
 	}
@@ -229,9 +230,9 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 				"1.2.3.4",
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/trunks/a3e97272-5232-11ee-acd9-bbb3933eed48",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name", "detail":"update detail", "auth_types": ["basic"], "username": "testusername", "password": "testpassword", "allowed_ips": ["1.2.3.4"]}`),
 			},
@@ -281,7 +282,7 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 
 		id uuid.UUID
 
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		resTrunk  *trunk.Trunk
 		expectRes *rabbitmqhandler.Response
 	}
@@ -292,9 +293,9 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 
 			uuid.FromStringOrNil("4e1f3c12-5234-11ee-ad7f-ef5be37113b2"),
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/trunks/4e1f3c12-5234-11ee-ad7f-ef5be37113b2",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("4e1f3c12-5234-11ee-ad7f-ef5be37113b2"),
@@ -340,7 +341,7 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 	type test struct {
 		name string
 
-		request       *rabbitmqhandler.Request
+		request       *sock.Request
 		responseTrunk *trunk.Trunk
 
 		expectDomainName string
@@ -350,9 +351,9 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/trunks/domain_name/testdomain",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("d5829769-dacf-420e-9260-c8931560331e"),
@@ -401,7 +402,7 @@ func Test_processV1TrunksDelete(t *testing.T) {
 		name    string
 		trunkID uuid.UUID
 
-		request       *rabbitmqhandler.Request
+		request       *sock.Request
 		responseTrunk *trunk.Trunk
 
 		expectRes *rabbitmqhandler.Response
@@ -411,9 +412,9 @@ func Test_processV1TrunksDelete(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/trunks/09e94cb4-6f32-11eb-af29-27dcd65a7064",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&trunk.Trunk{
 				ID: uuid.FromStringOrNil("09e94cb4-6f32-11eb-af29-27dcd65a7064"),

@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/sock"
 	hmhook "monorepo/bin-hook-manager/models/hook"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // MessageV1Hook sends a hook
@@ -20,7 +19,7 @@ func (r *requestHandler) MessageV1Hook(ctx context.Context, hm *hmhook.Hook) err
 		return err
 	}
 
-	tmp, err := r.sendRequestMessage(ctx, uri, rabbitmqhandler.RequestMethodPost, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodPost, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

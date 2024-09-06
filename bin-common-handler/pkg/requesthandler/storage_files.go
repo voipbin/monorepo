@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	smfile "monorepo/bin-storage-manager/models/file"
 	smrequest "monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // StorageV1FileCreate sends a request to storage-manager
@@ -49,7 +48,7 @@ func (r *requestHandler) StorageV1FileCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/files", requestTimeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/files", requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -104,7 +103,7 @@ func (r *requestHandler) StorageV1FileCreateWithDelay(
 		return err
 	}
 
-	_, err = r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/files", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	_, err = r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/files", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	return err
 }
 
@@ -117,7 +116,7 @@ func (r *requestHandler) StorageV1FileGets(ctx context.Context, pageToken string
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, "storage/files", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/files", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -142,7 +141,7 @@ func (r *requestHandler) StorageV1FileGets(ctx context.Context, pageToken string
 func (r *requestHandler) StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error) {
 	uri := fmt.Sprintf("/v1/files/%s", fileID)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, "storage/files/<file-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/files/<file-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -167,7 +166,7 @@ func (r *requestHandler) StorageV1FileGet(ctx context.Context, fileID uuid.UUID)
 func (r *requestHandler) StorageV1FileDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smfile.File, error) {
 	uri := fmt.Sprintf("/v1/files/%s", fileID)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodDelete, "storage/files/<file-id>", requestTimeout, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodDelete, "storage/files/<file-id>", requestTimeout, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

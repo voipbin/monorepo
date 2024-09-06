@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -24,7 +25,7 @@ func Test_TagV1TagCreate(t *testing.T) {
 		detail     string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *tmtag.Tag
@@ -37,9 +38,9 @@ func Test_TagV1TagCreate(t *testing.T) {
 			detail:     "test detail",
 
 			expectTarget: "bin-manager.tag-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/tags",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","name":"test name","detail":"test detail"}`),
 			},
@@ -89,7 +90,7 @@ func Test_TagV1TagUpdate(t *testing.T) {
 		detail  string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *tmtag.Tag
@@ -102,9 +103,9 @@ func Test_TagV1TagUpdate(t *testing.T) {
 			detail:  "test detail",
 
 			expectTarget: "bin-manager.tag-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/tags/8f8b1638-2c75-11ee-89e0-23baf30fef23",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
@@ -152,7 +153,7 @@ func Test_TagV1TagDelete(t *testing.T) {
 		id uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *tmtag.Tag
@@ -163,9 +164,9 @@ func Test_TagV1TagDelete(t *testing.T) {
 			id: uuid.FromStringOrNil("8fb8f1fc-2c75-11ee-aa2c-cb07baf2171a"),
 
 			expectTarget: "bin-manager.tag-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/tags/8fb8f1fc-2c75-11ee-aa2c-cb07baf2171a",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			response: &rabbitmqhandler.Response{
@@ -212,7 +213,7 @@ func Test_TagV1TagGet(t *testing.T) {
 		id uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *tmtag.Tag
@@ -223,9 +224,9 @@ func Test_TagV1TagGet(t *testing.T) {
 			id: uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
 
 			expectTarget: "bin-manager.tag-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/tags/8fe6c136-2c75-11ee-a3a4-37400837e12e",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			response: &rabbitmqhandler.Response{
@@ -274,7 +275,7 @@ func Test_TagV1TagGets(t *testing.T) {
 		pageSize   uint64
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []tmtag.Tag
@@ -287,9 +288,9 @@ func Test_TagV1TagGets(t *testing.T) {
 			pageSize:   10,
 
 			expectTarget: "bin-manager.tag-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/tags?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&customer_id=8fe6c136-2c75-11ee-a3a4-37400837e12e",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			response: &rabbitmqhandler.Response{

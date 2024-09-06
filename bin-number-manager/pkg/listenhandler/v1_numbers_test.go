@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -28,7 +29,7 @@ func Test_processV1NumbersPost(t *testing.T) {
 
 		createdNumber *number.Number
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}
 
@@ -56,9 +57,9 @@ func Test_processV1NumbersPost(t *testing.T) {
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "72f3b054-7ff4-11ec-9af9-0b8c5dbee258", "call_flow_id": "7051e796-8821-11ec-9b7d-d322b1036e7d", "message_flow_id": "c5f1dffc-a866-11ec-be0a-a3c412cba4dc", "number": "+821021656521", "name": "test name", "detail": "test detail"}`),
 			},
@@ -104,7 +105,7 @@ func Test_ProcessV1NumbersIDDelete(t *testing.T) {
 		id         uuid.UUID
 		resultData *number.Number
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}
 
@@ -124,9 +125,9 @@ func Test_ProcessV1NumbersIDDelete(t *testing.T) {
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/numbers/9a6020ea-79ed-11eb-a0e7-8bcfb82a6f3f",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -170,7 +171,7 @@ func Test_ProcessV1NumbersIDGet(t *testing.T) {
 		id         uuid.UUID
 		resultData *number.Number
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}
 
@@ -190,9 +191,9 @@ func Test_ProcessV1NumbersIDGet(t *testing.T) {
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/numbers/7b6f4caa-7a48-11eb-8b06-ff14cc60c8ad",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -240,7 +241,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 		responseFilters map[string]string
 		responseNumbers []*number.Number
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}
 
@@ -269,9 +270,9 @@ func Test_processV1NumbersGet(t *testing.T) {
 					EmergencyEnabled:    false,
 				},
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -315,9 +316,9 @@ func Test_processV1NumbersGet(t *testing.T) {
 					EmergencyEnabled:    false,
 				},
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=dcff90a8-eca8-11ee-8816-0fa58b162524&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -370,7 +371,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 
 		resultData *number.Number
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}
 
@@ -397,9 +398,9 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"call_flow_id":"848dd8e8-20a3-11ee-bfaa-73da44e5a15c", "message_flow_id":"84cbd580-20a3-11ee-81cd-b34190bda150","name": "update name", "detail": "update detail"}`),
 			},
@@ -448,7 +449,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 
 		resultData *number.Number
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}
 
@@ -473,9 +474,9 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f/flow_ids",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6"}`),
 			},
@@ -522,7 +523,7 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 		hours   int
 		tmRenew string
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 
 		responseNumbers []*number.Number
@@ -536,9 +537,9 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 			hours:   10,
 			tmRenew: "2023-06-26 18:26:49.000",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/numbers/renew",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"days":3,"hours":10,"tm_renew":"2023-06-26 18:26:49.000"}`),
 			},

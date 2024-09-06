@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -23,7 +24,7 @@ func Test_AgentV1Login(t *testing.T) {
 		password string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *amagent.Agent
@@ -35,9 +36,9 @@ func Test_AgentV1Login(t *testing.T) {
 			"testpassword",
 
 			"bin-manager.agent-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/login",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"username":"test@test.com","password":"testpassword"}`),
 			},

@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -23,7 +24,7 @@ func Test_FlowV1VariableGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *variable.Variable
 	}{
 		{
@@ -38,9 +39,9 @@ func Test_FlowV1VariableGet(t *testing.T) {
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/e25aeb10-cd06-11ec-baba-fb2f8b96ad65",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&variable.Variable{
@@ -88,7 +89,7 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			"normal",
@@ -105,9 +106,9 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/4d3c129c-cd07-11ec-bd2f-2fcee708f983/variables",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"variables":{"key 1":"value 1","key 2":"value 2"}}`),
 			},
@@ -146,7 +147,7 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 	}{
 		{
 			"normal",
@@ -160,9 +161,9 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/290c673e-db33-11ec-a4d9-bb00659a2a19/variables/key1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 		},
@@ -178,9 +179,9 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/variables/290c673e-db33-11ec-a4d9-bb00659a2a19/variables/key+1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 		},

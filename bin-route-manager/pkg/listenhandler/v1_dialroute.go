@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -12,7 +13,7 @@ import (
 )
 
 // v1DialroutesGet handles /v1/dialroutes GET request
-func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1DialroutesGet",

@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 	rmrequest "monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RegistrarV1TrunkCreate sends a request to registrar-manager
@@ -37,7 +36,7 @@ func (r *requestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPost, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPost, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -65,7 +64,7 @@ func (r *requestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken str
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/trunks", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -90,7 +89,7 @@ func (r *requestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken str
 func (r *requestHandler) RegistrarV1TrunkGet(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error) {
 	uri := fmt.Sprintf("/v1/trunks/%s", trunkID)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -115,7 +114,7 @@ func (r *requestHandler) RegistrarV1TrunkGet(ctx context.Context, trunkID uuid.U
 func (r *requestHandler) RegistrarV1TrunkGetByDomainName(ctx context.Context, domainName string) (*rmtrunk.Trunk, error) {
 	uri := fmt.Sprintf("/v1/trunks/domain_name/%s", domainName)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/trunks/domain_name", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/trunks/domain_name", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -140,7 +139,7 @@ func (r *requestHandler) RegistrarV1TrunkGetByDomainName(ctx context.Context, do
 func (r *requestHandler) RegistrarV1TrunkDelete(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error) {
 	uri := fmt.Sprintf("/v1/trunks/%s", trunkID)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodDelete, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodDelete, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -179,7 +178,7 @@ func (r *requestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, tr
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPut, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPut, "registrar/trunks/<trunk-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

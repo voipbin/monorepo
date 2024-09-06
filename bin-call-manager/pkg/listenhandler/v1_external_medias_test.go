@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -19,7 +20,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectReferenceType  externalmedia.ReferenceType
 		expectReferenceID    uuid.UUID
@@ -38,9 +39,9 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal type connect",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/external-medias",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_type":"call","reference_id":"45832182-97b2-11ed-8f17-33590535a404","no_insert_media":false,"external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
@@ -109,7 +110,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		pageSize  uint64
 		pageToken string
 
@@ -120,9 +121,9 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&reference_id=0971d7c4-e829-11ee-a17d-b320c527e478",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -144,9 +145,9 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 		{
 			"2 items",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_reference_id=98d20344-e829-11ee-992d-fbe3942f7a49",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -206,7 +207,7 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID uuid.UUID
 
@@ -217,9 +218,9 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal type connect",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias/86d29aa4-97b3-11ed-a086-eb62e01c6736",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("86d29aa4-97b3-11ed-a086-eb62e01c6736"),
@@ -266,7 +267,7 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID uuid.UUID
 
@@ -277,9 +278,9 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal type connect",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/external-medias/bbfd5cdc-97b3-11ed-8caa-e705f8c7d343",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			uuid.FromStringOrNil("bbfd5cdc-97b3-11ed-8caa-e705f8c7d343"),

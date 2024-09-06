@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -20,7 +21,7 @@ func Test_processV1ContactsGet(t *testing.T) {
 		name             string
 		customerID       uuid.UUID
 		expectExtension  string
-		request          *rabbitmqhandler.Request
+		request          *sock.Request
 		responseContacts []*astcontact.AstContact
 
 		expectRes *rabbitmqhandler.Response
@@ -31,9 +32,9 @@ func Test_processV1ContactsGet(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("2f905272-5653-11ee-b4df-f3faa1c18732"),
 			"test",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/contacts?customer_id=2f905272-5653-11ee-b4df-f3faa1c18732&extension=test",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			[]*astcontact.AstContact{
 				{
@@ -64,9 +65,9 @@ func Test_processV1ContactsGet(t *testing.T) {
 			"empty",
 			uuid.FromStringOrNil("4962c82e-5653-11ee-96e1-4fca4502226b"),
 			"test2",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/contacts?customer_id=4962c82e-5653-11ee-96e1-4fca4502226b&extension=test2",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 			[]*astcontact.AstContact{},
@@ -114,7 +115,7 @@ func Test_processV1ContactsPut(t *testing.T) {
 
 		customerID uuid.UUID
 		extension  string
-		request    *rabbitmqhandler.Request
+		request    *sock.Request
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -125,9 +126,9 @@ func Test_processV1ContactsPut(t *testing.T) {
 
 			uuid.FromStringOrNil("883ce9bc-5707-11ee-b053-1ba4c0db8a30"),
 			"test-extension",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/contacts?customer_id=883ce9bc-5707-11ee-b053-1ba4c0db8a30&extension=test-extension",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 			},
 			&rabbitmqhandler.Response{

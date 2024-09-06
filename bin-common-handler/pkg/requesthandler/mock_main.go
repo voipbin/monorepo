@@ -31,6 +31,7 @@ import (
 	service "monorepo/bin-chatbot-manager/models/service"
 	address "monorepo/bin-common-handler/models/address"
 	outline "monorepo/bin-common-handler/models/outline"
+	sock "monorepo/bin-common-handler/models/sock"
 	rabbitmqhandler "monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	conference "monorepo/bin-conference-manager/models/conference"
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
@@ -4518,7 +4519,7 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, name,
 }
 
 // SendRequest mocks base method.
-func (m *MockRequestHandler) SendRequest(ctx context.Context, queue outline.QueueName, uri string, method rabbitmqhandler.RequestMethod, timeout, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (m *MockRequestHandler) SendRequest(ctx context.Context, queue outline.QueueName, uri string, method sock.RequestMethod, timeout, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendRequest", ctx, queue, uri, method, timeout, delay, dataType, data)
 	ret0, _ := ret[0].(*rabbitmqhandler.Response)

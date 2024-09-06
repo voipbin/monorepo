@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -30,7 +31,7 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *fmflow.Flow
 	}{
 		{
@@ -49,9 +50,9 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true}`),
 			},
@@ -104,7 +105,7 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 		response    *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *fmflow.Flow
 	}{
 		{
@@ -121,9 +122,9 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail","actions":[]}`),
 			},
@@ -175,7 +176,7 @@ func Test_FlowV1FlowGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *fmflow.Flow
 	}{
 		{
@@ -189,9 +190,9 @@ func Test_FlowV1FlowGet(t *testing.T) {
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/be66d9a6-6ed6-11eb-8152-0bb66bad7293",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&fmflow.Flow{
@@ -242,7 +243,7 @@ func Test_FlowV1FlowDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *fmflow.Flow
 	}{
 		{
@@ -255,9 +256,9 @@ func Test_FlowV1FlowDelete(t *testing.T) {
 			},
 
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/4193c3a2-67ca-11eb-a892-0b6d18cda91a",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&fmflow.Flow{
@@ -304,7 +305,7 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []fmflow.Flow
 	}{
 		{
@@ -324,9 +325,9 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 			"/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=c971cc06-7f4d-11ec-b0dc-5ff21ea97f57",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]fmflow.Flow{
@@ -359,9 +360,9 @@ func Test_FlowV1FlowGets(t *testing.T) {
 
 			"/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_type=conference",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]fmflow.Flow{
@@ -417,7 +418,7 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *fmflow.Flow
 	}{
 		{
@@ -436,9 +437,9 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 				Data:       []byte(`{"id":"a645703d-4cd7-4c5d-af76-d2f9f2fafcd0","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/a645703d-4cd7-4c5d-af76-d2f9f2fafcd0/actions",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
 			},
@@ -465,9 +466,9 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 				Data:       []byte(`{"id":"0fb53139-3e5d-4ce7-8de6-d39420a18cf5","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
 			},
 			"bin-manager.flow-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/flows/0fb53139-3e5d-4ce7-8de6-d39420a18cf5/actions",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"actions":[]}`),
 			},

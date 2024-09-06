@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -28,7 +29,7 @@ func Test_RouteV1RouteCreate(t *testing.T) {
 		target     string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *rmroute.Route
@@ -44,9 +45,9 @@ func Test_RouteV1RouteCreate(t *testing.T) {
 			"+82",
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"24d9f42d-0eb5-4276-aaf8-8df5a8342a3c","name":"test name","detail":"test detail","provider_id":"3963772a-84ad-4a1b-a250-2b5d100f76ee","priority":1,"target":"+82"}`),
 			},
@@ -96,7 +97,7 @@ func Test_RouteV1RouteGet(t *testing.T) {
 		responseRoute *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmroute.Route
 	}{
 		{
@@ -111,9 +112,9 @@ func Test_RouteV1RouteGet(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes/20e596b2-c7ea-4e88-bb7f-92ac5003c388",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			&rmroute.Route{
@@ -157,7 +158,7 @@ func Test_RouteV1RouteDelete(t *testing.T) {
 		responseRoute *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmroute.Route
 	}{
 		{
@@ -172,9 +173,9 @@ func Test_RouteV1RouteDelete(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes/eeda13db-aeb1-448b-bd86-cf64df8b36be",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			&rmroute.Route{
@@ -223,7 +224,7 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 		responseRoute *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmroute.Route
 	}{
 		{
@@ -243,9 +244,9 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/routes/f417d043-981b-4b74-bb26-5e37771b3104",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail","provider_id":"1834094f-bebf-42b1-83d3-88b86f8d417c","priority":1,"target":"+82"}`),
 			},
@@ -292,7 +293,7 @@ func Test_RouteV1RouteGetsByCustomerID(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []rmroute.Route
 	}{
 		{
@@ -309,9 +310,9 @@ func Test_RouteV1RouteGetsByCustomerID(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10&customer_id=aee4503c-2657-41c9-8f20-5848173bcecf", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			[]rmroute.Route{
@@ -358,7 +359,7 @@ func Test_RouteV1RouteGets(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []rmroute.Route
 	}{
 		{
@@ -374,9 +375,9 @@ func Test_RouteV1RouteGets(t *testing.T) {
 			},
 
 			"bin-manager.route-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			[]rmroute.Route{

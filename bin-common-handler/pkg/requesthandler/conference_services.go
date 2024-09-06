@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"monorepo/bin-common-handler/models/sock"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	cfservice "monorepo/bin-conference-manager/models/service"
 	cfrequest "monorepo/bin-conference-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // ChatbotV1ServiceTypeChabotcallStart sends a request to chat-manager
@@ -31,7 +30,7 @@ func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, "conference/services/type/conferencecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodPost, "conference/services/type/conferencecall", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

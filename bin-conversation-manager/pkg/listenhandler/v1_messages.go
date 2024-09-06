@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +15,7 @@ import (
 
 // processV1MessagesGet handles
 // /v1/messages GET
-func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1MessagesGet",
 		"request": m,

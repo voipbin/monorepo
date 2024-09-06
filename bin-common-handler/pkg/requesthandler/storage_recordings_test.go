@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -22,7 +23,7 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 		requestTimeout int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *smbucketfile.BucketFile
@@ -34,9 +35,9 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 			30000,
 
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/recordings/c7878bdc-93bd-11eb-ab3a-a7388c5862f4",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -83,7 +84,7 @@ func Test_StorageV1RecordingDelete(t *testing.T) {
 		id uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 	}{
 		{
@@ -92,9 +93,9 @@ func Test_StorageV1RecordingDelete(t *testing.T) {
 			uuid.FromStringOrNil("c0574ef6-8eb1-11ed-9ba3-2f05d999d9b3"),
 
 			"bin-manager.storage-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/recordings/c0574ef6-8eb1-11ed-9ba3-2f05d999d9b3",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{

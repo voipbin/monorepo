@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/golang/mock/gomock"
@@ -19,7 +20,7 @@ func Test_CallV1ChannelHealth(t *testing.T) {
 		retryCount int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 	}{
 		{
@@ -30,9 +31,9 @@ func Test_CallV1ChannelHealth(t *testing.T) {
 			1,
 
 			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/channels/09574818-df60-11ee-a381-479b576528f0/health-check",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"retry_count":1}`),
 			},

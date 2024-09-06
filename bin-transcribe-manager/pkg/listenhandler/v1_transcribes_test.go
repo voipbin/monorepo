@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -20,7 +21,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseTranscribe *transcribe.Transcribe
 
@@ -36,9 +37,9 @@ func Test_processV1TranscribesPost(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US","direction":"both"}`),
 			},
@@ -93,7 +94,7 @@ func Test_processV1TranscribesGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageSize  uint64
 		pageToken string
@@ -104,9 +105,9 @@ func Test_processV1TranscribesGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=079ffd84-7f68-11ed-ae05-430c9b75ab3b",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -129,9 +130,9 @@ func Test_processV1TranscribesGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -191,16 +192,16 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseTranscribe *transcribe.Transcribe
 		expectRes          *rabbitmqhandler.Response
 	}{
 		{
 			"basic",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/transcribes/06db1ed2-7f69-11ed-a6fe-83fb6c80964d",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&transcribe.Transcribe{
 				ID:         uuid.FromStringOrNil("06db1ed2-7f69-11ed-a6fe-83fb6c80964d"),
@@ -249,7 +250,7 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 		id         uuid.UUID
 		customerID uuid.UUID
 
-		request            *rabbitmqhandler.Request
+		request            *sock.Request
 		responseTranscribe *transcribe.Transcribe
 
 		expectRes *rabbitmqhandler.Response
@@ -260,9 +261,9 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
 			uuid.FromStringOrNil("45afd578-7ffe-11ec-9430-3bdf65368563"),
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/transcribes/a4f388dc-86ab-11ec-8d14-9bd962288757",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&transcribe.Transcribe{
 				ID: uuid.FromStringOrNil("a4f388dc-86ab-11ec-8d14-9bd962288757"),
@@ -310,7 +311,7 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 		name string
 
 		transcribeID uuid.UUID
-		request      *rabbitmqhandler.Request
+		request      *sock.Request
 
 		responseTranscribe *transcribe.Transcribe
 		expectRes          *rabbitmqhandler.Response
@@ -321,9 +322,9 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("06b55408-821c-11ed-980a-cf31e1861a1f"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/transcribes/06b55408-821c-11ed-980a-cf31e1861a1f/stop",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(``),
 			},
@@ -375,7 +376,7 @@ func Test_processV1TranscribesIDHealthCheckPost(t *testing.T) {
 		id         uuid.UUID
 		retryCount int
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 	}
 
 	tests := []test{
@@ -385,9 +386,9 @@ func Test_processV1TranscribesIDHealthCheckPost(t *testing.T) {
 			uuid.FromStringOrNil("e04a0326-5c94-446e-bafb-1d53aa310420"),
 			0,
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/transcribes/e04a0326-5c94-446e-bafb-1d53aa310420/health-check",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0}`),
 			},
 		},

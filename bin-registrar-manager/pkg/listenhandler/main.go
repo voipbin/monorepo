@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -149,7 +150,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 
 	var requestType string
 	var err error
@@ -175,69 +176,69 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////
 	// contacts
 	////////////
-	case regV1ContactsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ContactsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ContactsGet(ctx, m)
 		requestType = "/v1/contacts"
 
-	case regV1ContactsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ContactsGet.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1ContactsPut(ctx, m)
 		requestType = "/v1/contacts"
 
 	/////////////
 	// extensions
 	/////////////
-	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ExtensionsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsIDGet(ctx, m)
 		requestType = "/v1/extensions/<extension-id>"
 
-	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ExtensionsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1ExtensionsIDPut(ctx, m)
 		requestType = "/v1/extensions/<extension-id>"
 
-	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ExtensionsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ExtensionsIDDelete(ctx, m)
 		requestType = "/v1/extensions/<extension-id>"
 
-	case regV1Extensions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Extensions.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ExtensionsPost(ctx, m)
 		requestType = "/v1/extensions"
 
-	case regV1ExtensionsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ExtensionsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsGet(ctx, m)
 		requestType = "/v1/extensions"
 
-	// case regV1ExtensionsExtensionEndpoint.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	// case regV1ExtensionsExtensionEndpoint.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 	// 	response, err = h.processV1ExtensionsExtensionEndpointGet(ctx, m)
 	// 	requestType = "/v1/extensions/endpoint/<endpoint>"
 
-	case regV1ExtensionsExtensionExtensionGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ExtensionsExtensionExtensionGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsExtensionExtensionGet(ctx, m)
 		requestType = "/v1/extensions/extension/<extension>"
 
 	/////////////
 	// trunks
 	/////////////
-	case regV1TrunksGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TrunksGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TrunksGet(ctx, m)
 		requestType = "/v1/trunks"
 
-	case regV1Trunks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Trunks.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1TrunksPost(ctx, m)
 		requestType = "/v1/trunks"
 
-	case regV1TrunksID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TrunksID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TrunksIDGet(ctx, m)
 		requestType = "/v1/trunks/<trunk-id>"
 
-	case regV1TrunksID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1TrunksID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1TrunksIDPut(ctx, m)
 		requestType = "/v1/trunks/<trunk-id>"
 
-	case regV1TrunksID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1TrunksID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1TrunksIDDelete(ctx, m)
 		requestType = "/v1/trunks/<trunk-id>"
 
-	case regV1TrunksDomainName.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1TrunksDomainName.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TrunksDomainNameDomainNameGet(ctx, m)
 		requestType = "/v1/trunks/domain_name/<domain-name>"
 

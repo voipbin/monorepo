@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -137,7 +138,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 
 	var requestType string
 	var err error
@@ -158,51 +159,51 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// v1
 	// routes
-	case regV1RoutesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1RoutesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/routes"
 		response, err = h.v1RoutesGet(ctx, m)
 
-	case regV1Routes.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Routes.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/routes"
 		response, err = h.v1RoutesPost(ctx, m)
 
 	// routes/<route-id>
-	case regV1RoutesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1RoutesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/routes/<route-id>"
 		response, err = h.v1RoutesIDGet(ctx, m)
 
-	case regV1RoutesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1RoutesID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/routes/<route-id>"
 		response, err = h.v1RoutesIDPut(ctx, m)
 
-	case regV1RoutesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1RoutesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/routes/<route-id>"
 		response, err = h.v1RoutesIDDelete(ctx, m)
 
 	// providers
-	case regV1ProvidersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ProvidersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/providers"
 		response, err = h.v1ProvidersGet(ctx, m)
 
-	case regV1Providers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Providers.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/providers"
 		response, err = h.v1ProvidersPost(ctx, m)
 
 	// providers/<provider-id>
-	case regV1ProvidersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ProvidersID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/providers/<provider-id>"
 		response, err = h.v1ProvidersIDGet(ctx, m)
 
-	case regV1ProvidersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ProvidersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/providers/<provider-id>"
 		response, err = h.v1ProvidersIDPut(ctx, m)
 
-	case regV1ProvidersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ProvidersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/providers/<provider-id>"
 		response, err = h.v1ProvidersIDDelete(ctx, m)
 
 	// dialroute
-	case regV1DialroutesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1DialroutesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/dialroutes"
 		response, err = h.v1DialroutesGet(ctx, m)
 

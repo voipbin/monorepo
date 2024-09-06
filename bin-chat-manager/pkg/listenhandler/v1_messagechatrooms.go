@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +15,7 @@ import (
 )
 
 // v1MessagechatroomsGet handles /v1/messagechatrooms GET request
-func (h *listenHandler) v1MessagechatroomsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1MessagechatroomsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1MessagechatroomsGet",
 	})
@@ -61,7 +62,7 @@ func (h *listenHandler) v1MessagechatroomsGet(ctx context.Context, m *rabbitmqha
 }
 
 // v1MessagechatroomsIDGet handles /v1/messagechatrooms/{id} GET request
-func (h *listenHandler) v1MessagechatroomsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1MessagechatroomsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1MessagechatroomsIDGet",
@@ -99,7 +100,7 @@ func (h *listenHandler) v1MessagechatroomsIDGet(ctx context.Context, m *rabbitmq
 }
 
 // v1MessagechatroomsIDDelete handles /v1/messagechatrooms/{id} Delete request
-func (h *listenHandler) v1MessagechatroomsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1MessagechatroomsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "v1MessagechatroomsIDDelete",

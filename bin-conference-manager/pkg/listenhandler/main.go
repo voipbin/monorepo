@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -157,7 +158,7 @@ func (h *listenHandler) Run() error {
 }
 
 // processRequest handles all of requests of the listen queue.
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":    "processRequest",
@@ -182,57 +183,57 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 
 	// POST /conferences
-	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Conferences.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConferencesPost(ctx, m)
 		requestType = "/v1/conferences"
 
 	// GET /conferences
-	case regV1ConferencesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConferencesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConferencesGet(ctx, m)
 		requestType = "/v1/conferences"
 
 	// GET /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConferencesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConferencesIDGet(ctx, m)
 		requestType = "/v1/conferences/<conference-id>"
 
 	// PUT /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ConferencesID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1ConferencesIDPut(ctx, m)
 		requestType = "/v1/conferences/<conference-id>"
 
 	// DELETE /conferences/<conference-id>
-	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ConferencesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDDelete(ctx, m)
 		requestType = "/v1/conferences/<conference-id>"
 
 	// PUT /conferences/<conference-id>/recording_id
-	case regV1ConferencesIDRecordingID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ConferencesIDRecordingID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1ConferencesIDRecordingIDPut(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/recording_id"
 
 	// POST /conferences/<conference-id>/recording_start
-	case regV1ConferencesIDRecordingStart.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ConferencesIDRecordingStart.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConferencesIDRecordingStartPost(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/recording_start"
 
 	// POST /conferences/<conference-id>/recording_stop
-	case regV1ConferencesIDRecordingStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ConferencesIDRecordingStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConferencesIDRecordingStopPost(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/recording_stop"
 
 	// POST /conferences/<conference-id>/stop
-	case regV1ConferencesIDStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ConferencesIDStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConferencesIDStopPost(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/stop"
 
 	// POST /conferences/<conference-id>/transcribe_start
-	case regV1ConferencesIDTranscribeStart.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ConferencesIDTranscribeStart.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConferencesIDTranscribeStartPost(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/transcribe_start"
 
 	// POST /conferences/<conference-id>/transcribe_stop
-	case regV1ConferencesIDTranscribeStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ConferencesIDTranscribeStop.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConferencesIDTranscribeStopPost(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/transcirbe_stop"
 
@@ -241,22 +242,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 
 	// GET /conferencecalls
-	case regV1ConferencecallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConferencecallsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConferencecallsGet(ctx, m)
 		requestType = "/v1/conferencecalls"
 
 	// GET /conferencecalls/<conferencecall-id>
-	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConferencecallsIDGet(ctx, m)
 		requestType = "/v1/conferencescalls/<conferencecall-id>"
 
 	// DELETE /conferencecalls/<conferencecall-id>
-	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ConferencecallsIDDelete(ctx, m)
 		requestType = "/v1/conferencescalls/<conferencecall-id>"
 
 	// POST /conferencecalls/<conferencecall-id>/health-check
-	case regV1ConferencecallsIDHealthCheck.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ConferencecallsIDHealthCheck.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConferencecallsIDHealthCheckPost(ctx, m)
 		requestType = "/v1/conferencescalls/<conferencecall-id>/health-check"
 
@@ -264,7 +265,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// services
 	////////////////
 	// POST /services/type/conferencecall
-	case regV1ServicesTypeConferencecall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ServicesTypeConferencecall.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ServicesTypeConferencecallPost(ctx, m)
 		requestType = "/v1/services/type/conferencecall"
 

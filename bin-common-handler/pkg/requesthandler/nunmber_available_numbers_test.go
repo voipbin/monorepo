@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -23,7 +24,7 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 		countryCode string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult []nmavailablenumber.AvailableNumber
@@ -36,9 +37,9 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 			"US",
 
 			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/available_numbers?page_size=10&customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096&country_code=US",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{

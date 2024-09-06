@@ -12,7 +12,7 @@ package requesthandler
 // 		language string
 
 // 		expectTarget  string
-// 		expectRequest *rabbitmqhandler.Request
+// 		expectRequest *sock.Request
 // 		response      *rabbitmqhandler.Response
 
 // 		expectResult *tstranscribe.Transcribe
@@ -28,9 +28,9 @@ package requesthandler
 // 			"en-US",
 
 // 			"bin-manager.transcribe-manager.request",
-// 			&rabbitmqhandler.Request{
+// 			&sock.Request{
 // 				URI:      "/v1/streamings",
-// 				Method:   rabbitmqhandler.RequestMethodPost,
+// 				Method:   sock.RequestMethodPost,
 // 				DataType: ContentTypeJSON,
 // 				Data:     []byte(`{"customer_id":"7ce083de-8734-11ec-82e8-df2232923291","reference_id":"c52a575e-8735-11ec-87b6-d3b5433e0e30","reference_type":"call","language":"en-US"}`),
 // 			},

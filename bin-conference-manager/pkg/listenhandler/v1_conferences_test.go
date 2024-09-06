@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -20,7 +21,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		pageSize  uint64
 		pageToken string
 
@@ -30,9 +31,9 @@ func Test_processV1ConferencesGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -54,9 +55,9 @@ func Test_processV1ConferencesGet(t *testing.T) {
 		},
 		{
 			"have confbridge and flow id",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=3be94c82-7f49-11ec-814e-ff2a9d84a806",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -87,9 +88,9 @@ func Test_processV1ConferencesGet(t *testing.T) {
 		},
 		{
 			"have confbridge and with conference type",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=4d4d8ce0-7f49-11ec-a61f-1358990ed631&filter_type=conference",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -155,15 +156,15 @@ func Test_processV1ConferencesPost(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		request          *rabbitmqhandler.Request
+		request          *sock.Request
 		expectConference *conference.Conference
 		expectRes        *rabbitmqhandler.Response
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type": "conference", "customer_id": "2375a978-7f4b-11ec-81ed-73f63efd9dd8", "name": "test", "detail": "test detail", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"answer"}], "timeout": 86400}`),
 			},
@@ -224,7 +225,7 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 		id      uuid.UUID
 
 		responseConference *conference.Conference
@@ -232,9 +233,9 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/8d920096-3bf2-11ec-9ff1-87ad93d2f885",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			uuid.FromStringOrNil("8d920096-3bf2-11ec-9ff1-87ad93d2f885"),
@@ -281,15 +282,15 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		request    *rabbitmqhandler.Request
+		request    *sock.Request
 		conference *conference.Conference
 		expectRes  *rabbitmqhandler.Response
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/a07e574a-4002-11ec-9c73-a31093777cf0",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name": "test update", "detail": "test detail update", "pre_actions": [{"type":"answer"}], "post_actions": [{"type":"hangup"}], "timeout": 86400}`),
 			},
@@ -356,15 +357,15 @@ func Test_processV1ConferencesIDGet(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		request          *rabbitmqhandler.Request
+		request          *sock.Request
 		expectConference *conference.Conference
 		expectRes        *rabbitmqhandler.Response
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/11f067f6-3bf3-11ec-9bca-877deb76639d",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&conference.Conference{
 				ID:         uuid.FromStringOrNil("11f067f6-3bf3-11ec-9bca-877deb76639d"),
@@ -423,7 +424,7 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseConference *conference.Conference
 
@@ -433,9 +434,9 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/81d69286-9091-11ed-8036-5f6887716de3/recording_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"recording_id":"822a2c52-9091-11ed-99a1-5f802877affb"}`),
 			},
@@ -483,7 +484,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseConference *conference.Conference
 
@@ -492,9 +493,9 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/17ca9f6a-9102-11ed-9c97-1b1670cb9db9/recording_start",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
 			&conference.Conference{
@@ -540,7 +541,7 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseConference *conference.Conference
 
@@ -549,9 +550,9 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/18033654-9102-11ed-994e-4b9c733834a5/recording_stop",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
 			&conference.Conference{
@@ -597,7 +598,7 @@ func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseConference *conference.Conference
 
@@ -607,9 +608,9 @@ func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/95cf180c-98c6-11ed-8330-bb119cab4678/transcribe_start",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"language":"en-US"}`),
 			},
@@ -657,7 +658,7 @@ func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseConference *conference.Conference
 
@@ -666,9 +667,9 @@ func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/95fdc09e-98c6-11ed-a6a1-ff3648dce452/transcribe_stop",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
 			&conference.Conference{
@@ -714,7 +715,7 @@ func Test_processV1ConferencesIDStopPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseConference *conference.Conference
 
@@ -723,9 +724,9 @@ func Test_processV1ConferencesIDStopPost(t *testing.T) {
 	}{
 		{
 			"type conference",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/24883eab-931d-4743-bf26-bd867b52127e/stop",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
 			&conference.Conference{

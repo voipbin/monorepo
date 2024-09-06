@@ -6,6 +6,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -22,7 +23,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseGroupcall *groupcall.Groupcall
 
@@ -42,9 +43,9 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal type connect",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/groupcalls",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"id":"114c466e-e46a-11ed-9034-5fd743781da6","customer_id":"dabd81b0-bb3f-11ed-8542-3bb36342932e","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"flow_id":"db049be0-bb3f-11ed-901a-eff2e3b25b21","master_call_id":"db3ccfc4-bb3f-11ed-bb95-238737bb066d","master_groupcall_id":"1184419a-e46a-11ed-971d-5b09d31146cf","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
@@ -130,7 +131,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseFilters    map[string]string
 		responseGroupcalls []*groupcall.Groupcall
@@ -141,9 +142,9 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:    "/v1/groupcalls?page_size=10&page_token=2023-05-03%2021:35:02.809&filter_customer_id=256d8080-bd7e-11ed-b083-93a9d3f167e7&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
@@ -208,7 +209,7 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		request           *rabbitmqhandler.Request
+		request           *sock.Request
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
@@ -216,9 +217,9 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 	}{
 		{
 			"basic",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/6b59c9a6-bd7d-11ed-98cc-536b0b571118",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&groupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -269,7 +270,7 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		request           *rabbitmqhandler.Request
+		request           *sock.Request
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
@@ -277,9 +278,9 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/922b2b46-bd7e-11ed-8754-3772984da05b",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&groupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -330,7 +331,7 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		request           *rabbitmqhandler.Request
+		request           *sock.Request
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
@@ -338,9 +339,9 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/b055775c-bd7e-11ed-a2b8-1f2c8369029a/hangup",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&groupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -391,7 +392,7 @@ func Test_processV1GroupcallsIDAnswerGroupcallIDPost(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		request           *rabbitmqhandler.Request
+		request           *sock.Request
 		responseGroupcall *groupcall.Groupcall
 
 		expectID               uuid.UUID
@@ -400,9 +401,9 @@ func Test_processV1GroupcallsIDAnswerGroupcallIDPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/groupcalls/c5292994-e443-11ed-9d25-f79431094c08/answer_groupcall_id",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"answer_groupcall_id":"c5a12f84-e443-11ed-82ef-47e49bddaa68"}`),
 			},
@@ -455,7 +456,7 @@ func Test_processV1GroupcallsIDHangupGroupcallPost(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		request           *rabbitmqhandler.Request
+		request           *sock.Request
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
@@ -463,9 +464,9 @@ func Test_processV1GroupcallsIDHangupGroupcallPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/dd850fba-e445-11ed-a841-9bf7ed18abe2/hangup_groupcall",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&groupcall.Groupcall{
 				Identity: commonidentity.Identity{
@@ -515,7 +516,7 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		request           *rabbitmqhandler.Request
+		request           *sock.Request
 		responseGroupcall *groupcall.Groupcall
 
 		expectID  uuid.UUID
@@ -523,9 +524,9 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/groupcalls/0b4d5a38-e446-11ed-9b91-bb8a66b3fb46/hangup_call",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&groupcall.Groupcall{
 				Identity: commonidentity.Identity{

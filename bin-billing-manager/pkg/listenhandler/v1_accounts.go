@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ import (
 )
 
 // processV1AccountsGet handles GET /v1/accounts request
-func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsGet",
 		"request": m,
@@ -58,7 +59,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhan
 }
 
 // processV1AccountsPost handles POST /v1/accounts request
-func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsPost",
 		"request": m,
@@ -90,7 +91,7 @@ func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *rabbitmqha
 }
 
 // processV1AccountsIDGet handles GET /v1/accounts/<account-id> request
-func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDGet",
 		"request": m,
@@ -124,7 +125,7 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1AccountsIDPut handles PUT /v1/accounts/<account-id> request
-func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDPut",
 		"request": m,
@@ -163,7 +164,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *rabbitmqh
 }
 
 // processV1AccountsIDDelete handles DELETE /v1/accounts/<account-id> request
-func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDDelete",
 		"request": m,
@@ -197,7 +198,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbit
 }
 
 // // processV1AccountsCustomerIDIDGet handles GET /v1/accounts/customer_id/<cusotmer-id> request
-// func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 // 	log := logrus.WithFields(logrus.Fields{
 // 		"func":    "processV1AccountsCustomerIDIDGet",
 // 		"request": m,
@@ -231,7 +232,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbit
 // }
 
 // processV1AccountsIDBalanceAddForcePost handles POST /v1/accounts/<account-id>/balance_add_force request
-func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDBalanceAddForcePost",
 		"request": m,
@@ -270,7 +271,7 @@ func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Conte
 }
 
 // processV1AccountsIDBalanceSubtractForcePost handles POST /v1/accounts/<account-id>/balance_subtract_force request
-func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDBalanceSubtractForcePost",
 		"request": m,
@@ -309,7 +310,7 @@ func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.
 }
 
 // processV1AccountsIDIsValidBalancePost handles POST /v1/accounts/<account-id>/is_valid_balance request
-func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDIsValidBalancePost",
 		"request": m,
@@ -352,7 +353,7 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 }
 
 // processV1AccountsIDPaymentInfoPut handles PUT /v1/accounts/<account-id>/payment_info request
-func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsIDPaymentInfoPut",
 		"request": m,

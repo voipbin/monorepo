@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -23,7 +24,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectPageSize  uint64
 		expectPageToken string
@@ -36,9 +37,9 @@ func Test_processV1ConversationsGet(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=64a3cbd8-e863-11ec-85de-1bcd09d3872e&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -66,9 +67,9 @@ func Test_processV1ConversationsGet(t *testing.T) {
 		{
 			"2 results",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=b77be746-e863-11ec-97b0-bb06bbb7db0e&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			10,
@@ -138,7 +139,7 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 
 		resultData *conversation.Conversation
 
-		responseConversation *rabbitmqhandler.Request
+		responseConversation *sock.Request
 		response             *rabbitmqhandler.Response
 	}{
 		{
@@ -152,9 +153,9 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conversations/73071e00-a29a-11ec-a43a-079fe08ce740",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -202,7 +203,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 
 		responseMessages []*message.Message
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
@@ -219,9 +220,9 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 				},
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conversations/7d83fee0-e866-11ec-bbc3-4b1ea17cf502/messages?customer_id=64a3cbd8-e863-11ec-85de-1bcd09d3872e&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -246,9 +247,9 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
 				},
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conversations/d341b73c-e866-11ec-8b7d-d34da2bad8d5/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -297,7 +298,7 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 
 		responseMessage *message.Message
 
-		request  *rabbitmqhandler.Request
+		request  *sock.Request
 		response *rabbitmqhandler.Response
 	}{
 		{
@@ -311,9 +312,9 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("bb509f64-ec56-11ec-aa8b-374ae78e9b98"),
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conversations/00933876-ec56-11ec-a551-1f012848b901/messages",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"text":"hello world", "medias":[]}`),
 			},
@@ -355,7 +356,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseConversation *conversation.Conversation
 
@@ -367,9 +368,9 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 		{
 			name: "normal",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/conversations/8d8ab6ae-0074-11ee-80d0-df60c15605d7",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test name", "detail":"test detail"}`),
 			},

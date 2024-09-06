@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -24,7 +25,7 @@ func Test_ConversationV1AccountGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cvaccount.Account
 	}{
 		{
@@ -39,9 +40,9 @@ func Test_ConversationV1AccountGet(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.conversation-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:    "/v1/accounts/a6512c7e-003b-11ee-90ce-77b8ed60c6b0",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			expectRes: &cvaccount.Account{
 				ID: uuid.FromStringOrNil("a6512c7e-003b-11ee-90ce-77b8ed60c6b0"),
@@ -85,7 +86,7 @@ func Test_ConversationV1AccountGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []cvaccount.Account
@@ -101,9 +102,9 @@ func Test_ConversationV1AccountGets(t *testing.T) {
 
 			expectURL:    "/v1/accounts?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.conversation-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			response: &rabbitmqhandler.Response{
@@ -164,7 +165,7 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 		token       string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *cvaccount.Account
@@ -180,9 +181,9 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 			token:       "test token",
 
 			expectTarget: "bin-manager.conversation-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"2292b6c0-003e-11ee-9fb5-fff568769b60","type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
@@ -236,7 +237,7 @@ func Test_ConversationV1AccountUpdate(t *testing.T) {
 		token       string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *cvaccount.Account
@@ -251,9 +252,9 @@ func Test_ConversationV1AccountUpdate(t *testing.T) {
 			token:       "test token",
 
 			expectTarget: "bin-manager.conversation-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/a3c2b754-003e-11ee-aa7e-e760c874d75f",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail","secret":"test secret","token":"test token"}`),
 			},
@@ -303,7 +304,7 @@ func Test_ConversationV1AccountDelete(t *testing.T) {
 		id uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *cvaccount.Account
@@ -314,9 +315,9 @@ func Test_ConversationV1AccountDelete(t *testing.T) {
 			id: uuid.FromStringOrNil("cb700d10-003e-11ee-be73-4b361dcf2748"),
 
 			expectTarget: "bin-manager.conversation-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/accounts/cb700d10-003e-11ee-be73-4b361dcf2748",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			response: &rabbitmqhandler.Response{

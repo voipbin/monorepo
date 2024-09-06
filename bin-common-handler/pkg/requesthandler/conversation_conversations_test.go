@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -25,7 +26,7 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 		conversationID uuid.UUID
 
 		expectQueue   string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response  *rabbitmqhandler.Response
 		expectRes *cvconversation.Conversation
@@ -38,9 +39,9 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 			uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 
 			"bin-manager.conversation-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conversations/72179880-ec5f-11ec-920e-c77279756b6d",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 
@@ -95,7 +96,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []cvconversation.Conversation
@@ -111,9 +112,9 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 			"/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conversation-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			&rabbitmqhandler.Response{
@@ -175,7 +176,7 @@ func Test_ConversationV1MessageSend(t *testing.T) {
 		medias         []cvmedia.Media
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *cvmessage.Message
@@ -188,9 +189,9 @@ func Test_ConversationV1MessageSend(t *testing.T) {
 			[]cvmedia.Media{},
 
 			"bin-manager.conversation-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conversations/e8b821ba-ec61-11ec-a892-ffa25490c095/messages",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"text":"hello world.","medias":[]}`),
 			},
@@ -241,7 +242,7 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 		pageSize       uint64
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []cvmessage.Message
@@ -254,9 +255,9 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 			10,
 
 			"bin-manager.conversation-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conversations/a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd/messages?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			&rabbitmqhandler.Response{
@@ -312,7 +313,7 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 		detail           string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *cvconversation.Conversation
@@ -325,9 +326,9 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 			detail:           "test detail",
 
 			expectTarget: "bin-manager.conversation-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/conversations/1397bde6-007a-11ee-903f-4b1fc025c9a9",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},

@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 	qmrequest "monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // QueueV1QueuecallGets sends a request to queue-manager
@@ -23,7 +22,7 @@ func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken str
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -47,7 +46,7 @@ func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken str
 func (r *requestHandler) QueueV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s", queuecallID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -72,7 +71,7 @@ func (r *requestHandler) QueueV1QueuecallGet(ctx context.Context, queuecallID uu
 func (r *requestHandler) QueueV1QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/reference_id/%s", referenceID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -96,7 +95,7 @@ func (r *requestHandler) QueueV1QueuecallGetByReferenceID(ctx context.Context, r
 func (r *requestHandler) QueueV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s", queuecallID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodDelete, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodDelete, "queue/queuecalls/<queuecall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -120,7 +119,7 @@ func (r *requestHandler) QueueV1QueuecallDelete(ctx context.Context, queuecallID
 func (r *requestHandler) QueueV1QueuecallKick(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/kick", queuecallID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls/<queuecall-id>/kick", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/kick", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -144,7 +143,7 @@ func (r *requestHandler) QueueV1QueuecallKick(ctx context.Context, queuecallID u
 func (r *requestHandler) QueueV1QueuecallKickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/reference_id/%s/kick", referenceID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls/reference_id/<reference-id>/kick", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/reference_id/<reference-id>/kick", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -169,7 +168,7 @@ func (r *requestHandler) QueueV1QueuecallKickByReferenceID(ctx context.Context, 
 func (r *requestHandler) QueueV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/timeout_wait", queuecallID)
 
-	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_wait", requestTimeoutDefault, delay, ContentTypeNone, nil)
+	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_wait", requestTimeoutDefault, delay, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -187,7 +186,7 @@ func (r *requestHandler) QueueV1QueuecallTimeoutWait(ctx context.Context, queuec
 func (r *requestHandler) QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/timeout_service", queuecallID)
 
-	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_service", requestTimeoutDefault, delay, ContentTypeNone, nil)
+	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/timeout_service", requestTimeoutDefault, delay, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -203,7 +202,7 @@ func (r *requestHandler) QueueV1QueuecallTimeoutService(ctx context.Context, que
 func (r *requestHandler) QueueV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/status_waiting", queuecallID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -235,7 +234,7 @@ func (r *requestHandler) QueueV1QueuecallExecute(ctx context.Context, queuecallI
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -267,7 +266,7 @@ func (r *requestHandler) QueueV1QueuecallHealthCheck(ctx context.Context, id uui
 		return err
 	}
 
-	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, "queue/queuecalls/<queuecall-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queuecalls/<queuecall-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

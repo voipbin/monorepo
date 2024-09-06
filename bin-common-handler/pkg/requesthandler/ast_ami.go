@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // parseAMIResponseData parses response data.
@@ -51,7 +50,7 @@ func (r *requestHandler) AstAMIRedirect(ctx context.Context, asteriskID, channel
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, "ast/ami", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, sock.RequestMethodPost, "ast/ami", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

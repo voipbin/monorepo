@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
 	smrequest "monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 
@@ -28,7 +28,7 @@ func (r *requestHandler) StorageV1CompressfileCreate(ctx context.Context, refere
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodPost, "storage/compressfiles", requestTimeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodPost, "storage/compressfiles", requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

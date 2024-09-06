@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -30,7 +31,7 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 		allowedIPs []string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *rmtrunk.Trunk
@@ -48,9 +49,9 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 			allowedIPs: []string{"1.2.3.4"},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"dbb730a8-549a-11ee-a7f3-4f1384f81f27","name":"test name","detail":"test detail","domain_name":"test-domain","auth_types":["basic","ip"],"username":"testusername","password":"testpassword","allowed_ips":["1.2.3.4"]}`),
 			},
@@ -103,7 +104,7 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []rmtrunk.Trunk
 	}{
 		{
@@ -122,9 +123,9 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 			expectURL:    "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			expectRes: []rmtrunk.Trunk{
@@ -173,7 +174,7 @@ func Test_RegistrarV1TrunkGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
@@ -187,9 +188,9 @@ func Test_RegistrarV1TrunkGet(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/f5547ab0-549b-11ee-a653-93228d9f8207",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
@@ -233,7 +234,7 @@ func Test_RegistrarV1TrunkGetByDomainName(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
@@ -247,9 +248,9 @@ func Test_RegistrarV1TrunkGetByDomainName(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/domain_name/test-domain",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
@@ -293,7 +294,7 @@ func Test_RegistrarV1TrunkDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
@@ -307,9 +308,9 @@ func Test_RegistrarV1TrunkDelete(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/98fbcfba-549c-11ee-8a74-73230f51555d",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
 			expectRes: &rmtrunk.Trunk{
@@ -359,7 +360,7 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmtrunk.Trunk
 	}{
 		{
@@ -380,9 +381,9 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 			},
 
 			expectTarget: "bin-manager.registrar-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
+			expectRequest: &sock.Request{
 				URI:      "/v1/trunks/f27448ce-549c-11ee-b466-57162d71a670",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail","auth_types":["basic","ip"],"username":"updateusername","password":"updatepassword","allowed_ips":["1.2.3.4"]}`),
 			},

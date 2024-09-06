@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -33,7 +34,7 @@ func Test_OutdialV1OutdialtargetCreate(t *testing.T) {
 		destination4 *address.Address
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response *rabbitmqhandler.Response
 	}{
@@ -67,9 +68,9 @@ func Test_OutdialV1OutdialtargetCreate(t *testing.T) {
 			},
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/05378520-b656-11ec-b5e4-bb71e495d2b6/targets",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail","data":"test data","destination_0":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destination_1":{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},"destination_2":{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""},"destination_3":{"type":"tel","target":"+821100000004","target_name":"","name":"","detail":""},"destination_4":{"type":"tel","target":"+821100000005","target_name":"","name":"","detail":""}}`),
 			},
@@ -103,9 +104,9 @@ func Test_OutdialV1OutdialtargetCreate(t *testing.T) {
 			},
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/05378520-b656-11ec-b5e4-bb71e495d2b6/targets",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail","data":"test data","destination_0":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destination_1":{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},"destination_4":{"type":"tel","target":"+821100000005","target_name":"","name":"","detail":""}}`),
 			},
@@ -153,7 +154,7 @@ func Test_OutdialV1OutdialtargetGetsAvailable(t *testing.T) {
 		limit     int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response *rabbitmqhandler.Response
 	}{
@@ -169,9 +170,9 @@ func Test_OutdialV1OutdialtargetGetsAvailable(t *testing.T) {
 			1,
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/730b3636-b657-11ec-ae8e-3fc6ae86d1ec/available?try_count_0=2&try_count_1=2&try_count_2=2&try_count_3=2&try_count_4=2&limit=1",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -212,7 +213,7 @@ func Test_OutdialV1OutdialtargetDelete(t *testing.T) {
 		outdialtargetID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *omoutdialtarget.OutdialTarget
@@ -223,9 +224,9 @@ func Test_OutdialV1OutdialtargetDelete(t *testing.T) {
 			uuid.FromStringOrNil("53ca0620-b658-11ec-99ca-7fe26b40d142"),
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/53ca0620-b658-11ec-99ca-7fe26b40d142",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -274,7 +275,7 @@ func Test_OutdialV1OutdialtargetGetsByOutdialID(t *testing.T) {
 		pageSize  uint64
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult []omoutdialtarget.OutdialTarget
@@ -287,9 +288,9 @@ func Test_OutdialV1OutdialtargetGetsByOutdialID(t *testing.T) {
 			10,
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/outdials/835e7280-c78e-11ec-9d4c-871c179d2bd9/targets?page_token=%s&page_size=10", url.QueryEscape("2021-03-02 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -339,7 +340,7 @@ func Test_OutdialV1OutdialtargetGet(t *testing.T) {
 		outdialtargetID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *omoutdialtarget.OutdialTarget
@@ -350,9 +351,9 @@ func Test_OutdialV1OutdialtargetGet(t *testing.T) {
 			uuid.FromStringOrNil("7ca49c9a-b658-11ec-839e-4732258c6c84"),
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/7ca49c9a-b658-11ec-839e-4732258c6c84",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -400,7 +401,7 @@ func Test_OutdialV1OutdialtargetUpdateStatusProgressing(t *testing.T) {
 		destinationIndex int
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response *rabbitmqhandler.Response
 	}{
@@ -411,9 +412,9 @@ func Test_OutdialV1OutdialtargetUpdateStatusProgressing(t *testing.T) {
 			1,
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/a843a03a-b658-11ec-b4a2-6f6326f02f30/progressing",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"destination_index":1}`),
 			},
@@ -456,7 +457,7 @@ func Test_OutdialV1OutdialtargetUpdateStatus(t *testing.T) {
 		status          omoutdialtarget.Status
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response *rabbitmqhandler.Response
 	}{
@@ -467,9 +468,9 @@ func Test_OutdialV1OutdialtargetUpdateStatus(t *testing.T) {
 			omoutdialtarget.StatusIdle,
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdialtargets/16b4b4c2-b65f-11ec-92be-dba3f52ebb01/status",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"status":"idle"}`),
 			},

@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -26,7 +27,7 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 		detail        string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes *rmextension.Extension
@@ -41,9 +42,9 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 			"test detail",
 
 			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/extensions",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","domain_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail"}`),
 			},
@@ -101,7 +102,7 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmextension.Extension
 	}{
 		{
@@ -118,9 +119,9 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 				Data:       []byte(`{"id":"0be5298a-6f9f-11eb-bb77-f71f5b5f95f7","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","name":"update name","detail":"update detail","password":"update password"}`),
 			},
 			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/extensions/0be5298a-6f9f-11eb-bb77-f71f5b5f95f7",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail","password":"update password"}`),
 			},
@@ -169,7 +170,7 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmextension.Extension
 	}{
 		{
@@ -183,9 +184,9 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 			},
 
 			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/extensions/342f9734-6fa1-11eb-a937-17d537105d6a",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rmextension.Extension{
@@ -237,7 +238,7 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 // 		response *rabbitmqhandler.Response
 
 // 		expectTarget  string
-// 		expectRequest *rabbitmqhandler.Request
+// 		expectRequest *sock.Request
 // 		expectRes     *rmextension.Extension
 // 	}{
 // 		{
@@ -251,9 +252,9 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 // 			},
 
 // 			"bin-manager.registrar-manager.request",
-// 			&rabbitmqhandler.Request{
+// 			&sock.Request{
 // 				URI:      "/v1/extensions/endpoint/test_exten@test_domain",
-// 				Method:   rabbitmqhandler.RequestMethodGet,
+// 				Method:   sock.RequestMethodGet,
 // 				DataType: ContentTypeJSON,
 // 			},
 // 			&rmextension.Extension{
@@ -297,7 +298,7 @@ func Test_RegistrarExtensionDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmextension.Extension
 	}{
 		{
@@ -311,9 +312,9 @@ func Test_RegistrarExtensionDelete(t *testing.T) {
 			},
 
 			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/extensions/b2ca6024-6fa1-11eb-aa5a-738c234d2ee1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&rmextension.Extension{
@@ -360,7 +361,7 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     []rmextension.Extension
 	}{
 		{
@@ -380,9 +381,9 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 
 			"/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=f18dcabe-4ff3-11ee-80be-875a8c6041d4",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]rmextension.Extension{
@@ -432,7 +433,7 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *rmextension.Extension
 	}{
 		{
@@ -448,9 +449,9 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 			},
 
 			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/extensions/extension/test-exten?customer_id=5703f08a-5710-11ee-9295-77eb098ad269",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rmextension.Extension{
 				ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),

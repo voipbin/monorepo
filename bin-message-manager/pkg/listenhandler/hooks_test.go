@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -23,7 +24,7 @@ func Test_processV1HooksPost(t *testing.T) {
 
 		responseSend *message.Message
 
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
@@ -84,9 +85,9 @@ func Test_processV1HooksPost(t *testing.T) {
 				ID: uuid.FromStringOrNil("abed7ae4-a22b-11ec-8b95-efa78516ed55"),
 			},
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/hooks",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/messages/telnyx","received_data":"ewogICJkYXRhIjogewogICAgImV2ZW50X3R5cGUiOiAibWVzc2FnZS5yZWNlaXZlZCIsCiAgICAiaWQiOiAiMTk1MzkzMzYtMTFiYS00NzkyLWFiZDgtMjZkNGY4NzQ1YzRjIiwKICAgICJvY2N1cnJlZF9hdCI6ICIyMDIyLTAzLTE1VDE2OjE2OjI0LjA3MyswMDowMCIsCiAgICAicGF5bG9hZCI6IHsKICAgICAgImNjIjogW10sCiAgICAgICJjb21wbGV0ZWRfYXQiOiBudWxsLAogICAgICAiY29zdCI6IG51bGwsCiAgICAgICJkaXJlY3Rpb24iOiAiaW5ib3VuZCIsCiAgICAgICJlbmNvZGluZyI6ICJHU00tNyIsCiAgICAgICJlcnJvcnMiOiBbXSwKICAgICAgImZyb20iOiB7CiAgICAgICAgImNhcnJpZXIiOiAiIiwKICAgICAgICAibGluZV90eXBlIjogIiIsCiAgICAgICAgInBob25lX251bWJlciI6ICIrNzU5NzMiCiAgICAgIH0sCiAgICAgICJpZCI6ICI1ZDdmOWM1MC0zMzBhLTRkN2EtOWNhOC00MTU3ZDdhMDkwNDciLAogICAgICAibWVkaWEiOiBbXSwKICAgICAgIm1lc3NhZ2luZ19wcm9maWxlX2lkIjogIjQwMDE3ZjhlLTQ5YmQtNGYxNi05ZTNkLWVmMTAzZjkxNjIyOCIsCiAgICAgICJvcmdhbml6YXRpb25faWQiOiAiYTUwNmVhZTAtZjcyYy00NDljLWJiZTUtMTljZTM1ZjgyZTBiIiwKICAgICAgInBhcnRzIjogMSwKICAgICAgInJlY2VpdmVkX2F0IjogIjIwMjItMDMtMTVUMTY6MTY6MjMuNDY2KzAwOjAwIiwKICAgICAgInJlY29yZF90eXBlIjogIm1lc3NhZ2UiLAogICAgICAic2VudF9hdCI6IG51bGwsCiAgICAgICJzdWJqZWN0IjogIiIsCiAgICAgICJ0YWdzIjogW10sCiAgICAgICJ0ZXh0IjogInBjaGVybzIxOlxuVGVzdCBtZXNzYWdlIGZyb20gc2t5cGUuIiwKICAgICAgInRvIjogWwogICAgICAgIHsKICAgICAgICAgICJjYXJyaWVyIjogIlRlbG55eCIsCiAgICAgICAgICAibGluZV90eXBlIjogIldpcmVsZXNzIiwKICAgICAgICAgICJwaG9uZV9udW1iZXIiOiAiKzE1NzM0NTMxMTE4IiwKICAgICAgICAgICJzdGF0dXMiOiAid2ViaG9va19kZWxpdmVyZWQiCiAgICAgICAgfQogICAgICBdLAogICAgICAidHlwZSI6ICJTTVMiLAogICAgICAidmFsaWRfdW50aWwiOiBudWxsLAogICAgICAid2ViaG9va19mYWlsb3Zlcl91cmwiOiBudWxsLAogICAgICAid2ViaG9va191cmwiOiAiaHR0cHM6Ly9lbjdldmFqd2htcWJ0LngucGlwZWRyZWFtLm5ldCIKICAgIH0sCiAgICAicmVjb3JkX3R5cGUiOiAiZXZlbnQiCiAgfSwKICAibWV0YSI6IHsKICAgICJhdHRlbXB0IjogMSwKICAgICJkZWxpdmVyZWRfdG8iOiAiaHR0cHM6Ly9lbjdldmFqd2htcWJ0LngucGlwZWRyZWFtLm5ldCIKICB9Cn0K"}`),
 			},

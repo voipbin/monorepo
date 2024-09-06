@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -153,7 +154,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 // processRequest handles all of requests of the listen queue.
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 
 	var requestType string
 	var err error
@@ -178,27 +179,27 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// accounts
 	////////////////////
 	// GET /accounts
-	case regV1AccountsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AccountsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AccountsGet(ctx, m)
 		requestType = "/v1/accounts"
 
 	// POST /accounts
-	case regV1Accounts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Accounts.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AccountsPost(ctx, m)
 		requestType = "/v1/accounts"
 
 	// GET /accounts/<account-id>
-	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AccountsIDGet(ctx, m)
 		requestType = "/v1/accounts/<account-id>"
 
 	// PUT /accounts/<account-id>
-	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AccountsIDPut(ctx, m)
 		requestType = "/v1/accounts/<account-id>"
 
 	// DELETE /accounts/<account-id>
-	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1AccountsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1AccountsIDDelete(ctx, m)
 		requestType = "/v1/accounts/<account-id>"
 
@@ -206,27 +207,27 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// conversations
 	////////////////////
 	// GET /conversations
-	case regV1ConversationsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConversationsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConversationsGet(ctx, m)
 		requestType = "/v1/conversations"
 
 	// GET /conversations/<conversation-id>
-	case regV1ConversationsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConversationsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConversationsIDGet(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>"
 
 	// PUT /conversations/<conversation-id>
-	case regV1ConversationsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ConversationsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1ConversationsIDPut(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>"
 
 	// GET /conversations/<conversation-id>/messages
-	case regV1ConversationsIDMessagesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ConversationsIDMessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ConversationsIDMessagesGet(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>/messages"
 
 	// POST /conversations/<conversation-id>/messages
-	case regV1ConversationsIDMessages.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1ConversationsIDMessages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConversationsIDMessagesPost(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>/messages"
 
@@ -234,7 +235,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// hooks
 	////////////////////
 	// POST /hooks
-	case regV1Hooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Hooks.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1HooksPost(ctx, m)
 		requestType = "/v1/hooks"
 
@@ -242,7 +243,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// messages
 	////////////////////
 	// GET /messages
-	case regV1MessagesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1MessagesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1MessagesGet(ctx, m)
 		requestType = "/messages"
 

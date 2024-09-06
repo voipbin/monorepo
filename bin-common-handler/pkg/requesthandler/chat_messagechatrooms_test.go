@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -30,7 +31,7 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []chatmessagechatroom.Messagechatroom
 	}{
 		{
@@ -50,9 +51,9 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 
 			"/v1/messagechatrooms?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=10&filter_chatroom_id=15f4abea-369e-11ed-b888-1f2976c17434", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]chatmessagechatroom.Messagechatroom{
@@ -103,7 +104,7 @@ func Test_ChatV1MessagechatroomGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatmessagechatroom.Messagechatroom
 	}{
 		{
@@ -117,9 +118,9 @@ func Test_ChatV1MessagechatroomGet(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms/677d8888-369e-11ed-84b3-ef10b6d21710",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&chatmessagechatroom.Messagechatroom{
@@ -165,7 +166,7 @@ func Test_ChatV1MessagechatroomDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatmessagechatroom.Messagechatroom
 	}{
 		{
@@ -179,9 +180,9 @@ func Test_ChatV1MessagechatroomDelete(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms/919c4582-369e-11ed-8a8c-77506adf5ffe",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&chatmessagechatroom.Messagechatroom{

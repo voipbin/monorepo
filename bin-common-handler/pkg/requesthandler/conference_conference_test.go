@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -21,7 +22,7 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 		conferenceID uuid.UUID
 
 		expectQueue   string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response  *rabbitmqhandler.Response
 		expectRes *cfconference.Conference
@@ -33,9 +34,9 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 			uuid.FromStringOrNil("c337c4de-4132-11ec-b076-ab42296b65d5"),
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/c337c4de-4132-11ec-b076-ab42296b65d5",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			&rabbitmqhandler.Response{
@@ -85,7 +86,7 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectRes []cfconference.Conference
@@ -101,9 +102,9 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 			"/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_type=conference",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -160,7 +161,7 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
 	}{
 		{
@@ -174,9 +175,9 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 			},
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/2d9227a4-3d17-11ec-ab43-cfdad30eccdf",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 			&cfconference.Conference{
 				ID: uuid.FromStringOrNil("2d9227a4-3d17-11ec-ab43-cfdad30eccdf"),
@@ -221,7 +222,7 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
 	}{
 		{
@@ -236,9 +237,9 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 			},
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/9df75377-cffe-448a-825e-7afc7f86f9e6/stop",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&cfconference.Conference{
 				ID: uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
@@ -256,9 +257,9 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 			},
 
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/7b85487d-d251-44e6-b7c6-8cee606c9d00/stop",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			nil,
 		},
@@ -306,7 +307,7 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 
 		response         *rabbitmqhandler.Response
 		expectTarget     string
-		expectRequest    *rabbitmqhandler.Request
+		expectRequest    *sock.Request
 		expectConference *cfconference.Conference
 	}{
 		{
@@ -317,9 +318,9 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 				Data:       []byte(`{"id":"04432fd6-3d19-11ec-8ad9-43e6162f0953","name":"test","detail":"test detail","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","timeout":86400000,"type":"connect"}`),
 			},
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"connect","customer_id":"9d27750e-7f4f-11ec-b98f-839769cdfb25","name":"test","detail":"test detail","timeout":86400000,"data":null,"pre_actions":null,"post_actions":null}`),
 			},
@@ -369,7 +370,7 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 
 		response      *rabbitmqhandler.Response
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
 	}{
 		{
@@ -384,9 +385,9 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 				Data:       []byte(`{"id":"6a8bb630-909e-11ed-8e51-4ba49096d3f7"}`),
 			},
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/6a8bb630-909e-11ed-8e51-4ba49096d3f7/recording_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"recording_id":"6ad3b3cc-909e-11ed-b6de-bb34ce55e617"}`),
 			},
@@ -430,7 +431,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 
 		response      *rabbitmqhandler.Response
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
 	}{
 		{
@@ -444,9 +445,9 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 				Data:       []byte(`{"id":"062311b6-9107-11ed-bd31-fb8ce20a3bd7"}`),
 			},
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/062311b6-9107-11ed-bd31-fb8ce20a3bd7/recording_start",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&cfconference.Conference{
 				ID: uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
@@ -488,7 +489,7 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 
 		response      *rabbitmqhandler.Response
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
 	}{
 		{
@@ -502,9 +503,9 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 				Data:       []byte(`{"id":"0660ce2a-9107-11ed-8c04-93e3837ffdcd"}`),
 			},
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/0660ce2a-9107-11ed-8c04-93e3837ffdcd/recording_stop",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&cfconference.Conference{
 				ID: uuid.FromStringOrNil("0660ce2a-9107-11ed-8c04-93e3837ffdcd"),
@@ -547,7 +548,7 @@ func Test_ConferenceV1ConferenceTranscribeStart(t *testing.T) {
 
 		response      *rabbitmqhandler.Response
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
 	}{
 		{
@@ -562,9 +563,9 @@ func Test_ConferenceV1ConferenceTranscribeStart(t *testing.T) {
 				Data:       []byte(`{"id":"dfa5e700-98e7-11ed-a643-4bd2f59007ae"}`),
 			},
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/conferences/dfa5e700-98e7-11ed-a643-4bd2f59007ae/transcribe_start",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"language":"en-US"}`),
 			},
@@ -608,7 +609,7 @@ func Test_ConferenceV1ConferenceTranscribeStop(t *testing.T) {
 
 		response      *rabbitmqhandler.Response
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectRes     *cfconference.Conference
 	}{
 		{
@@ -622,9 +623,9 @@ func Test_ConferenceV1ConferenceTranscribeStop(t *testing.T) {
 				Data:       []byte(`{"id":"dfda30dc-98e7-11ed-a69c-e781929a3118"}`),
 			},
 			"bin-manager.conference-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/conferences/dfda30dc-98e7-11ed-a69c-e781929a3118/transcribe_stop",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 			&cfconference.Conference{
 				ID: uuid.FromStringOrNil("dfda30dc-98e7-11ed-a69c-e781929a3118"),

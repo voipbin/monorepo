@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -128,7 +129,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 // processRequest handles all of requests of the listen queue.
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 
 	var requestType string
 	var err error
@@ -152,7 +153,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// webhooks
 	////////////////////
 	// POST /webhooks
-	case regV1Webhooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Webhooks.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1WebhooksPost(ctx, m)
 		requestType = "/v1/webhooks"
 
@@ -160,7 +161,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// webhooks_customs
 	////////////////////
 	// POST /webhook_destinations
-	case regV1WebhookDestinations.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1WebhookDestinations.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1WebhookDestinationsPost(ctx, m)
 		requestType = "/v1/webhook_destinations"
 

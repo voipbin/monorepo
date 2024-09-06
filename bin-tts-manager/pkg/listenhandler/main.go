@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -111,7 +112,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 // processRequest
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,
@@ -128,7 +129,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	switch {
 
 	// v1
-	case regV1Speeches.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Speeches.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/speeches"
 		response, err = h.v1SpeechesPost(ctx, m)
 

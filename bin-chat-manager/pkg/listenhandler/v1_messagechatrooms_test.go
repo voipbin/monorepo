@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -20,7 +21,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		chatroomID uuid.UUID
 		pageToken  string
@@ -33,9 +34,9 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 	}{
 		{
 			"gets by chatroom id return 1 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=d260ac86-3507-11ed-9594-cfe9c21b2ca3&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -63,9 +64,9 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		},
 		{
 			"gets by chatroom id return 2 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=3b683b7c-3508-11ed-97bb-9be24437edc2&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -98,9 +99,9 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 		},
 		{
 			"gets by chat id return 0 item",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_chatroom_id=4829801e-3503-11ed-aecf-4f1b13ce1b9f&filter_deleted=false",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -160,7 +161,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 func Test_v1MessagechatroomsIDGet(t *testing.T) {
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		messagechatroomID uuid.UUID
 
@@ -170,9 +171,9 @@ func Test_v1MessagechatroomsIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms/92c89948-3508-11ed-9b4f-77544678aa39",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -232,7 +233,7 @@ func Test_v1MessagechatroomsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		messagechatroomID uuid.UUID
 
@@ -241,9 +242,9 @@ func Test_v1MessagechatroomsIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/messagechatrooms/ce2b7f32-3508-11ed-8a20-a32e4374af3f",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},

@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	compressfile "monorepo/bin-storage-manager/models/compressfile"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
@@ -15,7 +16,7 @@ func Test_v1CompressfilesPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		referenceIDs []uuid.UUID
 		fileIDs      []uuid.UUID
@@ -25,9 +26,9 @@ func Test_v1CompressfilesPost(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/compressfiles",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_ids":["f2525e0e-1d6d-11ef-8d33-f3f47b464f43","25c5729e-1d6e-11ef-940b-0fa28944ca27"], "file_ids":["f27dacc6-1d6d-11ef-954e-73482b2c50cb","25e8ab92-1d6e-11ef-a6e2-8f552c006c72"]}`),
 			},

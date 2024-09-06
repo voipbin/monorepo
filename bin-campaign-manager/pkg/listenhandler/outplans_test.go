@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_v1OutplansPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		customerID   uuid.UUID
 		outplanName  string
@@ -38,9 +39,9 @@ func Test_v1OutplansPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"99f40c64-c462-11ec-b1e4-57c64041ff4e","name":"test name","detail":"test detail","source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
@@ -102,7 +103,7 @@ func Test_v1OutplansGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		pageToken  string
 		pageSize   uint64
@@ -114,9 +115,9 @@ func Test_v1OutplansGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=4890c13c-c467-11ec-add3-77ebc79554b0",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -168,7 +169,7 @@ func Test_v1OutplansIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		campaignID uuid.UUID
 
@@ -178,9 +179,9 @@ func Test_v1OutplansIDGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/a96cd4d2-c467-11ec-b1b4-0f35d821b46c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -228,7 +229,7 @@ func Test_v1OutplansIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		campaignID uuid.UUID
 
@@ -238,9 +239,9 @@ func Test_v1OutplansIDDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/dfce10d6-c467-11ec-b1d3-0fb0c67e2f11",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
 
@@ -288,7 +289,7 @@ func Test_v1OutplansIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		outplanID   uuid.UUID
 		outplanName string
@@ -300,9 +301,9 @@ func Test_v1OutplansIDPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/1819e97e-c468-11ec-bf3c-63e7e7c996db",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},
@@ -353,7 +354,7 @@ func Test_v1OutplansIDDialsPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		outplanID    uuid.UUID
 		source       *commonaddress.Address
@@ -371,9 +372,9 @@ func Test_v1OutplansIDDialsPut(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outplans/703adb5e-c468-11ec-b8ff-f3c00713cce4/dials",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},

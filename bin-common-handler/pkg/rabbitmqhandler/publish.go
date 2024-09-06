@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"monorepo/bin-common-handler/models/sock"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -36,7 +37,7 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 }
 
 // PublishMessage sends a request to rabbitmq
-func (r *rabbit) PublishRequest(queueName string, req *Request) error {
+func (r *rabbit) PublishRequest(queueName string, req *sock.Request) error {
 
 	message, err := json.Marshal(req)
 	if err != nil {
@@ -66,7 +67,7 @@ func (r *rabbit) PublishEvent(queueName string, evt *Event) error {
 }
 
 // PublishRPC publishes RPC message and returns response.
-func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request) (*Response, error) {
+func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*Response, error) {
 
 	reqMsg, err := json.Marshal(req)
 	if err != nil {
@@ -146,7 +147,7 @@ func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *Event) error {
 }
 
 // PublishMessage sends a message to rabbitmq
-func (r *rabbit) PublishExchangeRequest(exchange, key string, req *Request) error {
+func (r *rabbit) PublishExchangeRequest(exchange, key string, req *sock.Request) error {
 	message, err := json.Marshal(req)
 	if err != nil {
 		return err
@@ -156,7 +157,7 @@ func (r *rabbit) PublishExchangeRequest(exchange, key string, req *Request) erro
 
 // PublishExchangeDelayedRequest sends a delayed request to the rabbitmq exchange
 // delay is ms.
-func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *Request, delay int) error {
+func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
 	headers := make(amqp.Table)
 	headers["x-delay"] = delay
 

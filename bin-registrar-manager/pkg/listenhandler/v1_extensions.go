@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 )
 
 // processV1ExtensionsPost handles /v1/extensions POST request
-func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsPost",
 		"request": m,
@@ -62,7 +63,7 @@ func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *rabbitmq
 }
 
 // processV1ExtensionsIDGet handles /v1/extensions/{id} GET request
-func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsIDGet",
 		"request": m,
@@ -99,7 +100,7 @@ func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, m *rabbitm
 }
 
 // processV1ExtensionsIDPut handles /v1/extensions/{id} PUT request
-func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsIDPut",
 		"Request": m,
@@ -142,7 +143,7 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *rabbitm
 }
 
 // processV1ExtensionsIDDelete handles /v1/extensions/{id} DELETE request
-func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsIDDelete",
 		"request": m,
@@ -179,7 +180,7 @@ func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, m *rabb
 }
 
 // processV1ExtensionsGet handles /v1/extension GET request
-func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsGet",
 		"request": m,
@@ -226,7 +227,7 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqh
 }
 
 // processV1ExtensionsExtensionExtensionGet handles /v1/extensions/extension/{extension} GET request
-func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsExtensionExtensionGet",
 		"request": m,

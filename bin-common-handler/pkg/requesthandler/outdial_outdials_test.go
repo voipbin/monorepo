@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -27,7 +28,7 @@ func Test_OutdialV1OutdialCreate(t *testing.T) {
 		data        string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 
 		response *rabbitmqhandler.Response
 	}{
@@ -41,9 +42,9 @@ func Test_OutdialV1OutdialCreate(t *testing.T) {
 			"test data",
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"440529e4-b64f-11ec-9208-ef03201c2688","campaign_id":"476f3e62-b64f-11ec-a49c-bb96b9d8a42d","name":"test name","detail":"test detail","data":"test data"}`),
 			},
@@ -87,7 +88,7 @@ func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 		pageSize   uint64
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult []omoutdial.Outdial
@@ -100,9 +101,9 @@ func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 			10,
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/outdials?page_token=%s&page_size=10&customer_id=74b94c72-b650-11ec-a5cf-ff01639e276f", url.QueryEscape("2021-03-02 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -151,7 +152,7 @@ func Test_OutdialV1OutdialGet(t *testing.T) {
 		outdialID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *omoutdial.Outdial
@@ -162,9 +163,9 @@ func Test_OutdialV1OutdialGet(t *testing.T) {
 			uuid.FromStringOrNil("f3ca7112-b650-11ec-aad7-17a0858dadcf"),
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/f3ca7112-b650-11ec-aad7-17a0858dadcf",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -211,7 +212,7 @@ func Test_OutdialV1OutdialDelete(t *testing.T) {
 		outdialID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *omoutdial.Outdial
@@ -222,9 +223,9 @@ func Test_OutdialV1OutdialDelete(t *testing.T) {
 			uuid.FromStringOrNil("d21d8788-b651-11ec-8ada-53590bef4cc1"),
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/d21d8788-b651-11ec-8ada-53590bef4cc1",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&rabbitmqhandler.Response{
@@ -272,7 +273,7 @@ func Test_OutdialV1OutdialUpdateBasicInfo(t *testing.T) {
 		detail      string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *omoutdial.Outdial
@@ -285,9 +286,9 @@ func Test_OutdialV1OutdialUpdateBasicInfo(t *testing.T) {
 			"test detail",
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/e2fd1a18-b652-11ec-9823-efc193bad6bf",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
 			},
@@ -335,7 +336,7 @@ func Test_OutdialV1OutdialUpdateCampaignID(t *testing.T) {
 		campaignID uuid.UUID
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *omoutdial.Outdial
@@ -347,9 +348,9 @@ func Test_OutdialV1OutdialUpdateCampaignID(t *testing.T) {
 			uuid.FromStringOrNil("129e1312-b653-11ec-b265-4b6204d435a5"),
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/127cef34-b653-11ec-94f1-bf920056048a/campaign_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"campaign_id":"129e1312-b653-11ec-b265-4b6204d435a5"}`),
 			},
@@ -397,7 +398,7 @@ func Test_OutdialV1OutdialUpdateData(t *testing.T) {
 		data string
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 
 		expectResult *omoutdial.Outdial
@@ -409,9 +410,9 @@ func Test_OutdialV1OutdialUpdateData(t *testing.T) {
 			"test data",
 
 			"bin-manager.outdial-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/outdials/5d0e4cf0-b653-11ec-8e87-af57dbb5c13a/data",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"data":"test data"}`),
 			},

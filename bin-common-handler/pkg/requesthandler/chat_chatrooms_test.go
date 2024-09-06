@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -27,7 +28,7 @@ func Test_ChatV1ChatroomGet(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatchatroom.Chatroom
 	}{
 		{
@@ -41,9 +42,9 @@ func Test_ChatV1ChatroomGet(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms/b76a30e8-3695-11ed-b331-7f4de361058c",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			&chatchatroom.Chatroom{
@@ -92,7 +93,7 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 
 		expectURL     string
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  []chatchatroom.Chatroom
 	}{
 		{
@@ -112,9 +113,9 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 
 			"/v1/chatrooms?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=10&filter_owner_id=19de5bc8-3696-11ed-b9b7-3f54f6f0297b", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
 			[]chatchatroom.Chatroom{
@@ -165,7 +166,7 @@ func Test_ChatV1ChatroomDelete(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatchatroom.Chatroom
 	}{
 		{
@@ -179,9 +180,9 @@ func Test_ChatV1ChatroomDelete(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms/a4113036-3696-11ed-9c58-839c310695a8",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeJSON,
 			},
 			&chatchatroom.Chatroom{
@@ -229,7 +230,7 @@ func Test_ChatV1ChatroomUpdateBasicInfo(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		expectResult  *chatchatroom.Chatroom
 	}{
 		{
@@ -246,9 +247,9 @@ func Test_ChatV1ChatroomUpdateBasicInfo(t *testing.T) {
 			},
 
 			"bin-manager.chat-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/chatrooms/800b6dae-bc60-11ee-94fb-23e2e1876984",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail"}`),
 			},

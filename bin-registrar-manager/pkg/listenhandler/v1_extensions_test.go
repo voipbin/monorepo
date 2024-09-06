@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -20,7 +21,7 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectCustomerID uuid.UUID
 		expectName       string
@@ -36,9 +37,9 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/extensions",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "2e341ffa-7fed-11ec-9667-1357b91d745d", "name": "test name", "detail": "test detail", "extension": "45eb6bac-6ebf-11eb-bcf3-3b9157826d22", "password": "4b1f7a6e-6ebf-11eb-a47e-5351700cd612"}`),
 			},
@@ -109,7 +110,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 
 		responseFilters    map[string]string
 		responseExtensions []*extension.Extension
@@ -123,9 +124,9 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 
 			pageToken: "2020-10-10T03:30:17.000000",
 			pageSize:  10,
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=1b642fde-4ff1-11ee-8b2f-2f40ea091b7d",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -152,9 +153,9 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 
 			pageToken: "2020-10-10T03:30:17.000000",
 			pageSize:  10,
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=1b991686-4ff1-11ee-89fd-2f283e362ada",
-				Method:   rabbitmqhandler.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
@@ -208,7 +209,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 		name    string
 		reqExt  *extension.Extension
 		resExt  *extension.Extension
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID       uuid.UUID
 		expectName     string
@@ -233,9 +234,9 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 				Detail:     "update detail",
 				Password:   "update password",
 			},
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/extensions/6dc9dd22-6f4e-11eb-8059-2fe116db7a2b",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name", "detail":"update detail", "password": "update password"}`),
 			},
@@ -285,7 +286,7 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 	type test struct {
 		name        string
 		extensionID uuid.UUID
-		request     *rabbitmqhandler.Request
+		request     *sock.Request
 
 		responseExtension *extension.Extension
 		expectRes         *rabbitmqhandler.Response
@@ -295,9 +296,9 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("adeea2b0-6f4f-11eb-acb7-13291c18927b"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/extensions/adeea2b0-6f4f-11eb-acb7-13291c18927b",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			&extension.Extension{
@@ -343,7 +344,7 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseExtension *extension.Extension
 
@@ -356,9 +357,9 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    `/v1/extensions/extension/test_ext?customer_id=14529572-5650-11ee-8bac-8f91175c7ceb`,
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			&extension.Extension{

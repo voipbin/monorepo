@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 )
 
 // processV1ConferencecallsGet handles GET /v1/conferencecalls request
-func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsGet",
 		"request": m,
@@ -57,7 +58,7 @@ func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *rabb
 }
 
 // processV1ConferencecallsIDGet handles /v1/conferencecalls/<id> GET request
-func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsIDGet",
 		"request": m,
@@ -92,7 +93,7 @@ func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *ra
 }
 
 // processV1ConferencecallsIDDelete handles /v1/conferencecalls/<id> DELETE request
-func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsIDDelete",
 		"request": m,
@@ -127,7 +128,7 @@ func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m 
 }
 
 // processV1ConferencecallsIDHealthCheckPost handles /v1/conferencecalls/<id>/health-check POST request
-func (h *listenHandler) processV1ConferencecallsIDHealthCheckPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencecallsIDHealthCheckPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ConferencecallsIDHealthCheckPost",
 		"request": m,

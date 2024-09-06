@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -15,7 +16,7 @@ import (
 )
 
 // v1OutdialtargetsIDGet handles /v1/outdialtargets/<outdialtarget-id> GET request
-func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -54,7 +55,7 @@ func (h *listenHandler) v1OutdialtargetsIDGet(ctx context.Context, m *rabbitmqha
 }
 
 // v1OutdialtargetsIDDelete handles /v1/outdialtargets/<outdialtarget-id> DELETE request
-func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -93,7 +94,7 @@ func (h *listenHandler) v1OutdialtargetsIDDelete(ctx context.Context, m *rabbitm
 }
 
 // v1OutdialtargetsIDProgressingPost handles /v1/outdialtargets/<outdialtarget-id>/progressing POST request
-func (h *listenHandler) v1OutdialtargetsIDProgressingPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDProgressingPost(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -138,7 +139,7 @@ func (h *listenHandler) v1OutdialtargetsIDProgressingPost(ctx context.Context, m
 }
 
 // v1OutdialtargetsIDStatusPut handles /v1/outdialtargets/<outdialtarget-id>/status PUT request
-func (h *listenHandler) v1OutdialtargetsIDStatusPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) v1OutdialtargetsIDStatusPut(ctx context.Context, m *sock.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err

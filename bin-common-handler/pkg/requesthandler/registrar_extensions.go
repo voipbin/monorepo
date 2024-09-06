@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
+	"monorepo/bin-common-handler/models/sock"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 	rmrequest "monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
 // RegistrarV1ExtensionCreate sends a request to registrar-manager
@@ -33,7 +32,7 @@ func (r *requestHandler) RegistrarV1ExtensionCreate(ctx context.Context, custome
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPost, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPost, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -58,7 +57,7 @@ func (r *requestHandler) RegistrarV1ExtensionCreate(ctx context.Context, custome
 func (r *requestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", extensionID)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -82,7 +81,7 @@ func (r *requestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionI
 func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", extensionID)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodDelete, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodDelete, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -118,7 +117,7 @@ func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPut, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPut, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -146,7 +145,7 @@ func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken
 	// parse filters
 	uri = r.utilHandler.URLMergeFilters(uri, filters)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -171,7 +170,7 @@ func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken
 func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, extension string) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/extension/%s?customer_id=%s", extension, customerID.String())
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

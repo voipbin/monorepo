@@ -8,6 +8,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -28,15 +29,15 @@ func Test_processV1CallsIDGet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		call      *call.Call
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"basic",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/638769c2-620d-11eb-bd1f-6b576e26b4e6",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -83,7 +84,7 @@ func Test_processV1CallsGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		pageSize  uint64
 		pageToken string
 
@@ -94,9 +95,9 @@ func Test_processV1CallsGet(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac03d4ea-7f50-11ec-908d-d39407ab524d&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -122,9 +123,9 @@ func Test_processV1CallsGet(t *testing.T) {
 		{
 			"2 items",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac35aeb6-7f50-11ec-b7c5-abac92baf1fb&filter_deleted=false",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 			10,
 			"2020-05-03 21:35:02.809",
@@ -193,7 +194,7 @@ func Test_processV1CallsIDHealthPost(t *testing.T) {
 		id         uuid.UUID
 		retryCount int
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 	}
 
 	tests := []test{
@@ -203,9 +204,9 @@ func Test_processV1CallsIDHealthPost(t *testing.T) {
 			uuid.FromStringOrNil("1a94c1e6-982e-11ea-9298-43412daaf0da"),
 			0,
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/health-check",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0}`),
 			},
 		},
@@ -253,7 +254,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 	type test struct {
 		name      string
 		id        uuid.UUID
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		action    *fmaction.Action
 		expectRes *rabbitmqhandler.Response
 	}
@@ -262,9 +263,9 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 		{
 			"normal test",
 			uuid.FromStringOrNil("1a94c1e6-982e-11ea-9298-43412daaf0da"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/action-timeout",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`),
 			},
@@ -300,7 +301,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		callID       uuid.UUID
 		customerID   uuid.UUID
@@ -320,9 +321,9 @@ func Test_processV1CallsIDPost(t *testing.T) {
 		{
 			name: "empty",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "bf88a888-ddab-435b-8ae1-1eb8a3072230", "master_call_id": "11b1b1fa-8c93-11ec-9597-2320d5458176"}`),
 			},
@@ -352,9 +353,9 @@ func Test_processV1CallsIDPost(t *testing.T) {
 		{
 			name: "have all",
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "ffeda266-7f50-11ec-8089-df3388aef0cc", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "2e9f9862-9803-47f0-8f40-66f1522ef7f3", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {"type":"tel","target":"+821100000001"}, "groupcall_id":"266c6cce-bae2-11ed-afd7-ebef79165c1f","early_execution": true, "connect": true}`),
 			},
@@ -444,7 +445,7 @@ func Test_processV1CallsPost(t *testing.T) {
 
 		responseCalls      []*call.Call
 		responseGroupcalls []*groupcall.Groupcall
-		request            *rabbitmqhandler.Request
+		request            *sock.Request
 		expectRes          *rabbitmqhandler.Response
 	}
 
@@ -484,9 +485,9 @@ func Test_processV1CallsPost(t *testing.T) {
 				},
 			},
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/calls",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "owner_type": "agent", "owner_id": "705556a4-2bff-11ef-ad2b-3358935b1074", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destinations": [{"type":"tel", "target": "+821100000001"}], "early_execution": true, "connect": true}`),
 			},
@@ -522,9 +523,9 @@ func Test_processV1CallsPost(t *testing.T) {
 				},
 			},
 
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/calls",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "34e72f78-7f51-11ec-a83b-cfc69cd4a641", "owner_type": "agent", "owner_id": "71145ca2-2bff-11ef-868b-17bb55414f44", "flow_id": "78fd1276-f3a8-11ea-9734-6735e73fd720", "master_call_id": "a1c63272-8c91-11ec-8ee7-8b50458d3214", "source": {}, "destinations": []}`),
 			},
@@ -567,7 +568,7 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 	type test struct {
 		name    string
 		id      uuid.UUID
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseCall *call.Call
 		expectRes    *rabbitmqhandler.Response
@@ -577,9 +578,9 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("8e49788e-fc9e-41a0-a73c-a24c030848ca"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/8e49788e-fc9e-41a0-a73c-a24c030848ca",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -631,7 +632,7 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseCall *call.Call
 
@@ -642,9 +643,9 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/91a0b50e-f4ec-11ea-b64c-1bf53742d0d8/hangup",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     nil,
 			},
@@ -708,7 +709,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 		name      string
 		call      *call.Call
 		force     bool
-		request   *rabbitmqhandler.Request
+		request   *sock.Request
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
@@ -722,9 +723,9 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 				Destination: commonaddress.Address{},
 			},
 			false,
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/37b3a214-0afd-11eb-88ea-7bdd69288e90/action-next",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"force":false}`),
 			},
@@ -743,9 +744,9 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 				Destination: commonaddress.Address{},
 			},
 			true,
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:       "/v1/calls/37b3a214-0afd-11eb-88ea-7bdd69288e90/action-next",
-				Method:    rabbitmqhandler.RequestMethodPost,
+				Method:    sock.RequestMethodPost,
 				Publisher: "queue-manager",
 				DataType:  "application/json",
 				Data:      []byte(`{"force":true}`),
@@ -786,7 +787,7 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 		name          string
 		call          *call.Call
 		chainedCallID uuid.UUID
-		request       *rabbitmqhandler.Request
+		request       *sock.Request
 
 		responseCall *call.Call
 		expectRes    *rabbitmqhandler.Response
@@ -802,9 +803,9 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("76490d6a-25c0-11eb-970b-3bf9ae938f41"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/bfcdc03a-25bf-11eb-a9b2-bba80a81835b/chained-call-ids",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"chained_call_id": "76490d6a-25c0-11eb-970b-3bf9ae938f41"}`),
 			},
@@ -855,7 +856,7 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 		name          string
 		call          *call.Call
 		chainedCallID uuid.UUID
-		request       *rabbitmqhandler.Request
+		request       *sock.Request
 
 		responseCall *call.Call
 		expectRes    *rabbitmqhandler.Response
@@ -870,9 +871,9 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("0ee268f2-25c4-11eb-917c-07eef32616dc"),
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/0eaa2942-25c4-11eb-90a3-63fb2b029bae/chained-call-ids/0ee268f2-25c4-11eb-917c-07eef32616dc",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			&call.Call{
@@ -919,7 +920,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseCall *call.Call
 
@@ -938,9 +939,9 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 		{
 			"normal",
 
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/31255b7c-0a6b-11ec-87e2-afe5a545df76/external-media",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"external_host": "127.0.0.1:5060", "encapsulation": "rtp", "transport": "udp", "connection_type": "client", "format": "ulaw", "direction": "both", "data": ""}`),
 			},
@@ -1009,7 +1010,7 @@ func Test_processV1CallsIDExternalMediaDelete(t *testing.T) {
 
 	type test struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseCall *call.Call
 
@@ -1020,9 +1021,9 @@ func Test_processV1CallsIDExternalMediaDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/7fcac8d6-9730-11ed-bd80-a764f6bc382e/external-media",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			&call.Call{
@@ -1074,7 +1075,7 @@ func Test_processV1CallsIDDigitsGet(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id             uuid.UUID
 		responseDigits string
@@ -1085,9 +1086,9 @@ func Test_processV1CallsIDDigitsGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/669e567e-9016-11ec-9190-07c8a63f44a8/digits",
-				Method: rabbitmqhandler.RequestMethodGet,
+				Method: sock.RequestMethodGet,
 			},
 
 			uuid.FromStringOrNil("669e567e-9016-11ec-9190-07c8a63f44a8"),
@@ -1133,7 +1134,7 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id     uuid.UUID
 		digits string
@@ -1144,9 +1145,9 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/a5ca555a-9912-11ec-ab1a-2b341f06e3c0/digits",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"digits": "123"}`),
 			},
@@ -1161,9 +1162,9 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 		},
 		{
 			"set to empty",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/a5ca555a-9912-11ec-ab1a-2b341f06e3c0/digits",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"digits": ""}`),
 			},
@@ -1210,7 +1211,7 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		id          uuid.UUID
 		recordingID uuid.UUID
@@ -1223,9 +1224,9 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/0953474c-8fd2-11ed-a24a-7bf36392fef2/recording_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"recording_id": "09178464-8fd2-11ed-a1d7-5b5491e83cc7"}`),
 			},
@@ -1247,9 +1248,9 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 		},
 		{
 			"set to empty",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/0977e50c-8fd2-11ed-8684-e34a2113a8cc/recording_id",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"recording_id": "00000000-0000-0000-0000-000000000000"}`),
 			},
@@ -1303,7 +1304,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseCall *call.Call
 
@@ -1319,9 +1320,9 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/1c3dc786-9344-11ed-96a2-17c902204823/recording_start",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"format": "wav", "end_of_silence": 1000, "end_of_key": "#", "duration": 86400}`),
 			},
@@ -1377,7 +1378,7 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseCall *call.Call
 
@@ -1388,9 +1389,9 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/1c73262e-9344-11ed-840d-37569c93274f/recording_stop",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
 
@@ -1441,7 +1442,7 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID       uuid.UUID
 		expectText     string
@@ -1453,9 +1454,9 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/deb5c376-a4a2-11ed-b6d3-4f72b2fef2c1/talk",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
 			},
@@ -1501,7 +1502,7 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID     uuid.UUID
 		expectMedias []string
@@ -1511,9 +1512,9 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/3dce82e3-ffca-47d3-96e6-0679195c7949/play",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"media_urls":["https://test.com/3d55ea46-5a91-442a-b1bc-d6100be0e11d.wav","https://test.com/6a094e77-a837-4511-8c4f-e2fec3aac44b.wav"]}`),
 			},
@@ -1529,9 +1530,9 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 		},
 		{
 			"empty media urls",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/c7d981fc-3119-4733-966c-88bfc61587fb/play",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{}`),
 			},
@@ -1575,7 +1576,7 @@ func Test_processV1CallsIDMediaStopPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
@@ -1584,9 +1585,9 @@ func Test_processV1CallsIDMediaStopPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/f2caffa0-ab13-4d7d-857e-a6ea64986f40/media_stop",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 			},
 
@@ -1628,7 +1629,7 @@ func Test_processV1CallsIDHoldPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
@@ -1637,9 +1638,9 @@ func Test_processV1CallsIDHoldPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/8d724fda-cef4-11ed-97c9-3be39b7e862c/hold",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			uuid.FromStringOrNil("8d724fda-cef4-11ed-97c9-3be39b7e862c"),
@@ -1680,7 +1681,7 @@ func Test_processV1CallsIDHoldDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
@@ -1689,9 +1690,9 @@ func Test_processV1CallsIDHoldDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/8da4a16a-cef4-11ed-875f-d7797c9e2710/hold",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			uuid.FromStringOrNil("8da4a16a-cef4-11ed-875f-d7797c9e2710"),
@@ -1732,7 +1733,7 @@ func Test_processV1CallsIDMutePost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID        uuid.UUID
 		expectDirection call.MuteDirection
@@ -1743,9 +1744,9 @@ func Test_processV1CallsIDMutePost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/4066ee68-d13c-11ed-b9b3-8fe28137c5ad/mute",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"direction":"both"}`),
 			},
@@ -1790,7 +1791,7 @@ func Test_processV1CallsIDMuteDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID        uuid.UUID
 		expectDirection call.MuteDirection
@@ -1800,9 +1801,9 @@ func Test_processV1CallsIDMuteDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/calls/40979fd6-d13c-11ed-8eb5-37d5f6dccaad/mute",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     []byte(`{"direction":"both"}`),
 			},
@@ -1847,7 +1848,7 @@ func Test_processV1CallsIDMOHPost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
@@ -1856,9 +1857,9 @@ func Test_processV1CallsIDMOHPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/641e256a-d13c-11ed-a8f9-8f52289423ea/moh",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			uuid.FromStringOrNil("641e256a-d13c-11ed-a8f9-8f52289423ea"),
@@ -1899,7 +1900,7 @@ func Test_processV1CallsIDMOHDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
@@ -1908,9 +1909,9 @@ func Test_processV1CallsIDMOHDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/6445ce6c-d13c-11ed-aed2-0b27c33f8967/moh",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			uuid.FromStringOrNil("6445ce6c-d13c-11ed-aed2-0b27c33f8967"),
@@ -1951,7 +1952,7 @@ func Test_processV1CallsIDSilencePost(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
@@ -1960,9 +1961,9 @@ func Test_processV1CallsIDSilencePost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/81e16bd4-d13c-11ed-8792-eb55e711e84c/silence",
-				Method: rabbitmqhandler.RequestMethodPost,
+				Method: sock.RequestMethodPost,
 			},
 
 			uuid.FromStringOrNil("81e16bd4-d13c-11ed-8792-eb55e711e84c"),
@@ -2003,7 +2004,7 @@ func Test_processV1CallsIDSilenceDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
@@ -2012,9 +2013,9 @@ func Test_processV1CallsIDSilenceDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:    "/v1/calls/8205fd8c-d13c-11ed-a6fd-f3011f730d2f/silence",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				Method: sock.RequestMethodDelete,
 			},
 
 			uuid.FromStringOrNil("8205fd8c-d13c-11ed-a6fd-f3011f730d2f"),

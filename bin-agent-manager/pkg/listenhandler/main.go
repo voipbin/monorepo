@@ -10,6 +10,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -142,7 +143,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
-func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processRequest(m *sock.Request) (*rabbitmqhandler.Response, error) {
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
@@ -163,62 +164,62 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// agents
 	////////////
 	// GET /agents
-	case regV1AgentsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AgentsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AgentsGet(ctx, m)
 		requestType = "/v1/agents"
 
 	// POST /agents
-	case regV1Agents.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Agents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AgentsPost(ctx, m)
 		requestType = "/v1/agents"
 
 	// GET /agents/<agent-id>
-	case regV1AgentsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1AgentsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AgentsIDGet(ctx, m)
 		requestType = "/v1/agents/<agent-id>"
 
 	// DELETE /agents/<agent-id>
-	case regV1AgentsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+	case regV1AgentsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1AgentsIDDelete(ctx, m)
 		requestType = "/v1/agents/<agent-id>"
 
 	// PUT /agents/<agent-id>
-	case regV1AgentsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1AgentsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AgentsIDPut(ctx, m)
 		requestType = "/v1/agents/<agent-id>"
 
 	// POST /agents/<username>/login
-	case regV1AgentsUsernameLogin.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1AgentsUsernameLogin.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AgentsUsernameLogin(ctx, m)
 		requestType = "/v1/agents/<agent-id>/login"
 
 	// PUT /agents/<agent-id>/addresses
-	case regV1AgentsIDAddresses.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1AgentsIDAddresses.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AgentsIDAddressesPut(ctx, m)
 		requestType = "/v1/agents/<agent-id>/addresses"
 
 	// PUT /agents/<agent-id>/password
-	case regV1AgentsIDPassword.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1AgentsIDPassword.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AgentsIDPasswordPut(ctx, m)
 		requestType = "/v1/agents/<agent-id>/password"
 
 	// PUT /agents/<agent-id>/tag_ids
-	case regV1AgentsIDTagIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1AgentsIDTagIDs.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AgentsIDTagIDsPut(ctx, m)
 		requestType = "/v1/agents/<agent-id>/tag_ids"
 
 	// PUT /agents/<agent-id>/status
-	case regV1AgentsIDStatus.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1AgentsIDStatus.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AgentsIDStatusPut(ctx, m)
 		requestType = "/v1/agents/<agent-id>/status"
 
 	// PUT /agents/<agent-id>/permission
-	case regV1AgentsIDPermission.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1AgentsIDPermission.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1AgentsIDPermissionPut(ctx, m)
 		requestType = "/v1/agents/<agent-id>/permission"
 
 	// POST /agents/get_by_customer_id_address
-	case regV1AgentsGetCustomerIDAddress.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1AgentsGetCustomerIDAddress.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AgentsGetByCustomerIDAddressPost(ctx, m)
 		requestType = "/v1/agents/get_by_customer_id_address"
 
@@ -226,7 +227,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// login
 	////////////
 	// POST /login
-	case regV1Login.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Login.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1Login(ctx, m)
 		requestType = "/v1/login"
 

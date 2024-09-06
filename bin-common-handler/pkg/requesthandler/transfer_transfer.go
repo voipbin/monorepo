@@ -11,7 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/models/sock"
 )
 
 // TransferV1TransferStart sends a request to transfer-manager
@@ -31,7 +31,7 @@ func (r *requestHandler) TransferV1TransferStart(ctx context.Context, transferTy
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTransfer(ctx, uri, rabbitmqhandler.RequestMethodPost, "transfer/transfer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTransfer(ctx, uri, sock.RequestMethodPost, "transfer/transfer", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

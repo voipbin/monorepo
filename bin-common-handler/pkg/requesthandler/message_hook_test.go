@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 )
 
@@ -19,7 +20,7 @@ func Test_MessageV1Hook(t *testing.T) {
 		hookMessage *hmhook.Hook
 
 		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
+		expectRequest *sock.Request
 		response      *rabbitmqhandler.Response
 	}{
 		{
@@ -31,9 +32,9 @@ func Test_MessageV1Hook(t *testing.T) {
 			},
 
 			"bin-manager.message-manager.request",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/hooks",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/messages/telnyx","received_data":"eyJrZXkxIjoidmFsMSJ9"}`),
 			},

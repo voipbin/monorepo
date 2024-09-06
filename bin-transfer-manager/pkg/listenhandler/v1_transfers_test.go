@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -18,7 +19,7 @@ func Test_processV1TransfersPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		responseTransfer *transfer.Transfer
 
@@ -29,9 +30,9 @@ func Test_processV1TransfersPost(t *testing.T) {
 	}{
 		{
 			name: "type blind",
-			request: &rabbitmqhandler.Request{
+			request: &sock.Request{
 				URI:      "/v1/transfers",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"blind","transferer_call_id":"9d6ae370-dc73-11ed-a491-aff35612aed5","transferee_addresses":[{"type":"tel","target":"+821100000001"}]}`),
 			},

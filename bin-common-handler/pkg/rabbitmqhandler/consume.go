@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"monorepo/bin-common-handler/models/sock"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
@@ -118,7 +119,7 @@ func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, n
 func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) error {
 
 	// message parse
-	var req Request
+	var req sock.Request
 	if err := json.Unmarshal(message.Body, &req); err != nil {
 		return fmt.Errorf("could not parse the message. message: %s, err: %v", string(message.Body), err)
 	}

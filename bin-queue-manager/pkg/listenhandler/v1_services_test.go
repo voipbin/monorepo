@@ -4,6 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +20,7 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		request *rabbitmqhandler.Request
+		request *sock.Request
 
 		queueID       uuid.UUID
 		activeflowID  uuid.UUID
@@ -33,9 +34,9 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 	}{
 		{
 			"normal",
-			&rabbitmqhandler.Request{
+			&sock.Request{
 				URI:      "/v1/services/type/queuecall",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"queue_id":"61ff907c-acfa-11ed-978c-f76de62bf9f4","activeflow_id":"622931d4-acfa-11ed-9689-7b028764e072","reference_type":"call","reference_id":"624fe626-acfa-11ed-a358-0b881bcb40b0","exit_action_id":"62739c88-acfa-11ed-b338-67d80143d77e"}`),
 			},
