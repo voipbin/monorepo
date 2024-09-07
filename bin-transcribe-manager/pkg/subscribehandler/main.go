@@ -125,7 +125,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(string(h.subscribeQueue), string(common.Servicename), false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessage(string(h.subscribeQueue), string(common.Servicename), false, false, false, 10, h.processEventRun); errConsume != nil {
 				logrus.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}

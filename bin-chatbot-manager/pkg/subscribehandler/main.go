@@ -110,7 +110,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, string(commonoutline.ServiceNameChatbotManager), false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessage(h.subscribeQueue, string(commonoutline.ServiceNameChatbotManager), false, false, false, 10, h.processEventRun); errConsume != nil {
 				log.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}

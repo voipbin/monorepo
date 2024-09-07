@@ -115,7 +115,7 @@ func (h *listenHandler) listenRun() error {
 		logrus.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
 			for {
-				if err := h.rabbitSock.ConsumeRPCOpt(queue, "", false, false, false, 10, h.listenHandler); err != nil {
+				if err := h.rabbitSock.ConsumeRPC(queue, "", false, false, false, 10, h.listenHandler); err != nil {
 					logrus.Errorf("Could not handle the request message correctly. err: %v", err)
 				}
 			}

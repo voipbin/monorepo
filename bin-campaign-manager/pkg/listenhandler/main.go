@@ -138,7 +138,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// process the received request
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "campaign-manager", false, false, false, 10, h.processRequest)
+			err := h.rabbitSock.ConsumeRPC(queue, "campaign-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

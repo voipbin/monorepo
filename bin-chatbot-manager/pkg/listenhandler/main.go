@@ -157,7 +157,7 @@ func (h *listenHandler) Run() error {
 	// process requests
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeRPCOpt(h.queueListen, "chatbot-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeRPC(h.queueListen, "chatbot-manager", false, false, false, 10, h.processRequest); errConsume != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}
