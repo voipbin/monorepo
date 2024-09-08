@@ -29,6 +29,12 @@ func (r *rabbit) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, 
 	return 0, nil
 }
 
+func (h *rabbit) QueueCreate(name string, queueType string) error {
+	switch queueType {
+	case "volatile":
+	}
+}
+
 // QueueDeclare declares the rabbitmq queue using name and add it to the queues.
 func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error {
 	channel, err := r.connection.Channel()
