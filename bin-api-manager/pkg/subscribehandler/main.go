@@ -82,7 +82,7 @@ func (h *subscribeHandler) Run() error {
 
 	// declare the queue for subscribe(pod)
 	log.Debugf("Declaring the queue for subscribe(pod). queue_name: %s", h.subscribeQueueNamePod)
-	if err := h.rabbitSock.QueueCreate(h.subscribeQueueNamePod, "normal"); err != nil {
+	if err := h.rabbitSock.QueueCreate(h.subscribeQueueNamePod, "volatile"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
