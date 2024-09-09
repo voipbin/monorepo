@@ -243,18 +243,18 @@ func (mr *MockRabbitMockRecorder) QueueBind(name, key, exchange, noWait, args in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueBind", reflect.TypeOf((*MockRabbit)(nil).QueueBind), name, key, exchange, noWait, args)
 }
 
-// QueueDeclare mocks base method.
-func (m *MockRabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error {
+// QueueCreate mocks base method.
+func (m *MockRabbit) QueueCreate(name, queueType string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueDeclare", name, durable, autoDelete, exclusive, noWait)
+	ret := m.ctrl.Call(m, "QueueCreate", name, queueType)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// QueueDeclare indicates an expected call of QueueDeclare.
-func (mr *MockRabbitMockRecorder) QueueDeclare(name, durable, autoDelete, exclusive, noWait interface{}) *gomock.Call {
+// QueueCreate indicates an expected call of QueueCreate.
+func (mr *MockRabbitMockRecorder) QueueCreate(name, queueType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDeclare", reflect.TypeOf((*MockRabbit)(nil).QueueDeclare), name, durable, autoDelete, exclusive, noWait)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueCreate", reflect.TypeOf((*MockRabbit)(nil).QueueCreate), name, queueType)
 }
 
 // QueueQoS mocks base method.

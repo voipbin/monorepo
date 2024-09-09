@@ -3,6 +3,8 @@ package rabbitmqhandler
 import (
 	"fmt"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -32,7 +34,58 @@ func (r *rabbit) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, 
 func (h *rabbit) QueueCreate(name string, queueType string) error {
 	switch queueType {
 	case "volatile":
+		return h.queueCreateVolatile(name)
+
+	default:
+		return h.queueCreateNormal(name)
 	}
+}
+
+func (h *rabbit) queueCreateNormal(name string) error {
+
+	// declare the queue
+	if errDeclare := h.QueueDeclare(name, true, false, false, false); errDeclare != nil {
+		return fmt.Errorf("could not declare the queue. err: %v", errDeclare)
+	}
+
+	if errConfig := h.queueConfig(name); errConfig != nil {
+		return fmt.Errorf("could not config the queue. err: %v", errConfig)
+	}
+
+	return nil
+}
+
+func (h *rabbit) queueCreateVolatile(name string) error {
+
+	// declare the queue
+	if errDeclare := h.QueueDeclare(name, false, true, false, false); errDeclare != nil {
+		return fmt.Errorf("could not declare the queue. err: %v", errDeclare)
+	}
+
+	if errConfig := h.queueConfig(name); errConfig != nil {
+		return fmt.Errorf("could not config the queue. err: %v", errConfig)
+	}
+
+	return nil
+}
+
+func (h *rabbit) queueConfig(name string) error {
+	// set qos
+	if errQos := h.QueueQoS(name, 1, 0); errQos != nil {
+		return fmt.Errorf("could not set the queue's qos. err: %v", errQos)
+	}
+
+	// declare the exchange for deplayed message
+	if errDeclare := h.ExchangeDeclareForDelay(string(commonoutline.QueueNameDelay), true, false, false, false); errDeclare != nil {
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", errDeclare)
+	}
+
+	// bind the delay exchange to the queue
+	if errBind := h.QueueBind(name, name, string(commonoutline.QueueNameDelay), false, nil); errBind != nil {
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", errBind)
+	}
+
+	return nil
 }
 
 // QueueDeclare declares the rabbitmq queue using name and add it to the queues.

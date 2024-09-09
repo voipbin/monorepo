@@ -18,7 +18,6 @@ import (
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-transcribe-manager/pkg/transcribehandler"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
@@ -107,9 +106,8 @@ func (h *subscribeHandler) Run() error {
 	log.Infof("Creating rabbitmq queue for subscribed event receiving.")
 
 	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(string(h.subscribeQueue), true, true, false, false); err != nil {
-		log.Errorf("Could not declare the queue for subscribe. err: %v", err)
-		return errors.Wrap(err, "could not declare the queue for listenHandler.")
+	if err := h.rabbitSock.QueueCreate(string(h.subscribeQueue), "normal"); err != nil {
+		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
 	// subscribe each targets

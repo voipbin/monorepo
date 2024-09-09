@@ -116,14 +116,8 @@ func (h *listenHandler) runListenQueue(queue string) error {
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
-	if err := h.rabbitSock.QueueDeclare(queue, true, false, false, false); err != nil {
+	if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
-	}
-
-	// Set QoS
-	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
-		logrus.Errorf("Could not set the queue's qos. err: %v", err)
-		return err
 	}
 
 	// receive requests
@@ -147,8 +141,8 @@ func (h *listenHandler) runListenQueueVolatile(queue string) error {
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
-	if err := h.rabbitSock.QueueDeclare(queue, false, true, false, false); err != nil {
-		return fmt.Errorf("could not declare the queue volatile. err: %v", err)
+	if err := h.rabbitSock.QueueCreate(queue, "volatile"); err != nil {
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// receive requests

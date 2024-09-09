@@ -88,8 +88,7 @@ func (h *subscribeHandler) Run() error {
 	})
 	log.Info("Creating rabbitmq queue for listen.")
 
-	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
+	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 

@@ -83,19 +83,8 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		"queue": queue,
 	}).Info("Creating rabbitmq queue for listen.")
 
-	// declare the queue
-	if err := h.rabbitSock.QueueDeclare(queue, true, false, false, false); err != nil {
+	if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
-	}
-
-	// create a exchange for delayed message
-	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
-	}
-
-	// bind a queue with delayed exchange
-	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
