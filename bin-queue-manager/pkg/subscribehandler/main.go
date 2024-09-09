@@ -92,8 +92,7 @@ func (h *subscribeHandler) Run() error {
 		"func": "Run",
 	}).Info("Creating rabbitmq queue for listen.")
 
-	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
+	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
@@ -110,7 +109,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "queue-manager", false, false, false, 10, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessage(h.subscribeQueue, "queue-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

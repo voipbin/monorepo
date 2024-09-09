@@ -82,7 +82,7 @@ func (h *subscribeHandler) Run() error {
 
 	// declare the queue for subscribe(pod)
 	log.Debugf("Declaring the queue for subscribe(pod). queue_name: %s", h.subscribeQueueNamePod)
-	if err := h.rabbitSock.QueueDeclare(h.subscribeQueueNamePod, false, true, false, false); err != nil {
+	if err := h.rabbitSock.QueueCreate(h.subscribeQueueNamePod, "volatile"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
@@ -99,7 +99,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueueNamePod, string(commonoutline.ServiceNameAPIManager), false, false, false, 10, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessage(h.subscribeQueueNamePod, string(commonoutline.ServiceNameAPIManager), false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
