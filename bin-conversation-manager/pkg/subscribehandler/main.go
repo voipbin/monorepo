@@ -86,9 +86,10 @@ func NewSubscribeHandler(
 }
 
 func (h *subscribeHandler) Run() error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func": "Run",
-	}).Info("Creating rabbitmq queue for listen.")
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
 	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
@@ -97,11 +98,9 @@ func (h *subscribeHandler) Run() error {
 	// subscribe each targets
 	targets := strings.Split(h.subscribesTargets, ",")
 	for _, target := range targets {
-
-		// bind each targets
-		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
-			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
-			return err
+		if errSubscribe := h.rabbitSock.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
+			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
+			return errSubscribe
 		}
 	}
 
@@ -110,7 +109,7 @@ func (h *subscribeHandler) Run() error {
 		for {
 			err := h.rabbitSock.ConsumeMessage(h.subscribeQueue, "conversation-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()

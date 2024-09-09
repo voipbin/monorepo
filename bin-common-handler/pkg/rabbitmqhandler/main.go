@@ -32,9 +32,11 @@ type Rabbit interface {
 	PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
 
 	QueueCreate(name string, queueType string) error
+	QueueSubscribe(name string, topic string) error
+
 	// QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
-	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
-	QueueQoS(name string, prefetchCount, prefetchSize int) error
+	// QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
+	// QueueQoS(name string, prefetchCount, prefetchSize int) error
 }
 
 // rabbit struct for rabbitmq

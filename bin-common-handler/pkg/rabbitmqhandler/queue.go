@@ -81,8 +81,8 @@ func (h *rabbit) queueConfig(name string) error {
 	}
 
 	// bind the delay exchange to the queue
-	if errBind := h.QueueBind(name, name, string(commonoutline.QueueNameDelay), false, nil); errBind != nil {
-		return fmt.Errorf("could not bind the queue and exchange. err: %v", errBind)
+	if errSubscribe := h.QueueBind(name, name, string(commonoutline.QueueNameDelay), false, nil); errSubscribe != nil {
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", errSubscribe)
 	}
 
 	return nil
@@ -133,6 +133,11 @@ func (r *rabbit) QueueQoS(name string, prefetchCount, prefetchSize int) error {
 	}
 
 	return nil
+}
+
+// QueueBind binds queue and exchange with a key
+func (h *rabbit) QueueSubscribe(name string, topic string) error {
+	return h.QueueBind(name, "", topic, false, nil)
 }
 
 // QueueBind binds queue and exchange with a key

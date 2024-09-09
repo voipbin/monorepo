@@ -126,11 +126,9 @@ func (h *subscribeHandler) Run() error {
 
 	// subscribe each targets
 	for _, target := range h.subscribeTargets {
-
-		// bind each targets
-		if err := h.rabbitSock.QueueBind(string(h.subscribeQueue), "", target, false, nil); err != nil {
-			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
-			return err
+		if errSubscribe := h.rabbitSock.QueueSubscribe(string(h.subscribeQueue), target); errSubscribe != nil {
+			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
+			return errSubscribe
 		}
 	}
 

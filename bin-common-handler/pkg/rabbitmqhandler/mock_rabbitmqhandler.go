@@ -229,20 +229,6 @@ func (mr *MockRabbitMockRecorder) PublishRequest(queueName, req interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRequest", reflect.TypeOf((*MockRabbit)(nil).PublishRequest), queueName, req)
 }
 
-// QueueBind mocks base method.
-func (m *MockRabbit) QueueBind(name, key, exchange string, noWait bool, args amqp091_go.Table) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueBind", name, key, exchange, noWait, args)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueueBind indicates an expected call of QueueBind.
-func (mr *MockRabbitMockRecorder) QueueBind(name, key, exchange, noWait, args interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueBind", reflect.TypeOf((*MockRabbit)(nil).QueueBind), name, key, exchange, noWait, args)
-}
-
 // QueueCreate mocks base method.
 func (m *MockRabbit) QueueCreate(name, queueType string) error {
 	m.ctrl.T.Helper()
@@ -257,16 +243,16 @@ func (mr *MockRabbitMockRecorder) QueueCreate(name, queueType interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueCreate", reflect.TypeOf((*MockRabbit)(nil).QueueCreate), name, queueType)
 }
 
-// QueueQoS mocks base method.
-func (m *MockRabbit) QueueQoS(name string, prefetchCount, prefetchSize int) error {
+// QueueSubscribe mocks base method.
+func (m *MockRabbit) QueueSubscribe(name, topic string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueQoS", name, prefetchCount, prefetchSize)
+	ret := m.ctrl.Call(m, "QueueSubscribe", name, topic)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// QueueQoS indicates an expected call of QueueQoS.
-func (mr *MockRabbitMockRecorder) QueueQoS(name, prefetchCount, prefetchSize interface{}) *gomock.Call {
+// QueueSubscribe indicates an expected call of QueueSubscribe.
+func (mr *MockRabbitMockRecorder) QueueSubscribe(name, topic interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueQoS", reflect.TypeOf((*MockRabbit)(nil).QueueQoS), name, prefetchCount, prefetchSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSubscribe", reflect.TypeOf((*MockRabbit)(nil).QueueSubscribe), name, topic)
 }

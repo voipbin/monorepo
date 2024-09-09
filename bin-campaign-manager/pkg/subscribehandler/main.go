@@ -91,9 +91,10 @@ func NewSubscribeHandler(
 }
 
 func (h *subscribeHandler) Run() error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func": "Run",
-	}).Info("Creating rabbitmq queue for listen.")
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue for subscribe
 	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
@@ -102,11 +103,9 @@ func (h *subscribeHandler) Run() error {
 
 	// subscribe each targets
 	for _, target := range h.subscribeTargets {
-
-		// bind each targets
-		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
-			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
-			return err
+		if errSubscribe := h.rabbitSock.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
+			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
+			return errSubscribe
 		}
 	}
 
