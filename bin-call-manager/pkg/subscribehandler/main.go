@@ -16,7 +16,6 @@ import (
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
@@ -121,9 +120,8 @@ func (h *subscribeHandler) Run() error {
 	log.Infof("Creating rabbitmq queue for ARI event receiving.")
 
 	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(string(h.subscribeQueue), true, true, false, false); err != nil {
-		log.Errorf("Could not declare the queue for subscribe. err: %v", err)
-		return errors.Wrap(err, "could not declare the queue for listenHandler.")
+	if err := h.rabbitSock.QueueCreate(string(h.subscribeQueue), "normal"); err != nil {
+		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
 	// subscribe each targets
@@ -139,7 +137,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessageOpt(string(h.subscribeQueue), string(common.Servicename), false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.rabbitSock.ConsumeMessage(string(h.subscribeQueue), string(common.Servicename), false, false, false, 10, h.processEventRun); errConsume != nil {
 				logrus.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}

@@ -122,31 +122,14 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	})
 	log.Info("Creating rabbitmq queue for listen.")
 
-	// declare the queue
-	if err := h.rabbitSock.QueueDeclare(queue, true, false, false, false); err != nil {
+	if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
-	}
-
-	// Set QoS
-	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
-		log.Errorf("Could not set the queue's qos. err: %v", err)
-		return err
-	}
-
-	// create a exchange for delayed message
-	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
-	}
-
-	// bind a queue with delayed exchange
-	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// process the received request
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "flow-manager", false, false, false, 10, h.processRequest)
+			err := h.rabbitSock.ConsumeRPC(queue, "flow-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

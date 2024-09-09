@@ -17,8 +17,8 @@ type Rabbit interface {
 	Close()
 	GetURL() string
 
-	ConsumeMessageOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error
-	ConsumeRPCOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume CbMsgRPC) error
+	ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error
+	ConsumeRPC(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume CbMsgRPC) error
 
 	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
 	ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error
@@ -31,7 +31,8 @@ type Rabbit interface {
 	PublishRequest(queueName string, req *sock.Request) error
 	PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
 
-	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
+	QueueCreate(name string, queueType string) error
+	// QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
 	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
 	QueueQoS(name string, prefetchCount, prefetchSize int) error
 }

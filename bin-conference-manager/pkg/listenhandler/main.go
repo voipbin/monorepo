@@ -122,32 +122,15 @@ func (h *listenHandler) Run() error {
 		"func": "Run",
 	}).Info("Creating rabbitmq queue for listen.")
 
-	// declare the queue
-	if err := h.rabbitSock.QueueDeclare(h.queueListen, true, false, false, false); err != nil {
+	if err := h.rabbitSock.QueueCreate(h.queueListen, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
-	}
-
-	// Set QoS
-	if err := h.rabbitSock.QueueQoS(h.queueListen, 1, 0); err != nil {
-		logrus.Errorf("Could not set the queue's qos. err: %v", err)
-		return err
-	}
-
-	// create a exchange for delayed message
-	if err := h.rabbitSock.ExchangeDeclareForDelay(h.exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
-	}
-
-	// bind a queue with delayed exchange
-	if err := h.rabbitSock.QueueBind(h.queueListen, h.queueListen, h.exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
 	go func() {
 		for {
 			// consume the request
-			err := h.rabbitSock.ConsumeRPCOpt(h.queueListen, constCosumerName, false, false, false, 10, h.processRequest)
+			err := h.rabbitSock.ConsumeRPC(h.queueListen, constCosumerName, false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

@@ -78,17 +78,8 @@ func (h *listenHandler) listenRun() error {
 	permQueues := strings.Split(h.rabbitQueueListenRequestPermanent, ",")
 	for _, queue := range permQueues {
 
-		// declare queue
-		logrus.Debugf("Declaring permenant request queue. queue: %s", queue)
-		if err := h.rabbitSock.QueueDeclare(queue, false, false, false, false); err != nil {
-			logrus.Errorf("Could not declare the permanent queue: %v, err: %v", queue, err)
-			return err
-		}
-
-		// set qos
-		if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
-			logrus.Errorf("Could not set the QoS. queue: %v, err: %v", queue, err)
-			return err
+		if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
+			return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 		}
 
 		// append it to listen queue
@@ -101,9 +92,9 @@ func (h *listenHandler) listenRun() error {
 
 		// declare queue
 		logrus.Debugf("Declaring permenant request queue. queue: %s", queue)
-		if err := h.rabbitSock.QueueDeclare(queue, false, false, true, false); err != nil {
-			logrus.Errorf("Could not declare the volatile queue. queue: %v, err: %v", queue, err)
-			return err
+
+		if err := h.rabbitSock.QueueCreate(queue, "volatile"); err != nil {
+			return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 		}
 
 		// append it to liesten queue
@@ -115,7 +106,7 @@ func (h *listenHandler) listenRun() error {
 		logrus.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
 			for {
-				if err := h.rabbitSock.ConsumeRPCOpt(queue, "", false, false, false, 10, h.listenHandler); err != nil {
+				if err := h.rabbitSock.ConsumeRPC(queue, "", false, false, false, 10, h.listenHandler); err != nil {
 					logrus.Errorf("Could not handle the request message correctly. err: %v", err)
 				}
 			}
