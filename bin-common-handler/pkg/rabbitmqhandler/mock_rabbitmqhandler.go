@@ -10,7 +10,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	amqp091_go "github.com/rabbitmq/amqp091-go"
 )
 
 // MockRabbit is a mock of Rabbit interface.
@@ -88,34 +87,6 @@ func (mr *MockRabbitMockRecorder) ConsumeRPC(queueName, consumerName, exclusive,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPC", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPC), queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume)
 }
 
-// ExchangeDeclare mocks base method.
-func (m *MockRabbit) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp091_go.Table) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExchangeDeclare", name, kind, durable, autoDelete, internal, noWait, args)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ExchangeDeclare indicates an expected call of ExchangeDeclare.
-func (mr *MockRabbitMockRecorder) ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExchangeDeclare", reflect.TypeOf((*MockRabbit)(nil).ExchangeDeclare), name, kind, durable, autoDelete, internal, noWait, args)
-}
-
-// ExchangeDeclareForDelay mocks base method.
-func (m *MockRabbit) ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExchangeDeclareForDelay", name, durable, autoDelete, internal, noWait)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ExchangeDeclareForDelay indicates an expected call of ExchangeDeclareForDelay.
-func (mr *MockRabbitMockRecorder) ExchangeDeclareForDelay(name, durable, autoDelete, internal, noWait interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExchangeDeclareForDelay", reflect.TypeOf((*MockRabbit)(nil).ExchangeDeclareForDelay), name, durable, autoDelete, internal, noWait)
-}
-
 // GetURL mocks base method.
 func (m *MockRabbit) GetURL() string {
 	m.ctrl.T.Helper()
@@ -128,20 +99,6 @@ func (m *MockRabbit) GetURL() string {
 func (mr *MockRabbitMockRecorder) GetURL() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURL", reflect.TypeOf((*MockRabbit)(nil).GetURL))
-}
-
-// PublishEvent mocks base method.
-func (m *MockRabbit) PublishEvent(queueName string, evt *sock.Event) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishEvent", queueName, evt)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PublishEvent indicates an expected call of PublishEvent.
-func (mr *MockRabbitMockRecorder) PublishEvent(queueName, evt interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockRabbit)(nil).PublishEvent), queueName, evt)
 }
 
 // PublishExchangeDelayedEvent mocks base method.
@@ -186,20 +143,6 @@ func (mr *MockRabbitMockRecorder) PublishExchangeEvent(exchange, key, evt interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeEvent", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeEvent), exchange, key, evt)
 }
 
-// PublishExchangeRequest mocks base method.
-func (m *MockRabbit) PublishExchangeRequest(exchange, key string, req *sock.Request) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishExchangeRequest", exchange, key, req)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PublishExchangeRequest indicates an expected call of PublishExchangeRequest.
-func (mr *MockRabbitMockRecorder) PublishExchangeRequest(exchange, key, req interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeRequest", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeRequest), exchange, key, req)
-}
-
 // PublishRPC mocks base method.
 func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
 	m.ctrl.T.Helper()
@@ -213,20 +156,6 @@ func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *sock
 func (mr *MockRabbitMockRecorder) PublishRPC(ctx, queueName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRPC", reflect.TypeOf((*MockRabbit)(nil).PublishRPC), ctx, queueName, req)
-}
-
-// PublishRequest mocks base method.
-func (m *MockRabbit) PublishRequest(queueName string, req *sock.Request) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishRequest", queueName, req)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PublishRequest indicates an expected call of PublishRequest.
-func (mr *MockRabbitMockRecorder) PublishRequest(queueName, req interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRequest", reflect.TypeOf((*MockRabbit)(nil).PublishRequest), queueName, req)
 }
 
 // QueueCreate mocks base method.
@@ -255,4 +184,18 @@ func (m *MockRabbit) QueueSubscribe(name, topic string) error {
 func (mr *MockRabbitMockRecorder) QueueSubscribe(name, topic interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSubscribe", reflect.TypeOf((*MockRabbit)(nil).QueueSubscribe), name, topic)
+}
+
+// TopicCreate mocks base method.
+func (m *MockRabbit) TopicCreate(name string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TopicCreate", name)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TopicCreate indicates an expected call of TopicCreate.
+func (mr *MockRabbitMockRecorder) TopicCreate(name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopicCreate", reflect.TypeOf((*MockRabbit)(nil).TopicCreate), name)
 }

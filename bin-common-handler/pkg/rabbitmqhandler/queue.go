@@ -32,12 +32,16 @@ func (r *rabbit) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, 
 }
 
 func (h *rabbit) QueueCreate(name string, queueType string) error {
+
 	switch queueType {
 	case "volatile":
 		return h.queueCreateVolatile(name)
 
-	default:
+	case "normal":
 		return h.queueCreateNormal(name)
+
+	default:
+		return fmt.Errorf("invalid queue type. type: %s", queueType)
 	}
 }
 
@@ -45,7 +49,7 @@ func (h *rabbit) queueCreateNormal(name string) error {
 
 	// declare the queue
 	if errDeclare := h.QueueDeclare(name, true, false, false, false); errDeclare != nil {
-		return fmt.Errorf("could not declare the queue. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the queue for normal. err: %v", errDeclare)
 	}
 
 	if errConfig := h.queueConfig(name); errConfig != nil {
@@ -59,7 +63,7 @@ func (h *rabbit) queueCreateVolatile(name string) error {
 
 	// declare the queue
 	if errDeclare := h.QueueDeclare(name, false, true, false, false); errDeclare != nil {
-		return fmt.Errorf("could not declare the queue. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the queue for volatile. err: %v", errDeclare)
 	}
 
 	if errConfig := h.queueConfig(name); errConfig != nil {

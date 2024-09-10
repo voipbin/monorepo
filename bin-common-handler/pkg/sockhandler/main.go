@@ -9,4 +9,9 @@ type CbMsgConsume func(*sock.Event) error
 type CbMsgRPC func(*sock.Request) (*sock.Response, error)
 
 type SockHandler interface {
+	Connect()
+	Close()
+
+	QueueCreate(name string, queueType string) error
+	QueueSubscribe(name string, topic string) error
 }

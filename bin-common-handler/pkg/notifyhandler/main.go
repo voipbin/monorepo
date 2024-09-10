@@ -100,7 +100,7 @@ func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.Req
 		publisher: publisher,
 	}
 
-	if err := sock.ExchangeDeclare(string(queueEvent), "fanout", true, false, false, false, nil); err != nil {
+	if err := sock.TopicCreate(string(queueEvent)); err != nil {
 		logrus.Errorf("Could not declare the event exchange. err: %v", err)
 		return nil
 	}

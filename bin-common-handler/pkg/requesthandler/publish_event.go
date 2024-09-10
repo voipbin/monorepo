@@ -28,10 +28,15 @@ func (r *requestHandler) publishEvent(queue commonoutline.QueueName, eventType s
 		Data:      data,
 	}
 
-	if errPublish := r.sock.PublishEvent(string(queue), evt); errPublish != nil {
+	if errPublish := r.sock.PublishExchangeEvent("", string(queue), evt); errPublish != nil {
 		log.Errorf("Could not publish event: %v", errPublish)
 		return errPublish
 	}
+
+	// if errPublish := r.sock.PublishEvent(string(queue), evt); errPublish != nil {
+	// 	log.Errorf("Could not publish event: %v", errPublish)
+	// 	return errPublish
+	// }
 	promEventCount.WithLabelValues(eventType).Inc()
 
 	return nil

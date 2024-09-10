@@ -15,28 +15,20 @@ import (
 type Rabbit interface {
 	Connect()
 	Close()
-	GetURL() string
 
 	ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error
 	ConsumeRPC(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume CbMsgRPC) error
 
-	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
-	ExchangeDeclareForDelay(name string, durable, autoDelete, internal, noWait bool) error
+	TopicCreate(name string) error
 
 	PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error
 	PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error
+
 	PublishExchangeEvent(exchange, key string, evt *sock.Event) error
-	PublishExchangeRequest(exchange, key string, req *sock.Request) error
-	PublishEvent(queueName string, evt *sock.Event) error
-	PublishRequest(queueName string, req *sock.Request) error
 	PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
 
 	QueueCreate(name string, queueType string) error
 	QueueSubscribe(name string, topic string) error
-
-	// QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool) error
-	// QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
-	// QueueQoS(name string, prefetchCount, prefetchSize int) error
 }
 
 // rabbit struct for rabbitmq
@@ -106,11 +98,6 @@ func NewRabbit(uri string) Rabbit {
 func (r *rabbit) Connect() {
 	r.connect()
 	go r.reconnector()
-}
-
-// GetURL returns url
-func (r *rabbit) GetURL() string {
-	return r.uri
 }
 
 // Close close the Queue.

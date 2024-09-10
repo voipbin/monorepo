@@ -36,20 +36,20 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 	return nil
 }
 
-// PublishMessage sends a request to rabbitmq
-func (r *rabbit) PublishRequest(queueName string, req *sock.Request) error {
+// // PublishMessage sends a request to rabbitmq
+// func (r *rabbit) PublishRequest(queueName string, req *sock.Request) error {
 
-	message, err := json.Marshal(req)
-	if err != nil {
-		return fmt.Errorf("could not marshal the request. err: %v", err)
-	}
+// 	message, err := json.Marshal(req)
+// 	if err != nil {
+// 		return fmt.Errorf("could not marshal the request. err: %v", err)
+// 	}
 
-	if err := r.publishExchange("", queueName, message, nil); err != nil {
-		return fmt.Errorf("could not send a message. err: %v", err)
-	}
+// 	if err := r.publishExchange("", queueName, message, nil); err != nil {
+// 		return fmt.Errorf("could not send a message. err: %v", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // PublishEvent sends a event to rabbitmq
 func (r *rabbit) PublishEvent(queueName string, evt *sock.Event) error {
@@ -137,8 +137,17 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Req
 	}
 }
 
+// // PublishExchangeMessage sends a message to rabbitmq
+// func (r *rabbit) PublishExchangeMessage(exchange string, key string, message interface{}) error {
+// 	tmp, err := json.Marshal(message)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return r.publishExchange(exchange, key, tmp, nil)
+// }
+
 // PublishExchangeEvent sends a message to rabbitmq
-func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *sock.Event) error {
+func (r *rabbit) PublishExchangeEvent(exchange string, key string, evt *sock.Event) error {
 	message, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -146,14 +155,14 @@ func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *sock.Event) err
 	return r.publishExchange(exchange, key, message, nil)
 }
 
-// PublishMessage sends a message to rabbitmq
-func (r *rabbit) PublishExchangeRequest(exchange, key string, req *sock.Request) error {
-	message, err := json.Marshal(req)
-	if err != nil {
-		return err
-	}
-	return r.publishExchange(exchange, key, message, nil)
-}
+// // PublishMessage sends a message to rabbitmq
+// func (r *rabbit) PublishExchangeRequest(exchange string, key string, req *sock.Request) error {
+// 	message, err := json.Marshal(req)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return r.publishExchange(exchange, key, message, nil)
+// }
 
 // PublishExchangeDelayedRequest sends a delayed request to the rabbitmq exchange
 // delay is ms.
