@@ -164,9 +164,9 @@ func (r *rabbit) PublishExchangeEvent(exchange string, key string, evt *sock.Eve
 // 	return r.publishExchange(exchange, key, message, nil)
 // }
 
-// PublishExchangeDelayedRequest sends a delayed request to the rabbitmq exchange
+// PublishDelayedRequest sends a delayed request to the rabbitmq exchange
 // delay is ms.
-func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
+func (r *rabbit) PublishDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
 	headers := make(amqp.Table)
 	headers["x-delay"] = delay
 

@@ -87,18 +87,18 @@ func (mr *MockRabbitMockRecorder) ConsumeRPC(queueName, consumerName, exclusive,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPC", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPC), queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume)
 }
 
-// GetURL mocks base method.
-func (m *MockRabbit) GetURL() string {
+// PublishDelayedRequest mocks base method.
+func (m *MockRabbit) PublishDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetURL")
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "PublishDelayedRequest", exchange, key, req, delay)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetURL indicates an expected call of GetURL.
-func (mr *MockRabbitMockRecorder) GetURL() *gomock.Call {
+// PublishDelayedRequest indicates an expected call of PublishDelayedRequest.
+func (mr *MockRabbitMockRecorder) PublishDelayedRequest(exchange, key, req, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURL", reflect.TypeOf((*MockRabbit)(nil).GetURL))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishDelayedRequest", reflect.TypeOf((*MockRabbit)(nil).PublishDelayedRequest), exchange, key, req, delay)
 }
 
 // PublishExchangeDelayedEvent mocks base method.
@@ -113,20 +113,6 @@ func (m *MockRabbit) PublishExchangeDelayedEvent(exchange, key string, evt *sock
 func (mr *MockRabbitMockRecorder) PublishExchangeDelayedEvent(exchange, key, evt, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeDelayedEvent", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeDelayedEvent), exchange, key, evt, delay)
-}
-
-// PublishExchangeDelayedRequest mocks base method.
-func (m *MockRabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishExchangeDelayedRequest", exchange, key, req, delay)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PublishExchangeDelayedRequest indicates an expected call of PublishExchangeDelayedRequest.
-func (mr *MockRabbitMockRecorder) PublishExchangeDelayedRequest(exchange, key, req, delay interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeDelayedRequest", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeDelayedRequest), exchange, key, req, delay)
 }
 
 // PublishExchangeEvent mocks base method.

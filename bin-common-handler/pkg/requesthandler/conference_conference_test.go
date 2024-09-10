@@ -279,7 +279,7 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 			if tt.delay == 0 {
 				mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			} else {
-				mockSock.EXPECT().PublishExchangeDelayedRequest(
+				mockSock.EXPECT().PublishDelayedRequest(
 					gomock.Any(),
 					tt.expectTarget,
 					tt.expectRequest,

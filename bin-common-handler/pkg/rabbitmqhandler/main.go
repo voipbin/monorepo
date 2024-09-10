@@ -21,7 +21,7 @@ type Rabbit interface {
 
 	TopicCreate(name string) error
 
-	PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error
+	PublishDelayedRequest(exchange, key string, req *sock.Request, delay int) error
 	PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error
 
 	PublishExchangeEvent(exchange, key string, evt *sock.Event) error

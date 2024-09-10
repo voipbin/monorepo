@@ -267,7 +267,7 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishExchangeDelayedRequest(
+			mockSock.EXPECT().PublishDelayedRequest(
 				gomock.Any(),
 				tt.expectTarget,
 				tt.expectRequest,

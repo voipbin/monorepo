@@ -449,7 +449,7 @@ func Test_QueueV1QueuecallTimeoutWait(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+			mockSock.EXPECT().PublishDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
 			if err := reqHandler.QueueV1QueuecallTimeoutWait(ctx, tt.queuecallID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -497,7 +497,7 @@ func Test_QueueV1QueuecallTimeoutService(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+			mockSock.EXPECT().PublishDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
 			if err := reqHandler.QueueV1QueuecallTimeoutService(ctx, tt.queuecallID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
