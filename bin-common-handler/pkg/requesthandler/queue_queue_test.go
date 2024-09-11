@@ -818,7 +818,7 @@ func Test_QueueV1QueueExecuteRun(t *testing.T) {
 			if tt.executeDelay == DelayNow {
 				mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			} else {
-				mockSock.EXPECT().RequestPublishWithDelay(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.executeDelay).Return(nil)
+				mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.executeDelay).Return(nil)
 			}
 
 			if err := reqHandler.QueueV1QueueExecuteRun(ctx, tt.id, tt.executeDelay); err != nil {

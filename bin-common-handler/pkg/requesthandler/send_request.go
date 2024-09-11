@@ -87,7 +87,7 @@ func (r *requestHandler) sendDirectRequest(ctx context.Context, target string, r
 func (r *requestHandler) sendDelayedRequest(queue string, resource string, delay int, req *sock.Request) error {
 
 	start := time.Now()
-	err := r.sock.RequestPublishWithDelay(string(commonoutline.QueueNameDelay), queue, req, delay)
+	err := r.sock.RequestPublishWithDelay(queue, req, delay)
 	elapsed := time.Since(start)
 	promRequestProcessTime.WithLabelValues(string(commonoutline.QueueNameDelay), string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
 

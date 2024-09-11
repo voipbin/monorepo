@@ -16,16 +16,16 @@ type Rabbit interface {
 	Connect()
 	Close()
 
-	ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error
-	ConsumeRPC(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume CbMsgRPC) error
+	ConsumeMessage(queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error
+	ConsumeRPC(queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume sock.CbMsgRPC) error
 
 	TopicCreate(name string) error
 
-	EventPublish(exchange, key string, evt *sock.Event) error
-	EventPublishWithDelay(exchange, key string, evt *sock.Event, delay int) error
+	EventPublish(topic string, key string, evt *sock.Event) error
+	EventPublishWithDelay(topic string, key string, evt *sock.Event, delay int) error
 
 	RequestPublish(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
-	RequestPublishWithDelay(exchange, key string, req *sock.Request, delay int) error
+	RequestPublishWithDelay(key string, req *sock.Request, delay int) error
 
 	QueueCreate(name string, queueType string) error
 	QueueSubscribe(name string, topic string) error
@@ -75,12 +75,6 @@ type exchange struct {
 
 	channel *amqp.Channel
 }
-
-// CbMsgConsume is func prototype for message read callback.
-type CbMsgConsume func(*sock.Event) error
-
-// CbMsgRPC is func prototype for RPC callback
-type CbMsgRPC func(*sock.Request) (*sock.Response, error)
 
 // NewRabbit creates queue for Rabbitmq
 func NewRabbit(uri string) Rabbit {

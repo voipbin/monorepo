@@ -280,7 +280,6 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 				mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			} else {
 				mockSock.EXPECT().RequestPublishWithDelay(
-					gomock.Any(),
 					tt.expectTarget,
 					tt.expectRequest,
 					tt.delay,

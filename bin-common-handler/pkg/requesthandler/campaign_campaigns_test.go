@@ -368,7 +368,7 @@ func Test_CampaignV1CampaignExecute(t *testing.T) {
 			if tt.delay == 0 {
 				mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			} else {
-				mockSock.EXPECT().RequestPublishWithDelay(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+				mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 			}
 
 			if err := reqHandler.CampaignV1CampaignExecute(ctx, tt.campaignID, tt.delay); err != nil {

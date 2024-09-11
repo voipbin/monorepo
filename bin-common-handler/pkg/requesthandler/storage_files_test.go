@@ -159,7 +159,7 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().RequestPublishWithDelay(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+			mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
 			err := reqHandler.StorageV1FileCreateWithDelay(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.delay)
 			if err != nil {

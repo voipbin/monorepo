@@ -9,8 +9,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -90,10 +92,10 @@ func main() {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// connect to rabbitmq
-	sock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	sock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
-	run(sock, db)
+	run(sockHandler, db)
 }
 
 func init() {
@@ -150,7 +152,7 @@ func writeBase64(filename string, data string) error {
 }
 
 func run(
-	sock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	db dbhandler.DBHandler,
 ) {
 	log := logrus.WithFields(logrus.Fields{
@@ -158,12 +160,12 @@ func run(
 	})
 
 	// create handlers
-	requestHandler := requesthandler.NewRequestHandler(sock, "api_manager")
+	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler)
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, *gcpCredential, *gcpProjectID, *gcpBucketName)
 
-	if errSub := runSubscribe(sock, zmqPubHandler); errSub != nil {
+	if errSub := runSubscribe(sockHandler, zmqPubHandler); errSub != nil {
 		log.Errorf("Could not run subscribe handler. err: %v", errSub)
 	}
 

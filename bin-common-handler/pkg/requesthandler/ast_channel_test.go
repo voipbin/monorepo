@@ -360,7 +360,6 @@ func Test_ChannelAstChannelHangup(t *testing.T) {
 				).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 			} else {
 				mockSock.EXPECT().RequestPublishWithDelay(
-					gomock.Any(),
 					tt.expectQueue,
 					&sock.Request{
 						URI:      tt.expectURI,
