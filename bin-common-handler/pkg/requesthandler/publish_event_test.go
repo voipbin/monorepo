@@ -52,7 +52,7 @@ func Test_CallPublishEvent(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishEvent("", tt.expectTarget, tt.expectEvent).Return(nil)
+			mockSock.EXPECT().EventPublish("", tt.expectTarget, tt.expectEvent).Return(nil)
 
 			if err := reqHandler.CallPublishEvent(ctx, tt.eventType, tt.publisher, tt.dataType, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

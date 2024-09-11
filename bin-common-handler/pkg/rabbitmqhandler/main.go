@@ -21,11 +21,11 @@ type Rabbit interface {
 
 	TopicCreate(name string) error
 
-	PublishEvent(exchange, key string, evt *sock.Event) error
-	PublishDelayedEvent(exchange, key string, evt *sock.Event, delay int) error
+	EventPublish(exchange, key string, evt *sock.Event) error
+	EventPublishWithDelay(exchange, key string, evt *sock.Event, delay int) error
 
-	PublishRequest(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
-	PublishDelayedRequest(exchange, key string, req *sock.Request, delay int) error
+	RequestPublish(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
+	RequestPublishWithDelay(exchange, key string, req *sock.Request, delay int) error
 
 	QueueCreate(name string, queueType string) error
 	QueueSubscribe(name string, topic string) error

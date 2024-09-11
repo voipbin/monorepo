@@ -101,7 +101,7 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ExternalMediaGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -178,7 +178,7 @@ func Test_CallV1ExternalMediaStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ExternalMediaStart(ctx, tt.referenceType, tt.referenceID, tt.noInsertMedia, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
@@ -236,7 +236,7 @@ func Test_CallV1ExternalMediaGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ExternalMediaGet(ctx, tt.externalMediaID)
 			if err != nil {
@@ -294,7 +294,7 @@ func Test_CallV1ExternalMediaStop(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ExternalMediaStop(ctx, tt.externalMediaID)
 			if err != nil {

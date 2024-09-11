@@ -76,7 +76,7 @@ func Test_BillingV1BillingGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseBillings, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseBillings, nil)
 
 			res, err := h.BillingV1BillingGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {

@@ -42,7 +42,7 @@ func Test_AstRecordingStop(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRequest(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -93,7 +93,7 @@ func Test_AstRecordingPause(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRequest(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -144,7 +144,7 @@ func Test_AstRecordingUnpause(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRequest(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -195,7 +195,7 @@ func Test_AstRecordingMute(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRequest(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -246,7 +246,7 @@ func Test_AstRecordingUnmute(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRequest(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{

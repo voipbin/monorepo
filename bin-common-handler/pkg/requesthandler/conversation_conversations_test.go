@@ -70,7 +70,7 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1ConversationGet(ctx, tt.conversationID)
 			if err != nil {
@@ -152,7 +152,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -218,7 +218,7 @@ func Test_ConversationV1MessageSend(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias)
 			if err != nil {
@@ -289,7 +289,7 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1ConversationMessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize)
 			if err != nil {
@@ -358,7 +358,7 @@ func Test_ConversationV1ConversationUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.conversationName, tt.detail)
 			if err != nil {

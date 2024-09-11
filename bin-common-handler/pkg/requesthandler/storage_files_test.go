@@ -79,7 +79,7 @@ func Test_StorageV1FileCreate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.StorageV1FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.requestTimeout)
 			if err != nil {
@@ -159,7 +159,7 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+			mockSock.EXPECT().RequestPublishWithDelay(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
 			err := reqHandler.StorageV1FileCreateWithDelay(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath, tt.delay)
 			if err != nil {
@@ -232,7 +232,7 @@ func Test_StorageV1FileGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.StorageV1FileGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -292,7 +292,7 @@ func Test_StorageV1FileGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.StorageV1FileGet(ctx, tt.fileID)
 			if err != nil {
@@ -353,7 +353,7 @@ func Test_StorageV1FileDelete(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.StorageV1FileDelete(ctx, tt.fileID, tt.requestTimeout)
 			if err != nil {

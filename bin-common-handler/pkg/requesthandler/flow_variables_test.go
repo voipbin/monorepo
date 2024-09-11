@@ -64,7 +64,7 @@ func Test_FlowV1VariableGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1VariableGet(ctx, tt.variableID)
 			if err != nil {
@@ -126,7 +126,7 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1VariableSetVariable(ctx, tt.variableID, tt.variables); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -198,7 +198,7 @@ func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1VariableDeleteVariable(ctx, tt.variableID, tt.key); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

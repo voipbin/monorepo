@@ -70,7 +70,7 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1AvailableNumberGets(ctx, tt.customerID, tt.pageSize, tt.countryCode)
 			if err != nil {

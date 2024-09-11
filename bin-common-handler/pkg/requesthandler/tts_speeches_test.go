@@ -72,7 +72,7 @@ func Test_TTSV1SpeecheCreate(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.tts-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.tts-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.TTSV1SpeecheCreate(context.Background(), tt.callID, tt.text, tt.gender, tt.language, tt.timeout)
 			if err != nil {

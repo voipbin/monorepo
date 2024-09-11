@@ -67,7 +67,7 @@ func Test_AgentV1Login(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1Login(ctx, requestTimeoutDefault, tt.username, tt.password)
 			if err != nil {

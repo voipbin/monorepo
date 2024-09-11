@@ -129,7 +129,7 @@ func Test_OutdialV1OutdialtargetCreate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			_, err := reqHandler.OutdialV1OutdialtargetCreate(ctx, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4)
 			if err != nil {
@@ -194,7 +194,7 @@ func Test_OutdialV1OutdialtargetGetsAvailable(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			_, err := reqHandler.OutdialV1OutdialtargetGetsAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit)
 			if err != nil {
@@ -251,7 +251,7 @@ func Test_OutdialV1OutdialtargetDelete(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.OutdialV1OutdialtargetDelete(ctx, tt.outdialtargetID)
 			if err != nil {
@@ -318,7 +318,7 @@ func Test_OutdialV1OutdialtargetGetsByOutdialID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.OutdialV1OutdialtargetGetsByOutdialID(ctx, tt.outdialID, tt.pageToken, tt.pageSize)
 			if err != nil {
@@ -378,7 +378,7 @@ func Test_OutdialV1OutdialtargetGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.OutdialV1OutdialtargetGet(ctx, tt.outdialtargetID)
 			if err != nil {
@@ -437,7 +437,7 @@ func Test_OutdialV1OutdialtargetUpdateStatusProgressing(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			_, err := reqHandler.OutdialV1OutdialtargetUpdateStatusProgressing(ctx, tt.outdialtargetID, tt.destinationIndex)
 			if err != nil {
@@ -493,7 +493,7 @@ func Test_OutdialV1OutdialtargetUpdateStatus(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			_, err := reqHandler.OutdialV1OutdialtargetUpdateStatus(ctx, tt.outdialtargetID, tt.status)
 			if err != nil {

@@ -77,7 +77,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			cf, err := reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, tt.customerID, tt.chatbotID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.requestTimeout)
 			if err != nil {

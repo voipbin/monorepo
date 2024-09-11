@@ -52,7 +52,7 @@ func Test_AstAMIRedirect(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRequest(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{

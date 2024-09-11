@@ -57,7 +57,7 @@ package requesthandler
 // 			}
 
 // 			ctx := context.Background()
-// 			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+// 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 // 			res, err := reqHandler.TranscribeV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, tt.timeout, tt.delay)
 // 			if err != nil {

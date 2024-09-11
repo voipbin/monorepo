@@ -61,7 +61,7 @@ func Test_WebhookV1WebhookSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.WebhookV1WebhookSend(ctx, tt.customerID, tt.dataType, tt.messageType, tt.messageData)
 			if err != nil {
@@ -120,7 +120,7 @@ func Test_WebhookV1WebhookDestinationSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			a := []byte(`"test webhook."`)
 			err := reqHandler.WebhookV1WebhookSendToDestination(ctx, tt.customerID, tt.destination, tt.method, tt.dataType, a)

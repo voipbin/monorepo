@@ -107,7 +107,7 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentCreate(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password, tt.agentName, tt.deail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
@@ -167,7 +167,7 @@ func Test_AgentV1AgentGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentGet(ctx, tt.agentID)
 			if err != nil {
@@ -236,7 +236,7 @@ func Test_AgentV1AgentGetByCustomerIDAndAddress(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, tt.timeout, tt.customerID, tt.addr)
 			if err != nil {
@@ -343,7 +343,7 @@ func Test_AgentV1AgentGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -441,7 +441,7 @@ func Test_AgentV1AgentGetsByTagIDs(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentGetsByTagIDs(ctx, tt.customerID, tt.tagIDs)
 			if err != nil {
@@ -542,7 +542,7 @@ func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.customerID, tt.tagIDs, tt.status)
 			if err != nil {
@@ -604,7 +604,7 @@ func Test_AgentV1AgentDelete(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentDelete(ctx, tt.id)
 			if err != nil {
@@ -675,7 +675,7 @@ func Test_AgentV1AgentUpdateAddresses(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentUpdateAddresses(ctx, tt.id, tt.addresses)
 			if err != nil {
@@ -741,7 +741,7 @@ func Test_AgentV1AgentUpdatePassword(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password)
 			if err != nil {
@@ -811,7 +811,7 @@ func Test_AgentV1AgentUpdate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentUpdate(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
@@ -880,7 +880,7 @@ func Test_AgentV1AgentUpdateTagIDs(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentUpdateTagIDs(ctx, tt.id, tt.tagIDs)
 			if err != nil {
@@ -946,7 +946,7 @@ func Test_AgentV1AgentUpdateStatus(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentUpdateStatus(ctx, tt.id, tt.status)
 			if err != nil {
@@ -1012,7 +1012,7 @@ func Test_AgentV1AgentUpdatePermission(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AgentV1AgentUpdatePermission(ctx, tt.id, tt.permission)
 			if err != nil {
