@@ -36,20 +36,20 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 	return nil
 }
 
-// PublishEvent sends a event to rabbitmq
-func (r *rabbit) PublishEvent(queueName string, evt *sock.Event) error {
+// // PublishEvent sends a event to rabbitmq
+// func (r *rabbit) PublishEvent(queueName string, evt *sock.Event) error {
 
-	message, err := json.Marshal(evt)
-	if err != nil {
-		return fmt.Errorf("could not marshal the event. err: %v", err)
-	}
+// 	message, err := json.Marshal(evt)
+// 	if err != nil {
+// 		return fmt.Errorf("could not marshal the event. err: %v", err)
+// 	}
 
-	if err := r.publishExchange("", queueName, message, nil); err != nil {
-		return fmt.Errorf("could not send a message. err: %v", err)
-	}
+// 	if err := r.publishExchange("", queueName, message, nil); err != nil {
+// 		return fmt.Errorf("could not send a message. err: %v", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // PublishRequest publishes request message and returns response.
 func (r *rabbit) PublishRequest(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
@@ -122,8 +122,8 @@ func (r *rabbit) PublishRequest(ctx context.Context, queueName string, req *sock
 	}
 }
 
-// PublishExchangeEvent sends a message to rabbitmq
-func (r *rabbit) PublishExchangeEvent(exchange string, key string, evt *sock.Event) error {
+// PublishEvent sends a message to rabbitmq
+func (r *rabbit) PublishEvent(exchange string, key string, evt *sock.Event) error {
 	message, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -144,9 +144,9 @@ func (r *rabbit) PublishDelayedRequest(exchange, key string, req *sock.Request, 
 	return r.publishExchange(exchange, key, message, headers)
 }
 
-// PublishExchangeDelayedEvent sends a delayed event to the rabbitmq exchange
+// PublishDelayedEvent sends a delayed event to the rabbitmq exchange
 // delay is ms.
-func (r *rabbit) PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error {
+func (r *rabbit) PublishDelayedEvent(exchange, key string, evt *sock.Event, delay int) error {
 	headers := make(amqp.Table)
 	headers["x-delay"] = delay
 

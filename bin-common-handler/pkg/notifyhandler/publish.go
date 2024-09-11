@@ -143,7 +143,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *sock.Event) error {
 
 	start := time.Now()
-	err := h.sock.PublishExchangeEvent(string(h.queueNotify), "", evt)
+	err := h.sock.PublishEvent(string(h.queueNotify), "", evt)
 	elapsed := time.Since(start)
 	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
@@ -155,7 +155,7 @@ func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *sock.Event)
 func (h *notifyHandler) publishDelayedEvent(ctx context.Context, delay int, evt *sock.Event) error {
 
 	start := time.Now()
-	err := h.sock.PublishExchangeDelayedEvent(string(commonoutline.QueueNameDelay), string(h.queueNotify), evt, delay)
+	err := h.sock.PublishDelayedEvent(string(commonoutline.QueueNameDelay), string(h.queueNotify), evt, delay)
 	elapsed := time.Since(start)
 	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
 
