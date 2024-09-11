@@ -2,7 +2,7 @@ package listenhandler
 
 import (
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
@@ -67,7 +67,7 @@ func Test_v1FilesPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
@@ -137,7 +137,7 @@ func Test_v1FilesGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			h := &listenHandler{
 				utilHandler:    mockUtil,
@@ -193,7 +193,7 @@ func Test_v1FilesIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
@@ -251,7 +251,7 @@ func Test_v1FilesIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{

@@ -6,8 +6,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"monorepo/bin-flow-manager/pkg/activeflowhandler"
 
@@ -46,7 +45,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := subscribeHandler{

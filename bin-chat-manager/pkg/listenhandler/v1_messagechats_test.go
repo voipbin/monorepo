@@ -7,7 +7,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -105,7 +105,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
@@ -254,7 +254,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
@@ -324,7 +324,7 @@ func Test_v1MessagechatsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
@@ -393,7 +393,7 @@ func Test_v1MessagechatsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)

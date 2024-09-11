@@ -13,8 +13,8 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func Test_PublishWebhookEvent(t *testing.T) {
@@ -65,7 +65,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
@@ -139,7 +139,7 @@ func Test_PublishWebhook(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
@@ -192,7 +192,7 @@ func Test_PublishEvent(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
@@ -244,7 +244,7 @@ func Test_PublishEventRaw(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{

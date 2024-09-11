@@ -8,7 +8,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -86,7 +86,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
@@ -237,7 +237,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
 
-// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 // 			h := &listenHandler{
@@ -388,7 +388,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
 
-// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 // 			h := &listenHandler{
@@ -616,7 +616,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -699,7 +699,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -762,7 +762,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -831,7 +831,7 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -900,7 +900,7 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -964,7 +964,7 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -1029,7 +1029,7 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -1095,7 +1095,7 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -1156,7 +1156,7 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -1221,7 +1221,7 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
@@ -1290,7 +1290,7 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{

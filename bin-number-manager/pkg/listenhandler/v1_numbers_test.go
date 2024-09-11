@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -76,7 +76,7 @@ func Test_processV1NumbersPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
@@ -142,7 +142,7 @@ func Test_ProcessV1NumbersIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
@@ -208,7 +208,7 @@ func Test_ProcessV1NumbersIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
@@ -334,7 +334,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
@@ -417,7 +417,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
@@ -493,7 +493,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
@@ -565,7 +565,7 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{

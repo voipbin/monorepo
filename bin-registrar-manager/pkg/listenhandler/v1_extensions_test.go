@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -74,7 +74,7 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 			h := &listenHandler{
@@ -176,7 +176,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
@@ -258,7 +258,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
@@ -317,7 +317,7 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
@@ -381,7 +381,7 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 

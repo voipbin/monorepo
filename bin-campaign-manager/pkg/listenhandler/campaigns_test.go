@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -83,7 +83,7 @@ func Test_v1CampaignsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -149,7 +149,7 @@ func Test_v1CampaignsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -209,7 +209,7 @@ func Test_v1CampaignsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -269,7 +269,7 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -340,7 +340,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -399,7 +399,7 @@ func Test_v1CampaignsIDExecutePost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -484,7 +484,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -547,7 +547,7 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -614,7 +614,7 @@ func Test_v1CampaignsIDActionsPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -683,7 +683,7 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
@@ -746,7 +746,7 @@ func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{

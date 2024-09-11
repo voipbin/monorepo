@@ -1,5 +1,7 @@
 package sockhandler
 
+//go:generate mockgen -destination ./mock_sockhandler.go -package sockhandler -source ./main.go
+
 import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"

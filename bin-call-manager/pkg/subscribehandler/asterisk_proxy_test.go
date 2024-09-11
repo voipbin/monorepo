@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	gomock "github.com/golang/mock/gomock"
 
@@ -62,7 +62,7 @@ func Test_processEvent_AsteriskProxy_BridgeCreated(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -128,7 +128,7 @@ func Test_processEvent_AsteriskProxy_BridgeDestroyed(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -193,7 +193,7 @@ func Test_processEvent_AsteriskProxy_ChannelCreated(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -260,7 +260,7 @@ func Test_processEvent_AsteriskProxy_ChannelDestroyed(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -327,7 +327,7 @@ func Test_processEvent_AsteriskProxy_ChannelStateChange(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -406,7 +406,7 @@ func Test_processEvent_AsteriskProxy_ChannelEnteredBridge(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -485,7 +485,7 @@ func Test_processEvent_AsteriskProxy_ChannelLeftBridge(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -555,7 +555,7 @@ func Test_processEvent_AsteriskProxy_ChannelDtmfReceived(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -624,7 +624,7 @@ func Test_processEvent_AsteriskProxy_ChannelVarset(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -686,7 +686,7 @@ func Test_processEvent_AsteriskProxy_ContactStatusChange(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -743,7 +743,7 @@ func Test_processEvent_AsteriskProxy_PlaybackFinished(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -802,7 +802,7 @@ func Test_processEvent_AsteriskProxy_RecordingStarted(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -861,7 +861,7 @@ func Test_processEvent_AsteriskProxy_RecordingFinished(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -934,7 +934,7 @@ func Test_processEvent_AsteriskProxy_StasisStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
@@ -1001,7 +1001,7 @@ func Test_ProcessEvent_AsteriskProxy_StasisEnd(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{

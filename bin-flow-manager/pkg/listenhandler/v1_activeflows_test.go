@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -109,7 +109,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -230,7 +230,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActiveflowHandler := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -288,7 +288,7 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -366,7 +366,7 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -420,7 +420,7 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -481,7 +481,7 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -541,7 +541,7 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -599,7 +599,7 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
@@ -665,7 +665,7 @@ func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 

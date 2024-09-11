@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -104,7 +104,7 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockSvc := callhandler.NewMockCallHandler(mc)
@@ -191,7 +191,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockSvc := callhandler.NewMockCallHandler(mc)

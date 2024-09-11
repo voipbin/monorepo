@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -19,7 +19,7 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{
@@ -63,7 +63,7 @@ func TestProcessEventCSCustomerCreatedUpdated(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{

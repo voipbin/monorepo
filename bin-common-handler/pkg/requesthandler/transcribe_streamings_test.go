@@ -50,7 +50,7 @@ package requesthandler
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
 
-// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			reqHandler := requestHandler{
 // 				sock: mockSock,
 // 			}

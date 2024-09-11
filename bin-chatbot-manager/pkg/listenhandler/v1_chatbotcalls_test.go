@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -64,7 +64,7 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
 
 			h := &listenHandler{
@@ -122,7 +122,7 @@ func Test_processV1ChatbotcallsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
 
 			h := &listenHandler{
@@ -180,7 +180,7 @@ func Test_processV1ChatbotcallsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
 
 			h := &listenHandler{

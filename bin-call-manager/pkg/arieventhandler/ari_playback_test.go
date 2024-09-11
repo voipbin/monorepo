@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	gomock "github.com/golang/mock/gomock"
 
@@ -60,7 +60,7 @@ func Test_EventHandlerPlaybackStarted(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
@@ -129,7 +129,7 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
@@ -199,7 +199,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockSvc := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)

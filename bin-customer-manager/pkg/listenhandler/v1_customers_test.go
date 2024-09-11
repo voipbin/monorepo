@@ -6,8 +6,8 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -90,7 +90,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
@@ -180,7 +180,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
@@ -251,7 +251,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
@@ -313,7 +313,7 @@ func Test_processV1UsersIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
@@ -390,7 +390,7 @@ func Test_processV1UsersIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
@@ -456,7 +456,7 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
@@ -519,7 +519,7 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 

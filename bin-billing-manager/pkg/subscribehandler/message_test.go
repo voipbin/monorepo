@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	"github.com/gofrs/uuid"
@@ -42,7 +42,7 @@ func Test_processEventMMMessageCreated(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 
 			h := subscribeHandler{

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -101,7 +101,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{
@@ -173,7 +173,7 @@ func TestProcessV1TagsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockTag := taghandler.NewMockTagHandler(mc)
 
@@ -241,7 +241,7 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockTag := taghandler.NewMockTagHandler(mc)
 
@@ -308,7 +308,7 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{
@@ -367,7 +367,7 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{

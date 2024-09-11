@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -68,7 +68,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
@@ -141,7 +141,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
@@ -200,7 +200,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
@@ -259,7 +259,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
 
-// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 // 			h := &listenHandler{
@@ -324,7 +324,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
@@ -383,7 +383,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
@@ -446,7 +446,7 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
@@ -509,7 +509,7 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
@@ -574,7 +574,7 @@ func Test_processV1AccountsIDIsValidBalancePost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
@@ -639,7 +639,7 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{

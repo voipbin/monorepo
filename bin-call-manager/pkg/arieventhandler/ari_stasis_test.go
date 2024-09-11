@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	gomock "github.com/golang/mock/gomock"
 
@@ -91,7 +91,7 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
@@ -163,7 +163,7 @@ func Test_EventHandlerStasisEnd(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)

@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -45,7 +45,7 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockGroup := groupcallhandler.NewMockGroupcallHandler(mc)
 			mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)

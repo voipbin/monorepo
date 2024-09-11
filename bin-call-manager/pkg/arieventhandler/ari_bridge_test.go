@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -88,7 +88,7 @@ func Test_EventHandlerBridgeCreated(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
@@ -177,7 +177,7 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
@@ -45,7 +45,7 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 

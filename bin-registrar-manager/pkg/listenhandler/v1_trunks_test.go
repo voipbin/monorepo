@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -73,7 +73,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
@@ -169,7 +169,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
@@ -252,7 +252,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
@@ -313,7 +313,7 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
@@ -373,7 +373,7 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
@@ -433,7 +433,7 @@ func Test_processV1TrunksDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
