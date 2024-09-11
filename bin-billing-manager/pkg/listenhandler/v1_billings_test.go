@@ -70,7 +70,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				utilHandler:    mockUtil,
 				accountHandler: mockAccount,
 				billingHandler: mockBilling,

@@ -66,7 +66,7 @@ func Test_processEvent_AsteriskProxy_BridgeCreated(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -132,7 +132,7 @@ func Test_processEvent_AsteriskProxy_BridgeDestroyed(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -197,7 +197,7 @@ func Test_processEvent_AsteriskProxy_ChannelCreated(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -264,7 +264,7 @@ func Test_processEvent_AsteriskProxy_ChannelDestroyed(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -331,7 +331,7 @@ func Test_processEvent_AsteriskProxy_ChannelStateChange(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -410,7 +410,7 @@ func Test_processEvent_AsteriskProxy_ChannelEnteredBridge(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -489,7 +489,7 @@ func Test_processEvent_AsteriskProxy_ChannelLeftBridge(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -559,7 +559,7 @@ func Test_processEvent_AsteriskProxy_ChannelDtmfReceived(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -628,7 +628,7 @@ func Test_processEvent_AsteriskProxy_ChannelVarset(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -690,7 +690,7 @@ func Test_processEvent_AsteriskProxy_ContactStatusChange(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -747,7 +747,7 @@ func Test_processEvent_AsteriskProxy_PlaybackFinished(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -806,7 +806,7 @@ func Test_processEvent_AsteriskProxy_RecordingStarted(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -865,7 +865,7 @@ func Test_processEvent_AsteriskProxy_RecordingFinished(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -938,7 +938,7 @@ func Test_processEvent_AsteriskProxy_StasisStart(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 
@@ -1005,7 +1005,7 @@ func Test_ProcessEvent_AsteriskProxy_StasisEnd(t *testing.T) {
 			mockARIEvent := arieventhandler.NewMockARIEventHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 			}
 

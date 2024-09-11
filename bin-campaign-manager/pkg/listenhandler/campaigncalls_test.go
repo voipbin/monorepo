@@ -63,7 +63,7 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				campaigncallHandler: mockCampaigncall,
 			}
 
@@ -128,7 +128,7 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				campaigncallHandler: mockCampaigncall,
 			}
 
@@ -188,7 +188,7 @@ func Test_v1CampaigncallsIDGet(t *testing.T) {
 			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				campaigncallHandler: mockCampaigncall,
 			}
 
@@ -248,7 +248,7 @@ func Test_v1CampaigncallsIDDelete(t *testing.T) {
 			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				campaigncallHandler: mockCampaigncall,
 			}
 

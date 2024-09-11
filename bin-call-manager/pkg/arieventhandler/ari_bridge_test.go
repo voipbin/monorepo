@@ -95,7 +95,7 @@ func Test_EventHandlerBridgeCreated(t *testing.T) {
 
 			h := eventHandler{
 				db:            mockDB,
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				reqHandler:    mockRequest,
 				callHandler:   mockCall,
 				bridgeHandler: mockBridge,
@@ -185,7 +185,7 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 
 			h := eventHandler{
 				db:                mockDB,
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockRequest,
 				callHandler:       mockCall,
 				bridgeHandler:     mockBridge,

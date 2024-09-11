@@ -114,7 +114,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
@@ -236,7 +236,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler:       mockUtil,
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActiveflowHandler,
 			}
@@ -293,7 +293,7 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
@@ -371,7 +371,7 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
@@ -425,7 +425,7 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
@@ -486,7 +486,7 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
@@ -546,7 +546,7 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
@@ -604,7 +604,7 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}
@@ -670,7 +670,7 @@ func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlowHandler,
 				activeflowHandler: mockActive,
 			}

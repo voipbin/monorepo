@@ -93,7 +93,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				conversationHandler: mockConversation,
 				messageHandler:      mockMessage,
 			}

@@ -23,7 +23,7 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{
-		rabbitSock:     mockSock,
+		sockHandler:    mockSock,
 		accountHandler: mockAccount,
 	}
 
@@ -67,7 +67,7 @@ func TestProcessEventCSCustomerCreatedUpdated(t *testing.T) {
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{
-		rabbitSock:     mockSock,
+		sockHandler:    mockSock,
 		accountHandler: mockAccount,
 	}
 

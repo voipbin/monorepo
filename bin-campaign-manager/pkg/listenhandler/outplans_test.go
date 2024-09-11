@@ -82,7 +82,7 @@ func Test_v1OutplansPost(t *testing.T) {
 			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				outplanHandler: mockOutplan,
 			}
 
@@ -148,7 +148,7 @@ func Test_v1OutplansGet(t *testing.T) {
 			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				outplanHandler: mockOutplan,
 			}
 
@@ -208,7 +208,7 @@ func Test_v1OutplansIDGet(t *testing.T) {
 			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				outplanHandler: mockOutplan,
 			}
 
@@ -268,7 +268,7 @@ func Test_v1OutplansIDDelete(t *testing.T) {
 			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				outplanHandler: mockOutplan,
 			}
 
@@ -333,7 +333,7 @@ func Test_v1OutplansIDPut(t *testing.T) {
 			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				outplanHandler: mockOutplan,
 			}
 
@@ -413,7 +413,7 @@ func Test_v1OutplansIDDialsPut(t *testing.T) {
 			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				outplanHandler: mockOutplan,
 			}
 

@@ -108,7 +108,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				routeHandler:    mockRoute,
 				providerHandler: mockProvider,
 			}

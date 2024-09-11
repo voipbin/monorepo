@@ -50,7 +50,7 @@ func Test_processEventCMCallProgressing(t *testing.T) {
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				billingHandler: mockBilling,
 			}
 
@@ -98,7 +98,7 @@ func Test_processEventCMCallHangup(t *testing.T) {
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				billingHandler: mockBilling,
 			}
 

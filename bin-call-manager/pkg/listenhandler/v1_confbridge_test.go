@@ -87,7 +87,7 @@ func Test_processV1ConfbridgePost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
 			}
@@ -148,7 +148,7 @@ func Test_processV1ConfbridgesIDDelete(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
 			}
@@ -176,7 +176,7 @@ func TestProcessV1ConfbridgesIDCallsIDDelete(t *testing.T) {
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:        mockSock,
+		sockHandler:       mockSock,
 		callHandler:       mockCall,
 		confbridgeHandler: mockConfbridge,
 	}
@@ -233,7 +233,7 @@ func TestProcessV1ConfbridgesIDCallsIDPost(t *testing.T) {
 	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:        mockSock,
+		sockHandler:       mockSock,
 		callHandler:       mockCall,
 		confbridgeHandler: mockConfbridge,
 	}
@@ -339,7 +339,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
 			}
@@ -402,7 +402,7 @@ func Test_processV1ConfbridgesIDExternalMediaDelete(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
 			}
@@ -477,7 +477,7 @@ func Test_processV1ConfbridgesIDRecordingStartPost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
 
@@ -539,7 +539,7 @@ func Test_processV1ConfbridgesIDRecordingStopPost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
 			mockConfbridge.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(tt.responseCall, nil)
@@ -603,7 +603,7 @@ func Test_processV1ConfbridgesIDFlagsPost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
 			mockConfbridge.EXPECT().FlagAdd(gomock.Any(), tt.expectID, tt.expectFlag).Return(tt.responseConfbridge, nil)
@@ -667,7 +667,7 @@ func Test_processV1ConfbridgesIDFlagsDelete(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
 			mockConfbridge.EXPECT().FlagRemove(gomock.Any(), tt.expectID, tt.expectFlag).Return(tt.responseConfbridge, nil)
@@ -727,7 +727,7 @@ func Test_processV1ConfbridgesIDTerminatePost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
 			mockConfbridge.EXPECT().Terminating(gomock.Any(), tt.expectID).Return(tt.responseConfbridge, nil)
@@ -785,7 +785,7 @@ func Test_processV1ConfbridgesIDRingPost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
 			mockConfbridge.EXPECT().Ring(gomock.Any(), tt.expectID).Return(nil)
@@ -843,7 +843,7 @@ func Test_processV1ConfbridgesIDAnswerPost(t *testing.T) {
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
 			mockConfbridge.EXPECT().Answer(gomock.Any(), tt.expectID).Return(nil)

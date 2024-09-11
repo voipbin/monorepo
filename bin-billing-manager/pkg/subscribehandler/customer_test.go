@@ -48,7 +48,7 @@ func Test_processEventCMCustomerDeleted(t *testing.T) {
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 				billingHandler: mockBilling,
 			}

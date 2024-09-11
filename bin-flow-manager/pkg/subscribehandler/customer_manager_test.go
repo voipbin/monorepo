@@ -48,7 +48,7 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				flowHandler:       mockFlow,
 				activeflowHandler: mockActive,
 			}

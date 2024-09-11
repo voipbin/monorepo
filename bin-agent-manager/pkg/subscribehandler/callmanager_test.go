@@ -50,7 +50,7 @@ func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -96,7 +96,7 @@ func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 

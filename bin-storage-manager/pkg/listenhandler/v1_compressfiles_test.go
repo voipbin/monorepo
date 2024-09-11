@@ -67,7 +67,7 @@ func Test_v1CompressfilesPost(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 

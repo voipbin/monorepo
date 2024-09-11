@@ -10,10 +10,11 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -136,18 +137,18 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameRouteEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName)
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler)
 
 	// run request listener
-	if err := runRequestListen(rabbitSock, providerHandler, routeHandler); err != nil {
+	if err := runRequestListen(sockHandler, providerHandler, routeHandler); err != nil {
 		return err
 	}
 
@@ -155,8 +156,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runRequestListen runs the request listen service
-func runRequestListen(rabbitSock rabbitmqhandler.Rabbit, providerHandler providerhandler.ProviderHandler, routeHandler routehandler.RouteHandler) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, providerHandler, routeHandler)
+func runRequestListen(sockHandler sockhandler.SockHandler, providerHandler providerhandler.ProviderHandler, routeHandler routehandler.RouteHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, providerHandler, routeHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameRouteRequest), string(commonoutline.QueueNameDelay)); err != nil {

@@ -78,7 +78,7 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				reqHandler:       mockReq,
 				extensionHandler: mockExtension,
 			}
@@ -182,7 +182,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				reqHandler:       mockReq,
 				utilHandler:      mockUtil,
 				extensionHandler: mockExtension,
@@ -263,7 +263,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				reqHandler:       mockReq,
 				extensionHandler: mockExtension,
 			}
@@ -322,7 +322,7 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				reqHandler:       mockReq,
 				extensionHandler: mockExtension,
 			}
@@ -386,7 +386,7 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				reqHandler:       mockReq,
 				extensionHandler: mockExtension,
 			}

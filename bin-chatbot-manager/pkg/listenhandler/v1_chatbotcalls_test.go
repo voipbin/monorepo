@@ -68,7 +68,7 @@ func Test_processV1ChatbotcallsGet(t *testing.T) {
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:         mockSock,
+				sockHandler:        mockSock,
 				chatbotcallHandler: mockChatbotcall,
 			}
 
@@ -126,7 +126,7 @@ func Test_processV1ChatbotcallsIDDelete(t *testing.T) {
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:         mockSock,
+				sockHandler:        mockSock,
 				chatbotcallHandler: mockChatbotcall,
 			}
 
@@ -184,7 +184,7 @@ func Test_processV1ChatbotcallsIDGet(t *testing.T) {
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:         mockSock,
+				sockHandler:        mockSock,
 				chatbotcallHandler: mockChatbotcall,
 			}
 

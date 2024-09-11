@@ -48,7 +48,7 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				queueHandler:     mockQueue,
 				queuecallHandler: mockQueuecall,

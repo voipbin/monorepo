@@ -141,7 +141,7 @@ func Test_v1FlowsPost(t *testing.T) {
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -350,7 +350,7 @@ func Test_v1FlowsGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler: mockUtil,
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -400,7 +400,7 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -485,7 +485,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -570,7 +570,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -628,7 +628,7 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -709,7 +709,7 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 

@@ -87,7 +87,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				messageHandler: mockMessage,
 			}
 
@@ -164,7 +164,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				messageHandler: mockMessageHandler,
 			}
 
@@ -219,7 +219,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				messageHandler: mockMessage,
 			}
 
@@ -273,7 +273,7 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				messageHandler: mockMessage,
 			}
 

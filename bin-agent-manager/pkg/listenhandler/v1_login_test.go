@@ -60,7 +60,7 @@ func Test_ProcessV1LoginPost(t *testing.T) {
 			mockCustomer := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockCustomer,
 			}
 

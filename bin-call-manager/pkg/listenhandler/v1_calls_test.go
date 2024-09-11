@@ -62,7 +62,7 @@ func Test_processV1CallsIDGet(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -167,7 +167,7 @@ func Test_processV1CallsGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler: mockUtil,
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -221,7 +221,7 @@ func Test_processV1CallsIDHealthPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -247,7 +247,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:  mockSock,
+		sockHandler: mockSock,
 		callHandler: mockCall,
 	}
 
@@ -413,7 +413,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -546,7 +546,7 @@ func Test_processV1CallsPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -610,7 +610,7 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -675,7 +675,7 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -701,7 +701,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 	mockCall := callhandler.NewMockCallHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:  mockSock,
+		sockHandler: mockSock,
 		callHandler: mockCall,
 	}
 
@@ -832,7 +832,7 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -898,7 +898,7 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -978,7 +978,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				callHandler:          mockCall,
 				externalMediaHandler: mockExternal,
 			}
@@ -1051,7 +1051,7 @@ func Test_processV1CallsIDExternalMediaDelete(t *testing.T) {
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				callHandler:          mockCall,
 				externalMediaHandler: mockExternal,
 			}
@@ -1111,7 +1111,7 @@ func Test_processV1CallsIDDigitsGet(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1188,7 +1188,7 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1281,7 +1281,7 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1356,7 +1356,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1420,7 +1420,7 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1480,7 +1480,7 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1554,7 +1554,7 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1607,7 +1607,7 @@ func Test_processV1CallsIDMediaStopPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1659,7 +1659,7 @@ func Test_processV1CallsIDHoldPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1711,7 +1711,7 @@ func Test_processV1CallsIDHoldDelete(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1769,7 +1769,7 @@ func Test_processV1CallsIDMutePost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1826,7 +1826,7 @@ func Test_processV1CallsIDMuteDelete(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1878,7 +1878,7 @@ func Test_processV1CallsIDMOHPost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1930,7 +1930,7 @@ func Test_processV1CallsIDMOHDelete(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -1982,7 +1982,7 @@ func Test_processV1CallsIDSilencePost(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
@@ -2034,7 +2034,7 @@ func Test_processV1CallsIDSilenceDelete(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 

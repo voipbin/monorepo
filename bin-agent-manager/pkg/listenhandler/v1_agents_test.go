@@ -91,7 +91,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 				utilHandler:  mockUtil,
 			}
@@ -620,7 +620,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -703,7 +703,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -766,7 +766,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -835,7 +835,7 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -904,7 +904,7 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -968,7 +968,7 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -1033,7 +1033,7 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -1099,7 +1099,7 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -1160,7 +1160,7 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -1225,7 +1225,7 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -1294,7 +1294,7 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 

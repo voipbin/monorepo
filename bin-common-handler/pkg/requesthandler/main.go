@@ -88,7 +88,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -867,7 +867,7 @@ type RequestHandler interface {
 }
 
 type requestHandler struct {
-	sock rabbitmqhandler.Rabbit
+	sock sockhandler.SockHandler
 
 	publisher commonoutline.ServiceName
 
@@ -875,7 +875,7 @@ type requestHandler struct {
 }
 
 // NewRequestHandler create RequesterHandler
-func NewRequestHandler(sock rabbitmqhandler.Rabbit, publisher commonoutline.ServiceName) RequestHandler {
+func NewRequestHandler(sock sockhandler.SockHandler, publisher commonoutline.ServiceName) RequestHandler {
 	h := &requestHandler{
 		sock: sock,
 

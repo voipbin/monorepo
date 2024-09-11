@@ -46,7 +46,7 @@ func Test_processEventNMNumberCreated(t *testing.T) {
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				billingHandler: mockBilling,
 			}
 
@@ -91,7 +91,7 @@ func Test_processEventNMNumberRenewed(t *testing.T) {
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				billingHandler: mockBilling,
 			}
 

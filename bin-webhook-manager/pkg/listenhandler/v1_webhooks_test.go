@@ -55,8 +55,8 @@ func Test_processV1WebhooksPost(t *testing.T) {
 			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
-				whHandler:  mockWeb,
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
 			}
 
 			mockWeb.EXPECT().SendWebhookToCustomer(gomock.Any(), tt.customerID, tt.dataType, tt.data).Return(nil)
@@ -119,8 +119,8 @@ func Test_processV1WebhookDestinationsPost(t *testing.T) {
 			mockWeb := webhookhandler.NewMockWebhookHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
-				whHandler:  mockWeb,
+				sockHandler: mockSock,
+				whHandler:   mockWeb,
 			}
 
 			mockWeb.EXPECT().SendWebhookToURI(gomock.Any(), tt.customerID, tt.uri, tt.method, tt.dataType, tt.data).Return(nil)

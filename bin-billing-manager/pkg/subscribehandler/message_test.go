@@ -46,7 +46,7 @@ func Test_processEventMMMessageCreated(t *testing.T) {
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				billingHandler: mockBilling,
 			}
 

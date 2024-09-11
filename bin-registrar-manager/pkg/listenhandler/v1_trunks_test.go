@@ -78,7 +78,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				reqHandler:   mockReq,
 				trunkHandler: mockTrunk,
 			}
@@ -175,7 +175,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				reqHandler:   mockReq,
 				utilHandler:  mockUtil,
 				trunkHandler: mockTrunk,
@@ -257,7 +257,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				reqHandler:   mockReq,
 				trunkHandler: mockTrunk,
 			}
@@ -318,7 +318,7 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				reqHandler:   mockReq,
 				trunkHandler: mockTrunk,
 			}
@@ -378,7 +378,7 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				reqHandler:   mockReq,
 				trunkHandler: mockTrunk,
 			}
@@ -438,7 +438,7 @@ func Test_processV1TrunksDelete(t *testing.T) {
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				reqHandler:   mockReq,
 				trunkHandler: mockTrunk,
 			}

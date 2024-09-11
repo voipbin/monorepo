@@ -56,7 +56,7 @@ func Test_v1OutdialsPost(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -139,7 +139,7 @@ func Test_v1OutdialsGet(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -194,7 +194,7 @@ func Test_v1OutdialsIDGet(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -255,7 +255,7 @@ func Test_v1OutdialsIDPut(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -311,7 +311,7 @@ func Test_v1OutdialsIDDelete(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -386,7 +386,7 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -509,7 +509,7 @@ func Test_v1OutdialsIDTargetsPost(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -600,7 +600,7 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -663,7 +663,7 @@ func Test_v1OutdialsIDCampaignIDPut(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}
@@ -726,7 +726,7 @@ func Test_v1OutdialsIDDataPut(t *testing.T) {
 			mockOutdialTarget := outdialtargethandler.NewMockOutdialTargetHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				outdialHandler:       mockOutdial,
 				outdialTargetHandler: mockOutdialTarget,
 			}

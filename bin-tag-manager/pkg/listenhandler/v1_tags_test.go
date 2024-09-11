@@ -105,7 +105,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				tagHandler: mockTag,
 			}
@@ -178,7 +178,7 @@ func TestProcessV1TagsPost(t *testing.T) {
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				tagHandler: mockTag,
 			}
@@ -246,7 +246,7 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				tagHandler: mockTag,
 			}
@@ -312,8 +312,8 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
-				tagHandler: mockTag,
+				sockHandler: mockSock,
+				tagHandler:  mockTag,
 			}
 
 			mockTag.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.tagName, tt.detail).Return(tt.resonseTag, nil)
@@ -371,8 +371,8 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 			mockTag := taghandler.NewMockTagHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
-				tagHandler: mockTag,
+				sockHandler: mockSock,
+				tagHandler:  mockTag,
 			}
 
 			mockTag.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTag, nil)

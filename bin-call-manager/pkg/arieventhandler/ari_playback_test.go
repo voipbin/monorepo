@@ -67,7 +67,7 @@ func Test_EventHandlerPlaybackStarted(t *testing.T) {
 
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockReq,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -136,7 +136,7 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockReq,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -206,7 +206,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockReq,
 				callHandler:    mockSvc,
 				channelHandler: mockChannel,

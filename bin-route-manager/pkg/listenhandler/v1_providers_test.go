@@ -73,7 +73,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				routeHandler:    mockRoute,
 				providerHandler: mockProvider,
 			}
@@ -184,7 +184,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				routeHandler:    mockRoute,
 				providerHandler: mockProvider,
 			}
@@ -245,7 +245,7 @@ func Test_v1ProvidersIDGet(t *testing.T) {
 			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				routeHandler:    mockRoute,
 				providerHandler: mockProvider,
 			}
@@ -324,7 +324,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				routeHandler:    mockRoute,
 				providerHandler: mockProvider,
 			}
@@ -384,7 +384,7 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 			mockProvider := providerhandler.NewMockProviderHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				routeHandler:    mockRoute,
 				providerHandler: mockProvider,
 			}

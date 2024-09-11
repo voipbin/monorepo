@@ -52,7 +52,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				transcribeHandler: mockTranscribe,
 			}
 
@@ -98,7 +98,7 @@ func Test_processEvent_processEventCMConfbridgeTerminated(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				transcribeHandler: mockTranscribe,
 			}
 

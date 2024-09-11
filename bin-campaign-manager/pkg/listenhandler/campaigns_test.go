@@ -87,7 +87,7 @@ func Test_v1CampaignsPost(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -153,7 +153,7 @@ func Test_v1CampaignsGet(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -213,7 +213,7 @@ func Test_v1CampaignsIDGet(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -273,7 +273,7 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -344,7 +344,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -403,7 +403,7 @@ func Test_v1CampaignsIDExecutePost(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -488,7 +488,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -551,7 +551,7 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -618,7 +618,7 @@ func Test_v1CampaignsIDActionsPut(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -687,7 +687,7 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 
@@ -750,7 +750,7 @@ func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
 			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				campaignHandler: mockCampaign,
 			}
 

@@ -107,7 +107,7 @@ func Test_processV1HooksPost(t *testing.T) {
 			mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				messageHandler: mockMessageHandler,
 			}
 

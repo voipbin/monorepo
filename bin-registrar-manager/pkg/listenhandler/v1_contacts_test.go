@@ -89,7 +89,7 @@ func Test_processV1ContactsGet(t *testing.T) {
 			mockContact := contacthandler.NewMockContactHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockReq,
 				contactHandler: mockContact,
 			}
@@ -147,7 +147,7 @@ func Test_processV1ContactsPut(t *testing.T) {
 			mockContact := contacthandler.NewMockContactHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockReq,
 				contactHandler: mockContact,
 			}

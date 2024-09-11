@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -32,7 +32,7 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	utilHanlder utilhandler.UtilHandler
-	rabbitSock  rabbitmqhandler.Rabbit
+	sockHandler sockhandler.SockHandler
 
 	queueHandler     queuehandler.QueueHandler
 	queuecallHandler queuecallhandler.QueuecallHandler
@@ -101,13 +101,13 @@ func simpleResponse(code int) *sock.Response {
 
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		utilHanlder: utilhandler.NewUtilHandler(),
-		rabbitSock:  rabbitSock,
+		sockHandler: sockHandler,
 
 		queueHandler:     queueHandler,
 		queuecallHandler: queuecallHandler,
@@ -121,14 +121,14 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		"queue": queue,
 	}).Info("Creating rabbitmq queue for listen.")
 
-	if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPC(queue, "queue-manager", false, false, false, 10, h.processRequest)
+			err := h.sockHandler.ConsumeRPC(queue, "queue-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

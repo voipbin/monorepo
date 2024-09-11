@@ -74,7 +74,7 @@ func Test_processV1ServicesTypeChatbotcallPost(t *testing.T) {
 			mockChatbotcall := chatbotcallhandler.NewMockChatbotcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:         mockSock,
+				sockHandler:        mockSock,
 				chatbotcallHandler: mockChatbotcall,
 			}
 

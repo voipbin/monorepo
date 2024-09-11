@@ -11,9 +11,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -141,12 +142,12 @@ func run(dbHandler dbhandler.DBHandler) {
 	log := logrus.WithField("func", "run")
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameChatEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameChatEvent, serviceName)
 
 	chatroomHandler := chatroomhandler.NewChatroomHandler(dbHandler, reqHandler, notifyHandler)
 	chatHandler := chathandler.NewChatHandler(dbHandler, reqHandler, notifyHandler, chatroomHandler)
@@ -155,7 +156,7 @@ func run(dbHandler dbhandler.DBHandler) {
 	messagechatHandler := messagechathandler.NewMessagechatHandler(dbHandler, reqHandler, notifyHandler, chatroomHandler, messagechatroomHandler)
 
 	// run listen
-	if errListen := runListen(rabbitSock, chatHandler, chatroomHandler, messagechatHandler, messagechatroomHandler); errListen != nil {
+	if errListen := runListen(sockHandler, chatHandler, chatroomHandler, messagechatHandler, messagechatroomHandler); errListen != nil {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
@@ -163,7 +164,7 @@ func run(dbHandler dbhandler.DBHandler) {
 
 // runListen runs the listen service
 func runListen(
-	sockListen rabbitmqhandler.Rabbit,
+	sockListen sockhandler.SockHandler,
 
 	chatHandler chathandler.ChatHandler,
 	chatroomHandler chatroomhandler.ChatroomHandler,

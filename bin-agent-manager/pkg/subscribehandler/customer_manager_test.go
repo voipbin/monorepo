@@ -47,7 +47,7 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 

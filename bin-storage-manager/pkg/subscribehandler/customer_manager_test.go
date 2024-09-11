@@ -48,7 +48,7 @@ func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
 			mockFile := filehandler.NewMockFileHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 				fileHandler:    mockFile,
 			}
@@ -94,7 +94,7 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 			mockFile := filehandler.NewMockFileHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 				fileHandler:    mockFile,
 			}

@@ -137,7 +137,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -204,7 +204,7 @@ func Test_v1ChatroomsIDGet(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -276,7 +276,7 @@ func Test_v1ChatroomsIDPut(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -342,7 +342,7 @@ func Test_v1ChatroomsIDDelete(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,

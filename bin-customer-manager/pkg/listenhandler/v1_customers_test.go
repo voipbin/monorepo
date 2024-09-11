@@ -96,7 +96,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				reqHandler:      mockReq,
 				utilHandler:     mockUtil,
 				customerHandler: mockCustomer,
@@ -185,7 +185,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				reqHandler:      mockReq,
 				customerHandler: mockCustomer,
 			}
@@ -256,7 +256,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				reqHandler:      mockReq,
 				customerHandler: mockCustomer,
 			}
@@ -318,7 +318,7 @@ func Test_processV1UsersIDDelete(t *testing.T) {
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				reqHandler:      mockReq,
 				customerHandler: mockCustomer,
 			}
@@ -395,7 +395,7 @@ func Test_processV1UsersIDPut(t *testing.T) {
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				reqHandler:      mockReq,
 				customerHandler: mockCustomer,
 			}
@@ -461,7 +461,7 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				reqHandler:      mockReq,
 				customerHandler: mockCustomer,
 			}
@@ -524,7 +524,7 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				reqHandler:      mockReq,
 				customerHandler: mockCustomer,
 			}

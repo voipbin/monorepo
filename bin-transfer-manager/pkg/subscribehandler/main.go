@@ -11,7 +11,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -32,7 +32,7 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	serviceName string
 
-	rabbitSock rabbitmqhandler.Rabbit
+	sockHandler sockhandler.SockHandler
 
 	subscribeQueue   string
 	subscribeTargets []string
@@ -65,7 +65,7 @@ func init() {
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
 	serviceName string,
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	subscribeQueue string,
 	subscribeTargets []string,
 	transferHandler transferhandler.TransferHandler,
@@ -73,7 +73,7 @@ func NewSubscribeHandler(
 
 	h := &subscribeHandler{
 		serviceName:      serviceName,
-		rabbitSock:       rabbitSock,
+		sockHandler:      sockHandler,
 		subscribeQueue:   subscribeQueue,
 		subscribeTargets: subscribeTargets,
 
@@ -90,13 +90,13 @@ func (h *subscribeHandler) Run() error {
 	log.Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
 	// subscribe each targets
 	for _, target := range h.subscribeTargets {
-		if errSubscribe := h.rabbitSock.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
+		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
 			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
 			return errSubscribe
 		}
@@ -105,7 +105,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessage(h.subscribeQueue, h.serviceName, false, false, false, 10, h.processEventRun)
+			err := h.sockHandler.ConsumeMessage(h.subscribeQueue, h.serviceName, false, false, false, 10, h.processEventRun)
 			if err != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

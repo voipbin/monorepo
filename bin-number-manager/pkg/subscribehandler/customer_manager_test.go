@@ -48,7 +48,7 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 

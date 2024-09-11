@@ -9,11 +9,10 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -35,7 +34,7 @@ type SubscribeHandler interface {
 }
 
 type subscribeHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	sockHandler sockhandler.SockHandler
 
 	subscribeQueue    string
 	subscribesTargets []string
@@ -68,14 +67,14 @@ func init() {
 
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	subscribeQueue string,
 	subscribeTargets []string,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock: rabbitSock,
+		sockHandler: sockHandler,
 
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
@@ -93,13 +92,13 @@ func (h *subscribeHandler) Run() error {
 	})
 	log.Info("Creating rabbitmq queue for listen.")
 
-	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// subscribe each targets
 	for _, target := range h.subscribesTargets {
-		if errSubscribe := h.rabbitSock.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
+		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
 			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
 			return errSubscribe
 		}
@@ -108,7 +107,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessage(h.subscribeQueue, "queue-manager", false, false, false, 10, h.processEventRun)
+			err := h.sockHandler.ConsumeMessage(h.subscribeQueue, "queue-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

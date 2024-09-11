@@ -53,7 +53,7 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 	url := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
 
 	h := listenHandler{
-		rabbitSock:                        mockRabbit,
+		sockHandler:                       mockRabbit,
 		rabbitQueueListenRequestPermanent: "",
 
 		ariAddr:    url,

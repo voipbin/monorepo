@@ -10,7 +10,6 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -173,7 +172,7 @@ func run(
 }
 
 func runSubscribe(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	zmqHandler zmqpubhandler.ZMQPubHandler,
 ) error {
 
@@ -184,7 +183,7 @@ func runSubscribe(
 		string(commonoutline.QueueNameAgentEvent),
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(
-		rabbitSock,
+		sockHandler,
 		queueNamePod,
 		subscribeTargets,
 

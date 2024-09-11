@@ -61,7 +61,7 @@ func Test_v1ChatsPost(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -198,7 +198,7 @@ func Test_v1ChatsGet(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -265,7 +265,7 @@ func Test_v1ChatsIDGet(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -331,7 +331,7 @@ func Test_v1ChatsIDDelete(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -403,7 +403,7 @@ func Test_v1ChatsIDPut(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -473,7 +473,7 @@ func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -543,7 +543,7 @@ func Test_v1ChatsIDParticipantIDsPost(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -612,7 +612,7 @@ func Test_v1ChatsIDParticipantIDsIDDelete(t *testing.T) {
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,

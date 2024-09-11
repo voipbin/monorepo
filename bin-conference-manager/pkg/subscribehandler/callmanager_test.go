@@ -56,7 +56,7 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 			mockConfcall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock:            mockSock,
+				sockHandler:           mockSock,
 				conferencecallHandler: mockConfcall,
 			}
 
@@ -111,7 +111,7 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 			mockConfCall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock:            mockSock,
+				sockHandler:           mockSock,
 				conferenceHandler:     mockConf,
 				conferencecallHandler: mockConfCall,
 			}

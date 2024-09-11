@@ -97,7 +97,7 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -169,7 +169,7 @@ func Test_EventHandlerStasisEnd(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				channelHandler: mockChannel,
 				callHandler:    mockCall,

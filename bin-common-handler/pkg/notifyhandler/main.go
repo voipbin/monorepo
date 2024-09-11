@@ -10,8 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 // WebhookMessage defines
@@ -79,7 +79,7 @@ type NotifyHandler interface {
 }
 
 type notifyHandler struct {
-	sock       rabbitmqhandler.Rabbit
+	sock       sockhandler.SockHandler
 	reqHandler requesthandler.RequestHandler
 
 	queueNotify commonoutline.QueueName
@@ -90,7 +90,7 @@ type notifyHandler struct {
 // NewNotifyHandler create NotifyHandler
 // queueEvent: queue name for notification. the notify handler will publish the event to this queue name.
 // publisher: publisher service name. the notify handler will publish the event with this publisher service name.
-func NewNotifyHandler(sock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
+func NewNotifyHandler(sock sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
 	h := &notifyHandler{
 		sock:       sock,
 		reqHandler: reqHandler,

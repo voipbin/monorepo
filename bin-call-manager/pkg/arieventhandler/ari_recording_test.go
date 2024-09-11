@@ -112,7 +112,7 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 
 			h := eventHandler{
 				db:               mockDB,
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				reqHandler:       mockReq,
 				notifyHandler:    mockNotify,
 				callHandler:      mockSvc,
@@ -199,7 +199,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 
 			h := eventHandler{
 				db:               mockDB,
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				reqHandler:       mockReq,
 				notifyHandler:    mockNotify,
 				callHandler:      mockSvc,

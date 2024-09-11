@@ -71,7 +71,7 @@ func Test_v1FilesPost(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 
@@ -141,7 +141,7 @@ func Test_v1FilesGet(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			h := &listenHandler{
 				utilHandler:    mockUtil,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 
@@ -197,7 +197,7 @@ func Test_v1FilesIDGet(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 
@@ -255,7 +255,7 @@ func Test_v1FilesIDDelete(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 

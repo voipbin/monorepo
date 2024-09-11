@@ -51,7 +51,7 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 			mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				callHandler:       mockCall,
 				groupcallHandler:  mockGroup,

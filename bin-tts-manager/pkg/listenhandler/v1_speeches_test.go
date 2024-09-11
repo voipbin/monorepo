@@ -67,8 +67,8 @@ func Test_v1SpeechesPost(t *testing.T) {
 			mockTTS := ttshandler.NewMockTTSHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
-				ttsHandler: mockTTS,
+				sockHandler: mockSock,
+				ttsHandler:  mockTTS,
 			}
 
 			mockTTS.EXPECT().Create(gomock.Any(), tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectGender).Return(tt.responseTTS, nil)

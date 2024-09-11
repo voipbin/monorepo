@@ -66,7 +66,7 @@ func Test_processV1TransfersPost(t *testing.T) {
 			mockTransfer := transferhandler.NewMockTransferHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				transferHandler: mockTransfer,
 			}
 

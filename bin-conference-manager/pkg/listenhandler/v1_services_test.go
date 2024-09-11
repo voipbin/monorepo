@@ -63,7 +63,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 			mockConfcall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:            mockSock,
+				sockHandler:           mockSock,
 				conferenceHandler:     mockConf,
 				conferencecallHandler: mockConfcall,
 			}

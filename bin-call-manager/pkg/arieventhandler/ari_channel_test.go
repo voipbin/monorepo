@@ -120,7 +120,7 @@ func Test_EventHandlerChannelCreated(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -210,7 +210,7 @@ func Test_EventHandlerChannelDestroyed(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -282,7 +282,7 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -473,7 +473,7 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 
 			h := eventHandler{
 				db:                mockDB,
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockRequest,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
@@ -717,7 +717,7 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 
 			h := eventHandler{
 				db:                mockDB,
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockRequest,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
@@ -806,7 +806,7 @@ func Test_EventHandlerChannelDtmfReceived(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -863,7 +863,7 @@ func Test_EventHandlerChannelVarset(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,

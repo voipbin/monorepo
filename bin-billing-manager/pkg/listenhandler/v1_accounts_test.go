@@ -73,7 +73,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				utilHandler:    mockUtil,
 				accountHandler: mockAccount,
 			}
@@ -145,7 +145,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -204,7 +204,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -328,7 +328,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -387,7 +387,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -450,7 +450,7 @@ func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -513,7 +513,7 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -578,7 +578,7 @@ func Test_processV1AccountsIDIsValidBalancePost(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -643,7 +643,7 @@ func Test_processV1AccountsIDPaymentInfoPut(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 

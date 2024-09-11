@@ -11,7 +11,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -31,7 +31,7 @@ type SubscribeHandler interface {
 }
 
 type subscribeHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	sockHandler sockhandler.SockHandler
 
 	subscribeQueue   commonoutline.QueueName
 	subscribeTargets []string
@@ -90,7 +90,7 @@ func init() {
 
 // NewSubscribeHandler create EventHandler
 func NewSubscribeHandler(
-	sock rabbitmqhandler.Rabbit,
+	sock sockhandler.SockHandler,
 	subscribeQueue commonoutline.QueueName,
 	subscribeTargets []string,
 	ariEventHandler arieventhandler.ARIEventHandler,
@@ -99,7 +99,7 @@ func NewSubscribeHandler(
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock:        sock,
+		sockHandler:       sock,
 		subscribeQueue:    subscribeQueue,
 		subscribeTargets:  subscribeTargets,
 		ariEventHandler:   ariEventHandler,
@@ -120,13 +120,13 @@ func (h *subscribeHandler) Run() error {
 	log.Infof("Creating rabbitmq queue for ARI event receiving.")
 
 	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueCreate(string(h.subscribeQueue), "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(string(h.subscribeQueue), "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
 	// subscribe each targets
 	for _, target := range h.subscribeTargets {
-		if errSubscribe := h.rabbitSock.QueueSubscribe(string(h.subscribeQueue), target); errSubscribe != nil {
+		if errSubscribe := h.sockHandler.QueueSubscribe(string(h.subscribeQueue), target); errSubscribe != nil {
 			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
 			return errSubscribe
 		}
@@ -135,7 +135,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessage(string(h.subscribeQueue), string(common.Servicename), false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.sockHandler.ConsumeMessage(string(h.subscribeQueue), string(common.Servicename), false, false, false, 10, h.processEventRun); errConsume != nil {
 				logrus.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}

@@ -96,7 +96,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				externalMediaHandler: mockExternal,
 				groupcallHandler:     mockGroupcall,
 			}
@@ -185,7 +185,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler:      mockUtil,
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
@@ -247,7 +247,7 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
@@ -308,7 +308,7 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
@@ -369,7 +369,7 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
@@ -433,7 +433,7 @@ func Test_processV1GroupcallsIDAnswerGroupcallIDPost(t *testing.T) {
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
@@ -493,7 +493,7 @@ func Test_processV1GroupcallsIDHangupGroupcallPost(t *testing.T) {
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
@@ -553,7 +553,7 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}

@@ -80,7 +80,7 @@ func Test_processV1NumbersPost(t *testing.T) {
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 
@@ -146,7 +146,7 @@ func Test_ProcessV1NumbersIDDelete(t *testing.T) {
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 
@@ -212,7 +212,7 @@ func Test_ProcessV1NumbersIDGet(t *testing.T) {
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 
@@ -339,7 +339,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler:   mockUtil,
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 
@@ -421,7 +421,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 
@@ -497,7 +497,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 
@@ -569,7 +569,7 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 

@@ -46,7 +46,7 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				transcribeHandler: mockTranscribe,
 			}
 

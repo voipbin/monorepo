@@ -56,7 +56,7 @@ func Test_v1AccountsPost(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -126,7 +126,7 @@ func Test_v1AccountsGet(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			h := &listenHandler{
 				utilHandler:    mockUtil,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 				accountHandler: mockAccount,
 			}
@@ -183,7 +183,7 @@ func Test_v1AccountsIDGet(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 				accountHandler: mockAccount,
 			}
@@ -239,7 +239,7 @@ func Test_v1AccountsIDDelete(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 				accountHandler: mockAccount,
 			}

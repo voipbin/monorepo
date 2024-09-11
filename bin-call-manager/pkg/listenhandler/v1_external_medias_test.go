@@ -76,7 +76,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				externalMediaHandler: mockExternal,
 			}
 
@@ -183,7 +183,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler:          mockUtil,
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				callHandler:          mockCall,
 				externalMediaHandler: mockExternalMedia,
 			}
@@ -245,7 +245,7 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				externalMediaHandler: mockExternal,
 			}
 
@@ -305,7 +305,7 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				externalMediaHandler: mockExternal,
 			}
 

@@ -11,9 +11,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
@@ -135,27 +136,27 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	})
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	hostID := uuid.Must(uuid.NewV4())
 	log.Debugf("Generated host id. host_id: %s", hostID)
 
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, commonoutline.ServiceNameTranscribeManager)
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, *gcpCredential)
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, db, notifyHandler, transcriptHandler, *gcpCredential)
 	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID)
 
 	// run request listener
-	if err := runListen(rabbitSock, hostID, reqHandler, transcriptHandler, transcribeHandler); err != nil {
+	if err := runListen(sockHandler, hostID, reqHandler, transcriptHandler, transcribeHandler); err != nil {
 		return err
 	}
 
 	// run subscribe listener
-	if errSubscribe := runSubscribe(rabbitSock, transcribeHandler); errSubscribe != nil {
+	if errSubscribe := runSubscribe(sockHandler, transcribeHandler); errSubscribe != nil {
 		return errSubscribe
 	}
 
@@ -164,7 +165,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 // runListen runs the listen service
 func runListen(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	hostID uuid.UUID,
 	reqHandler requesthandler.RequestHandler,
 	transcriptHandler transcripthandler.TranscriptHandler,
@@ -174,7 +175,7 @@ func runListen(
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(hostID, rabbitSock, reqHandler, transcribeHandler, transcriptHandler)
+	listenHandler := listenhandler.NewListenHandler(hostID, sockHandler, reqHandler, transcribeHandler, transcriptHandler)
 
 	// run
 	listenQueue := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
@@ -187,7 +188,7 @@ func runListen(
 
 // runSubscribe runs the ARI event listen service
 func runSubscribe(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	transcribeHandler transcribehandler.TranscribeHandler,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -200,7 +201,7 @@ func runSubscribe(
 	}
 	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
 
-	ariEventListenHandler := subscribehandler.NewSubscribeHandler(rabbitSock, commonoutline.QueueNameTranscribeSubscribe, subscribeTargets, transcribeHandler)
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(sockHandler, commonoutline.QueueNameTranscribeSubscribe, subscribeTargets, transcribeHandler)
 
 	// run
 	if err := ariEventListenHandler.Run(); err != nil {

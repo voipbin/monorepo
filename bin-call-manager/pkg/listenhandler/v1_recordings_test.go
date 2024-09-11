@@ -76,7 +76,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler:      mockUtil,
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -154,7 +154,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -218,7 +218,7 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -285,7 +285,7 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -345,7 +345,7 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}

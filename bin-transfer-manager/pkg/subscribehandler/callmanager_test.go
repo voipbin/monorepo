@@ -58,7 +58,7 @@ func Test_processEventCMGroupcallProgressing(t *testing.T) {
 			mockTransfer := transferhandler.NewMockTransferHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				transferHandler: mockTransfer,
 			}
@@ -108,7 +108,7 @@ func Test_processEventCMGroupcallHangup(t *testing.T) {
 			mockTransfer := transferhandler.NewMockTransferHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				transferHandler: mockTransfer,
 			}
@@ -157,7 +157,7 @@ func Test_processEventCMCallHangup(t *testing.T) {
 			mockTransfer := transferhandler.NewMockTransferHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				transferHandler: mockTransfer,
 			}

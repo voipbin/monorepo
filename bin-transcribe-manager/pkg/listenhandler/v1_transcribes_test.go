@@ -72,7 +72,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockReq,
 				transcribeHandler: mockTranscribe,
 			}
@@ -169,7 +169,7 @@ func Test_processV1TranscribesGet(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				utilHandler:       mockUtil,
 				transcribeHandler: mockTranscribe,
 			}
@@ -224,7 +224,7 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				transcribeHandler: mockTranscribe,
 			}
 
@@ -286,7 +286,7 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockReq,
 				transcribeHandler: mockTranscribe,
 			}
@@ -350,7 +350,7 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockReq,
 				transcribeHandler: mockTranscribe,
 			}
@@ -403,7 +403,7 @@ func Test_processV1TranscribesIDHealthCheckPost(t *testing.T) {
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				transcribeHandler: mockTranscribe,
 			}
 

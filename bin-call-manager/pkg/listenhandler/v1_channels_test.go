@@ -67,7 +67,7 @@ func Test_processV1ChannelsIDHealthPost(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
 			}

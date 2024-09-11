@@ -10,10 +10,11 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -158,24 +159,24 @@ func run(dbHandler dbhandler.DBHandler) error {
 	})
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, dbHandler)
 	fileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, *gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
 	storageHandler := storagehandler.NewStorageHandler(reqHandler, fileHandler, *gcpBucketMedia)
 
 	// run listener
-	if errListen := runListen(rabbitSock, storageHandler, accountHandler); errListen != nil {
+	if errListen := runListen(sockHandler, storageHandler, accountHandler); errListen != nil {
 		log.Errorf("Could not run the listener correctly. err: %v", errListen)
 		return errListen
 	}
 
 	// run sbuscriber
-	if errSubs := runSubscribe(rabbitSock, string(commonoutline.QueueNameStorageSubscribe), accountHandler, fileHandler); errSubs != nil {
+	if errSubs := runSubscribe(sockHandler, string(commonoutline.QueueNameStorageSubscribe), accountHandler, fileHandler); errSubs != nil {
 		log.Errorf("Could not run the subscriber correctly. err: %v", errSubs)
 		return errSubs
 	}
@@ -184,10 +185,10 @@ func run(dbHandler dbhandler.DBHandler) error {
 }
 
 // runListen run the listener
-func runListen(rabbitSock rabbitmqhandler.Rabbit, storageHandler storagehandler.StorageHandler, accountHandler accounthandler.AccountHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, storageHandler storagehandler.StorageHandler, accountHandler accounthandler.AccountHandler) error {
 
 	// create listen handler
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, storageHandler, accountHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, storageHandler, accountHandler)
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameStorageRequest), string(commonoutline.QueueNameDelay)); errRun != nil {
@@ -198,12 +199,12 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, storageHandler storagehandler.
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, subscribeQueue string, accountHandler accounthandler.AccountHandler, fileHandler filehandler.FileHandler) error {
+func runSubscribe(sockHandler sockhandler.SockHandler, subscribeQueue string, accountHandler accounthandler.AccountHandler, fileHandler filehandler.FileHandler) error {
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCustomerEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, subscribeQueue, subscribeTargets, accountHandler, fileHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, subscribeQueue, subscribeTargets, accountHandler, fileHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {

@@ -48,7 +48,7 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				extensionHandler: mockExtension,
 				trunkHandler:     mockTrunk,

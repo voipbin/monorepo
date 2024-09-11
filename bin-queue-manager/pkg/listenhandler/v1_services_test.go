@@ -69,7 +69,7 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				queuecallHandler: mockQueuecall,
 			}
 

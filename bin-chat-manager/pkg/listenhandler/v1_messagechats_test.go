@@ -112,7 +112,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 			mockMessagechat := messagechathandler.NewMockMessagechatHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -261,7 +261,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 			mockMessagechat := messagechathandler.NewMockMessagechatHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -331,7 +331,7 @@ func Test_v1MessagechatsIDGet(t *testing.T) {
 			mockMessagechat := messagechathandler.NewMockMessagechatHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -400,7 +400,7 @@ func Test_v1MessagechatsIDDelete(t *testing.T) {
 			mockMessagechat := messagechathandler.NewMockMessagechatHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,

@@ -134,7 +134,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHandler:       mockUtil,
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -203,7 +203,7 @@ func Test_processV1ConferencesPost(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -260,7 +260,7 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -335,7 +335,7 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -402,7 +402,7 @@ func Test_processV1ConferencesIDGet(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -463,7 +463,7 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -520,7 +520,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -577,7 +577,7 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -637,7 +637,7 @@ func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -694,7 +694,7 @@ func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
@@ -751,7 +751,7 @@ func Test_processV1ConferencesIDStopPost(t *testing.T) {
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 

@@ -59,7 +59,7 @@ func Test_v1VariablesIDGet(t *testing.T) {
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				variableHandler: mockVariableHandler,
 			}
 
@@ -118,7 +118,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				variableHandler: mockVariableHandler,
 			}
 
@@ -189,7 +189,7 @@ func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				variableHandler: mockVariableHandler,
 			}
 

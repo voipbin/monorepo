@@ -22,7 +22,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:    mockSock,
+		sockHandler:   mockSock,
 		numberHandler: mockNumber,
 	}
 

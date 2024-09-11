@@ -44,7 +44,7 @@ func Test_v1RecordingsIDGet(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 
@@ -91,7 +91,7 @@ func Test_v1RecordingsIDDelete(t *testing.T) {
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 

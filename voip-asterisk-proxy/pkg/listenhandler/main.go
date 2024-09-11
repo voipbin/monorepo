@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/ivahaev/amigo"
 	"github.com/sirupsen/logrus"
@@ -18,9 +18,9 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	// rabbitmq settings
-	rabbitSock                        rabbitmqhandler.Rabbit // rabbitmq socket
-	rabbitQueueListenRequestPermanent string                 // permanent listen queue name for request(asterisk.<asterisk type>.request)
-	rabbitQueueListenRequestVolatile  string                 // volatile listen queue name for request(asterisk.<asterisk id>.request)
+	sockHandler                       sockhandler.SockHandler // rabbitmq socket
+	rabbitQueueListenRequestPermanent string                  // permanent listen queue name for request(asterisk.<asterisk type>.request)
+	rabbitQueueListenRequestVolatile  string                  // volatile listen queue name for request(asterisk.<asterisk id>.request)
 
 	// ari settings
 	ariAddr    string
@@ -32,7 +32,7 @@ type listenHandler struct {
 
 // NewListenHandler returns ListenHandler interface object
 func NewListenHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 
 	rabbitQueueListenRequestPermanent string,
 	rabbitQueueListenRequestVolatile string,
@@ -43,7 +43,7 @@ func NewListenHandler(
 ) ListenHandler {
 
 	handler := &listenHandler{
-		rabbitSock:                        rabbitSock,
+		sockHandler:                       sockHandler,
 		rabbitQueueListenRequestPermanent: rabbitQueueListenRequestPermanent,
 		rabbitQueueListenRequestVolatile:  rabbitQueueListenRequestVolatile,
 
@@ -78,7 +78,7 @@ func (h *listenHandler) listenRun() error {
 	permQueues := strings.Split(h.rabbitQueueListenRequestPermanent, ",")
 	for _, queue := range permQueues {
 
-		if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
+		if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
 			return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 		}
 
@@ -93,7 +93,7 @@ func (h *listenHandler) listenRun() error {
 		// declare queue
 		logrus.Debugf("Declaring permenant request queue. queue: %s", queue)
 
-		if err := h.rabbitSock.QueueCreate(queue, "volatile"); err != nil {
+		if err := h.sockHandler.QueueCreate(queue, "volatile"); err != nil {
 			return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 		}
 
@@ -106,7 +106,7 @@ func (h *listenHandler) listenRun() error {
 		logrus.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
 			for {
-				if err := h.rabbitSock.ConsumeRPC(queue, "", false, false, false, 10, h.listenHandler); err != nil {
+				if err := h.sockHandler.ConsumeRPC(queue, "", false, false, false, 10, h.listenHandler); err != nil {
 					logrus.Errorf("Could not handle the request message correctly. err: %v", err)
 				}
 			}

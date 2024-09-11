@@ -111,7 +111,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			mockConversation := conversationhandler.NewMockConversationHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				utilHandler:         mockUtil,
 				conversationHandler: mockConversation,
 			}
@@ -174,7 +174,7 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 			mockConversation := conversationhandler.NewMockConversationHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				conversationHandler: mockConversation,
 			}
 
@@ -269,7 +269,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				conversationHandler: mockConversation,
 				messageHandler:      mockMessage,
 			}

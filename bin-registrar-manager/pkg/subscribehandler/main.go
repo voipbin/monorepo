@@ -9,13 +9,12 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/trunkhandler"
@@ -27,7 +26,7 @@ type SubscribeHandler interface {
 }
 
 type subscribeHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	sockHandler sockhandler.SockHandler
 
 	subscribeQueue    string
 	subscribesTargets []string
@@ -60,14 +59,14 @@ func init() {
 
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	subscribeQueue string,
 	subscribeTargets []string,
 	extensionHandler extensionhandler.ExtensionHandler,
 	trunkHandler trunkhandler.TrunkHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock:        rabbitSock,
+		sockHandler:       sockHandler,
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
 		extensionHandler:  extensionHandler,
@@ -83,13 +82,13 @@ func (h *subscribeHandler) Run() error {
 	})
 	log.Info("Creating rabbitmq queue for listen.")
 
-	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
 	// subscribe each targets
 	for _, target := range h.subscribesTargets {
-		if errSubscribe := h.rabbitSock.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
+		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
 			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
 			return errSubscribe
 		}
@@ -98,7 +97,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeMessage(h.subscribeQueue, string(commonoutline.ServiceNameRegistrarManager), false, false, false, 10, h.processEventRun); errConsume != nil {
+			if errConsume := h.sockHandler.ConsumeMessage(h.subscribeQueue, string(commonoutline.ServiceNameRegistrarManager), false, false, false, 10, h.processEventRun); errConsume != nil {
 				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}

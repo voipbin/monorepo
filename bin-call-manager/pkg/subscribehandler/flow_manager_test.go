@@ -50,7 +50,7 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:      mockSock,
+				sockHandler:     mockSock,
 				ariEventHandler: mockARIEvent,
 				callHandler:     mockCall,
 			}

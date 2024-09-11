@@ -10,10 +10,11 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -139,23 +140,23 @@ func run(db dbhandler.DBHandler) error {
 	)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameQueueEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName)
 	queueHandler := queuehandler.NewQueueHandler(reqHandler, db, notifyHandler)
 	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, notifyHandler, queueHandler)
 
 	// run listen
-	if err := runListen(rabbitSock, queueHandler, queuecallHandler); err != nil {
+	if err := runListen(sockHandler, queueHandler, queuecallHandler); err != nil {
 		log.Errorf("Could not run listen. err: %v", err)
 		return err
 	}
 
 	// run subscribe
-	if err := runSubscribe(rabbitSock, queueHandler, queuecallHandler); err != nil {
+	if err := runSubscribe(sockHandler, queueHandler, queuecallHandler); err != nil {
 		log.Errorf("Could not run subscribe. err: %v", err)
 		return err
 	}
@@ -165,7 +166,7 @@ func run(db dbhandler.DBHandler) error {
 
 // runSubscribe runs the subscribed event handler
 func runSubscribe(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) error {
@@ -177,7 +178,7 @@ func runSubscribe(
 	}
 
 	subHandler := subscribehandler.NewSubscribeHandler(
-		rabbitSock,
+		sockHandler,
 		string(commonoutline.QueueNameQueueSubscribe),
 		subscribeTargets,
 		queueHandler,
@@ -194,11 +195,11 @@ func runSubscribe(
 
 // runListen runs the listen service
 func runListen(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, queueHandler, queuecallHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, queueHandler, queuecallHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameQueueRequest), string(commonoutline.QueueNameDelay)); err != nil {

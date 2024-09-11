@@ -50,7 +50,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				activeflowHandler: mockActive,
 			}
 

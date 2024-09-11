@@ -103,7 +103,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 
 			h := &listenHandler{
 				utilHanlder: mockUtil,
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 
 				queuecallHandler: mockQueuecall,
 			}
@@ -163,7 +163,7 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				queuecallHandler: mockQueuecall,
 			}
@@ -223,7 +223,7 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				queuecallHandler: mockQueuecall,
 			}
 
@@ -282,7 +282,7 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				queuecallHandler: mockQueuecall,
 			}
 
@@ -340,7 +340,7 @@ func Test_processV1QueuecallsIDHealthCheckPost(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				queuecallHandler: mockQueuecall,
 			}
 
@@ -402,7 +402,7 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				queuecallHandler: mockQueuecall,
 			}
 
@@ -459,7 +459,7 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				queuecallHandler: mockQueuecall,
 			}

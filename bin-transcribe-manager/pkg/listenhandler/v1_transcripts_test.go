@@ -94,7 +94,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				utilHandler:       mockUtil,
 				transcribeHandler: mockTranscribe,
 				transcriptHandler: mockTranscript,

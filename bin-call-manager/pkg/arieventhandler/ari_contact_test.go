@@ -65,7 +65,7 @@ func Test_EventHandlerContactStatusChange(t *testing.T) {
 
 			h := eventHandler{
 				db:          mockDB,
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				callHandler: mockSvc,
 			}
