@@ -129,19 +129,19 @@ func (mr *MockRabbitMockRecorder) PublishExchangeEvent(exchange, key, evt interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishExchangeEvent", reflect.TypeOf((*MockRabbit)(nil).PublishExchangeEvent), exchange, key, evt)
 }
 
-// PublishRPC mocks base method.
-func (m *MockRabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
+// PublishRequest mocks base method.
+func (m *MockRabbit) PublishRequest(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishRPC", ctx, queueName, req)
+	ret := m.ctrl.Call(m, "PublishRequest", ctx, queueName, req)
 	ret0, _ := ret[0].(*sock.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// PublishRPC indicates an expected call of PublishRPC.
-func (mr *MockRabbitMockRecorder) PublishRPC(ctx, queueName, req interface{}) *gomock.Call {
+// PublishRequest indicates an expected call of PublishRequest.
+func (mr *MockRabbitMockRecorder) PublishRequest(ctx, queueName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRPC", reflect.TypeOf((*MockRabbit)(nil).PublishRPC), ctx, queueName, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRequest", reflect.TypeOf((*MockRabbit)(nil).PublishRequest), ctx, queueName, req)
 }
 
 // QueueCreate mocks base method.

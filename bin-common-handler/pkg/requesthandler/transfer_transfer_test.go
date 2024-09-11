@@ -73,7 +73,7 @@ func Test_TransferV1TransferStart(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.TransferV1TransferStart(ctx, tt.transferType, tt.transfererCallID, tt.transfereeAddresses)
 			if err != nil {

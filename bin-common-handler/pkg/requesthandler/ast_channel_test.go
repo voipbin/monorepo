@@ -47,7 +47,7 @@ func Test_AstChannelAnswer(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -122,7 +122,7 @@ func Test_AstChannelContinue(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -205,7 +205,7 @@ func Test_ChannelAstChannelVariableGet(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -278,7 +278,7 @@ func Test_ChannelAstChannelVariableSet(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -348,7 +348,7 @@ func Test_ChannelAstChannelHangup(t *testing.T) {
 			}
 
 			if tt.delay == 0 {
-				mockSock.EXPECT().PublishRPC(
+				mockSock.EXPECT().PublishRequest(
 					gomock.Any(),
 					tt.expectQueue,
 					&sock.Request{
@@ -492,7 +492,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -573,7 +573,7 @@ func Test_AstChannelGet(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelGet(context.Background(), tt.asterisk, tt.id)
 			if err != nil {
@@ -658,7 +658,7 @@ func Test_AstChannelDTMF(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelDTMF(context.Background(), tt.asterisk, tt.id, tt.digit, tt.duration, tt.before, tt.between, tt.after)
 			if err != nil {
@@ -756,7 +756,7 @@ func Test_AstChannelCreate(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelCreate(context.Background(), tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
 			if err != nil {
@@ -813,7 +813,7 @@ func Test_AstChannelDial(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelDial(context.Background(), tt.asterisk, tt.channelID, tt.caller, tt.timeout)
 			if err != nil {
@@ -884,7 +884,7 @@ func Test_AstChannelPlay(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.actionID, tt.medias, "")
 			if err != nil {
@@ -949,7 +949,7 @@ func Test_AstChannelRecord(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelRecord(context.Background(), tt.asterisk, tt.channelID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
 			if err != nil {
@@ -1033,7 +1033,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
@@ -1078,7 +1078,7 @@ func Test_AstChannelRing(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -1130,7 +1130,7 @@ func Test_AstChannelHoldOn(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1177,7 +1177,7 @@ func Test_AstChannelHoldOff(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1224,7 +1224,7 @@ func Test_AstChannelMusicOnHoldOn(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1271,7 +1271,7 @@ func Test_AstChannelMusicOnHoldOff(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1318,7 +1318,7 @@ func Test_AstChannelSilenceOn(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1365,7 +1365,7 @@ func Test_AstChannelSilenceOff(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1416,7 +1416,7 @@ func Test_AstChannelMuteOn(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1467,7 +1467,7 @@ func Test_AstChannelMuteOff(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().PublishRequest(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,

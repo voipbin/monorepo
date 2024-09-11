@@ -67,7 +67,7 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RouteV1DialrouteGets(ctx, tt.customerID, tt.target)
 			if err != nil {

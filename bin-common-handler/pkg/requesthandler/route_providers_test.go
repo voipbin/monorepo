@@ -78,7 +78,7 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RouteV1ProviderCreate(ctx, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail)
 			if err != nil {
@@ -139,7 +139,7 @@ func Test_RouteV1ProviderGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
 
 			res, err := reqHandler.RouteV1ProviderGet(ctx, tt.providerID)
 			if err != nil {
@@ -200,7 +200,7 @@ func Test_RouteV1ProviderDelete(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
 
 			res, err := reqHandler.RouteV1ProviderDelete(ctx, tt.routeID)
 			if err != nil {
@@ -279,7 +279,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
 
 			res, err := reqHandler.RouteV1ProviderUpdate(ctx, tt.providerID, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail)
 			if err != nil {
@@ -344,7 +344,7 @@ func Test_RouteV1ProviderGets(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RouteV1ProviderGets(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {

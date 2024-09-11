@@ -77,7 +77,7 @@ func Test_BillingV1AccountGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			res, err := reqHandler.BillingV1AccountGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -146,7 +146,7 @@ func Test_BillingV1AccountCreate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountCreate(ctx, tt.customerID, tt.accountName, tt.detail, tt.paymentType, tt.paymentMethod)
 			if err != nil {
@@ -206,7 +206,7 @@ func Test_BillingV1AccountGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountGet(ctx, tt.accountID)
 			if err != nil {
@@ -266,7 +266,7 @@ func Test_BillingV1AccountDelete(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountDelete(ctx, tt.accountID)
 			if err != nil {
@@ -331,7 +331,7 @@ func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountAddBalanceForce(ctx, tt.accountID, tt.balance)
 			if err != nil {
@@ -395,7 +395,7 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountSubtractBalanceForce(ctx, tt.accountID, tt.balance)
 			if err != nil {
@@ -461,7 +461,7 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountIsValidBalance(ctx, tt.accountID, tt.billingType, tt.country, tt.Count)
 			if err != nil {
@@ -526,7 +526,7 @@ func Test_BillingV1AccountUpdateBasicInfo(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountUpdateBasicInfo(ctx, tt.accountID, tt.accountName, tt.detail)
 			if err != nil {
@@ -592,7 +592,7 @@ func Test_BillingV1AccountUpdatePaymentInfo(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountUpdatePaymentInfo(ctx, tt.accountID, tt.paymentType, tt.paymentMethod)
 			if err != nil {

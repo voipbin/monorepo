@@ -55,7 +55,7 @@ func Test_CallV1ChannelHealth(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.CallV1ChannelHealth(ctx, tt.channelID, tt.delay, tt.retryCount)
 			if err != nil {

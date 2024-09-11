@@ -142,7 +142,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 			res, err := reqHandler.FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.flowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
@@ -206,7 +206,7 @@ func Test_FlowV1ActiveflowGetNextAction(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1ActiveflowGetNextAction(context.Background(), tt.activeflowID, tt.currentActionID)
 			if err != nil {
@@ -287,7 +287,7 @@ func Test_FlowV1ActiveflowUpdateForwardActionID(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1ActiveflowUpdateForwardActionID(context.Background(), tt.activeflowID, tt.forwardActionID, tt.forwardNow); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
@@ -338,7 +338,7 @@ func Test_FlowV1ActiveflowExecute(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FlowV1ActiveflowExecute(context.Background(), tt.activeflowID); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
@@ -394,7 +394,7 @@ func Test_FlowV1ActiveflowDelete(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1ActiveflowDelete(context.Background(), tt.activeflowID)
 			if err != nil {
@@ -455,7 +455,7 @@ func Test_FlowV1ActiveflowStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1ActiveflowStop(ctx, tt.activeflowID)
 			if err != nil {
@@ -514,7 +514,7 @@ func Test_FlowV1ActiveflowGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1ActiveflowGet(ctx, tt.activeflowID)
 			if err != nil {
@@ -614,7 +614,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1ActiveflowGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -682,7 +682,7 @@ func Test_FlowV1ActiveflowPushActions(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FlowV1ActiveflowPushActions(ctx, tt.activeflowID, tt.actions)
 			if err != nil {

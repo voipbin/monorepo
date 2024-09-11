@@ -75,7 +75,7 @@ func (r *requestHandler) sendRequest(ctx context.Context, queue commonoutline.Qu
 func (r *requestHandler) sendDirectRequest(ctx context.Context, target string, resource string, req *sock.Request) (*sock.Response, error) {
 
 	start := time.Now()
-	res, err := r.sock.PublishRPC(ctx, target, req)
+	res, err := r.sock.PublishRequest(ctx, target, req)
 	elapsed := time.Since(start)
 	promRequestProcessTime.WithLabelValues(target, string(resource), string(req.Method)).Observe(float64(elapsed.Milliseconds()))
 

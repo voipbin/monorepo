@@ -90,7 +90,7 @@ func Test_CallV1ConfbridgeCreate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeCreate(ctx, tt.customerID, tt.confbridgeType)
 			if err != nil {
@@ -149,7 +149,7 @@ func Test_CallV1ConfbridgeGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeGet(ctx, tt.confbridgeID)
 			if err != nil {
@@ -222,7 +222,7 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeExternalMediaStart(ctx, tt.confbridgeID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
@@ -281,7 +281,7 @@ func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeExternalMediaStop(ctx, tt.callID)
 			if err != nil {
@@ -350,7 +350,7 @@ func Test_CallV1ConfbridgeRecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeRecordingStart(ctx, tt.confbridgeID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
 			if err != nil {
@@ -409,7 +409,7 @@ func Test_CallV1ConfbridgeRecordingStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeRecordingStop(ctx, tt.confbridgeID)
 			if err != nil {
@@ -472,7 +472,7 @@ func Test_CallV1ConfbridgeFlagAdd(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeFlagAdd(ctx, tt.confbridgeID, tt.flag)
 			if err != nil {
@@ -535,7 +535,7 @@ func Test_CallV1ConfbridgeFlagRemove(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeFlagRemove(ctx, tt.confbridgeID, tt.flag)
 			if err != nil {
@@ -594,7 +594,7 @@ func Test_CallV1ConfbridgeTerminate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeTerminate(ctx, tt.confbridgeID)
 			if err != nil {
@@ -651,7 +651,7 @@ func Test_CallV1ConfbridgeRing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			if errRing := reqHandler.CallV1ConfbridgeRing(ctx, tt.confbridgeID); errRing != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errRing)
@@ -703,7 +703,7 @@ func Test_CallV1ConfbridgeAnswer(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			if errRing := reqHandler.CallV1ConfbridgeAnswer(ctx, tt.confbridgeID); errRing != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errRing)

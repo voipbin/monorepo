@@ -66,7 +66,7 @@ func Test_TagV1TagCreate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.TagV1TagCreate(ctx, tt.customerID, tt.tagName, tt.detail)
 			if err != nil {
@@ -131,7 +131,7 @@ func Test_TagV1TagUpdate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.TagV1TagUpdate(ctx, tt.id, tt.tagName, tt.detail)
 			if err != nil {
@@ -191,7 +191,7 @@ func Test_TagV1TagDelete(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.TagV1TagDelete(ctx, tt.id)
 			if err != nil {
@@ -251,7 +251,7 @@ func Test_TagV1TagGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.TagV1TagGet(ctx, tt.id)
 			if err != nil {
@@ -318,7 +318,7 @@ func Test_TagV1TagGets(t *testing.T) {
 				utilHandler: mockUtil,
 			}
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.TagV1TagGets(ctx, tt.customerID, tt.token, tt.pageSize)
 			if err != nil {

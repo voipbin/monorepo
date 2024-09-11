@@ -81,7 +81,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			h.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ChatbotV1ChatbotcallGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -142,7 +142,7 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ChatbotV1ChatbotcallGet(ctx, tt.chatbotcallID)
 			if err != nil {
@@ -202,7 +202,7 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ChatbotV1ChatbotcallDelete(ctx, tt.chatbotcallID)
 			if err != nil {

@@ -51,8 +51,8 @@ func (r *rabbit) PublishEvent(queueName string, evt *sock.Event) error {
 	return nil
 }
 
-// PublishRPC publishes RPC message and returns response.
-func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
+// PublishRequest publishes request message and returns response.
+func (r *rabbit) PublishRequest(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
 
 	reqMsg, err := json.Marshal(req)
 	if err != nil {

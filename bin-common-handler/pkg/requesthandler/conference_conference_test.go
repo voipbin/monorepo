@@ -61,7 +61,7 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceGet(context.Background(), tt.conferenceID)
 			if err != nil {
@@ -137,7 +137,7 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.ConferenceV1ConferenceGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -196,7 +196,7 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceDelete(ctx, tt.conferenceID)
 			if err != nil {
@@ -277,7 +277,7 @@ func Test_ConferenceV1ConferenceStop(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.delay == 0 {
-				mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+				mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			} else {
 				mockSock.EXPECT().PublishDelayedRequest(
 					gomock.Any(),
@@ -346,7 +346,7 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			cf, err := reqHandler.ConferenceV1ConferenceCreate(ctx, tt.expectConference.CustomerID, tt.expectConference.Type, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, nil, nil, nil)
 			if err != nil {
@@ -408,7 +408,7 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceUpdateRecordingID(ctx, tt.id, tt.recordingID)
 			if err != nil {
@@ -466,7 +466,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id)
 			if err != nil {
@@ -524,7 +524,7 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceRecordingStop(ctx, tt.id)
 			if err != nil {
@@ -586,7 +586,7 @@ func Test_ConferenceV1ConferenceTranscribeStart(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceTranscribeStart(ctx, tt.id, tt.language)
 			if err != nil {
@@ -644,7 +644,7 @@ func Test_ConferenceV1ConferenceTranscribeStop(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceTranscribeStop(ctx, tt.id)
 			if err != nil {

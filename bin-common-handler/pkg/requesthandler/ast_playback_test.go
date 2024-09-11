@@ -55,7 +55,7 @@ func Test_AstPlaybackStop(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstPlaybackStop(context.Background(), tt.asteriskID, tt.playbackID)
 			if err != nil {

@@ -56,7 +56,7 @@ package requesthandler
 // 			}
 
 // 			ctx := context.Background()
-// 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+// 			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 // 			res, err := reqHandler.TranscribeV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language)
 // 			if err != nil {

@@ -61,7 +61,7 @@ func Test_ConversationV1AccountGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			cf, err := reqHandler.ConversationV1AccountGet(ctx, tt.accountID)
 			if err != nil {
@@ -138,7 +138,7 @@ func Test_ConversationV1AccountGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -211,7 +211,7 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1AccountCreate(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
 			if err != nil {
@@ -282,7 +282,7 @@ func Test_ConversationV1AccountUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1AccountUpdate(ctx, tt.id, tt.accountName, tt.detail, tt.secret, tt.token)
 			if err != nil {
@@ -344,7 +344,7 @@ func Test_ConversationV1AccountDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishRequest(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConversationV1AccountDelete(ctx, tt.id)
 			if err != nil {
