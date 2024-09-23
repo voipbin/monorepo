@@ -79,8 +79,8 @@ type NotifyHandler interface {
 }
 
 type notifyHandler struct {
-	sock       sockhandler.SockHandler
-	reqHandler requesthandler.RequestHandler
+	sockHandler sockhandler.SockHandler
+	reqHandler  requesthandler.RequestHandler
 
 	queueNotify commonoutline.QueueName
 
@@ -90,17 +90,17 @@ type notifyHandler struct {
 // NewNotifyHandler create NotifyHandler
 // queueEvent: queue name for notification. the notify handler will publish the event to this queue name.
 // publisher: publisher service name. the notify handler will publish the event with this publisher service name.
-func NewNotifyHandler(sock sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
+func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
 	h := &notifyHandler{
-		sock:       sock,
-		reqHandler: reqHandler,
+		sockHandler: sockHandler,
+		reqHandler:  reqHandler,
 
 		queueNotify: queueEvent,
 
 		publisher: publisher,
 	}
 
-	if err := sock.TopicCreate(string(queueEvent)); err != nil {
+	if err := sockHandler.TopicCreate(string(queueEvent)); err != nil {
 		logrus.Errorf("Could not declare the event exchange. err: %v", err)
 		return nil
 	}

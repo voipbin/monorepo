@@ -69,7 +69,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
@@ -143,7 +143,7 @@ func Test_PublishWebhook(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
@@ -196,7 +196,7 @@ func Test_PublishEvent(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
@@ -248,7 +248,7 @@ func Test_PublishEventRaw(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
