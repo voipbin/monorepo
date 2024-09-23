@@ -2,7 +2,7 @@ package eventhandler
 
 import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gorilla/websocket"
 	"github.com/ivahaev/amigo"
@@ -36,7 +36,7 @@ func init() {
 // NewEventHandler returns eventhandler
 func NewEventHandler(
 	notifyHandler notifyhandler.NotifyHandler,
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	rabbitQueuePublishEvents string,
 	ariAddr string,
 	ariAccount string,

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	mmmessage "monorepo/bin-message-manager/models/message"
 
@@ -32,7 +32,7 @@ type SubscribeHandler interface {
 }
 
 type subscribeHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
+	sockHandler sockhandler.SockHandler
 
 	subscribeQueue    string
 	subscribesTargets string
@@ -65,14 +65,14 @@ func init() {
 
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	subscribeQueue string,
 	subscribeTargets string,
 	accountHandler accounthandler.AccountHandler,
 	conversationHandler conversationhandler.ConversationHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock: rabbitSock,
+		sockHandler: sockHandler,
 
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
@@ -86,31 +86,30 @@ func NewSubscribeHandler(
 }
 
 func (h *subscribeHandler) Run() error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func": "Run",
-	}).Info("Creating rabbitmq queue for listen.")
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
-	if err := h.rabbitSock.QueueCreate(h.subscribeQueue, "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
 	// subscribe each targets
 	targets := strings.Split(h.subscribesTargets, ",")
 	for _, target := range targets {
-
-		// bind each targets
-		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
-			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
-			return err
+		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
+			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
+			return errSubscribe
 		}
 	}
 
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessage(h.subscribeQueue, "conversation-manager", false, false, false, 10, h.processEventRun)
+			err := h.sockHandler.ConsumeMessage(h.subscribeQueue, "conversation-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()

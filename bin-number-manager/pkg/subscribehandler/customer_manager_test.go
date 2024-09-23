@@ -5,7 +5,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -44,11 +44,11 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 

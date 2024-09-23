@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/golang/mock/gomock"
 
@@ -18,11 +18,11 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 	h := &listenHandler{
-		rabbitSock:    mockSock,
+		sockHandler:   mockSock,
 		numberHandler: mockNumber,
 	}
 

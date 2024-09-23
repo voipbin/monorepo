@@ -10,10 +10,11 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -136,21 +137,21 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTransferEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName)
 	transferHandler := transferhandler.NewTransferHandler(reqHandler, notifyHandler, db)
 
 	// run event listener
-	if err := runSubscribe(serviceName, rabbitSock, transferHandler); err != nil {
+	if err := runSubscribe(serviceName, sockHandler, transferHandler); err != nil {
 		return err
 	}
 
 	// run request listener
-	if err := runRequestListen(rabbitSock, transferHandler); err != nil {
+	if err := runRequestListen(sockHandler, transferHandler); err != nil {
 		return err
 	}
 
@@ -160,7 +161,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 // runSubscribe runs the ARI event listen service
 func runSubscribe(
 	serviceName string,
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	transferHandler transferhandler.TransferHandler,
 ) error {
 
@@ -168,7 +169,7 @@ func runSubscribe(
 		string(commonoutline.QueueNameCallEvent),
 	}
 
-	subscribeHandler := subscribehandler.NewSubscribeHandler(serviceName, rabbitSock, string(commonoutline.QueueNameTransferSubscribe), subscribeTargets, transferHandler)
+	subscribeHandler := subscribehandler.NewSubscribeHandler(serviceName, sockHandler, string(commonoutline.QueueNameTransferSubscribe), subscribeTargets, transferHandler)
 
 	// run
 	if err := subscribeHandler.Run(); err != nil {
@@ -180,12 +181,12 @@ func runSubscribe(
 
 // runRequestListen runs the request listen service
 func runRequestListen(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	transferHandler transferhandler.TransferHandler,
 ) error {
 
 	listenHandler := listenhandler.NewListenHandler(
-		rabbitSock,
+		sockHandler,
 		string(commonoutline.QueueNameTransferRequest),
 		string(commonoutline.QueueNameDelay),
 		transferHandler,

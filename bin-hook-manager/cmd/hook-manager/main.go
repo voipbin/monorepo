@@ -8,9 +8,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -60,7 +61,7 @@ func main() {
 	defer sqlDB.Close()
 
 	// connect to rabbitmq
-	sock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	sock := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
 	sock.Connect()
 
 	// create servicehandler

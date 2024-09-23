@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -107,11 +107,11 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConversation := conversationhandler.NewMockConversationHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				utilHandler:         mockUtil,
 				conversationHandler: mockConversation,
 			}
@@ -170,11 +170,11 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConversation := conversationhandler.NewMockConversationHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				conversationHandler: mockConversation,
 			}
 
@@ -264,12 +264,12 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConversation := conversationhandler.NewMockConversationHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:          mockSock,
+				sockHandler:         mockSock,
 				conversationHandler: mockConversation,
 				messageHandler:      mockMessage,
 			}

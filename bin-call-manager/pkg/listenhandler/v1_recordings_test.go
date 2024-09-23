@@ -6,7 +6,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -70,13 +70,13 @@ func Test_processV1RecordingsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
 				utilHandler:      mockUtil,
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -149,12 +149,12 @@ func Test_processV1RecordingsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -213,12 +213,12 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -280,12 +280,12 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
@@ -340,12 +340,12 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}

@@ -10,10 +10,11 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -108,15 +109,15 @@ func initProm(endpoint, listen string) {
 // Run the services
 func run() error {
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create listen handler
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameTTSEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTTSEvent, serviceName)
 
 	// run listener
-	if err := runListen(rabbitSock, notifyHandler); err != nil {
+	if err := runListen(sockHandler, notifyHandler); err != nil {
 		return err
 	}
 
@@ -124,7 +125,7 @@ func run() error {
 }
 
 // runListen run the listener
-func runListen(rabbitSock rabbitmqhandler.Rabbit, notifyHandler notifyhandler.NotifyHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, notifyHandler notifyhandler.NotifyHandler) error {
 
 	// get pod ip
 	localAddress := os.Getenv("POD_IP")
@@ -136,7 +137,7 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, notifyHandler notifyhandler.No
 		return fmt.Errorf("could not create tts handler")
 	}
 
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, ttsHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, ttsHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameTTSRequest), string(commonoutline.QueueNameDelay)); err != nil {

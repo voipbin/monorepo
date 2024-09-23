@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func Test_AstChannelAnswer(t *testing.T) {
@@ -42,12 +42,12 @@ func Test_AstChannelAnswer(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -117,12 +117,12 @@ func Test_AstChannelContinue(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -200,12 +200,12 @@ func Test_ChannelAstChannelVariableGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -273,12 +273,12 @@ func Test_ChannelAstChannelVariableSet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -342,13 +342,13 @@ func Test_ChannelAstChannelHangup(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			if tt.delay == 0 {
-				mockSock.EXPECT().PublishRPC(
+				mockSock.EXPECT().RequestPublish(
 					gomock.Any(),
 					tt.expectQueue,
 					&sock.Request{
@@ -359,8 +359,7 @@ func Test_ChannelAstChannelHangup(t *testing.T) {
 					},
 				).Return(&sock.Response{StatusCode: 200, Data: nil}, nil)
 			} else {
-				mockSock.EXPECT().PublishExchangeDelayedRequest(
-					gomock.Any(),
+				mockSock.EXPECT().RequestPublishWithDelay(
 					tt.expectQueue,
 					&sock.Request{
 						URI:      tt.expectURI,
@@ -485,14 +484,14 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -568,12 +567,12 @@ func Test_AstChannelGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelGet(context.Background(), tt.asterisk, tt.id)
 			if err != nil {
@@ -653,12 +652,12 @@ func Test_AstChannelDTMF(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelDTMF(context.Background(), tt.asterisk, tt.id, tt.digit, tt.duration, tt.before, tt.between, tt.after)
 			if err != nil {
@@ -751,12 +750,12 @@ func Test_AstChannelCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelCreate(context.Background(), tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
 			if err != nil {
@@ -808,12 +807,12 @@ func Test_AstChannelDial(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelDial(context.Background(), tt.asterisk, tt.channelID, tt.caller, tt.timeout)
 			if err != nil {
@@ -879,12 +878,12 @@ func Test_AstChannelPlay(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.actionID, tt.medias, "")
 			if err != nil {
@@ -944,12 +943,12 @@ func Test_AstChannelRecord(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelRecord(context.Background(), tt.asterisk, tt.channelID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
 			if err != nil {
@@ -1028,12 +1027,12 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
@@ -1073,12 +1072,12 @@ func Test_AstChannelRing(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -1125,12 +1124,12 @@ func Test_AstChannelHoldOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1172,12 +1171,12 @@ func Test_AstChannelHoldOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1219,12 +1218,12 @@ func Test_AstChannelMusicOnHoldOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1266,12 +1265,12 @@ func Test_AstChannelMusicOnHoldOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1313,12 +1312,12 @@ func Test_AstChannelSilenceOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1360,12 +1359,12 @@ func Test_AstChannelSilenceOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1411,12 +1410,12 @@ func Test_AstChannelMuteOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,
@@ -1462,12 +1461,12 @@ func Test_AstChannelMuteOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				tt.expectRequest,

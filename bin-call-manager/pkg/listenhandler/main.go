@@ -12,7 +12,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -39,7 +39,7 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	utilHandler          utilhandler.UtilHandler
-	rabbitSock           rabbitmqhandler.Rabbit
+	sockHandler          sockhandler.SockHandler
 	callHandler          callhandler.CallHandler
 	confbridgeHandler    confbridgehandler.ConfbridgeHandler
 	channelHandler       channelhandler.ChannelHandler
@@ -145,7 +145,7 @@ func simpleResponse(code int) *sock.Response {
 
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	callHandler callhandler.CallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
@@ -155,7 +155,7 @@ func NewListenHandler(
 ) ListenHandler {
 	h := &listenHandler{
 		utilHandler:          utilhandler.NewUtilHandler(),
-		rabbitSock:           rabbitSock,
+		sockHandler:          sockHandler,
 		callHandler:          callHandler,
 		confbridgeHandler:    confbridgeHandler,
 		channelHandler:       channelHandler,
@@ -173,14 +173,14 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
-	if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// process requests
 	go func() {
 		for {
-			if errConsume := h.rabbitSock.ConsumeRPC(queue, string(common.Servicename), false, false, false, 10, h.processRequest); errConsume != nil {
+			if errConsume := h.sockHandler.ConsumeRPC(queue, string(common.Servicename), false, false, false, 10, h.processRequest); errConsume != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}

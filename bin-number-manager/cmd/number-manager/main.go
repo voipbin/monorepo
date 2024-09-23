@@ -10,9 +10,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -138,24 +139,24 @@ func initProm(endpoint, listen string) {
 func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*argRabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *argRabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
 
 	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(reqHandler, db, *argTelnyxConnectionID, *argTelnyxProfileID, *argTelnyxToken)
 	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(reqHandler, db, *argTwilioSID, *argTwilioToken)
 
 	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler, nHandlerTelnyx, nHandlerTwilio)
 
-	if err := runListen(rabbitSock, numberHandler); err != nil {
+	if err := runListen(sockHandler, numberHandler); err != nil {
 		return err
 	}
 
-	if err := runSubscribe(rabbitSock, numberHandler); err != nil {
+	if err := runSubscribe(sockHandler, numberHandler); err != nil {
 		return err
 	}
 
@@ -163,8 +164,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.NumberHandler) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, numberHandler)
+func runListen(sockHandler sockhandler.SockHandler, numberHandler numberhandler.NumberHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, numberHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameNumberRequest), string(commonoutline.QueueNameDelay)); err != nil {
@@ -175,13 +176,13 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.Nu
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.NumberHandler) error {
+func runSubscribe(sockHandler sockhandler.SockHandler, numberHandler numberhandler.NumberHandler) error {
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameFlowEvent),
 		string(commonoutline.QueueNameCustomerEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameNumberSubscribe), subscribeTargets, numberHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameNumberSubscribe), subscribeTargets, numberHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {

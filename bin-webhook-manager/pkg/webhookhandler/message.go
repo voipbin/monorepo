@@ -13,6 +13,7 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":   "sendMessage",
 			"uri":    uri,
 			"method": method,
 		},

@@ -8,7 +8,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -54,11 +54,11 @@ func Test_processEventCMGroupcallProgressing(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTransfer := transferhandler.NewMockTransferHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				transferHandler: mockTransfer,
 			}
@@ -104,11 +104,11 @@ func Test_processEventCMGroupcallHangup(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTransfer := transferhandler.NewMockTransferHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				transferHandler: mockTransfer,
 			}
@@ -153,11 +153,11 @@ func Test_processEventCMCallHangup(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTransfer := transferhandler.NewMockTransferHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				transferHandler: mockTransfer,
 			}

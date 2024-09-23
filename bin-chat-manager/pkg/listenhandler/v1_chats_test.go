@@ -6,7 +6,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -55,13 +55,13 @@ func Test_v1ChatsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -192,13 +192,13 @@ func Test_v1ChatsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -259,13 +259,13 @@ func Test_v1ChatsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -325,13 +325,13 @@ func Test_v1ChatsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -397,13 +397,13 @@ func Test_v1ChatsIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -467,13 +467,13 @@ func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -537,13 +537,13 @@ func Test_v1ChatsIDParticipantIDsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,
@@ -606,13 +606,13 @@ func Test_v1ChatsIDParticipantIDsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 
 			mockChat := chathandler.NewMockChatHandler(mc)
 			mockChatroom := chatroomhandler.NewMockChatroomHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
+				sockHandler: mockSock,
 
 				chatHandler:     mockChat,
 				chatroomHandler: mockChatroom,

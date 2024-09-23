@@ -10,9 +10,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -112,15 +113,16 @@ func initSignal() {
 
 // initProm inits prometheus settings
 func initProm(endpoint, listen string) {
+	log := logrus.WithField("func", "initProm")
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			err := http.ListenAndServe(listen, nil)
-			if err != nil {
-				logrus.Errorf("Could not start prometheus listener")
+			if errListen := http.ListenAndServe(listen, nil); errListen != nil {
+				log.Errorf("Could not start prometheus listener. err: %v", errListen)
 				time.Sleep(time.Second * 1)
 				continue
 			}
+			log.Infof("Finishing the prometheus listener.")
 			break
 		}
 	}()
@@ -130,20 +132,20 @@ func initProm(endpoint, listen string) {
 func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
 	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
 
-	if err := runListen(rabbitSock, agentHandler); err != nil {
+	if err := runListen(sockHandler, agentHandler); err != nil {
 		return err
 	}
 
-	if err := runSubscribe(rabbitSock, agentHandler); err != nil {
+	if err := runSubscribe(sockHandler, agentHandler); err != nil {
 		return err
 	}
 
@@ -151,8 +153,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.AgentHandler) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, agentHandler)
+func runListen(sockHandler sockhandler.SockHandler, agentHandler agenthandler.AgentHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, agentHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameAgentRequest), string(commonoutline.QueueNameDelay)); err != nil {
@@ -164,7 +166,7 @@ func runListen(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandler.Agen
 
 // runSubscribe runs the subscribed event handler
 func runSubscribe(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	agentHandler agenthandler.AgentHandler,
 ) error {
 
@@ -173,7 +175,7 @@ func runSubscribe(
 		string(commonoutline.QueueNameCustomerEvent),
 		string(commonoutline.QueueNameWebhookEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {

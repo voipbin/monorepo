@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -137,11 +137,11 @@ func Test_v1FlowsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -345,12 +345,12 @@ func Test_v1FlowsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
 				utilHandler: mockUtil,
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -396,11 +396,11 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -481,11 +481,11 @@ func Test_v1FlowsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -566,11 +566,11 @@ func Test_v1FlowsIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -624,11 +624,11 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 
@@ -705,11 +705,11 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 				flowHandler: mockFlowHandler,
 			}
 

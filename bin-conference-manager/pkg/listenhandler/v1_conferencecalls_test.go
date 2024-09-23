@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -64,12 +64,12 @@ func Test_processV1ConferencecallsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConf := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
 				utilHandler:           mockUtil,
-				rabbitSock:            mockSock,
+				sockHandler:           mockSock,
 				conferencecallHandler: mockConf,
 			}
 
@@ -126,13 +126,13 @@ func Test_processV1ConferencecallsIDGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
 				utilHandler:           mockUtil,
-				rabbitSock:            mockSock,
+				sockHandler:           mockSock,
 				conferenceHandler:     mockConf,
 				conferencecallHandler: mockConferencecall,
 			}
@@ -188,11 +188,11 @@ func Test_processV1ConferencecallsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConfcall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:            mockSock,
+				sockHandler:           mockSock,
 				conferencecallHandler: mockConfcall,
 			}
 
@@ -245,11 +245,11 @@ func Test_processV1ConferencecallsIDHealthCheckPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConfcall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:            mockSock,
+				sockHandler:           mockSock,
 				conferencecallHandler: mockConfcall,
 			}
 

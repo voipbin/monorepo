@@ -10,10 +10,11 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -133,16 +134,16 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handler
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
 	customerHandler := customerhandler.NewCustomerHandler(reqHandler, db, notifyHandler)
 
 	// run listen
-	if err := runListen(rabbitSock, reqHandler, customerHandler); err != nil {
+	if err := runListen(sockHandler, reqHandler, customerHandler); err != nil {
 		return err
 	}
 
@@ -150,9 +151,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(rabbitSock rabbitmqhandler.Rabbit, reqHandler requesthandler.RequestHandler, customerHandler customerhandler.CustomerHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, customerHandler customerhandler.CustomerHandler) error {
 
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, customerHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, reqHandler, customerHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameCustomerRequest), string(commonoutline.QueueNameDelay)); err != nil {

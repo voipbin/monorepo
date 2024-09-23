@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -63,12 +63,12 @@ func Test_v1SpeechesPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTTS := ttshandler.NewMockTTSHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock: mockSock,
-				ttsHandler: mockTTS,
+				sockHandler: mockSock,
+				ttsHandler:  mockTTS,
 			}
 
 			mockTTS.EXPECT().Create(gomock.Any(), tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectGender).Return(tt.responseTTS, nil)
