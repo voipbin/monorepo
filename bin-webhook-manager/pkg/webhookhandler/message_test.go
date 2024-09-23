@@ -21,14 +21,14 @@ func Test_sendMessage(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			"http://example.com",
+			"https://httpbin.org/post",
 			"POST",
 			"application/json",
 			[]byte(`{"test key":"test value"}`),
 		},
 		{
 			"empty data",
-			"http://example.com",
+			"https://httpbin.org/post",
 			"POST",
 			"",
 			nil,
@@ -59,7 +59,7 @@ func Test_sendMessage(t *testing.T) {
 			}
 
 			if resp.StatusCode != 200 {
-				t.Errorf("Wrong match. expect: 200, got: %d", resp.StatusCode)
+				t.Errorf("Wrong match. expect: 200, got: %v", resp)
 			}
 		})
 	}

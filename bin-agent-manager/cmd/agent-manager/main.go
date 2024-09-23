@@ -113,15 +113,16 @@ func initSignal() {
 
 // initProm inits prometheus settings
 func initProm(endpoint, listen string) {
+	log := logrus.WithField("func", "initProm")
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
-			err := http.ListenAndServe(listen, nil)
-			if err != nil {
-				logrus.Errorf("Could not start prometheus listener")
+			if errListen := http.ListenAndServe(listen, nil); errListen != nil {
+				log.Errorf("Could not start prometheus listener. err: %v", errListen)
 				time.Sleep(time.Second * 1)
 				continue
 			}
+			log.Infof("Finishing the prometheus listener.")
 			break
 		}
 	}()
