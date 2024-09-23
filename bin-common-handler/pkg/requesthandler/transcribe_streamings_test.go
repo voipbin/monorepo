@@ -50,13 +50,13 @@ package requesthandler
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
 
-// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			reqHandler := requestHandler{
 // 				sock: mockSock,
 // 			}
 
 // 			ctx := context.Background()
-// 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+// 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 // 			res, err := reqHandler.TranscribeV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language)
 // 			if err != nil {

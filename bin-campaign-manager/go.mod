@@ -57,7 +57,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/prometheus/client_golang v1.20.3
+	github.com/prometheus/client_golang v1.20.4
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
@@ -74,7 +74,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.17.10 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect

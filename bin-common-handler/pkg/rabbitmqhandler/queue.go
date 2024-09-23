@@ -32,12 +32,16 @@ func (r *rabbit) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, 
 }
 
 func (h *rabbit) QueueCreate(name string, queueType string) error {
+
 	switch queueType {
 	case "volatile":
 		return h.queueCreateVolatile(name)
 
-	default:
+	case "normal":
 		return h.queueCreateNormal(name)
+
+	default:
+		return fmt.Errorf("invalid queue type. type: %s", queueType)
 	}
 }
 
@@ -45,7 +49,7 @@ func (h *rabbit) queueCreateNormal(name string) error {
 
 	// declare the queue
 	if errDeclare := h.QueueDeclare(name, true, false, false, false); errDeclare != nil {
-		return fmt.Errorf("could not declare the queue. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the queue for normal. err: %v", errDeclare)
 	}
 
 	if errConfig := h.queueConfig(name); errConfig != nil {
@@ -59,7 +63,7 @@ func (h *rabbit) queueCreateVolatile(name string) error {
 
 	// declare the queue
 	if errDeclare := h.QueueDeclare(name, false, true, false, false); errDeclare != nil {
-		return fmt.Errorf("could not declare the queue. err: %v", errDeclare)
+		return fmt.Errorf("could not declare the queue for volatile. err: %v", errDeclare)
 	}
 
 	if errConfig := h.queueConfig(name); errConfig != nil {
@@ -81,8 +85,8 @@ func (h *rabbit) queueConfig(name string) error {
 	}
 
 	// bind the delay exchange to the queue
-	if errBind := h.QueueBind(name, name, string(commonoutline.QueueNameDelay), false, nil); errBind != nil {
-		return fmt.Errorf("could not bind the queue and exchange. err: %v", errBind)
+	if errSubscribe := h.QueueBind(name, name, string(commonoutline.QueueNameDelay), false, nil); errSubscribe != nil {
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", errSubscribe)
 	}
 
 	return nil
@@ -133,6 +137,11 @@ func (r *rabbit) QueueQoS(name string, prefetchCount, prefetchSize int) error {
 	}
 
 	return nil
+}
+
+// QueueBind binds queue and exchange with a key
+func (h *rabbit) QueueSubscribe(name string, topic string) error {
+	return h.QueueBind(name, "", topic, false, nil)
 }
 
 // QueueBind binds queue and exchange with a key

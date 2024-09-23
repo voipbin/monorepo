@@ -2,7 +2,7 @@ package listenhandler
 
 import (
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/pkg/accounthandler"
@@ -52,11 +52,11 @@ func Test_v1AccountsPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				accountHandler: mockAccount,
 			}
 
@@ -121,12 +121,12 @@ func Test_v1AccountsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			h := &listenHandler{
 				utilHandler:    mockUtil,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 				accountHandler: mockAccount,
 			}
@@ -179,11 +179,11 @@ func Test_v1AccountsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 				accountHandler: mockAccount,
 			}
@@ -235,11 +235,11 @@ func Test_v1AccountsIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 				accountHandler: mockAccount,
 			}

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -114,11 +114,11 @@ func Test_processV1QueuesPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -226,12 +226,12 @@ func Test_processV1QueuesGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
 				utilHanlder: mockUtil,
-				rabbitSock:  mockSock,
+				sockHandler: mockSock,
 
 				queueHandler: mockQueue,
 			}
@@ -285,11 +285,11 @@ func Test_processV1QueuesIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -345,11 +345,11 @@ func Test_processV1QueuesIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -427,11 +427,11 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -526,11 +526,11 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -589,11 +589,11 @@ func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -661,11 +661,11 @@ func Test_processV1QueuesIDWaitActionsPut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -726,11 +726,11 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -779,11 +779,11 @@ func Test_processV1QueuesIDExecuteRunPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -842,11 +842,11 @@ func Test_processV1QueuesIDExecutePut(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
@@ -901,11 +901,11 @@ func Test_processV1QueuecallsIDStatusWaitingPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:       mockSock,
+				sockHandler:      mockSock,
 				queuecallHandler: mockQueuecall,
 			}
 

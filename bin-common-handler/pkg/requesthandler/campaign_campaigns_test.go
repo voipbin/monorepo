@@ -15,7 +15,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func Test_CampaignV1CampaignCreate(t *testing.T) {
@@ -82,13 +82,13 @@ func Test_CampaignV1CampaignCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignCreate(
 				ctx,
@@ -163,13 +163,13 @@ func Test_CampaignV1CampaignGetsByCustomerID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
@@ -223,13 +223,13 @@ func Test_CampaignV1CampaignGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignGet(ctx, tt.campaignID)
 			if err != nil {
@@ -283,13 +283,13 @@ func Test_CampaignV1CampaignDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignDelete(ctx, tt.campaignID)
 			if err != nil {
@@ -359,16 +359,16 @@ func Test_CampaignV1CampaignExecute(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 			if tt.delay == 0 {
-				mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+				mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			} else {
-				mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+				mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 			}
 
 			if err := reqHandler.CampaignV1CampaignExecute(ctx, tt.campaignID, tt.delay); err != nil {
@@ -431,13 +431,13 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, tt.campaignID, tt.updateName, tt.updateDetail, tt.campaignType, tt.updateServiceLevel, tt.updateEndHandle)
 			if err != nil {
@@ -495,13 +495,13 @@ func Test_CampaignV1CampaignUpdateStatus(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignUpdateStatus(ctx, tt.campaignID, tt.status)
 			if err != nil {
@@ -559,13 +559,13 @@ func Test_CampaignV1CampaignUpdateServiceLevel(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignUpdateServiceLevel(ctx, tt.campaignID, tt.serviceLevel)
 			if err != nil {
@@ -627,13 +627,13 @@ func Test_CampaignV1CampaignUpdateActions(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignUpdateActions(ctx, tt.campaignID, tt.actions)
 			if err != nil {
@@ -697,13 +697,13 @@ func Test_CampaignV1CampaignUpdateResourceInfo(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
 			if err != nil {
@@ -761,13 +761,13 @@ func Test_CampaignV1CampaignUpdateNextCampaignID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CampaignV1CampaignUpdateNextCampaignID(ctx, tt.campaignID, tt.nextCampaignID)
 			if err != nil {

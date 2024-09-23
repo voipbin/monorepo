@@ -13,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func Test_DialrouteV1RouteGets(t *testing.T) {
@@ -61,13 +61,13 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RouteV1DialrouteGets(ctx, tt.customerID, tt.target)
 			if err != nil {

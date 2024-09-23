@@ -11,7 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -66,13 +66,13 @@ func Test_NumberV1NumberCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberCreate(ctx, tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
@@ -147,7 +147,7 @@ func Test_NumberV1NumberGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
 				sock:        mockSock,
@@ -156,7 +156,7 @@ func Test_NumberV1NumberGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -221,13 +221,13 @@ func Test_NumberV1NumberGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberGet(ctx, tt.numberID)
 			if err != nil {
@@ -292,13 +292,13 @@ func Test_NumberV1NumberDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberDelete(ctx, tt.numberID)
 			if err != nil {
@@ -373,13 +373,13 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberUpdate(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
@@ -438,13 +438,13 @@ func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberUpdateFlowID(ctx, tt.id, tt.callFlowID, tt.messageFlowID)
 			if err != nil {
@@ -504,13 +504,13 @@ func Test_NumberV1NumberRenewByTmRenew(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberRenewByTmRenew(ctx, tt.tmRenew)
 			if err != nil {
@@ -570,13 +570,13 @@ func Test_NumberV1NumberRenewByDays(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberRenewByDays(ctx, tt.days)
 			if err != nil {
@@ -636,13 +636,13 @@ func Test_NumberV1NumberRenewByHours(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.NumberV1NumberRenewByHours(ctx, tt.hours)
 			if err != nil {

@@ -14,7 +14,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -71,7 +71,7 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
 				sock:        mockSock,
@@ -80,7 +80,7 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.ChatV1MessagechatroomGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -136,13 +136,13 @@ func Test_ChatV1MessagechatroomGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ChatV1MessagechatroomGet(ctx, tt.messagechatroomID)
 			if err != nil {
@@ -198,13 +198,13 @@ func Test_ChatV1MessagechatroomDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ChatV1MessagechatroomDelete(ctx, tt.messagechatroomID)
 			if err != nil {

@@ -6,8 +6,8 @@ import (
 	"context"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/cachehandler"
@@ -44,9 +44,9 @@ type ARIEventHandler interface {
 }
 
 type eventHandler struct {
-	db         db.DBHandler
-	cache      cachehandler.CacheHandler
-	rabbitSock rabbitmqhandler.Rabbit
+	db          db.DBHandler
+	cache       cachehandler.CacheHandler
+	sockHandler sockhandler.SockHandler
 
 	reqHandler        requesthandler.RequestHandler
 	notifyHandler     notifyhandler.NotifyHandler
@@ -61,7 +61,7 @@ func init() {}
 
 // NewEventHandler create EventHandler
 func NewEventHandler(
-	sock rabbitmqhandler.Rabbit,
+	sock sockhandler.SockHandler,
 	db db.DBHandler,
 	cache cachehandler.CacheHandler,
 	reqHandler requesthandler.RequestHandler,
@@ -73,7 +73,7 @@ func NewEventHandler(
 	recordingHandler recordinghandler.RecordingHandler,
 ) ARIEventHandler {
 	h := &eventHandler{
-		rabbitSock:        sock,
+		sockHandler:       sock,
 		db:                db,
 		cache:             cache,
 		reqHandler:        reqHandler,

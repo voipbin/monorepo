@@ -13,8 +13,8 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func Test_PublishWebhookEvent(t *testing.T) {
@@ -65,11 +65,11 @@ func Test_PublishWebhookEvent(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
@@ -78,7 +78,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 			ctx := context.Background()
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
-			mockSock.EXPECT().PublishExchangeEvent(string(h.queueNotify), "", tt.expectEvent)
+			mockSock.EXPECT().EventPublish(string(h.queueNotify), "", tt.expectEvent)
 			if tt.customerID != uuid.Nil {
 				mockReq.EXPECT().WebhookV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
@@ -139,11 +139,11 @@ func Test_PublishWebhook(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
@@ -192,18 +192,18 @@ func Test_PublishEvent(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
 			}
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
-			mockSock.EXPECT().PublishExchangeEvent(string(h.queueNotify), "", tt.expectEvent)
+			mockSock.EXPECT().EventPublish(string(h.queueNotify), "", tt.expectEvent)
 
 			h.PublishEvent(context.Background(), tt.eventType, tt.event)
 
@@ -244,11 +244,11 @@ func Test_PublishEventRaw(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &notifyHandler{
-				sock:        mockSock,
+				sockHandler: mockSock,
 				reqHandler:  mockReq,
 				queueNotify: commonoutline.QueueNameCallEvent,
 				publisher:   testPublisher,
@@ -256,7 +256,7 @@ func Test_PublishEventRaw(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishExchangeEvent(string(h.queueNotify), "", tt.expectEvent)
+			mockSock.EXPECT().EventPublish(string(h.queueNotify), "", tt.expectEvent)
 
 			h.PublishEventRaw(ctx, tt.eventType, tt.dataType, tt.data)
 

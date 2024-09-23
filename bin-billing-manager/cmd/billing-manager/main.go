@@ -10,9 +10,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -135,22 +136,22 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
 
 	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
 	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)
 
 	// run listen
-	if err := runListen(rabbitSock, accountHandler, billingHandler); err != nil {
+	if err := runListen(sockHandler, accountHandler, billingHandler); err != nil {
 		return err
 	}
 
 	// run subscribe
-	if err := runSubscribe(rabbitSock, accountHandler, billingHandler); err != nil {
+	if err := runSubscribe(sockHandler, accountHandler, billingHandler); err != nil {
 		return err
 	}
 
@@ -158,7 +159,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+func runSubscribe(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runSubscribe",
 	})
@@ -170,7 +171,7 @@ func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandle
 		string(commonoutline.QueueNameNumberEvent),
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(
-		rabbitSock,
+		sockHandler,
 		string(commonoutline.QueueNameBillingSubscribe),
 		subscribeTargets,
 		accoutHandler,
@@ -187,12 +188,12 @@ func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandle
 }
 
 // runListen runs the listen handler
-func runListen(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, accoutHandler, billingHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {

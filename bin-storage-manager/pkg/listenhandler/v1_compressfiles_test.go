@@ -2,7 +2,7 @@ package listenhandler
 
 import (
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	compressfile "monorepo/bin-storage-manager/models/compressfile"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
 	"reflect"
@@ -63,11 +63,11 @@ func Test_v1CompressfilesPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 

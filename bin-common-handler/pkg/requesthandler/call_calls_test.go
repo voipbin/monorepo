@@ -16,7 +16,7 @@ import (
 
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -59,13 +59,13 @@ func Test_CallV1CallHealth(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.CallV1CallHealth(ctx, tt.callID, tt.delay, tt.retryCount)
 			if err != nil {
@@ -118,13 +118,13 @@ func Test_CallV1CallActionTimeout(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.CallV1CallActionTimeout(ctx, tt.callID, tt.delay, tt.action)
 			if err != nil {
@@ -189,13 +189,13 @@ func Test_CallV1CallActionNext(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.CallV1CallActionNext(ctx, tt.callID, tt.force)
 			if err != nil {
@@ -279,13 +279,13 @@ func Test_CallV1CallsCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			resCalls, resGroupcalls, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.ealryExecution, tt.connect)
 			if err != nil {
@@ -371,13 +371,13 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.groupcallID, tt.earlyExecution, tt.connect)
 			if err != nil {
@@ -431,13 +431,13 @@ func Test_CallV1CallGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallGet(ctx, tt.callID)
 			if err != nil {
@@ -534,7 +534,7 @@ func Test_CallV1CallGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
 				sock:        mockSock,
@@ -543,7 +543,7 @@ func Test_CallV1CallGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -603,13 +603,13 @@ func Test_CMCallAddChainedCall(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallAddChainedCall(ctx, tt.callID, tt.chainedCallID)
 			if err != nil {
@@ -668,13 +668,13 @@ func Test_CMCallRemoveChainedCall(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallRemoveChainedCall(ctx, tt.callID, tt.chainedCallID)
 			if err != nil {
@@ -731,13 +731,13 @@ func Test_CallV1CallDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallDelete(ctx, tt.callID)
 			if err != nil {
@@ -798,13 +798,13 @@ func Test_CallV1CallHangup(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallHangup(ctx, tt.callID)
 			if err != nil {
@@ -872,14 +872,14 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallExternalMediaStart(ctx, tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
@@ -933,14 +933,14 @@ func Test_CallV1CallExternalMediaStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallExternalMediaStop(ctx, tt.callID)
 			if err != nil {
@@ -991,14 +991,14 @@ func Test_CallV1CallGetDigits(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallGetDigits(ctx, tt.callID)
 			if err != nil {
@@ -1047,14 +1047,14 @@ func Test_CallV1CallSendDigits(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallSendDigits(ctx, tt.callID, tt.digits); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1113,14 +1113,14 @@ func Test_CallV1CallRecordingStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallRecordingStart(ctx, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
 			if err != nil {
@@ -1174,14 +1174,14 @@ func Test_CallV1CallRecordingStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallRecordingStop(ctx, tt.callID)
 			if err != nil {
@@ -1239,13 +1239,13 @@ func Test_CallV1CallUpdateConfbridgeID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1CallUpdateConfbridgeID(ctx, tt.callID, tt.confbridgeID)
 			if err != nil {
@@ -1301,13 +1301,13 @@ func Test_CallV1CallTalk(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, tt.requestTimeout); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1355,13 +1355,13 @@ func Test_CallV1CallPlay(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallPlay(ctx, tt.callID, tt.meidaURLs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1402,13 +1402,13 @@ func Test_CallV1CallMediaStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallMediaStop(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1449,13 +1449,13 @@ func Test_CallV1CallHoldOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallHoldOn(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1496,13 +1496,13 @@ func Test_CallV1CallHoldOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallHoldOff(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1547,13 +1547,13 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallMuteOn(ctx, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1598,13 +1598,13 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallMuteOff(ctx, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1645,13 +1645,13 @@ func Test_CallV1CallMusicOnHoldOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallMusicOnHoldOn(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1692,13 +1692,13 @@ func Test_CallV1CallMusicOnHoldOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallMusicOnHoldOff(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1739,13 +1739,13 @@ func Test_CallV1CallSilenceOn(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallSilenceOn(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1786,13 +1786,13 @@ func Test_CallV1CallSilenceOff(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1CallSilenceOff(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -11,10 +11,11 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -148,12 +149,12 @@ func run(dbHandler dbhandler.DBHandler) {
 	log := logrus.WithField("func", "run")
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
 
 	lineHandler := linehandler.NewLineHandler()
 	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler, notifyHandler, lineHandler)
@@ -163,13 +164,13 @@ func run(dbHandler dbhandler.DBHandler) {
 	conversationHandler := conversationhandler.NewConversationHandler(dbHandler, notifyHandler, accountHandler, messageHandler, lineHandler, smsHandler)
 
 	// run listen
-	if errListen := runListen(rabbitSock, accountHandler, conversationHandler, messageHandler); errListen != nil {
+	if errListen := runListen(sockHandler, accountHandler, conversationHandler, messageHandler); errListen != nil {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
 
 	// run subscribe
-	if errSub := runSubscribe(rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, accountHandler, conversationHandler); errSub != nil {
+	if errSub := runSubscribe(sockHandler, *rabbitQueueSubscribe, *rabbitListenSubscribes, accountHandler, conversationHandler); errSub != nil {
 		log.Errorf("Could not run the subscribe correctly. err: %v", errSub)
 		return
 	}
@@ -177,7 +178,7 @@ func run(dbHandler dbhandler.DBHandler) {
 
 // runListen runs the listen service
 func runListen(
-	sockListen rabbitmqhandler.Rabbit,
+	sockListen sockhandler.SockHandler,
 	accountHandler accounthandler.AccountHandler,
 	conversationHandler conversationhandler.ConversationHandler,
 	messageHandler messagehandler.MessageHandler,
@@ -196,7 +197,7 @@ func runListen(
 
 // runSubscribe runs the subscribed event handler
 func runSubscribe(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	subscribeQueue string,
 	subscribeTargets string,
 	accountHandler accounthandler.AccountHandler,
@@ -204,7 +205,7 @@ func runSubscribe(
 ) error {
 
 	subHandler := subscribehandler.NewSubscribeHandler(
-		rabbitSock,
+		sockHandler,
 		subscribeQueue,
 		subscribeTargets,
 		accountHandler,

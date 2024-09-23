@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -43,11 +43,11 @@ func Test_processEvent_processEventFMFlowDeleted(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:    mockSock,
+				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 

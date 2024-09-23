@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -64,13 +64,13 @@ func Test_processV1BillingsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockBilling := billinghandler.NewMockBillingHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				utilHandler:    mockUtil,
 				accountHandler: mockAccount,
 				billingHandler: mockBilling,

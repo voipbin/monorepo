@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -27,8 +27,8 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock rabbitmqhandler.Rabbit
-	ttsHandler ttshandler.TTSHandler
+	sockHandler sockhandler.SockHandler
+	ttsHandler  ttshandler.TTSHandler
 }
 
 var (
@@ -67,12 +67,12 @@ func simpleResponse(code int) *sock.Response {
 
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	ttsHandler ttshandler.TTSHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock: rabbitSock,
-		ttsHandler: ttsHandler,
+		sockHandler: sockHandler,
+		ttsHandler:  ttsHandler,
 	}
 
 	return h
@@ -83,14 +83,14 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		"queue": queue,
 	}).Info("Creating rabbitmq queue for listen.")
 
-	if err := h.rabbitSock.QueueCreate(queue, "normal"); err != nil {
+	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// receive requests
 	go func() {
 		for {
-			if errRPC := h.rabbitSock.ConsumeRPC(queue, "tts-manager", false, false, false, 10, h.processRequest); errRPC != nil {
+			if errRPC := h.sockHandler.ConsumeRPC(queue, "tts-manager", false, false, false, 10, h.processRequest); errRPC != nil {
 				logrus.Errorf("Could not consume the message correctly. Will try again after 1 second. err: %v", errRPC)
 				time.Sleep(time.Second * 1)
 			}

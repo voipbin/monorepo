@@ -10,9 +10,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -138,11 +139,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
-	requestHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, commonoutline.QueueNameChatbotEvent, serviceName)
+	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameChatbotEvent, serviceName)
 
 	chatbotHandler := chatbothandler.NewChatbotHandler(requestHandler, notifyHandler, db)
 
@@ -150,13 +151,13 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	chatbotcallHandler := chatbotcallhandler.NewChatbotcallHandler(requestHandler, notifyHandler, db, chatbotHandler, chatgptHandler)
 
 	// run listen
-	if errListen := runListen(rabbitSock, chatbotHandler, chatbotcallHandler); errListen != nil {
+	if errListen := runListen(sockHandler, chatbotHandler, chatbotcallHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
 
 	// run subscribe
-	if errSubscribe := runSubscribe(rabbitSock, chatbotcallHandler); errSubscribe != nil {
+	if errSubscribe := runSubscribe(sockHandler, chatbotcallHandler); errSubscribe != nil {
 		log.Errorf("Could not start runSubscribe. err: %v", errSubscribe)
 		return errSubscribe
 	}
@@ -166,7 +167,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 // runSubscribe runs the subscribed event handler
 func runSubscribe(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
 ) error {
 
@@ -177,7 +178,7 @@ func runSubscribe(
 
 	subHandler := subscribehandler.NewSubscribeHandler(
 		string(serviceName),
-		rabbitSock,
+		sockHandler,
 		string(commonoutline.QueueNameChatbotSubscribe),
 		subscribeTargets,
 		chatbotcallHandler,
@@ -194,12 +195,12 @@ func runSubscribe(
 
 // runListen runs the listen handler
 func runListen(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	chatbotHandler chatbothandler.ChatbotHandler,
 	chatbotcallhandler chatbotcallhandler.ChatbotcallHandler,
 ) error {
 	listenHandler := listenhandler.NewListenHandler(
-		rabbitSock,
+		sockHandler,
 		string(commonoutline.QueueNameChatbotRequest),
 		string(commonoutline.QueueNameDelay),
 		chatbotHandler,

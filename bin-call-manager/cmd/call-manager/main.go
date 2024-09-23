@@ -10,6 +10,7 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
@@ -17,8 +18,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/pkg/arieventhandler"
@@ -140,12 +141,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, common.Servicename)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameCallEvent, common.Servicename)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, common.Servicename)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCallEvent, common.Servicename)
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
@@ -153,15 +154,15 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler)
-	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
+	ariEventHandler := arieventhandler.NewEventHandler(sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 
 	// run subscribe listener
-	if err := runSubscribe(rabbitSock, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler); err != nil {
+	if err := runSubscribe(sockHandler, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler); err != nil {
 		return err
 	}
 
 	// run request listener
-	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler); err != nil {
+	if err := runRequestListen(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler); err != nil {
 		return err
 	}
 
@@ -170,7 +171,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 // runSubscribe runs the ARI event listen service
 func runSubscribe(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	ariEventHandler arieventhandler.ARIEventHandler,
 	callHandler callhandler.CallHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
@@ -187,7 +188,7 @@ func runSubscribe(
 	}
 	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
 
-	ariEventListenHandler := subscribehandler.NewSubscribeHandler(rabbitSock, commonoutline.QueueNameCallSubscribe, subscribeTargets, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler)
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(sockHandler, commonoutline.QueueNameCallSubscribe, subscribeTargets, ariEventHandler, callHandler, groupcallHandler, confbridgeHandler)
 
 	// run
 	if err := ariEventListenHandler.Run(); err != nil {
@@ -199,7 +200,7 @@ func runSubscribe(
 
 // runRequestListen runs the request listen service
 func runRequestListen(
-	rabbitSock rabbitmqhandler.Rabbit,
+	sockHandler sockhandler.SockHandler,
 	callHandler callhandler.CallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
@@ -211,7 +212,7 @@ func runRequestListen(
 		"func": "runRequestListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameCallRequest), string(commonoutline.QueueNameDelay)); err != nil {

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/golang/mock/gomock"
 )
@@ -46,13 +46,13 @@ func Test_CallPublishEvent(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishEvent(tt.expectTarget, tt.expectEvent).Return(nil)
+			mockSock.EXPECT().EventPublish("", tt.expectTarget, tt.expectEvent).Return(nil)
 
 			if err := reqHandler.CallPublishEvent(ctx, tt.eventType, tt.publisher, tt.dataType, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

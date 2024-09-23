@@ -6,8 +6,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
-
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -46,11 +45,11 @@ func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 
@@ -92,11 +91,11 @@ func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:   mockSock,
+				sockHandler:  mockSock,
 				agentHandler: mockAgent,
 			}
 

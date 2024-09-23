@@ -12,7 +12,7 @@ import (
 
 // ConsumeMessage consumes message with given options
 // If the queueName was not defined, then uses with default queue name values.
-func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error {
+func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
 	log := logrus.WithField("func", "ConsumeMessageOpt")
 
 	queue := r.queueGet(queueName)
@@ -57,7 +57,7 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, 
 }
 
 // executeConsumeMessage runs the callback with the given amqp message
-func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbMsgConsume) error {
+func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume sock.CbMsgConsume) error {
 	var event sock.Event
 
 	if err := json.Unmarshal(message.Body, &event); err != nil {
@@ -72,7 +72,7 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume CbM
 }
 
 // ConsumeRPC consumes RPC message with given options
-func (r *rabbit) ConsumeRPC(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, cbConsume CbMsgRPC) error {
+func (r *rabbit) ConsumeRPC(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, cbConsume sock.CbMsgRPC) error {
 	log := logrus.WithField("func", "ConsumeRPCOpt")
 
 	queue := r.queueGet(queueName)
@@ -116,7 +116,7 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, exclusive bool, noLo
 }
 
 // executeConsumeRPC runs the callback with the given amqp message
-func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) error {
+func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRPC) error {
 
 	// message parse
 	var req sock.Request

@@ -10,9 +10,10 @@ import (
 	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-message-manager/pkg/requestexternal"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -146,18 +147,18 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler.Connect()
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
 
 	requestExternal := requestexternal.NewRequestExternal(*authtokenMessagebird)
 	messagehandlerMessagebird := messagehandlermessagebird.NewMessageHandlerMessagebird(reqHandler, db, requestExternal)
 
 	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, messagehandlerMessagebird)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, messageHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, messageHandler)
 
 	// run
 	if errRun := listenHandler.Run(string(commonoutline.QueueNameMessageRequest), string(commonoutline.QueueNameDelay)); errRun != nil {

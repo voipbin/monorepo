@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -72,11 +72,11 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				externalMediaHandler: mockExternal,
 			}
 
@@ -177,13 +177,13 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockExternalMedia := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
 				utilHandler:          mockUtil,
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				callHandler:          mockCall,
 				externalMediaHandler: mockExternalMedia,
 			}
@@ -241,11 +241,11 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				externalMediaHandler: mockExternal,
 			}
 
@@ -301,11 +301,11 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:           mockSock,
+				sockHandler:          mockSock,
 				externalMediaHandler: mockExternal,
 			}
 

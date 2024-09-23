@@ -11,7 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -69,13 +69,13 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionCreate(ctx, tt.customerID, tt.ext, tt.password, tt.extensionName, tt.detail)
 			if err != nil {
@@ -140,13 +140,13 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
 			if err != nil {
@@ -208,13 +208,13 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionGet(ctx, tt.extensionID)
 			if err != nil {
@@ -268,13 +268,13 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
 
-// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			reqHandler := requestHandler{
 // 				sock: mockSock,
 // 			}
 
 // 			ctx := context.Background()
-// 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+// 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 // 			res, err := reqHandler.RegistrarV1ExtensionGetByEndpoint(ctx, tt.endpoint)
 // 			if err != nil {
@@ -328,13 +328,13 @@ func Test_RegistrarExtensionDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionDelete(ctx, tt.extesnionID)
 			if err != nil {
@@ -399,7 +399,7 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
 				sock:        mockSock,
@@ -408,7 +408,7 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 
 			ctx := context.Background()
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -472,13 +472,13 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionGetByExtension(ctx, tt.customerID, tt.extension)
 			if err != nil {

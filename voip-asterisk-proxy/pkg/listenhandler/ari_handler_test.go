@@ -10,7 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func TestARISendRequestToAsterisk(t *testing.T) {
@@ -18,7 +18,7 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockRabbit := rabbitmqhandler.NewMockRabbit(mc)
+	mockRabbit := sockhandler.NewMockSockHandler(mc)
 
 	// setup dummy server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +53,7 @@ func TestARISendRequestToAsterisk(t *testing.T) {
 	url := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
 
 	h := listenHandler{
-		rabbitSock:                        mockRabbit,
+		sockHandler:                       mockRabbit,
 		rabbitQueueListenRequestPermanent: "",
 
 		ariAddr:    url,

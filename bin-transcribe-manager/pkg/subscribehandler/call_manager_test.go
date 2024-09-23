@@ -9,7 +9,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"monorepo/bin-transcribe-manager/pkg/transcribehandler"
 
@@ -48,11 +48,11 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				transcribeHandler: mockTranscribe,
 			}
 
@@ -94,11 +94,11 @@ func Test_processEvent_processEventCMConfbridgeTerminated(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 
 			h := subscribeHandler{
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				transcribeHandler: mockTranscribe,
 			}
 

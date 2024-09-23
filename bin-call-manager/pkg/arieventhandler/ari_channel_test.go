@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	gomock "github.com/golang/mock/gomock"
 
@@ -114,13 +114,13 @@ func Test_EventHandlerChannelCreated(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -204,13 +204,13 @@ func Test_EventHandlerChannelDestroyed(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -276,13 +276,13 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -464,7 +464,7 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
@@ -473,7 +473,7 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 
 			h := eventHandler{
 				db:                mockDB,
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockRequest,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
@@ -708,7 +708,7 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
@@ -717,7 +717,7 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 
 			h := eventHandler{
 				db:                mockDB,
-				rabbitSock:        mockSock,
+				sockHandler:       mockSock,
 				reqHandler:        mockRequest,
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
@@ -800,13 +800,13 @@ func Test_EventHandlerChannelDtmfReceived(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,
@@ -857,13 +857,13 @@ func Test_EventHandlerChannelVarset(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			h := eventHandler{
 				db:             mockDB,
-				rabbitSock:     mockSock,
+				sockHandler:    mockSock,
 				reqHandler:     mockRequest,
 				callHandler:    mockCall,
 				channelHandler: mockChannel,

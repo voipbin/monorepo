@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -36,38 +37,8 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 	return nil
 }
 
-// PublishMessage sends a request to rabbitmq
-func (r *rabbit) PublishRequest(queueName string, req *sock.Request) error {
-
-	message, err := json.Marshal(req)
-	if err != nil {
-		return fmt.Errorf("could not marshal the request. err: %v", err)
-	}
-
-	if err := r.publishExchange("", queueName, message, nil); err != nil {
-		return fmt.Errorf("could not send a message. err: %v", err)
-	}
-
-	return nil
-}
-
-// PublishEvent sends a event to rabbitmq
-func (r *rabbit) PublishEvent(queueName string, evt *sock.Event) error {
-
-	message, err := json.Marshal(evt)
-	if err != nil {
-		return fmt.Errorf("could not marshal the event. err: %v", err)
-	}
-
-	if err := r.publishExchange("", queueName, message, nil); err != nil {
-		return fmt.Errorf("could not send a message. err: %v", err)
-	}
-
-	return nil
-}
-
-// PublishRPC publishes RPC message and returns response.
-func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
+// RequestPublish publishes request message and returns response.
+func (r *rabbit) RequestPublish(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error) {
 
 	reqMsg, err := json.Marshal(req)
 	if err != nil {
@@ -137,8 +108,8 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *sock.Req
 	}
 }
 
-// PublishExchangeEvent sends a message to rabbitmq
-func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *sock.Event) error {
+// EventPublish sends a message to rabbitmq
+func (r *rabbit) EventPublish(exchange string, key string, evt *sock.Event) error {
 	message, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -146,18 +117,9 @@ func (r *rabbit) PublishExchangeEvent(exchange, key string, evt *sock.Event) err
 	return r.publishExchange(exchange, key, message, nil)
 }
 
-// PublishMessage sends a message to rabbitmq
-func (r *rabbit) PublishExchangeRequest(exchange, key string, req *sock.Request) error {
-	message, err := json.Marshal(req)
-	if err != nil {
-		return err
-	}
-	return r.publishExchange(exchange, key, message, nil)
-}
-
-// PublishExchangeDelayedRequest sends a delayed request to the rabbitmq exchange
+// RequestPublishWithDelay sends a delayed request to the rabbitmq exchange
 // delay is ms.
-func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.Request, delay int) error {
+func (r *rabbit) RequestPublishWithDelay(key string, req *sock.Request, delay int) error {
 	headers := make(amqp.Table)
 	headers["x-delay"] = delay
 
@@ -165,12 +127,12 @@ func (r *rabbit) PublishExchangeDelayedRequest(exchange, key string, req *sock.R
 	if err != nil {
 		return err
 	}
-	return r.publishExchange(exchange, key, message, headers)
+	return r.publishExchange(string(commonoutline.QueueNameDelay), key, message, headers)
 }
 
-// PublishExchangeDelayedEvent sends a delayed event to the rabbitmq exchange
+// EventPublishWithDelay sends a delayed event to the rabbitmq exchange
 // delay is ms.
-func (r *rabbit) PublishExchangeDelayedEvent(exchange, key string, evt *sock.Event, delay int) error {
+func (r *rabbit) EventPublishWithDelay(exchange, key string, evt *sock.Event, delay int) error {
 	headers := make(amqp.Table)
 	headers["x-delay"] = delay
 

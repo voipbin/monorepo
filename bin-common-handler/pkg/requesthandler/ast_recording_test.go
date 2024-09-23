@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func Test_AstRecordingStop(t *testing.T) {
@@ -37,12 +37,12 @@ func Test_AstRecordingStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -88,12 +88,12 @@ func Test_AstRecordingPause(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -139,12 +139,12 @@ func Test_AstRecordingUnpause(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -190,12 +190,12 @@ func Test_AstRecordingMute(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{
@@ -241,12 +241,12 @@ func Test_AstRecordingUnmute(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().PublishRPC(
+			mockSock.EXPECT().RequestPublish(
 				gomock.Any(),
 				tt.expectQueue,
 				&sock.Request{

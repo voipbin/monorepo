@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
 func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
@@ -61,13 +61,13 @@ func Test_ConferenceV1ServiceTypeConferencecallStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			cf, err := reqHandler.ConferenceV1ServiceTypeConferencecallStart(ctx, tt.conferenceID, tt.referenceType, tt.referenceID)
 			if err != nil {

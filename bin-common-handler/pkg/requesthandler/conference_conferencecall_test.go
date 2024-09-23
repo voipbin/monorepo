@@ -11,7 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -68,7 +68,7 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
 				sock:        mockSock,
@@ -77,7 +77,7 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferencecallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -130,14 +130,14 @@ func Test_ConferenceV1ConferencecallGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+	mockSock := sockhandler.NewMockSockHandler(mc)
 	reqHandler := requestHandler{
 		sock: mockSock,
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferencecallGet(context.Background(), tt.conferencecallID)
 			if err != nil {
@@ -193,13 +193,13 @@ func Test_ConferenceV1ConferencecallKick(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferencecallKick(ctx, tt.conferencecallID)
 			if err != nil {
@@ -261,14 +261,13 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockSock := sockhandler.NewMockSockHandler(mc)
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishExchangeDelayedRequest(
-				gomock.Any(),
+			mockSock.EXPECT().RequestPublishWithDelay(
 				tt.expectTarget,
 				tt.expectRequest,
 				tt.delay,
