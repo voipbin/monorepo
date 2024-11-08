@@ -1,4 +1,4 @@
-create table channels(
+create table call_channels(
   -- identity
   id          varchar(255), -- channel id
   asterisk_id varchar(255), -- Asterisk id
@@ -42,7 +42,7 @@ create table channels(
   primary key(id)
 );
 
-create index idx_channels_create on channels(tm_create);
-create index idx_channels_src_number on channels(src_number);
-create index idx_channels_dst_number on channels(dst_number);
-create index idx_channels_sip_call_id on channels(sip_call_id);
+create index idx_call_channels_create on call_channels(tm_create);
+create index idx_call_channels_src_number on call_channels(src_number);
+create index idx_call_channels_dst_number on call_channels(dst_number);
+create index idx_call_channels_sip_call_id on call_channels(sip_call_id);

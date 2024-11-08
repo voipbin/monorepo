@@ -40,7 +40,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		activeflows
+		flow_activeflows
 	`
 )
 
@@ -95,7 +95,7 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 // ActiveflowCreate creates a new activeflow record
 func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow) error {
 
-	q := `insert into activeflows(
+	q := `insert into flow_activeflows(
 		id,
 		customer_id,
 
@@ -356,7 +356,7 @@ func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64,
 func (h *handler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error {
 
 	q := `
-	update activeflows set
+	update flow_activeflows set
 		current_stack_id = ?,
 		current_action = ?,
 
@@ -400,7 +400,7 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflo
 func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
 
 	q := `
-	update activeflows set
+	update flow_activeflows set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -422,7 +422,7 @@ func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
 func (h *handler) ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error {
 
 	q := `
-	update activeflows set
+	update flow_activeflows set
 		status = ?,
 		tm_update = ?
 	where

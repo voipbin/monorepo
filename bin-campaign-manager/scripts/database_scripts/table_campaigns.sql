@@ -1,5 +1,5 @@
 
-create table campaigns(
+create table campaign_campaigns(
   -- identity
   id          binary(16),
   customer_id binary(16),
@@ -32,8 +32,8 @@ create table campaigns(
   primary key(id)
 );
 
-create index idx_campaigns_customer_id on campaigns(customer_id);
-create index idx_campaigns_flow_id on campaigns(flow_id);
-create index idx_campaigns_outplan_id on campaigns(outplan_id);
-create index idx_campaigns_outdial_id on campaigns(outdial_id);
-create index idx_campaigns_queue_id on campaigns(queue_id);
+create index idx_campaign_campaigns_customer_id on campaign_campaigns(customer_id);
+create index idx_campaign_campaigns_flow_id on campaign_campaigns(flow_id);
+create index idx_campaign_campaigns_outplan_id on campaign_campaigns(outplan_id);
+create index idx_campaign_campaigns_outdial_id on campaign_campaigns(outdial_id);
+create index idx_campaign_campaigns_queue_id on campaign_campaigns(queue_id);

@@ -40,7 +40,7 @@ const (
 		tm_delete
 
 	from
-		recordings
+		call_recordings
 	`
 )
 
@@ -102,7 +102,7 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 
 // RecordingCreate creates new record.
 func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) error {
-	q := `insert into recordings(
+	q := `insert into call_recordings(
 		id,
 		customer_id,
 		owner_type,
@@ -365,7 +365,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID)
 	// prepare
 	q := `
 	update
-		recordings
+		call_recordings
 	set
 		status = ?,
 		tm_start = ?,
@@ -392,7 +392,7 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID) error
 	// prepare
 	q := `
 	update
-		recordings
+		call_recordings
 	set
 		status = ?,
 		tm_end = ?,
@@ -419,7 +419,7 @@ func (h *handler) recordingSetStatusStopping(ctx context.Context, id uuid.UUID) 
 	// prepare
 	q := `
 	update
-		recordings
+		call_recordings
 	set
 		status = ?,
 		tm_update = ?
@@ -443,7 +443,7 @@ func (h *handler) recordingSetStatusStopping(ctx context.Context, id uuid.UUID) 
 func (h *handler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update recordings set
+	update call_recordings set
 		tm_update = ?,
 		tm_delete = ?
 	where

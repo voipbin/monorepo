@@ -37,7 +37,7 @@ const (
 		tm_delete
 
 	from
-		confbridges
+		call_confbridges
 	`
 )
 
@@ -105,7 +105,7 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 
 // ConfbridgeCreate creates a new confbridge record.
 func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error {
-	q := `insert into confbridges(
+	q := `insert into call_confbridges(
 		id,
 		customer_id,
 
@@ -346,7 +346,7 @@ func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string,
 func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error {
 	//prepare
 	q := `
-	update confbridges set
+	update call_confbridges set
 		bridge_id = ?,
 		tm_update = ?
 	where
@@ -368,7 +368,7 @@ func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update confbridges set
+	update call_confbridges set
 		tm_delete = ?
 	where
 		id = ?
@@ -389,7 +389,7 @@ func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
-	update confbridges set
+	update call_confbridges set
 		recording_id = ?,
 		tm_update = ?
 	where
@@ -411,7 +411,7 @@ func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, re
 func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
-	update confbridges set
+	update call_confbridges set
 		recording_ids = json_array_append(
 			recording_ids,
 			'$',
@@ -437,7 +437,7 @@ func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 func (h *handler) ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error {
 	// prepare
 	q := `
-	update confbridges set
+	update call_confbridges set
 		external_media_id = ?,
 		tm_update = ?
 	where
@@ -459,7 +459,7 @@ func (h *handler) ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID
 func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) error {
 	key := fmt.Sprintf("$.\"%s\"", channelID)
 	q := `
-	update confbridges set
+	update call_confbridges set
 		channel_call_ids = json_insert(
 			channel_call_ids,
 			?,
@@ -485,7 +485,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error {
 	key := fmt.Sprintf("$.\"%s\"", channelID)
 	q := `
-	update confbridges set
+	update call_confbridges set
 		channel_call_ids = json_remove(
 			channel_call_ids,
 			?
@@ -512,7 +512,7 @@ func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []
 	// prepare
 	q := `
 	update
-		confbridges
+		call_confbridges
 	set
 		flags = ?,
 		tm_update = ?
@@ -539,7 +539,7 @@ func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []
 func (h *handler) ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, status confbridge.Status) error {
 	//prepare
 	q := `
-	update confbridges set
+	update call_confbridges set
 		status = ?,
 		tm_update = ?
 	where
