@@ -24,7 +24,7 @@ const (
 			tm_update,
 			tm_delete
 		from
-			tags
+			tag_tags
 		`
 )
 
@@ -51,7 +51,7 @@ func (h *handler) tagGetFromRow(row *sql.Rows) (*tag.Tag, error) {
 
 // TagCreate creates new tag record and returns the created tag record.
 func (h *handler) TagCreate(ctx context.Context, a *tag.Tag) error {
-	q := `insert into tags(
+	q := `insert into tag_tags(
 		id,
 		customer_id,
 
@@ -196,7 +196,7 @@ func (h *handler) TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detai
 	// prepare
 	q := `
 	update
-		tags
+		tag_tags
 	set
 		name = ?,
 		detail = ?,
@@ -220,7 +220,7 @@ func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		tags
+		tag_tags
 	set
 		tm_update = ?,
 		tm_delete = ?

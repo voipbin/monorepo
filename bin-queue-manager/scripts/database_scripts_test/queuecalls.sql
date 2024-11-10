@@ -1,4 +1,4 @@
-create table queuecalls(
+create table queue_queuecalls(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- owner's id
@@ -34,8 +34,8 @@ create table queuecalls(
   primary key(id)
 );
 
-create index idx_queuecalls_customerid on queuecalls(customer_id);
-create index idx_queuecalls_queueid on queuecalls(queue_id);
-create index idx_queuecalls_referenceid on queuecalls(reference_id);
-create index idx_queuecalls_reference_activeflow_id on queuecalls(reference_activeflow_id);
-create index idx_queuecalls_serviceagentid on queuecalls(service_agent_id);
+create index idx_queue_queuecalls_customerid on queue_queuecalls(customer_id);
+create index idx_queue_queuecalls_queueid on queue_queuecalls(queue_id);
+create index idx_queue_queuecalls_referenceid on queue_queuecalls(reference_id);
+create index idx_queue_queuecalls_reference_activeflow_id on queue_queuecalls(reference_activeflow_id);
+create index idx_queue_queuecalls_serviceagentid on queue_queuecalls(service_agent_id);

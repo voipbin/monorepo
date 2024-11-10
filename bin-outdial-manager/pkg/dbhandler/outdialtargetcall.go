@@ -35,7 +35,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		outdialtargetcalls
+		outdial_outdialtargetcalls
 	`
 )
 
@@ -78,7 +78,7 @@ func (h *handler) outdialTargetCallGetFromRow(row *sql.Rows) (*outdialtargetcall
 // OutdialTargetCallCreate insert a new outdialtargetcall record
 func (h *handler) OutdialTargetCallCreate(ctx context.Context, t *outdialtargetcall.OutdialTargetCall) error {
 
-	q := `insert into outdialtargetcalls(
+	q := `insert into outdial_outdialtargetcalls(
 		id,
 		customer_id,
 		campaign_id,

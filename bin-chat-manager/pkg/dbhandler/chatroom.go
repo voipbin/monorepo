@@ -34,7 +34,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		chatrooms
+		chat_chatrooms
 	`
 )
 
@@ -75,7 +75,7 @@ func (h *handler) chatroomGetFromRow(row *sql.Rows) (*chatroom.Chatroom, error) 
 // ChatroomCreate creates a new chat record
 func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) error {
 
-	q := `insert into chatrooms(
+	q := `insert into chat_chatrooms(
 		id,
 		customer_id,
 		owner_type,
@@ -281,7 +281,7 @@ func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, f
 // ChatroomUpdateBasicInfo updates the basic information.
 func (h *handler) ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	q := `
-	update chatrooms set
+	update chat_chatrooms set
 		name = ?,
 		detail = ?,
 		tm_update = ?
@@ -302,7 +302,7 @@ func (h *handler) ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 // ChatroomDelete deletes the given chat
 func (h *handler) ChatroomDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update chatrooms set
+	update chat_chatrooms set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -325,7 +325,7 @@ func (h *handler) ChatroomDelete(ctx context.Context, id uuid.UUID) error {
 func (h *handler) ChatroomAddParticipantID(ctx context.Context, id, participantID uuid.UUID) error {
 	// prepare
 	q := `
-	update chatrooms set
+	update chat_chatrooms set
 		participant_ids = json_array_append(
 			participant_ids,
 			'$',
@@ -351,7 +351,7 @@ func (h *handler) ChatroomAddParticipantID(ctx context.Context, id, participantI
 func (h *handler) ChatroomRemoveParticipantID(ctx context.Context, id, participantID uuid.UUID) error {
 	// prepare
 	q := `
-	update chatrooms set
+	update chat_chatrooms set
 		participant_ids = json_remove(
 			participant_ids, replace(
 				json_search(

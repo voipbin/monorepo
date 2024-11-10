@@ -29,7 +29,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		routes
+		route_routes
 	`
 )
 
@@ -61,7 +61,7 @@ func (h *handler) routeGetFromRow(row *sql.Rows) (*route.Route, error) {
 // RouteCreate creates a new route record
 func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 
-	q := `insert into routes(
+	q := `insert into route_routes(
 		id,
 		customer_id,
 
@@ -303,7 +303,7 @@ func (h *handler) RouteGetsByCustomerIDWithTarget(ctx context.Context, customerI
 // RouteDelete deletes the given route
 func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update routes set
+	update route_routes set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -331,7 +331,7 @@ func (h *handler) RouteUpdate(
 	target string,
 ) error {
 	q := `
-	update routes set
+	update route_routes set
 		name = ?,
 		detail = ?,
 		provider_id = ?,

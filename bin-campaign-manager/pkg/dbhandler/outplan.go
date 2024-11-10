@@ -38,7 +38,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		outplans
+		campaign_outplans
 	`
 )
 
@@ -82,7 +82,7 @@ func (h *handler) outplanGetFromRow(row *sql.Rows) (*outplan.Outplan, error) {
 // OutplanCreate insert a new plan record
 func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 
-	q := `insert into outplans(
+	q := `insert into campaign_outplans(
 		id,
 		customer_id,
 
@@ -223,7 +223,7 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 // OutplanDelete deletes the given outplan
 func (h *handler) OutplanDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update outplans set
+	update campaign_outplans set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -296,7 +296,7 @@ func (h *handler) OutplanGetsByCustomerID(ctx context.Context, customerID uuid.U
 // OutplanUpdateBasicInfo updates outplan's basic information.
 func (h *handler) OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	q := `
-	update outplans set
+	update campaign_outplans set
 		name = ?,
 		detail = ?,
 		tm_update = ?
@@ -328,7 +328,7 @@ func (h *handler) OutplanUpdateDialInfo(
 	maxTryCount4 int,
 ) error {
 	q := `
-	update outplans set
+	update campaign_outplans set
 		source = ?,
 		dial_timeout = ?,
 		try_interval = ?,

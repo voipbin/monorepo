@@ -36,7 +36,7 @@ const (
 		tm_delete
 
 	from
-		messages
+		message_messages
 	`
 )
 
@@ -96,7 +96,7 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 
 // MessageCreate creates a new message record.
 func (h *handler) MessageCreate(ctx context.Context, n *message.Message) error {
-	q := `insert into messages(
+	q := `insert into message_messages(
 		id,
 		customer_id,
 		type,
@@ -249,7 +249,7 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) error {
 
 	q := `
-	update messages set
+	update message_messages set
 		targets = ?,
 		tm_update = ?
 	where
@@ -313,7 +313,7 @@ func (h *handler) MessageGets(ctx context.Context, customerID uuid.UUID, size ui
 func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 
 	q := `
-	update messages set
+	update message_messages set
 		tm_update = ?,
 		tm_delete = ?
 	where

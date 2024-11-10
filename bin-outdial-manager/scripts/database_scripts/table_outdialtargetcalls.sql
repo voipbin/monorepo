@@ -1,4 +1,4 @@
-create table outdialtargetcalls(
+create table outdial_outdialtargetcalls(
   -- identity
   id                binary(16),
   customer_id       binary(16),
@@ -24,8 +24,8 @@ create table outdialtargetcalls(
   primary key(id)
 );
 
-create index idx_outdialtargetcalls_customer_id on outdialtargetcalls(customer_id);
-create index idx_outdialtargetcalls_campaign_id on outdialtargetcalls(campaign_id);
-create index idx_outdialtargetcalls_outdial_target_id on outdialtargetcalls(outdial_target_id);
-create index idx_outdialtargetcalls_activeflow_id on outdialtargetcalls(activeflow_id);
-create index idx_outdialtargetcalls_reference_id on outdialtargetcalls(reference_id);
+create index idx_outdial_outdialtargetcalls_customer_id on outdial_outdialtargetcalls(customer_id);
+create index idx_outdial_outdialtargetcalls_campaign_id on outdial_outdialtargetcalls(campaign_id);
+create index idx_outdial_outdialtargetcalls_outdial_target_id on outdial_outdialtargetcalls(outdial_target_id);
+create index idx_outdial_outdialtargetcalls_activeflow_id on outdial_outdialtargetcalls(activeflow_id);
+create index idx_outdial_outdialtargetcalls_reference_id on outdial_outdialtargetcalls(reference_id);

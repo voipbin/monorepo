@@ -33,7 +33,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		messagechats
+		chat_messagechats
 	`
 )
 
@@ -83,7 +83,7 @@ func (h *handler) messagechatGetFromRow(row *sql.Rows) (*messagechat.Messagechat
 // MessagechatCreate creates a new messagechat record
 func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagechat) error {
 
-	q := `insert into messagechats(
+	q := `insert into chat_messagechats(
 		id,
 		customer_id,
 
@@ -292,7 +292,7 @@ func (h *handler) MessagechatGets(ctx context.Context, token string, size uint64
 // MessagechatDelete deletes the given messagechat
 func (h *handler) MessagechatDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update messagechats set
+	update chat_messagechats set
 		tm_delete = ?,
 		tm_update = ?
 	where

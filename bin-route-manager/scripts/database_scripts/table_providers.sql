@@ -1,4 +1,4 @@
-create table providers(
+create table route_providers(
   -- identity
   id          binary(16),
 

@@ -33,7 +33,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		bridges
+		call_bridges
 	`
 )
 
@@ -80,7 +80,7 @@ func (h *handler) bridgeGetFromRow(row *sql.Rows) (*bridge.Bridge, error) {
 
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
-	q := `insert into bridges(
+	q := `insert into call_bridges(
 		id,
 		asterisk_id,
 		name,
@@ -230,7 +230,7 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 	// prepare
 	q := `
-	update bridges set
+	update call_bridges set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -253,7 +253,7 @@ func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) error {
 	// prepare
 	q := `
-	update bridges set
+	update call_bridges set
 		channel_ids = json_array_append(
 			channel_ids,
 			'$',
@@ -279,7 +279,7 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID string) error {
 	// prepare
 	q := `
-	update bridges set
+	update call_bridges set
 		channel_ids = json_remove(
 			channel_ids, replace(
 				json_search(

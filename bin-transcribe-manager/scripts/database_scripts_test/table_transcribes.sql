@@ -1,4 +1,4 @@
-create table transcribes(
+create table transcribe_transcribes(
   -- identity
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
@@ -22,5 +22,5 @@ create table transcribes(
   primary key(id)
 );
 
-create index idx_transcribes_reference_id on transcribes(reference_id);
-create index idx_transcribes_customerid on transcribes(customer_id);
+create index idx_transcribe_transcribes_reference_id on transcribe_transcribes(reference_id);
+create index idx_transcribe_transcribes_customerid on transcribe_transcribes(customer_id);

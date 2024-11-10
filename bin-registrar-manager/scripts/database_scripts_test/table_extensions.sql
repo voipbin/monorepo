@@ -1,4 +1,4 @@
-create table extensions (
+create table registrar_extensions (
   -- identity
   id            binary(16), -- id
   customer_id   binary(16), -- owner's id
@@ -26,8 +26,8 @@ create table extensions (
 
 );
 
-create index idx_extensions_customerid on extensions(customer_id);
-create index idx_extensions_extension on extensions(extension);
-create index idx_extensions_domain_name on extensions(domain_name);
-create index idx_extensions_username on extensions(username);
-create index idx_extensions_realm on extensions(realm);
+create index idx_registrar_extensions_customerid on registrar_extensions(customer_id);
+create index idx_registrar_extensions_extension on registrar_extensions(extension);
+create index idx_registrar_extensions_domain_name on registrar_extensions(domain_name);
+create index idx_registrar_extensions_username on registrar_extensions(username);
+create index idx_registrar_extensions_realm on registrar_extensions(realm);

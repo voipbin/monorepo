@@ -47,7 +47,7 @@ const (
 		tm_delete
 
 	from
-		conferences
+		conference_conferences
 	`
 )
 
@@ -150,7 +150,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 // ConferenceCreate creates a new conference record.
 func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
-	q := `insert into conferences(
+	q := `insert into conference_conferences(
 		id,
 		customer_id,
 		type,
@@ -423,7 +423,7 @@ func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID 
 func (h *handler) ConferenceAddConferencecallID(ctx context.Context, id, conferencecallID uuid.UUID) error {
 	// prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		conferencecall_ids = json_array_append(
 			coalesce(conferencecall_ids, '[]'),
 			'$',
@@ -449,7 +449,7 @@ func (h *handler) ConferenceAddConferencecallID(ctx context.Context, id, confere
 func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conferencecallID uuid.UUID) error {
 	// prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		conferencecall_ids = json_remove(
 			conferencecall_ids, replace(
 				json_search(
@@ -481,7 +481,7 @@ func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conf
 func (h *handler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -504,7 +504,7 @@ func (h *handler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
 func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []fmaction.Action) error {
 	//prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		name = ?,
 		detail = ?,
 		timeout = ?,
@@ -540,7 +540,7 @@ func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail 
 func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error {
 	//prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		status = ?,
 		tm_update = ?
 	where
@@ -562,7 +562,7 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error {
 	//prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		data = ?,
 		tm_update = ?
 	where
@@ -589,7 +589,7 @@ func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[
 func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		status = ?,
 		tm_end = ?,
 		tm_update = ?
@@ -613,7 +613,7 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 func (h *handler) ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		recording_id = ?,
 		tm_update = ?
 	where
@@ -635,7 +635,7 @@ func (h *handler) ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, re
 func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		recording_ids = json_array_append(
 			coalesce(recording_ids, '[]'),
 			'$',
@@ -661,7 +661,7 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 func (h *handler) ConferenceSetTranscribeID(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
 	// prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		transcribe_id = ?,
 		tm_update = ?
 	where
@@ -683,7 +683,7 @@ func (h *handler) ConferenceSetTranscribeID(ctx context.Context, id uuid.UUID, t
 func (h *handler) ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
 	// prepare
 	q := `
-	update conferences set
+	update conference_conferences set
 		transcribe_ids = json_array_append(
 			coalesce(transcribe_ids, '[]'),
 			'$',

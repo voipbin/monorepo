@@ -1,4 +1,4 @@
-create table tags(
+create table tag_tags(
   -- identity
   id            binary(16),  -- id
   customer_id   binary(16),
@@ -14,5 +14,5 @@ create table tags(
   primary key(id)
 );
 
-create index idx_tags_customerid on tags(customer_id);
-create index idx_tags_name on tags(name);
+create index idx_tag_tags_customerid on tag_tags(customer_id);
+create index idx_tag_tags_name on tag_tags(name);

@@ -1,4 +1,4 @@
-create table customers(
+create table customer_customers(
   -- identity
   id  binary(16) primary key,  -- id
 

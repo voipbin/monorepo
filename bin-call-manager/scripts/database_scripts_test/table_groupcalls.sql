@@ -1,4 +1,4 @@
-create table groupcalls(
+create table call_groupcalls(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
@@ -35,5 +35,5 @@ create table groupcalls(
   primary key(id)
 );
 
-create index idx_groupcalls_customer_id on groupcalls(customer_id);
-create index idx_groupcalls_owner_id on groupcalls(owner_id);
+create index idx_call_groupcalls_customer_id on call_groupcalls(customer_id);
+create index idx_call_groupcalls_owner_id on call_groupcalls(owner_id);

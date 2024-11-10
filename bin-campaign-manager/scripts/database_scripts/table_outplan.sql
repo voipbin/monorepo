@@ -1,5 +1,5 @@
 
-create table outplans(
+create table campaign_outplans(
   -- identity
   id          binary(16),
   customer_id binary(16),
@@ -25,4 +25,4 @@ create table outplans(
   primary key(id)
 );
 
-create index idx_outplans_customer_id on outplans(customer_id);
+create index idx_campaign_outplans_customer_id on campaign_outplans(customer_id);

@@ -66,7 +66,7 @@ const (
 		tm_hangup
 
 	from
-		calls
+		call_calls
 	`
 )
 
@@ -208,7 +208,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 
 // CallCreate creates new call record.
 func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
-	q := `insert into calls(
+	q := `insert into call_calls(
 		id,
 		customer_id,
 		owner_type,
@@ -471,7 +471,7 @@ func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID st
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		bridge_id = ?,
 		tm_update = ?
@@ -495,7 +495,7 @@ func (h *handler) CallSetStatusRinging(ctx context.Context, id uuid.UUID) error 
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		status = ?,
 		tm_update = ?,
@@ -521,7 +521,7 @@ func (h *handler) CallSetStatusProgressing(ctx context.Context, id uuid.UUID) er
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		status = ?,
 		tm_update = ?,
@@ -547,7 +547,7 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		status = ?,
 		tm_update = ?
@@ -572,7 +572,7 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		status = ?,
 		hangup_by = ?,
@@ -601,7 +601,7 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		flow_id = ?,
 		tm_update = ?
@@ -626,7 +626,7 @@ func (h *handler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		confbridge_id = ?,
 		tm_update = ?
@@ -651,7 +651,7 @@ func (h *handler) CallSetActionAndActionNextHold(ctx context.Context, id uuid.UU
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		action = ?,
 		action_next_hold = ?,
@@ -740,7 +740,7 @@ func (h *handler) callSetToCache(ctx context.Context, call *call.Call) error {
 func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		chained_call_ids = json_array_append(
 			chained_call_ids,
 			'$',
@@ -766,7 +766,7 @@ func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uu
 func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		chained_call_ids = json_remove(
 			chained_call_ids, replace(
 				json_search(
@@ -800,7 +800,7 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		master_call_id = ?,
 		tm_update = ?
@@ -823,7 +823,7 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 func (h *handler) CallSetRecordingID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		recording_id = ?,
 		tm_update = ?
 	where
@@ -847,7 +847,7 @@ func (h *handler) CallSetExternalMediaID(ctx context.Context, id uuid.UUID, exte
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		external_media_id = ?,
 		tm_update = ?
@@ -870,7 +870,7 @@ func (h *handler) CallSetExternalMediaID(ctx context.Context, id uuid.UUID, exte
 func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		bridge_id = '',
 
 		channel_id = ?,
@@ -896,7 +896,7 @@ func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, cha
 func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		recording_ids = json_array_append(
 			recording_ids,
 			'$',
@@ -961,7 +961,7 @@ func (h *handler) CallTXFinish(tx *sql.Tx, commit bool) {
 func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		chained_call_ids = json_array_append(
 			chained_call_ids,
 			'$',
@@ -987,7 +987,7 @@ func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID
 func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		chained_call_ids = json_remove(
 			chained_call_ids, replace(
 				json_search(
@@ -1019,7 +1019,7 @@ func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.U
 func (h *handler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error {
 	// prepare
 	q := `
-	update calls set
+	update call_calls set
 		action_next_hold = ?,
 		tm_update = ?
 	where
@@ -1041,7 +1041,7 @@ func (h *handler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold 
 func (h *handler) CallDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update calls set
+	update call_calls set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -1065,7 +1065,7 @@ func (h *handler) CallSetData(ctx context.Context, id uuid.UUID, data map[call.D
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		data = ?,
 		tm_update = ?
@@ -1094,7 +1094,7 @@ func (h *handler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDi
 	// prepare
 	q := `
 	update
-		calls
+		call_calls
 	set
 		mute_direction = ?,
 		tm_update = ?

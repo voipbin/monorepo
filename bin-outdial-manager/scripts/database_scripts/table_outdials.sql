@@ -1,4 +1,4 @@
-create table outdials(
+create table outdial_outdials(
   -- identity
   id          binary(16),
   customer_id binary(16),
@@ -18,5 +18,5 @@ create table outdials(
   primary key(id)
 );
 
-create index idx_outdials_customer_id on outdials(customer_id);
-create index idx_outdials_campaign_id on outdials(campaign_id);
+create index idx_outdial_outdials_customer_id on outdial_outdials(customer_id);
+create index idx_outdial_outdials_campaign_id on outdial_outdials(campaign_id);
