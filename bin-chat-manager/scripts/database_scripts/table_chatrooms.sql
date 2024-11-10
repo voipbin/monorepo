@@ -1,4 +1,4 @@
-create table chatrooms(
+create table chat_chatrooms(
   -- identity
   id          binary(16),
   customer_id binary(16),
@@ -22,8 +22,8 @@ create table chatrooms(
   primary key(id)
 );
 
-create index idx_chatrooms_customer_id on chatrooms(customer_id);
-create index idx_chatrooms_chat_id on chatrooms(chat_id);
-create index idx_chatrooms_owner_id on chatrooms(owner_id);
-create index idx_chatrooms_chat_id_owner_id on chatrooms(chat_id, owner_id);
-create index idx_chatrooms_room_owner_id on chatrooms(room_owner_id);
+create index idx_chat_chatrooms_customer_id on chat_chatrooms(customer_id);
+create index idx_chat_chatrooms_chat_id on chat_chatrooms(chat_id);
+create index idx_chat_chatrooms_owner_id on chat_chatrooms(owner_id);
+create index idx_chat_chatrooms_chat_id_owner_id on chat_chatrooms(chat_id, owner_id);
+create index idx_chat_chatrooms_room_owner_id on chat_chatrooms(room_owner_id);

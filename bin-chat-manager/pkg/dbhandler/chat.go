@@ -33,7 +33,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		chats
+		chat_chats
 	`
 )
 
@@ -71,7 +71,7 @@ func (h *handler) chatGetFromRow(row *sql.Rows) (*chat.Chat, error) {
 // ChatCreate creates a new chat record
 func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
 
-	q := `insert into chats(
+	q := `insert into chat_chats(
 		id,
 		customer_id,
 
@@ -312,7 +312,7 @@ func (h *handler) chatFilterParseParticipantIDs(participantIDs string) string {
 // ChatUpdateBasicInfo updates the basic information.
 func (h *handler) ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	q := `
-	update chats set
+	update chat_chats set
 		name = ?,
 		detail = ?,
 		tm_update = ?
@@ -333,7 +333,7 @@ func (h *handler) ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, d
 // ChatDelete deletes the given chat
 func (h *handler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update chats set
+	update chat_chats set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -355,7 +355,7 @@ func (h *handler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 // ChatUpdateRoomOwnerID updates the chat's owner_id.
 func (h *handler) ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) error {
 	q := `
-	update chats set
+	update chat_chats set
 		room_owner_id = ?,
 		tm_update = ?
 	where
@@ -376,7 +376,7 @@ func (h *handler) ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomO
 func (h *handler) ChatUpdateParticipantID(ctx context.Context, id uuid.UUID, participantIDs []uuid.UUID) error {
 	// prepare
 	q := `
-	update chats set
+	update chat_chats set
 		participant_ids = ?,
 		tm_update = ?
 	where

@@ -1,4 +1,4 @@
-create table chats(
+create table chat_chats(
   -- identity
   id          binary(16),
   customer_id binary(16),
@@ -19,5 +19,5 @@ create table chats(
   primary key(id)
 );
 
-create index idx_chats_customer_id on chats(customer_id);
-create index idx_chats_owner_id on chats(owner_id);
+create index idx_chat_chats_customer_id on chat_chats(customer_id);
+create index idx_chat_chats_owner_id on chat_chats(owner_id);

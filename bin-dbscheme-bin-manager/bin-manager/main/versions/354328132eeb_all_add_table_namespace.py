@@ -70,8 +70,18 @@ def upgrade():
     
     op.execute("""rename table chatbotcalls to chatbot_chatbotcalls;""")
     op.execute("""rename table chatbots to chatbot_chatbots;""")
+    
     op.execute("""rename table chatrooms to chat_chatrooms;""")
+    op.execute("""alter table agent_agents rename index idx_chatrooms_customer_id to idx_chat_chatrooms_customer_id;""")
+    op.execute("""alter table agent_agents rename index idx_chatrooms_chat_id to idx_chat_chatrooms_chat_id;""")
+    op.execute("""alter table agent_agents rename index idx_chatrooms_owner_id to idx_chat_chatrooms_owner_id;""")
+    op.execute("""alter table agent_agents rename index idx_chatrooms_chat_id_owner_id to idx_chat_chatrooms_chat_id_owner_id;""")
+    op.execute("""alter table agent_agents rename index idx_chatrooms_room_owner_id to idx_chat_chatrooms_room_owner_id;""")
+    
+    
     op.execute("""rename table chats to chat_chats;""")
+    op.execute("""alter table agent_agents rename index idx_chats_customer_id to idx_chat_chats_customer_id;""")
+    op.execute("""alter table agent_agents rename index idx_chats_owner_id to idx_chat_chats_owner_id;""")
     
     op.execute("""rename table confbridges to call_confbridges;""")
     op.execute("""alter table agent_agents rename index idx_confbridges_create to idx_call_confbridges_create;""")
@@ -91,7 +101,18 @@ def upgrade():
 
 
     op.execute("""rename table messagechatrooms to chat_messagechatrooms;""")
+    op.execute("""alter table agent_agents rename index idx_messagechatrooms_customer_id to idx_chat_messagechatrooms_customer_id;""")
+    op.execute("""alter table agent_agents rename index idx_messagechatrooms_chatroom_id to idx_chat_messagechatrooms_chatroom_id;""")
+    op.execute("""alter table agent_agents rename index idx_messagechatrooms_messagechat_id to idx_chat_messagechatrooms_messagechat_id;""")
+
+
+
     op.execute("""rename table messagechats to chat_messagechats;""")
+    op.execute("""alter table agent_agents rename index idx_messagechats_customer_id to idx_chat_messagechats_customer_id;""")
+    op.execute("""alter table agent_agents rename index idx_messagechats_chat_id to idx_chat_messagechats_chat_id;""")
+
+
+
     op.execute("""rename table messages to message_messages;""")
     op.execute("""rename table numbers to number_numbers;""")
     op.execute("""rename table outdials to outdial_outdials;""")
@@ -107,11 +128,11 @@ def upgrade():
     op.execute("""rename table queues to queue_queues;""")
     
     op.execute("""rename table recordings to call_recordings;""")
-    op.execute("""alter table agent_agents rename index idx_call_recordings_tm_start to idx_call_recordings_tm_start;""")
-    op.execute("""alter table agent_agents rename index idx_call_recordings_customer_id to idx_call_recordings_customer_id;""")
-    op.execute("""alter table agent_agents rename index idx_call_recordings_owner_id to idx_call_recordings_owner_id;""")
-    op.execute("""alter table agent_agents rename index idx_call_recordings_reference_id to idx_call_recordings_reference_id;""")
-    op.execute("""alter table agent_agents rename index idx_call_recordings_recording_name to idx_call_recordings_recording_name;""")
+    op.execute("""alter table agent_agents rename index idx_recordings_tm_start to idx_call_recordings_tm_start;""")
+    op.execute("""alter table agent_agents rename index idx_recordings_customer_id to idx_call_recordings_customer_id;""")
+    op.execute("""alter table agent_agents rename index idx_recordings_owner_id to idx_call_recordings_owner_id;""")
+    op.execute("""alter table agent_agents rename index idx_recordings_reference_id to idx_call_recordings_reference_id;""")
+    op.execute("""alter table agent_agents rename index idx_recordings_recording_name to idx_call_recordings_recording_name;""")
 
     
     op.execute("""rename table routes to route_routes;""")
