@@ -1,4 +1,4 @@
-create table routes(
+create table route_routes(
   -- identity
   id          binary(16),
   customer_id binary(16),
@@ -19,5 +19,5 @@ create table routes(
   primary key(id)
 );
 
-create index idx_routes_customer_id on routes(customer_id);
-create index idx_routes_provider_id on routes(provider_id);
+create index idx_route_routes_customer_id on route_routes(customer_id);
+create index idx_route_routes_provider_id on route_routes(provider_id);

@@ -1,4 +1,4 @@
-create table outdialtargets(
+create table outdial_outdialtargets(
   -- identity
   id          binary(16),
   outdial_id  binary(16),
@@ -31,4 +31,4 @@ create table outdialtargets(
   primary key(id)
 );
 
-create index idx_outdialtargets_outdial_id on outdialtargets(outdial_id);
+create index idx_outdial_outdialtargets_outdial_id on outdial_outdialtargets(outdial_id);

@@ -1,5 +1,5 @@
 
-create table campaigncalls(
+create table campaign_campaigncalls(
   -- identity
   id                binary(16),
   customer_id       binary(16),
@@ -32,9 +32,9 @@ create table campaigncalls(
   primary key(id)
 );
 
-create index idx_campaigncalls_customer_id on campaigncalls(customer_id);
-create index idx_campaigncalls_campaign_id on campaigncalls(campaign_id);
-create index idx_campaigncalls_outdial_target_id on campaigncalls(outdial_target_id);
-create index idx_campaigncalls_activeflow_id on campaigncalls(activeflow_id);
-create index idx_campaigncalls_reference_id on campaigncalls(reference_id);
-create index idx_campaigncalls_campaign_id_status on campaigncalls(campaign_id, status);
+create index idx_campaign_campaigncalls_customer_id on campaign_campaigncalls(customer_id);
+create index idx_campaign_campaigncalls_campaign_id on campaign_campaigncalls(campaign_id);
+create index idx_campaign_campaigncalls_outdial_target_id on campaign_campaigncalls(outdial_target_id);
+create index idx_campaign_campaigncalls_activeflow_id on campaign_campaigncalls(activeflow_id);
+create index idx_campaign_campaigncalls_reference_id on campaign_campaigncalls(reference_id);
+create index idx_campaign_campaigncalls_campaign_id_status on campaign_campaigncalls(campaign_id, status);

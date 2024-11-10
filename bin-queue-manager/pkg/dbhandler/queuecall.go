@@ -47,7 +47,7 @@ const (
 		tm_end,
 		tm_delete
 	from
-		queuecalls
+		queue_queuecalls
 	`
 )
 
@@ -120,7 +120,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 
 // QueuecallCreate creates new QueueCall record and returns the created QueueCall.
 func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error {
-	q := `insert into queuecalls(
+	q := `insert into queue_queuecalls(
 		id,
 		customer_id,
 		queue_id,
@@ -448,7 +448,7 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		queuecalls
+		queue_queuecalls
 	set
 		tm_update = ?,
 		tm_delete = ?
@@ -473,7 +473,7 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 	// prepare
 	q := `
 	update
-		queuecalls
+		queue_queuecalls
 	set
 		status = ?,
 		service_agent_id = ?,
@@ -498,7 +498,7 @@ func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, d
 	// prepare
 	q := `
 	update
-		queuecalls
+		queue_queuecalls
 	set
 		status = ?,
 		duration_waiting = ?,
@@ -524,7 +524,7 @@ func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID,
 	// prepare
 	q := `
 	update
-		queuecalls
+		queue_queuecalls
 	set
 		status = ?,
 		duration_waiting = ?,
@@ -550,7 +550,7 @@ func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, dura
 	// prepare
 	q := `
 	update
-		queuecalls
+		queue_queuecalls
 	set
 		status = ?,
 		duration_service = ?,
@@ -576,7 +576,7 @@ func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) e
 	// prepare
 	q := `
 	update
-		queuecalls
+		queue_queuecalls
 	set
 		status = ?,
 		tm_update = ?
@@ -599,7 +599,7 @@ func (h *handler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) e
 	// prepare
 	q := `
 	update
-		queuecalls
+		queue_queuecalls
 	set
 		status = ?,
 		tm_update = ?

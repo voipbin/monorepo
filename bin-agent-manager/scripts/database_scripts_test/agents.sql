@@ -1,4 +1,4 @@
-create table agents(
+create table agent_agents(
   -- identity
   id            binary(16),  -- id
   customer_id   binary(16),
@@ -23,5 +23,5 @@ create table agents(
   primary key(id)
 );
 
-create index idx_agents_customerid on agents(customer_id);
-create index idx_agents_username on agents(username);
+create index idx_agent_agents_customerid on agent_agents(customer_id);
+create index idx_agent_agents_username on agent_agents(username);

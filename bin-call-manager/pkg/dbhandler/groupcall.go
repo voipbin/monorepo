@@ -50,7 +50,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		groupcalls
+		call_groupcalls
 	`
 )
 
@@ -139,7 +139,7 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 // GroupcallCreate sets groupcall.
 func (h *handler) GroupcallCreate(ctx context.Context, c *groupcall.Groupcall) error {
 
-	q := `insert into groupcalls(
+	q := `insert into call_groupcalls(
 		id,
 		customer_id,
 		owner_type,
@@ -338,7 +338,7 @@ func (h *handler) GroupcallSetAnswerCallID(ctx context.Context, id uuid.UUID, an
 	// prepare
 	q := `
 	update
-		groupcalls
+		call_groupcalls
 	set
 		answer_call_id = ?,
 		tm_update = ?
@@ -362,7 +362,7 @@ func (h *handler) GroupcallSetAnswerGroupcallID(ctx context.Context, id uuid.UUI
 	// prepare
 	q := `
 	update
-		groupcalls
+		call_groupcalls
 	set
 		answer_groupcall_id = ?,
 		tm_update = ?
@@ -445,7 +445,7 @@ func (h *handler) groupcallSetToCache(ctx context.Context, data *groupcall.Group
 func (h *handler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update groupcalls set
+	update call_groupcalls set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -468,7 +468,7 @@ func (h *handler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
 func (h *handler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update groupcalls set
+	update call_groupcalls set
 		call_count = call_count - 1,
 		tm_update = ?
 	where
@@ -491,7 +491,7 @@ func (h *handler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) 
 func (h *handler) GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update groupcalls set
+	update call_groupcalls set
 		groupcall_count = groupcall_count - 1,
 		tm_update = ?
 	where
@@ -514,7 +514,7 @@ func (h *handler) GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.U
 func (h *handler) GroupcallSetStatus(ctx context.Context, id uuid.UUID, status groupcall.Status) error {
 	//prepare
 	q := `
-	update groupcalls set
+	update call_groupcalls set
 		status = ?,
 		tm_update = ?
 	where
@@ -537,7 +537,7 @@ func (h *handler) GroupcallSetStatus(ctx context.Context, id uuid.UUID, status g
 func (h *handler) GroupcallSetCallIDsAndCallCountAndDialIndex(ctx context.Context, id uuid.UUID, callIDs []uuid.UUID, callCount int, dialIndex int) error {
 	//prepare
 	q := `
-	update groupcalls set
+	update call_groupcalls set
 		call_ids = ?,
 		call_count = ?,
 		dial_index = ?,
@@ -570,7 +570,7 @@ func (h *handler) GroupcallSetCallIDsAndCallCountAndDialIndex(ctx context.Contex
 func (h *handler) GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx context.Context, id uuid.UUID, groupcallIDs []uuid.UUID, groupcallCount int, dialIndex int) error {
 	//prepare
 	q := `
-	update groupcalls set
+	update call_groupcalls set
 		groupcall_ids = ?,
 		groupcall_count = ?,
 		dial_index = ?,

@@ -26,7 +26,7 @@ const (
 		tm_create,
 		tm_delete
 	from
-		transcripts
+		transcribe_transcripts
 	`
 )
 
@@ -53,7 +53,7 @@ func (h *handler) transcriptGetFromRow(row *sql.Rows) (*transcript.Transcript, e
 
 // TranscriptCreate creates a new tanscript
 func (h *handler) TranscriptCreate(ctx context.Context, t *transcript.Transcript) error {
-	q := `insert into transcripts(
+	q := `insert into transcribe_transcripts(
 		id,
 		customer_id,
 		transcribe_id,
@@ -232,7 +232,7 @@ func (h *handler) TranscriptDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		transcripts
+		transcribe_transcripts
 	set
 		tm_delete = ?
 	where

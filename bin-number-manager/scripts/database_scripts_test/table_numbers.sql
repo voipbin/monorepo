@@ -1,4 +1,4 @@
-create table numbers(
+create table number_numbers(
   -- identity
   id            binary(16),     -- id
   number        varchar(255),   -- number
@@ -28,9 +28,9 @@ create table numbers(
   primary key(id)
 );
 
-create index idx_numbers_number on numbers(number);
-create index idx_numbers_customerid on numbers(customer_id);
-create index idx_numbers_call_flow_id on numbers(call_flow_id);
-create index idx_numbers_message_flow_id on numbers(message_flow_id);
-create index idx_numbers_provider_name on numbers(provider_name);
-create index idx_numbers_tm_renew on numbers(tm_renew);
+create index idx_number_numbers_number on number_numbers(number);
+create index idx_number_numbers_customerid on number_numbers(customer_id);
+create index idx_number_numbers_call_flow_id on number_numbers(call_flow_id);
+create index idx_number_numbers_message_flow_id on number_numbers(message_flow_id);
+create index idx_number_numbers_provider_name on number_numbers(provider_name);
+create index idx_number_numbers_tm_renew on number_numbers(tm_renew);

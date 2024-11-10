@@ -50,7 +50,7 @@ const (
 		tm_end
 
 	from
-		channels
+		call_channels
 	where
 		id = ?
 	`
@@ -134,7 +134,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
-	q := `insert into channels(
+	q := `insert into call_channels(
 		asterisk_id,
 		id,
 		name,
@@ -260,7 +260,7 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		data = ?,
 		tm_update = ?
 	where
@@ -286,7 +286,7 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 // ChannelSetDataItem sets the item into the channel's data
 func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error {
 	//prepare
-	q := fmt.Sprintf("update channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
+	q := fmt.Sprintf("update call_channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
 
 	_, err := h.db.Exec(q, value, h.utilHandler.TimeGetCurTime(), id)
 	if err != nil {
@@ -303,7 +303,7 @@ func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string,
 func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		stasis_name = ?,
 		tm_update = ?
 	where
@@ -325,7 +325,7 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 func (h *handler) ChannelSetStateAnswer(ctx context.Context, id string, state ari.ChannelState) error {
 
 	q := `
-	update channels set
+	update call_channels set
 		state = ?,
 		tm_update = ?,
 		tm_answer = ?
@@ -349,7 +349,7 @@ func (h *handler) ChannelSetStateAnswer(ctx context.Context, id string, state ar
 func (h *handler) ChannelSetStateRinging(ctx context.Context, id string, state ari.ChannelState) error {
 
 	q := `
-	update channels set
+	update call_channels set
 		state = ?,
 		tm_update = ?,
 		tm_ringing = ?
@@ -373,7 +373,7 @@ func (h *handler) ChannelSetStateRinging(ctx context.Context, id string, state a
 func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		bridge_id = ?,
 		tm_update = ?
 	where
@@ -395,7 +395,7 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		direction = ?,
 		tm_update = ?
 	where
@@ -417,7 +417,7 @@ func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction 
 func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.Type) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		type = ?,
 		tm_update = ?
 	where
@@ -439,7 +439,7 @@ func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.T
 func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		sip_transport = ?,
 		tm_update = ?
 	where
@@ -461,7 +461,7 @@ func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transpo
 func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		sip_call_id = ?,
 		tm_update = ?
 	where
@@ -483,7 +483,7 @@ func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID stri
 func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackID string) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		playback_id = ?,
 		tm_update = ?
 	where
@@ -505,7 +505,7 @@ func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackI
 func (h *handler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error {
 	// prepare
 	q := `
-	update channels set
+	update call_channels set
 		hangup_cause = ?,
 		tm_update = ?,
 		tm_end = ?,
@@ -530,7 +530,7 @@ func (h *handler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari
 func (h *handler) ChannelSetStasisInfo(ctx context.Context, id string, chType channel.Type, stasisName string, stasisData map[channel.StasisDataType]string, direction channel.Direction) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		type = ?,
 
 		stasis_name = ?,
@@ -630,7 +630,7 @@ func (h *handler) channelSetToCache(ctx context.Context, channel *channel.Channe
 func (h *handler) ChannelSetMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) error {
 	//prepare
 	q := `
-	update channels set
+	update call_channels set
 		mute_direction = ?,
 		tm_update = ?
 	where

@@ -34,7 +34,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		customers
+		customer_customers
 	`
 )
 
@@ -68,7 +68,7 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 
 // CustomerCreate creates new customer record and returns the created customer record.
 func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) error {
-	q := `insert into customers(
+	q := `insert into customer_customers(
 		id,
 
 		name,
@@ -265,7 +265,7 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		customers
+		customer_customers
 	set
 		tm_delete = ?
 	where
@@ -299,7 +299,7 @@ func (h *handler) CustomerSetBasicInfo(
 	// prepare
 	q := `
 	update
-		customers
+		customer_customers
 	set
 		name = ?,
 		detail = ?,
@@ -328,7 +328,7 @@ func (h *handler) CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, pe
 	// prepare
 	q := `
 	update
-		customers
+		customer_customers
 	set
 		permission_ids = ?,
 		tm_update = ?
@@ -357,7 +357,7 @@ func (h *handler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, pas
 	// prepare
 	q := `
 	update
-		customers
+		customer_customers
 	set
 		password_hash = ?,
 		tm_update = ?
@@ -380,7 +380,7 @@ func (h *handler) CustomerSetBillingAccountID(ctx context.Context, id uuid.UUID,
 	// prepare
 	q := `
 	update
-		customers
+		customer_customers
 	set
 		billing_account_id = ?,
 		tm_update = ?

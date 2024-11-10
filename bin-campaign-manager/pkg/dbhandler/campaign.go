@@ -44,7 +44,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		campaigns
+		campaign_campaigns
 	`
 )
 
@@ -94,7 +94,7 @@ func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) 
 
 // CampaignCreate insert a new campaign record
 func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) error {
-	q := `insert into campaigns(
+	q := `insert into campaign_campaigns(
 		id,
 		customer_id,
 
@@ -250,7 +250,7 @@ func (h *handler) campaignGetFromDB(ctx context.Context, id uuid.UUID) (*campaig
 // CampaignDelete deletes the given campaign
 func (h *handler) CampaignDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -331,7 +331,7 @@ func (h *handler) CampaignUpdateBasicInfo(
 	endHandle campaign.EndHandle,
 ) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		name = ?,
 		detail = ?,
 		type = ?,
@@ -355,7 +355,7 @@ func (h *handler) CampaignUpdateBasicInfo(
 // CampaignUpdateResourceInfo updates campaign's resource information.
 func (h *handler) CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		outplan_id = ?,
 		outdial_id = ?,
 		queue_id = ?,
@@ -378,7 +378,7 @@ func (h *handler) CampaignUpdateResourceInfo(ctx context.Context, id, outplanID,
 // CampaignUpdateNextCampaignID updates campaign's next_campaign_id information.
 func (h *handler) CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		next_campaign_id = ?,
 		tm_update = ?
 	where
@@ -398,7 +398,7 @@ func (h *handler) CampaignUpdateNextCampaignID(ctx context.Context, id, nextCamp
 // CampaignUpdateStatus updates campaign's status.
 func (h *handler) CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		status = ?,
 		tm_update = ?
 	where
@@ -418,7 +418,7 @@ func (h *handler) CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status
 // CampaignUpdateStatusAndExecute updates campaign's status and execute.
 func (h *handler) CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UUID, status campaign.Status, execute campaign.Execute) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		status = ?,
 		execute = ?,
 		tm_update = ?
@@ -439,7 +439,7 @@ func (h *handler) CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UU
 // CampaignUpdateExecute updates campaign's execute.
 func (h *handler) CampaignUpdateExecute(ctx context.Context, id uuid.UUID, execute campaign.Execute) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		execute = ?,
 		tm_update = ?
 	where
@@ -459,7 +459,7 @@ func (h *handler) CampaignUpdateExecute(ctx context.Context, id uuid.UUID, execu
 // CampaignUpdateServiceLevel updates campaign's service_level.
 func (h *handler) CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		service_level = ?,
 		tm_update = ?
 	where
@@ -479,7 +479,7 @@ func (h *handler) CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, 
 // CampaignUpdateEndHandle updates campaign's end_handle.
 func (h *handler) CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, endHandle campaign.EndHandle) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		end_handle = ?,
 		tm_update = ?
 	where
@@ -499,7 +499,7 @@ func (h *handler) CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, end
 // CampaignUpdateActions updates campaign's actions.
 func (h *handler) CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		actions = ?,
 		tm_update = ?
 	where
@@ -524,7 +524,7 @@ func (h *handler) CampaignUpdateActions(ctx context.Context, id uuid.UUID, actio
 // CampaignUpdateType updates campaign's type.
 func (h *handler) CampaignUpdateType(ctx context.Context, id uuid.UUID, campaignType campaign.Type) error {
 	q := `
-	update campaigns set
+	update campaign_campaigns set
 		type = ?,
 		tm_update = ?
 	where

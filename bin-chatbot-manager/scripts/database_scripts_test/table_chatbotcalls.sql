@@ -1,4 +1,4 @@
-create table chatbotcalls(
+create table chatbot_chatbotcalls(
   -- identity
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
@@ -29,11 +29,11 @@ create table chatbotcalls(
   primary key(id)
 );
 
-create index idx_chatbotcalls_customer_id on chatbotcalls(customer_id);
-create index idx_chatbotcalls_chatbot_id on chatbotcalls(chatbot_id);
-create index idx_chatbotcalls_reference_type on chatbotcalls(reference_type);
-create index idx_chatbotcalls_reference_id on chatbotcalls(reference_id);
-create index idx_chatbotcalls_transcribe_id on chatbotcalls(transcribe_id);
-create index idx_chatbotcalls_create on chatbotcalls(tm_create);
-create index idx_chatbotcalls_activeflow_id on chatbotcalls(activeflow_id);
+create index idx_chatbot_chatbotcalls_customer_id on chatbot_chatbotcalls(customer_id);
+create index idx_chatbot_chatbotcalls_chatbot_id on chatbot_chatbotcalls(chatbot_id);
+create index idx_chatbot_chatbotcalls_reference_type on chatbot_chatbotcalls(reference_type);
+create index idx_chatbot_chatbotcalls_reference_id on chatbot_chatbotcalls(reference_id);
+create index idx_chatbot_chatbotcalls_transcribe_id on chatbot_chatbotcalls(transcribe_id);
+create index idx_chatbot_chatbotcalls_create on chatbot_chatbotcalls(tm_create);
+create index idx_chatbot_chatbotcalls_activeflow_id on chatbot_chatbotcalls(activeflow_id);
 

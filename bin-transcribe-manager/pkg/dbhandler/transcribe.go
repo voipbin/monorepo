@@ -35,7 +35,7 @@ const (
 		tm_delete
 
 	from
-		transcribes
+		transcribe_transcribes
 	`
 )
 
@@ -95,7 +95,7 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 		return fmt.Errorf("could not marshal the streaming_ids. TranscribeCreate. err: %v", err)
 	}
 
-	q := `insert into transcribes(
+	q := `insert into transcribe_transcribes(
 		id,
 		customer_id,
 
@@ -232,7 +232,7 @@ func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		transcribes
+		transcribe_transcribes
 	set
 		tm_delete = ?
 	where
@@ -253,7 +253,7 @@ func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
 func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcript.Transcript) error {
 	// prepare
 	q := `
-	update transcribes set
+	update transcribe_transcribes set
 		transcripts = json_array_append(
 			transcripts,
 			'$',
@@ -374,7 +374,7 @@ func (h *handler) TranscribeSetStatus(ctx context.Context, id uuid.UUID, status 
 	// prepare
 	q := `
 	update
-		transcribes
+		transcribe_transcribes
 	set
 		status = ?,
 		tm_update = ?

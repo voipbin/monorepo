@@ -27,7 +27,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		outdials
+		outdial_outdials
 	`
 )
 
@@ -57,7 +57,7 @@ func (h *handler) outdialGetFromRow(row *sql.Rows) (*outdial.Outdial, error) {
 // OutdialCreate insert a new outdial record
 func (h *handler) OutdialCreate(ctx context.Context, f *outdial.Outdial) error {
 
-	q := `insert into outdials(
+	q := `insert into outdial_outdials(
 		id,
 		customer_id,
 		campaign_id,
@@ -195,7 +195,7 @@ func (h *handler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		outdials
+		outdial_outdials
 	set
 		tm_update = ?,
 		tm_delete = ?
@@ -252,7 +252,7 @@ func (h *handler) OutdialGetsByCustomerID(ctx context.Context, customerID uuid.U
 // OutdialUpdateBasicInfo updates outdial's basic information.
 func (h *handler) OutdialUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	q := `
-	update outdials set
+	update outdial_outdials set
 		name = ?,
 		detail = ?,
 		tm_update = ?
@@ -273,7 +273,7 @@ func (h *handler) OutdialUpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 // OutdialUpdateCampaignID updates outdial's campaign.
 func (h *handler) OutdialUpdateCampaignID(ctx context.Context, id, campaignID uuid.UUID) error {
 	q := `
-	update outdials set
+	update outdial_outdials set
 		campaign_id = ?,
 		tm_update = ?
 	where
@@ -293,7 +293,7 @@ func (h *handler) OutdialUpdateCampaignID(ctx context.Context, id, campaignID uu
 // OutdialUpdateData updates outdial's data.
 func (h *handler) OutdialUpdateData(ctx context.Context, id uuid.UUID, data string) error {
 	q := `
-	update outdials set
+	update outdial_outdials set
 		data = ?,
 		tm_update = ?
 	where

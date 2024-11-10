@@ -1,4 +1,4 @@
-create table conferencecalls(
+create table conference_conferencecalls(
   -- identity
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
@@ -17,7 +17,7 @@ create table conferencecalls(
   primary key(id)
 );
 
-create index idx_conferencecalls_customer_id on conferencecalls(customer_id);
-create index idx_conferencecalls_conference_id on conferencecalls(conference_id);
-create index idx_conferencecalls_reference_id on conferencecalls(reference_id);
-create index idx_conferencecalls_create on conferencecalls(tm_create);
+create index idx_conference_conferencecalls_customer_id on conference_conferencecalls(customer_id);
+create index idx_conference_conferencecalls_conference_id on conference_conferencecalls(conference_id);
+create index idx_conference_conferencecalls_reference_id on conference_conferencecalls(reference_id);
+create index idx_conference_conferencecalls_create on conference_conferencecalls(tm_create);

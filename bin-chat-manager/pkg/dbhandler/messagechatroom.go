@@ -36,7 +36,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		 messagechatrooms
+		chat_messagechatrooms
 	`
 )
 
@@ -88,7 +88,7 @@ func (h *handler) messagechatroomGetFromRow(row *sql.Rows) (*messagechatroom.Mes
 // MessagechatroomCreate creates a new messagechatroom record
 func (h *handler) MessagechatroomCreate(ctx context.Context, m *messagechatroom.Messagechatroom) error {
 
-	q := `insert into messagechatrooms(
+	q := `insert into chat_messagechatrooms(
 		id,
 		customer_id,
 		owner_type,
@@ -366,7 +366,7 @@ func (h *handler) MessagechatroomGetsByMessagechatID(ctx context.Context, messag
 // MessagechatroomDelete deletes the given messagechat
 func (h *handler) MessagechatroomDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update messagechatrooms set
+	update chat_messagechatrooms set
 		tm_delete = ?,
 		tm_update = ?
 	where

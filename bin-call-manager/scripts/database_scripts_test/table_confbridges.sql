@@ -1,4 +1,4 @@
-create table confbridges(
+create table call_confbridges(
   -- identity
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
@@ -25,6 +25,6 @@ create table confbridges(
   primary key(id)
 );
 
-create index idx_confbridges_create on confbridges(tm_create);
-create index idx_confbridges_customer_id on confbridges(customer_id);
-create index idx_confbridges_bridge_id on confbridges(bridge_id);
+create index idx_call_confbridges_create on call_confbridges(tm_create);
+create index idx_call_confbridges_customer_id on call_confbridges(customer_id);
+create index idx_call_confbridges_bridge_id on call_confbridges(bridge_id);

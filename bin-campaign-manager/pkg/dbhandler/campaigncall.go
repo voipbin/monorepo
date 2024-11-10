@@ -42,7 +42,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		campaigncalls
+		campaign_campaigncalls
 	`
 )
 
@@ -97,7 +97,7 @@ func (h *handler) campaigncallGetFromRow(row *sql.Rows) (*campaigncall.Campaignc
 
 // CampaigncallCreate insert a new campaigncall record
 func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campaigncall) error {
-	q := `insert into campaigncalls(
+	q := `insert into campaign_campaigncalls(
 		id,
 		customer_id,
 		campaign_id,
@@ -470,7 +470,7 @@ func (h *handler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campa
 // CampaigncallUpdateStatus updates campaigncall's status.
 func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error {
 	q := `
-	update campaigncalls set
+	update campaign_campaigncalls set
 		status = ?,
 		tm_update = ?
 	where
@@ -490,7 +490,7 @@ func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, st
 // CampaigncallUpdateStatusAndResult updates campaigncall's status and result.
 func (h *handler) CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) error {
 	q := `
-	update campaigncalls set
+	update campaign_campaigncalls set
 		result = ?,
 		status = ?,
 		tm_update = ?
@@ -511,7 +511,7 @@ func (h *handler) CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid
 // CampaigncallDelete deletes the given campaigncall
 func (h *handler) CampaigncallDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update campaigncalls set
+	update campaign_campaigncalls set
 		tm_delete = ?,
 		tm_update = ?
 	where

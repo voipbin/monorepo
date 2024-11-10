@@ -30,7 +30,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		flows
+		flow_flows
 	`
 )
 
@@ -66,7 +66,7 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 
 func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
-	q := `insert into flows(
+	q := `insert into flow_flows(
 		id,
 		customer_id,
 		type,
@@ -276,7 +276,7 @@ func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filte
 // except permenant info(i.e. id, timestamp, etc)
 func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error {
 	q := `
-	update flows set
+	update flow_flows set
 		name = ?,
 		detail = ?,
 		actions = ?,
@@ -303,7 +303,7 @@ func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail str
 // FlowDelete deletes the given flow
 func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update flows set
+	update flow_flows set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -324,7 +324,7 @@ func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 // FlowUpdateActions updates the actions.
 func (h *handler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error {
 	q := `
-	update flows set
+	update flow_flows set
 		actions = ?,
 		tm_update = ?
 	where

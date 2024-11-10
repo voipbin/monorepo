@@ -1,4 +1,4 @@
-create table calls(
+create table call_calls(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
@@ -59,13 +59,13 @@ create table calls(
   primary key(id)
 );
 
-create index idx_calls_customer_id on calls(customer_id);
-create index idx_calls_owner_id on calls(owner_id);
-create index idx_calls_channelid on calls(channel_id);
-create index idx_calls_flowid on calls(flow_id);
-create index idx_calls_create on calls(tm_create);
-create index idx_calls_hangup on calls(tm_hangup);
-create index idx_calls_source_target on calls(source_target);
-create index idx_calls_destination_target on calls(destination_target);
-create index idx_calls_external_media_id on calls(external_media_id);
-create index idx_calls_groupcall_id on calls(groupcall_id);
+create index idx_call_calls_customer_id on call_calls(customer_id);
+create index idx_call_calls_owner_id on call_calls(owner_id);
+create index idx_call_calls_channelid on call_calls(channel_id);
+create index idx_call_calls_flowid on call_calls(flow_id);
+create index idx_call_calls_create on call_calls(tm_create);
+create index idx_call_calls_hangup on call_calls(tm_hangup);
+create index idx_call_calls_source_target on call_calls(source_target);
+create index idx_call_calls_destination_target on call_calls(destination_target);
+create index idx_call_calls_external_media_id on call_calls(external_media_id);
+create index idx_call_calls_groupcall_id on call_calls(groupcall_id);

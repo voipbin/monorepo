@@ -39,7 +39,7 @@ func Test_CustomerCreate(t *testing.T) {
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2024-04-18 03:22:17.995000",
 			expectRes: &customer.Customer{
 				ID:               uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
 				Name:             "test name",
@@ -50,7 +50,7 @@ func Test_CustomerCreate(t *testing.T) {
 				WebhookMethod:    "POST",
 				WebhookURI:       "test.com",
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
-				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMCreate:         "2024-04-18 03:22:17.995000",
 				TMUpdate:         DefaultTimeStamp,
 				TMDelete:         DefaultTimeStamp,
 			},
@@ -160,6 +160,7 @@ func Test_CustomerGets(t *testing.T) {
 		name      string
 		customers []*customer.Customer
 		size      uint64
+		token     string
 		filters   map[string]string
 
 		responseCurTime string
@@ -175,7 +176,8 @@ func Test_CustomerGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("5c4b732e-7c65-11ec-8f09-2720f96bb96d"),
 				},
 			},
-			size: 2,
+			size:  2,
+			token: "2020-04-18 03:22:17.995001",
 			filters: map[string]string{
 				"deleted": "false",
 			},
@@ -224,13 +226,13 @@ func Test_CustomerGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.CustomerGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.CustomerGets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
 			}
 		})
 	}

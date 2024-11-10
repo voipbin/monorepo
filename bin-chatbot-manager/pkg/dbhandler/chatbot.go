@@ -29,7 +29,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		chatbots
+		chatbot_chatbots
 	`
 )
 
@@ -58,7 +58,7 @@ func (h *handler) chatbotGetFromRow(row *sql.Rows) (*chatbot.Chatbot, error) {
 
 // ChatbotCreate creates new chatbot record.
 func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
-	q := `insert into chatbots(
+	q := `insert into chatbot_chatbots(
 		id,
 		customer_id,
 
@@ -186,7 +186,7 @@ func (h *handler) ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbo
 func (h *handler) ChatbotDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update chatbots set
+	update chatbot_chatbots set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -256,7 +256,7 @@ func (h *handler) ChatbotGets(ctx context.Context, customerID uuid.UUID, size ui
 func (h *handler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) error {
 	//prepare
 	q := `
-	update chatbots set
+	update chatbot_chatbots set
 		name = ?,
 		detail = ?,
 		engine_type = ?,

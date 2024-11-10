@@ -38,7 +38,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		agents
+		agent_agents
 	`
 )
 
@@ -91,7 +91,7 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 
 // AgentCreate creates new agent record and returns the created agent record.
 func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
-	q := `insert into agents(
+	q := `insert into agent_agents(
 		id,
 		customer_id,
 		username,
@@ -389,7 +389,7 @@ func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		agents
+		agent_agents
 	set
 		tm_update = ?,
 		tm_delete = ?
@@ -414,7 +414,7 @@ func (h *handler) AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, det
 	// prepare
 	q := `
 	update
-		agents
+		agent_agents
 	set
 		name = ?,
 		detail = ?,
@@ -439,7 +439,7 @@ func (h *handler) AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwo
 	// prepare
 	q := `
 	update
-		agents
+		agent_agents
 	set
 		password_hash = ?,
 		tm_update = ?
@@ -462,7 +462,7 @@ func (h *handler) AgentSetStatus(ctx context.Context, id uuid.UUID, status agent
 	// prepare
 	q := `
 	update
-		agents
+		agent_agents
 	set
 		status = ?,
 		tm_update = ?
@@ -485,7 +485,7 @@ func (h *handler) AgentSetPermission(ctx context.Context, id uuid.UUID, permissi
 	// prepare
 	q := `
 	update
-		agents
+		agent_agents
 	set
 		permission = ?,
 		tm_update = ?
@@ -508,7 +508,7 @@ func (h *handler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 	// prepare
 	q := `
 	update
-		agents
+		agent_agents
 	set
 		tag_ids = ?,
 		tm_update = ?
@@ -537,7 +537,7 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 	// prepare
 	q := `
 	update
-		agents
+		agent_agents
 	set
 		addresses = ?,
 		tm_update = ?
