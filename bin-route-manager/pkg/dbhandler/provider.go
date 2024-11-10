@@ -31,7 +31,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		providers
+		route_providers
 	`
 )
 
@@ -70,7 +70,7 @@ func (h *handler) providerGetFromRow(row *sql.Rows) (*provider.Provider, error) 
 // ProviderCreate creates a new provider record
 func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) error {
 
-	q := `insert into providers(
+	q := `insert into route_providers(
 		id,
 
 		type,
@@ -252,7 +252,7 @@ func (h *handler) ProviderGets(ctx context.Context, token string, limit uint64) 
 // ProviderDelete deletes the given provider
 func (h *handler) ProviderDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update providers set
+	update route_providers set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -273,7 +273,7 @@ func (h *handler) ProviderDelete(ctx context.Context, id uuid.UUID) error {
 // ProviderUpdate updates the provider information.
 func (h *handler) ProviderUpdate(ctx context.Context, p *provider.Provider) error {
 	q := `
-	update providers set
+	update route_providers set
 		type = ?,
 		hostname = ?,
 

@@ -43,7 +43,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		queues
+		queue_queues
 	`
 )
 
@@ -118,7 +118,7 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 
 // QueueCreate creates new queue record and returns the created queue.
 func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
-	q := `insert into queues(
+	q := `insert into queue_queues(
 		id,
 		customer_id,
 
@@ -348,7 +348,7 @@ func (h *handler) QueueDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
-		queues
+		queue_queues
 	set
 		tm_update = ?,
 		tm_delete = ?
@@ -383,7 +383,7 @@ func (h *handler) QueueSetBasicInfo(
 	// prepare
 	q := `
 	update
-		queues
+		queue_queues
 	set
 		name = ?,
 		detail = ?,
@@ -433,7 +433,7 @@ func (h *handler) QueueSetRoutingMethod(ctx context.Context, id uuid.UUID, routi
 	// prepare
 	q := `
 	update
-		queues
+		queue_queues
 	set
 		routing_method = ?,
 		tm_update = ?
@@ -456,7 +456,7 @@ func (h *handler) QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 	// prepare
 	q := `
 	update
-		queues
+		queue_queues
 	set
 		tag_ids = ?,
 		tm_update = ?
@@ -485,7 +485,7 @@ func (h *handler) QueueSetExecute(ctx context.Context, id uuid.UUID, execute que
 	// prepare
 	q := `
 	update
-		queues
+		queue_queues
 	set
 		execute = ?,
 		tm_update = ?
@@ -508,7 +508,7 @@ func (h *handler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UU
 	// prepare
 	q := `
 	update
-		queues
+		queue_queues
 	set
 		wait_actions = ?,
 		wait_timeout = ?,
@@ -539,7 +539,7 @@ func (h *handler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UU
 func (h *handler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update queues set
+	update queue_queues set
 		total_incoming_count = total_incoming_count + 1,
 		wait_queue_call_ids = json_array_append(
 			coalesce(wait_queue_call_ids,'[]'),
@@ -567,7 +567,7 @@ func (h *handler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID u
 func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update queues set
+	update queue_queues set
 		total_serviced_count = total_serviced_count + 1,
 		wait_queue_call_ids = json_remove(
 			wait_queue_call_ids, replace(
@@ -606,7 +606,7 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update queues set
+	update queue_queues set
 		total_abandoned_count = total_abandoned_count + 1,
 		wait_queue_call_ids = json_remove(
 			wait_queue_call_ids, replace(
@@ -639,7 +639,7 @@ func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queu
 func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update queues set
+	update queue_queues set
 		service_queue_call_ids = json_remove(
 			service_queue_call_ids, replace(
 				json_search(
@@ -672,7 +672,7 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 func (h *handler) QueueRemoveWaitQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
-	update queues set
+	update queue_queues set
 		wait_queue_call_ids = json_remove(
 			wait_queue_call_ids, replace(
 				json_search(

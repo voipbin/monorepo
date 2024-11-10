@@ -40,7 +40,7 @@ const (
 		tm_delete
 
 	from
-		numbers
+		number_numbers
 	`
 )
 
@@ -81,7 +81,7 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 
 // NumberCreate creates a new number record.
 func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
-	q := `insert into numbers(
+	q := `insert into number_numbers(
 		id,
 		number,
 		customer_id,
@@ -313,7 +313,7 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 		update
-			numbers
+			number_numbers
 		set
 			status = ?,
 			tm_update = ?,
@@ -337,7 +337,7 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 // NumberUpdateInfo updates basic number information.
 func (h *handler) NumberUpdateInfo(ctx context.Context, id uuid.UUID, callflowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) error {
 	q := `
-	update numbers set
+	update number_numbers set
 		call_flow_id = ?,
 		message_flow_id = ?,
 		name = ?,
@@ -368,7 +368,7 @@ func (h *handler) NumberUpdateInfo(ctx context.Context, id uuid.UUID, callflowID
 // NumberUpdateFlowID updates number's flow id.
 func (h *handler) NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) error {
 	q := `
-	update numbers set
+	update number_numbers set
 		call_flow_id = ?,
 		message_flow_id = ?,
 		tm_update = ?
@@ -395,7 +395,7 @@ func (h *handler) NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlow
 // NumberUpdateCallFlowID updates call_flow_id.
 func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id uuid.UUID, flowID uuid.UUID) error {
 	q := `
-	update numbers set
+	update number_numbers set
 		call_flow_id = ?,
 		tm_update = ?
 	where
@@ -420,7 +420,7 @@ func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id uuid.UUID, flow
 // NumberUpdateMessageFlowID updates message_flow_id.
 func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id uuid.UUID, flowID uuid.UUID) error {
 	q := `
-	update numbers set
+	update number_numbers set
 		message_flow_id = ?,
 		tm_update = ?
 	where
@@ -445,7 +445,7 @@ func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id uuid.UUID, f
 // NumberUpdateTMRenew updates the tm_renew.
 func (h *handler) NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update numbers set
+	update number_numbers set
 		tm_renew = ?,
 		tm_update = ?
 	where

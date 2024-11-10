@@ -35,7 +35,7 @@ const (
 		coalesce(tm_update, '') as tm_update,
 		coalesce(tm_delete, '') as tm_delete
 	from
-		extensions
+		registrar_extensions
 	`
 )
 
@@ -72,7 +72,7 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 
 // ExtensionCreate creates new Extension record.
 func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) error {
-	q := `insert into extensions(
+	q := `insert into registrar_extensions(
 		id,
 		customer_id,
 
@@ -319,7 +319,7 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 // ExtensionDelete deletes given extension
 func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update extensions set
+	update registrar_extensions set
 		tm_delete = ?
 	where
 		id = ?
@@ -339,7 +339,7 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 // ExtensionUpdate updates extension record.
 func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) error {
 	q := `
-	update extensions set
+	update registrar_extensions set
 		name = ?,
 		detail = ?,
 		password = ?,

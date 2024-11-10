@@ -40,7 +40,7 @@ const (
 		tm_delete
 
 	from
-		chatbotcalls
+		chatbot_chatbotcalls
 	`
 )
 
@@ -92,7 +92,7 @@ func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall
 
 // ChatbotcallCreate creates a new chatbotcall record.
 func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbotcall) error {
-	q := `insert into chatbotcalls(
+	q := `insert into chatbot_chatbotcalls(
 		id,
 		customer_id,
 		chatbot_id,
@@ -315,7 +315,7 @@ func (h *handler) ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID
 func (h *handler) ChatbotcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
 	//prepare
 	q := `
-	update chatbotcalls set
+	update chatbot_chatbotcalls set
 		status = ?,
 		transcribe_id = ?,
 		tm_update = ?
@@ -338,7 +338,7 @@ func (h *handler) ChatbotcallUpdateStatusProgressing(ctx context.Context, id uui
 func (h *handler) ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update chatbotcalls set
+	update chatbot_chatbotcalls set
 		status = ?,
 		transcribe_id = ?,
 		tm_end = ?,
@@ -363,7 +363,7 @@ func (h *handler) ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) 
 func (h *handler) ChatbotcallDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update chatbotcalls set
+	update chatbot_chatbotcalls set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -434,7 +434,7 @@ func (h *handler) ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, mess
 
 	//prepare
 	q := `
-	update chatbotcalls set
+	update chatbot_chatbotcalls set
 		messages = ?,
 		tm_update = ?
 	where

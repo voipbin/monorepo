@@ -28,7 +28,7 @@ const (
 		tm_delete
 
 	from
-		conferencecalls
+		conference_conferencecalls
 	`
 )
 
@@ -58,7 +58,7 @@ func (h *handler) conferencecallGetFromRow(row *sql.Rows) (*conferencecall.Confe
 
 // ConferencecallCreate creates a new conferencecall record.
 func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.Conferencecall) error {
-	q := `insert into conferencecalls(
+	q := `insert into conference_conferencecalls(
 		id,
 		customer_id,
 		conference_id,
@@ -272,7 +272,7 @@ func (h *handler) ConferencecallGets(ctx context.Context, size uint64, token str
 func (h *handler) ConferencecallDelete(ctx context.Context, id uuid.UUID) error {
 	//prepare
 	q := `
-	update conferencecalls set
+	update conference_conferencecalls set
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -295,7 +295,7 @@ func (h *handler) ConferencecallDelete(ctx context.Context, id uuid.UUID) error 
 func (h *handler) ConferencecallUpdateStatus(ctx context.Context, id uuid.UUID, status conferencecall.Status) error {
 	//prepare
 	q := `
-	update conferencecalls set
+	update conference_conferencecalls set
 		status = ?,
 		tm_update = ?
 	where

@@ -42,7 +42,7 @@ const (
 		tm_update,
 		tm_delete
 	from
-		outdialtargets
+		outdial_outdialtargets
 	`
 
 	// select query for available outdialtarget get
@@ -79,7 +79,7 @@ const (
 		case when destination_3 is null then 0 when try_count_3 < ? then 1 else 0 end as des_3,
 		case when destination_4 is null then 0 when try_count_4 < ? then 1 else 0 end as des_4
 	from
-		outdialtargets
+		outdial_outdialtargets
 	having
 		status = "idle"
 		and des_0 + des_1 + des_2 + des_3 + des_4 > 0
@@ -246,7 +246,7 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 // OutdialTargetCreate insert a new outdialtarget record
 func (h *handler) OutdialTargetCreate(ctx context.Context, t *outdialtarget.OutdialTarget) error {
 
-	q := `insert into outdialtargets(
+	q := `insert into outdial_outdialtargets(
 		id,
 		outdial_id,
 
@@ -490,7 +490,7 @@ func (h *handler) OutdialTargetUpdateDestinations(
 	destination4 *commonaddress.Address,
 ) error {
 	q := `
-	update outdialtargets set
+	update outdial_outdialtargets set
 		destination_0 = ?,
 		destination_1 = ?,
 		destination_2 = ?,
@@ -565,7 +565,7 @@ func (h *handler) OutdialTargetUpdateDestinations(
 // OutdialTargetUpdateStatus updates outdialtarget's status.
 func (h *handler) OutdialTargetUpdateStatus(ctx context.Context, id uuid.UUID, status outdialtarget.Status) error {
 	q := `
-	update outdialtargets set
+	update outdial_outdialtargets set
 		status = ?,
 		tm_update = ?
 	where
@@ -585,7 +585,7 @@ func (h *handler) OutdialTargetUpdateStatus(ctx context.Context, id uuid.UUID, s
 // OutdialTargetUpdateBasicInfo updates outdialtarget's basic info.
 func (h *handler) OutdialTargetUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	q := `
-	update outdialtargets set
+	update outdial_outdialtargets set
 		name = ?,
 		detail = ?,
 		tm_update = ?
@@ -606,7 +606,7 @@ func (h *handler) OutdialTargetUpdateBasicInfo(ctx context.Context, id uuid.UUID
 // OutdialTargetUpdateData updates outdialtarget's data.
 func (h *handler) OutdialTargetUpdateData(ctx context.Context, id uuid.UUID, data string) error {
 	q := `
-	update outdialtargets set
+	update outdial_outdialtargets set
 		data = ?,
 		tm_update = ?
 	where
@@ -626,7 +626,7 @@ func (h *handler) OutdialTargetUpdateData(ctx context.Context, id uuid.UUID, dat
 // OutdialTargetDelete delets the outdialtarget.
 func (h *handler) OutdialTargetDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	update outdialtargets set
+	update outdial_outdialtargets set
 		tm_delete = ?,
 		tm_update = ?
 	where
@@ -647,7 +647,7 @@ func (h *handler) OutdialTargetDelete(ctx context.Context, id uuid.UUID) error {
 // OutdialTargetUpdateProgressing updates outdialtarget's basic info.
 func (h *handler) OutdialTargetUpdateProgressing(ctx context.Context, id uuid.UUID, destinationIndex int) error {
 	q := fmt.Sprintf(`
-	update outdialtargets set
+	update outdial_outdialtargets set
 		try_count_%d = try_count_%d + 1,
 		status = ?,
 		tm_update = ?

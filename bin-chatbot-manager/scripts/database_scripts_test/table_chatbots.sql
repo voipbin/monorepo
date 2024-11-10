@@ -1,4 +1,4 @@
-create table chatbots(
+create table chatbot_chatbots(
   -- identity
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
@@ -18,5 +18,5 @@ create table chatbots(
   primary key(id)
 );
 
-create index idx_chatbots_create on chatbots(tm_create);
-create index idx_chatbots_customer_id on chatbots(customer_id);
+create index idx_chatbot_chatbots_create on chatbot_chatbots(tm_create);
+create index idx_chatbot_chatbots_customer_id on chatbot_chatbots(customer_id);

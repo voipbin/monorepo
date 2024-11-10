@@ -1,4 +1,4 @@
-create table messages(
+create table message_messages(
   -- identity
   id            binary(16),     -- id
   customer_id   binary(16),     -- customer id
@@ -22,6 +22,6 @@ create table messages(
   primary key(id)
 );
 
-create index idx_messages_customerid on messages(customer_id);
-create index idx_messages_provider_name on messages(provider_name);
-create index idx_messages_provider_reference_id on messages(provider_reference_id);
+create index idx_message_messages_customerid on message_messages(customer_id);
+create index idx_message_messages_provider_name on message_messages(provider_name);
+create index idx_message_messages_provider_reference_id on message_messages(provider_reference_id);

@@ -1,4 +1,4 @@
-create table flows(
+create table flow_flows(
   -- identity
   id          binary(16),
   customer_id binary(16),
@@ -17,4 +17,4 @@ create table flows(
   primary key(id)
 );
 
-create index idx_flows_customer_id on flows(customer_id);
+create index idx_flows_customer_id on flow_flows(customer_id);
