@@ -17,4 +17,4 @@ create table flow_flows(
   primary key(id)
 );
 
-create index idx_flow_flows_customer_id on flow_flows(customer_id);
+create index idx_flows_customer_id on flow_flows(customer_id);
