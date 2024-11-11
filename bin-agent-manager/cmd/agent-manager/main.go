@@ -118,40 +118,45 @@ func initVariable() {
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
 	pflag.Parse()
 
+	var err error
 	// rabbitmq_address
-	viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address"))
-	viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS") // Bind the environment variable
+	err = viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address"))
+	err = viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS") // Bind the environment variable
 	rabbitMQAddress = viper.GetString("rabbitmq_address")
 
 	// prometheus_endpoint
-	viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint"))
-	viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT") // Bind the environment variable
+	err = viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint"))
+	err = viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT") // Bind the environment variable
 	prometheusEndpoint = viper.GetString("prometheus_endpoint")
 
 	// prometheus_listen_address
-	viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address"))
-	viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS") // Bind the environment variable
+	err = viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address"))
+	err = viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS") // Bind the environment variable
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
 
 	// database_dsn
-	viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn"))
-	viper.BindEnv("database_dsn", "DATABASE_DSN") // Bind the environment variable
+	err = viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn"))
+	err = viper.BindEnv("database_dsn", "DATABASE_DSN") // Bind the environment variable
 	databaseDSN = viper.GetString("database_dsn")
 
 	// redis_address
-	viper.BindPFlag("redis_address", pflag.Lookup("redis_address"))
-	viper.BindEnv("redis_address", "REDIS_ADDRESS") // Bind the environment variable
+	err = viper.BindPFlag("redis_address", pflag.Lookup("redis_address"))
+	err = viper.BindEnv("redis_address", "REDIS_ADDRESS") // Bind the environment variable
 	prometheusListenAddress = viper.GetString("redis_address")
 
 	// redis_password
-	viper.BindPFlag("redis_password", pflag.Lookup("redis_password"))
-	viper.BindEnv("redis_password", "REDIS_PASSWORD") // Bind the environment variable
+	err = viper.BindPFlag("redis_password", pflag.Lookup("redis_password"))
+	err = viper.BindEnv("redis_password", "REDIS_PASSWORD") // Bind the environment variable
 	prometheusListenAddress = viper.GetString("redis_password")
 
 	// redis_database
-	viper.BindPFlag("redis_database", pflag.Lookup("redis_database"))
-	viper.BindEnv("redis_database", "REDIS_DATABASE") // Bind the environment variable
+	err = viper.BindPFlag("redis_database", pflag.Lookup("redis_database"))
+	err = viper.BindEnv("redis_database", "REDIS_DATABASE") // Bind the environment variable
 	prometheusListenAddress = viper.GetString("redis_database")
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 // initLog inits log settings.
