@@ -1471,6 +1471,15 @@ commands:
             sed -i -e "s|\${TELNYX_CONNECTION_ID}|$CC_TELNYX_CONNECTION_ID|g" ./*
             sed -i -e "s|\${TELNYX_PROFILE_ID}|$CC_TELNYX_PROFILE_ID|g" ./*
             sed -i -e "s|\${TELNYX_TOKEN}|$CC_TELNYX_TOKEN|g" ./*
+
+            sed -i -e "s|\${RABBITMQ_ADDRESS}|$CC_RABBITMQ_ADDRESS|g" ./*
+            sed -i -e "s|\${PROMETHEUS_ENDPOINT}|$CC_PROMETHEUS_ENDPOINT|g" ./*
+            sed -i -e "s|\${PROMETHEUS_LISTEN_ADDRESS}|$CC_PROMETHEUS_LISTEN_ADDRESS|g" ./*
+            sed -i -e "s|\${DATABASE_DSN}|$CC_DATABASE_DSN|g" ./*
+            sed -i -e "s|\${REDIS_ADDRESS}|$CC_REDIS_ADDRESS|g" ./*
+            sed -i -e "s|\${REDIS_PASSWORD}|$CC_REDIS_PASSWORD|g" ./*
+            sed -i -e "s|\${REDIS_DATABASE}|$CC_REDIS_DATABASE|g" ./*
+
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 
