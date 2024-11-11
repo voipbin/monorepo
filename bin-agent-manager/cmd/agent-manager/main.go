@@ -213,7 +213,11 @@ func initSignal() {
 
 // initProm inits prometheus settings
 func initProm(endpoint, listen string) {
-	log := logrus.WithField("func", "initProm")
+	log := logrus.WithField("func", "initProm").WithFields(logrus.Fields{
+		"endpoint": endpoint,
+		"listen":   listen,
+	})
+
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
 		for {
