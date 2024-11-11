@@ -16,5 +16,5 @@ create table transcribe_transcripts(
   primary key(id)
 );
 
-create index idx_transcribe_transcripts_customerid on transcribe_transcripts(customer_id);
+create index idx_transcribe_transcripts_customer_id on transcribe_transcripts(customer_id);
 create index idx_transcribe_transcripts_transcribe_id on transcribe_transcripts(transcribe_id);
