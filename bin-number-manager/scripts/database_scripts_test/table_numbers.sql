@@ -29,7 +29,7 @@ create table number_numbers(
 );
 
 create index idx_number_numbers_number on number_numbers(number);
-create index idx_number_numbers_customer_id on number_numbers(customer_id);
+create index idx_number_numbers_customerid on number_numbers(customer_id);
 create index idx_number_numbers_call_flow_id on number_numbers(call_flow_id);
 create index idx_number_numbers_message_flow_id on number_numbers(message_flow_id);
 create index idx_number_numbers_provider_name on number_numbers(provider_name);
