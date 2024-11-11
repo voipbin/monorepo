@@ -20,4 +20,4 @@ create table conversation_accounts(
   primary key(id)
 );
 
-create index idx_conversation_accounts_customerid on conversation_accounts(customer_id);
+create index idx_conversation_accounts_customer_id on conversation_accounts(customer_id);
