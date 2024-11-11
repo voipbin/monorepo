@@ -26,7 +26,7 @@ create table registrar_extensions (
 
 );
 
-create index idx_registrar_extensions_customerid on registrar_extensions(customer_id);
+create index idx_registrar_extensions_customer_id on registrar_extensions(customer_id);
 create index idx_registrar_extensions_extension on registrar_extensions(extension);
 create index idx_registrar_extensions_domain_name on registrar_extensions(domain_name);
 create index idx_registrar_extensions_username on registrar_extensions(username);

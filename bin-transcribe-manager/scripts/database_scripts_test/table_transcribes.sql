@@ -23,4 +23,4 @@ create table transcribe_transcribes(
 );
 
 create index idx_transcribe_transcribes_reference_id on transcribe_transcribes(reference_id);
-create index idx_transcribe_transcribes_customerid on transcribe_transcribes(customer_id);
+create index idx_transcribe_transcribes_customer_id on transcribe_transcribes(customer_id);
