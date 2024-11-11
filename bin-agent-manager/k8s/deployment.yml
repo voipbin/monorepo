@@ -24,10 +24,18 @@ spec:
           command:
             - './agent-manager'
           env:
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS
               value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
 
