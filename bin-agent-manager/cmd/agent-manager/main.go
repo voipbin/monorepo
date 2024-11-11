@@ -174,7 +174,7 @@ func initVariable() {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	prometheusListenAddress = viper.GetString("redis_address")
+	redisAddress = viper.GetString("redis_address")
 
 	// redis_password
 	if errFlag := viper.BindPFlag("redis_password", pflag.Lookup("redis_password")); errFlag != nil {
@@ -185,7 +185,7 @@ func initVariable() {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	prometheusListenAddress = viper.GetString("redis_password")
+	redisPassword = viper.GetString("redis_password")
 
 	// redis_database
 	if errFlag := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); errFlag != nil {
@@ -196,7 +196,7 @@ func initVariable() {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	prometheusListenAddress = viper.GetString("redis_database")
+	redisDatabase = viper.GetInt("redis_database")
 }
 
 // initLog inits log settings.
