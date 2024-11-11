@@ -14,5 +14,5 @@ create table tag_tags(
   primary key(id)
 );
 
-create index idx_tag_tags_customer_id on tag_tags(customer_id);
+create index idx_tag_tags_customerid on tag_tags(customer_id);
 create index idx_tag_tags_name on tag_tags(name);

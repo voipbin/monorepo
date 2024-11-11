@@ -25,6 +25,6 @@ create table conversation_messages(
   primary key(id)
 );
 
-create index idx_conversation_messages_customer_id on conversation_messages(customer_id);
+create index idx_conversation_messages_customerid on conversation_messages(customer_id);
 create index idx_conversation_messages_reference_type_reference_id on conversation_messages(reference_type, reference_id);
 create index idx_conversation_messages_transaction_id on conversation_messages(transaction_id);

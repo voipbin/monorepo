@@ -61,8 +61,8 @@ create table call_calls(
 
 create index idx_call_calls_customer_id on call_calls(customer_id);
 create index idx_call_calls_owner_id on call_calls(owner_id);
-create index idx_call_calls_channel_id on call_calls(channel_id);
-create index idx_call_calls_flow_id on call_calls(flow_id);
+create index idx_call_calls_channelid on call_calls(channel_id);
+create index idx_call_calls_flowid on call_calls(flow_id);
 create index idx_call_calls_create on call_calls(tm_create);
 create index idx_call_calls_hangup on call_calls(tm_hangup);
 create index idx_call_calls_source_target on call_calls(source_target);

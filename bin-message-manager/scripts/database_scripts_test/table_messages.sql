@@ -22,6 +22,6 @@ create table message_messages(
   primary key(id)
 );
 
-create index idx_message_messages_customer_id on message_messages(customer_id);
+create index idx_message_messages_customerid on message_messages(customer_id);
 create index idx_message_messages_provider_name on message_messages(provider_name);
 create index idx_message_messages_provider_reference_id on message_messages(provider_reference_id);
