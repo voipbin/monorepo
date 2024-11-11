@@ -107,6 +107,7 @@ func signalHandler() {
 }
 
 func initVariable() {
+	log := logrus.WithField("func", "initVariable")
 	viper.AutomaticEnv()
 
 	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
@@ -119,44 +120,83 @@ func initVariable() {
 	pflag.Parse()
 
 	var err error
+
 	// rabbitmq_address
-	err = viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address"))
-	err = viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS") // Bind the environment variable
+	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
 	rabbitMQAddress = viper.GetString("rabbitmq_address")
 
 	// prometheus_endpoint
-	err = viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint"))
-	err = viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT") // Bind the environment variable
+	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
 	prometheusEndpoint = viper.GetString("prometheus_endpoint")
 
 	// prometheus_listen_address
-	err = viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address"))
-	err = viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS") // Bind the environment variable
+	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
 	prometheusListenAddress = viper.GetString("prometheus_listen_address")
 
 	// database_dsn
-	err = viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn"))
-	err = viper.BindEnv("database_dsn", "DATABASE_DSN") // Bind the environment variable
+	if errFlag := viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("database_dsn", "DATABASE_DSN"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
 	databaseDSN = viper.GetString("database_dsn")
 
 	// redis_address
-	err = viper.BindPFlag("redis_address", pflag.Lookup("redis_address"))
-	err = viper.BindEnv("redis_address", "REDIS_ADDRESS") // Bind the environment variable
+	if errFlag := viper.BindPFlag("redis_address", pflag.Lookup("redis_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_address", "REDIS_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
 	prometheusListenAddress = viper.GetString("redis_address")
 
 	// redis_password
-	err = viper.BindPFlag("redis_password", pflag.Lookup("redis_password"))
-	err = viper.BindEnv("redis_password", "REDIS_PASSWORD") // Bind the environment variable
+	if errFlag := viper.BindPFlag("redis_password", pflag.Lookup("redis_password")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_password", "REDIS_PASSWORD"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
 	prometheusListenAddress = viper.GetString("redis_password")
 
 	// redis_database
-	err = viper.BindPFlag("redis_database", pflag.Lookup("redis_database"))
-	err = viper.BindEnv("redis_database", "REDIS_DATABASE") // Bind the environment variable
-	prometheusListenAddress = viper.GetString("redis_database")
-
-	if err != nil {
-		panic(err)
+	if errFlag := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
 	}
+	if errEnv := viper.BindEnv("redis_database", "REDIS_DATABASE"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	prometheusListenAddress = viper.GetString("redis_database")
 }
 
 // initLog inits log settings.
