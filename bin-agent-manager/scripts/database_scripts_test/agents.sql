@@ -23,5 +23,5 @@ create table agent_agents(
   primary key(id)
 );
 
-create index idx_agent_agents_customerid on agent_agents(customer_id);
+create index idx_agent_agents_customer_id on agent_agents(customer_id);
 create index idx_agent_agents_username on agent_agents(username);

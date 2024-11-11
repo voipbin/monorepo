@@ -2,9 +2,6 @@ create table queue_queues(
   -- identity
   id                binary(16),       -- id
   customer_id       binary(16),       -- owner's id
-  flow_id           binary(16),
-  confbridge_id     binary(16),
-  forward_action_id binary(16),
 
   -- basic info
   name            varchar(255),
@@ -34,6 +31,4 @@ create table queue_queues(
   primary key(id)
 );
 
-create index idx_queue_queues_customerid on queue_queues(customer_id);
-create index idx_queue_queues_flowid on queue_queues(flow_id);
-create index idx_queue_queues_confbridgeid on queue_queues(confbridge_id);
+create index idx_queue_queues_customer_id on queue_queues(customer_id);
