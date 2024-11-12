@@ -23,27 +23,31 @@ spec:
           image: number-manager-image
           command:
             - './number-manager'
-          args:
-            - '-prom_listen_addr'
-            - ':2112'
-            - '-dbDSN'
-            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
-            - '-rabbit_addr'
-            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
-            - '-redis_addr'
-            - '10.164.15.220:6379'
-            - '-redis_db'
-            - '1'
-            - '-twilio_sid'
-            - '${TWILIO_SID}'
-            - '-twilio_token'
-            - '${TWILIO_TOKEN}'
-            - '-telnyx_connection_id'
-            - '${TELNYX_CONNECTION_ID}'
-            - '-telnyx_profile_id'
-            - '${TELNYX_PROFILE_ID}'
-            - '-telnyx_token'
-            - '${TELNYX_TOKEN}'
+          env:
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+            - name: TWILIO_SID
+              value: ${TWILIO_SID}
+            - name: TWILIO_TOKEN
+              value: ${TWILIO_TOKEN}
+            - name: TELNYX_CONNECTION_ID
+              value: ${TELNYX_CONNECTION_ID}
+            - name: TELNYX_PROFILE_ID
+              value: ${TELNYX_PROFILE_ID}
+            - name: TELNYX_TOKEN
+              value: ${TELNYX_TOKEN}
           ports:
             - name: metrics
               protocol: "TCP"
