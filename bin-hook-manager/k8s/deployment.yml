@@ -38,9 +38,9 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
-            - name: SSL_PRIVKEY_HOOK_BASE64
+            - name: SSL_PRIVKEY_BASE64
               value: ${SSL_PRIVKEY_HOOK_BASE64}
-            - name: SSL_CERT_HOOK_BASE64
+            - name: SSL_CERT_BASE64
               value: ${SSL_CERT_HOOK_BASE64}
           ports:
             - name: metrics
