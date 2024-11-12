@@ -39,7 +39,7 @@ spec:
             - name: REDIS_DATABASE
               value: "1"
             - name: AUTHTOKEN_MESSAGEBIRD
-              value: {AUTHTOKEN_MESSAGEBIRD}
+              value: ${AUTHTOKEN_MESSAGEBIRD}
           ports:
             - name: metrics
               protocol: "TCP"
