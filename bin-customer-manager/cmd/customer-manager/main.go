@@ -59,7 +59,7 @@ func main() {
 	log := logrus.WithField("func", "main")
 
 	// connect to database
-	sqlDB, err := sql.Open("mysql", *&databaseDSN)
+	sqlDB, err := sql.Open("mysql", databaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
