@@ -4,6 +4,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/base64"
 	"mime/multipart"
 	"net/http"
 
@@ -665,18 +666,25 @@ func NewServiceHandler(
 	dbHandler dbhandler.DBHandler,
 	websockHandler websockhandler.WebsockHandler,
 
-	credentialPath string,
+	credentialBase64 string,
 	projectID string,
 	bucketName string,
 ) ServiceHandler {
+	log := logrus.WithField("func", "NewServiceHandler")
 
 	// init storage client
 	ctx := context.Background()
 
-	// create storageClient
-	storageClient, err := storage.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
-		logrus.Errorf("Could not create a new client. err: %v", err)
+		log.Printf("Error decoding base64 credential: %v", err)
+		return nil
+	}
+
+	// Create storage client using the decoded credentials
+	storageClient, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
+	if err != nil {
+		log.Printf("Could not create a new storage client. Error: %v", err)
 		return nil
 	}
 

@@ -1480,6 +1480,10 @@ commands:
             sed -i -e "s|\${REDIS_PASSWORD}|$CC_REDIS_PASSWORD|g" ./*
             sed -i -e "s|\${REDIS_DATABASE}|$CC_REDIS_DATABASE|g" ./*
 
+            sed -i -e "s|\${GCP_BUCKET_NAME_TMP}|$CC_GCP_BUCKET_NAME_TMP|g" ./*
+            sed -i -e "s|\${JWT_KEY}|$CC_JWT_KEY|g" ./*
+
+
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 

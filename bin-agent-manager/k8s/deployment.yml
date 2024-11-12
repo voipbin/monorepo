@@ -38,7 +38,6 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
-
           ports:
             - name: metrics
               protocol: "TCP"

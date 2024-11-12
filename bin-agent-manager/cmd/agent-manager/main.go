@@ -32,29 +32,23 @@ import (
 const serviceName = commonoutline.ServiceNameAgentManager
 
 const (
-	defaultRabbitMQAddress = "amqp://guest:guest@localhost:5672"
-
+	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
-
-	defaultDatabaseDSN = "testid:testpassword@tcp(127.0.0.1:3306)/test"
-
-	defaultRedisAddress  = "127.0.0.1:6379"
-	defaultRedisPassword = ""
-	defaultRedisDatabase = 1
+	defaultDatabaseDSN             = "testid:testpassword@tcp(127.0.0.1:3306)/test"
+	defaultRedisAddress            = "127.0.0.1:6379"
+	defaultRedisPassword           = ""
+	defaultRedisDatabase           = 1
 )
 
 var (
-	rabbitMQAddress = ""
-
+	rabbitMQAddress         = ""
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
-
-	databaseDSN = ""
-
-	redisAddress  = ""
-	redisPassword = ""
-	redisDatabase = 0
+	databaseDSN             = ""
+	redisAddress            = ""
+	redisPassword           = ""
+	redisDatabase           = 0
 )
 
 // channels

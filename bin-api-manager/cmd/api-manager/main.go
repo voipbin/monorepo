@@ -3,10 +3,13 @@ package main
 import (
 	"database/sql"
 	"encoding/base64"
-	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
+
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -18,6 +21,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	joonix "github.com/joonix/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
@@ -34,24 +38,60 @@ import (
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 )
 
-var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
+const (
+	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
+	defaultPrometheusEndpoint      = "/metrics"
+	defaultPrometheusListenAddress = ":2112"
+	defaultDatabaseDSN             = "testid:testpassword@tcp(127.0.0.1:3306)/test"
+	defaultRedisAddress            = "127.0.0.1:6379"
+	defaultRedisPassword           = ""
+	defaultRedisDatabase           = 1
 
-var sslPrivkeyBase64 = flag.String("ssl_private_base64", "", "Base64 encoded private key for ssl connection.")
-var sslCertBase64 = flag.String("ssl_cert_base64", "", "Base64 encoded cert key for ssl connection.")
+	defaultSSLPrivKeyBase64 = ""
+	defaultSSLCertBase64    = ""
 
-var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
+	defaultGCPCredentialBase64 = ""
+	defaultGCPProjectID        = ""
+	defaultGCPBucketName       = ""
 
-var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
+	defaultJWTKey = ""
+)
 
-// args for redis
-var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
-var redisPassword = flag.String("redis_password", "", "redis password")
-var redisDB = flag.Int("redis_db", 1, "redis database.")
+var (
+	rabbitMQAddress         = ""
+	prometheusEndpoint      = ""
+	prometheusListenAddress = ""
+	databaseDSN             = ""
+	redisAddress            = ""
+	redisPassword           = ""
+	redisDatabase           = 0
 
-// gcp info
-var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
-var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
-var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name for tmp storage")
+	sslPrivkeyBase64    = ""
+	sslCertBase64       = ""
+	gcpCredentialBase64 = ""
+	gcpProjectID        = ""
+	gcpBucketName       = ""
+	jwtKey              = ""
+)
+
+// var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
+
+// var sslPrivkeyBase64 = flag.String("ssl_private_base64", "", "Base64 encoded private key for ssl connection.")
+// var sslCertBase64 = flag.String("ssl_cert_base64", "", "Base64 encoded cert key for ssl connection.")
+
+// var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
+
+// var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
+
+// // args for redis
+// var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
+// var redisPassword = flag.String("redis_password", "", "redis password")
+// var redisDB = flag.Int("redis_db", 1, "redis database.")
+
+// // gcp info
+// var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
+// var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
+// var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name for tmp storage")
 
 const (
 	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
@@ -73,7 +113,7 @@ func main() {
 	log := logrus.WithField("func", "main")
 
 	// connect to database
-	sqlDB, err := sql.Open("mysql", *dsn)
+	sqlDB, err := sql.Open("mysql", databaseDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
@@ -81,7 +121,7 @@ func main() {
 	defer sqlDB.Close()
 
 	// connect to cache
-	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
+	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
 	if err := cache.Connect(); err != nil {
 		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
@@ -91,33 +131,223 @@ func main() {
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	// connect to rabbitmq
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
 	sockHandler.Connect()
 
 	run(sockHandler, db)
 }
 
 func init() {
-	flag.Parse()
+	// flag.Parse()
+	initVariable()
 
 	// init log
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
 
+	initProm(prometheusEndpoint, prometheusListenAddress)
+
 	// init middleware
-	middleware.Init(*jwtKey)
+	middleware.Init(jwtKey)
 
 	// init ssl
-	if errWrite := writeBase64(constSSLCertFilename, *sslCertBase64); errWrite != nil {
+	if errWrite := writeBase64(constSSLCertFilename, sslCertBase64); errWrite != nil {
 		logrus.Errorf("Could not write the ssl cert file.")
 		return
 	}
 
-	if errWrite := writeBase64(constSSLPrivFilename, *sslPrivkeyBase64); errWrite != nil {
+	if errWrite := writeBase64(constSSLPrivFilename, sslPrivkeyBase64); errWrite != nil {
 		logrus.Errorf("Could not write the ssl private key file.")
 		return
 	}
+}
 
+func initVariable() {
+	log := logrus.WithField("func", "initVariable")
+	viper.AutomaticEnv()
+
+	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
+	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
+	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on (e.g., localhost:8080)")
+	pflag.String("database_dsn", defaultDatabaseDSN, "Data Source Name for database connection (e.g., user:password@tcp(localhost:3306)/dbname)")
+	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
+	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
+	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
+
+	pflag.String("ssl_privkey_base64", defaultSSLPrivKeyBase64, "Base64 encoded private key for ssl connection.")
+	pflag.String("ssl_cert_base64", defaultSSLCertBase64, "Base64 encoded cert key for ssl connection.")
+	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
+	pflag.String("gcp_project_id", defaultGCPProjectID, "GCP project id.")
+	pflag.String("gcp_bucket_name", defaultGCPBucketName, "GCP bucket name for tmp storage.")
+	pflag.String("jwt_key", defaultJWTKey, "JWT Key for parse the jwt.")
+
+	pflag.Parse()
+
+	var err error
+
+	// rabbitmq_address
+	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	rabbitMQAddress = viper.GetString("rabbitmq_address")
+
+	// prometheus_endpoint
+	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	prometheusEndpoint = viper.GetString("prometheus_endpoint")
+
+	// prometheus_listen_address
+	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	prometheusListenAddress = viper.GetString("prometheus_listen_address")
+
+	// database_dsn
+	if errFlag := viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("database_dsn", "DATABASE_DSN"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	databaseDSN = viper.GetString("database_dsn")
+
+	// redis_address
+	if errFlag := viper.BindPFlag("redis_address", pflag.Lookup("redis_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_address", "REDIS_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	redisAddress = viper.GetString("redis_address")
+
+	// redis_password
+	if errFlag := viper.BindPFlag("redis_password", pflag.Lookup("redis_password")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_password", "REDIS_PASSWORD"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	redisPassword = viper.GetString("redis_password")
+
+	// redis_database
+	if errFlag := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_database", "REDIS_DATABASE"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	redisDatabase = viper.GetInt("redis_database")
+
+	// ssl_privkey_base64
+	if errFlag := viper.BindPFlag("ssl_privkey_base64", pflag.Lookup("ssl_privkey_base64")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("ssl_privkey_base64", "SSL_PRIVKEY_BASE64"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	sslPrivkeyBase64 = viper.GetString("ssl_privkey_base64")
+
+	// ssl_cert_base64
+	if errFlag := viper.BindPFlag("ssl_cert_base64", pflag.Lookup("ssl_cert_base64")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("ssl_cert_base64", "SSL_CERT_BASE64"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	sslCertBase64 = viper.GetString("ssl_cert_base64")
+
+	// gcp_credential_base64
+	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
+
+	// gcp_project_id
+	if errFlag := viper.BindPFlag("gcp_project_id", pflag.Lookup("gcp_project_id")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("gcp_project_id", "GCP_PROJECT_ID"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	gcpProjectID = viper.GetString("gcp_project_id")
+
+	// gcp_bucket_name
+	if errFlag := viper.BindPFlag("gcp_bucket_name", pflag.Lookup("gcp_bucket_name")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("gcp_bucket_name", "GCP_BUCKET_NAME"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	gcpBucketName = viper.GetString("gcp_bucket_name")
+
+	// jwt_key
+	if errFlag := viper.BindPFlag("jwt_key", pflag.Lookup("jwt_key")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", err)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("jwt_key", "JWT_KEY"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	jwtKey = viper.GetString("jwt_key")
+}
+
+// initProm inits prometheus settings
+func initProm(endpoint, listen string) {
+	log := logrus.WithField("func", "initProm").WithFields(logrus.Fields{
+		"endpoint": endpoint,
+		"listen":   listen,
+	})
+
+	http.Handle(endpoint, promhttp.Handler())
+	go func() {
+		for {
+			if errListen := http.ListenAndServe(listen, nil); errListen != nil {
+				log.Errorf("Could not start prometheus listener. err: %v", errListen)
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			log.Infof("Finishing the prometheus listener.")
+			break
+		}
+	}()
 }
 
 func writeBase64(filename string, data string) error {
@@ -162,7 +392,7 @@ func run(
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, *gcpCredential, *gcpProjectID, *gcpBucketName)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpCredentialBase64, gcpProjectID, gcpBucketName)
 
 	if errSub := runSubscribe(sockHandler, zmqPubHandler); errSub != nil {
 		log.Errorf("Could not run subscribe handler. err: %v", errSub)
