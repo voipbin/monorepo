@@ -32,23 +32,23 @@ import (
 const serviceName = commonoutline.ServiceNameAgentManager
 
 const (
-	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
+	defaultDatabaseDSN             = "testid:testpassword@tcp(127.0.0.1:3306)/test"
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
-	defaultDatabaseDSN             = "testid:testpassword@tcp(127.0.0.1:3306)/test"
+	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
 	defaultRedisAddress            = "127.0.0.1:6379"
-	defaultRedisPassword           = ""
 	defaultRedisDatabase           = 1
+	defaultRedisPassword           = ""
 )
 
 var (
-	rabbitMQAddress         = ""
+	databaseDSN             = ""
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
-	databaseDSN             = ""
+	rabbitMQAddress         = ""
 	redisAddress            = ""
-	redisPassword           = ""
 	redisDatabase           = 0
+	redisPassword           = ""
 )
 
 // channels
@@ -113,11 +113,9 @@ func initVariable() {
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
 	pflag.Parse()
 
-	var err error
-
 	// rabbitmq_address
 	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil {
@@ -128,7 +126,7 @@ func initVariable() {
 
 	// prometheus_endpoint
 	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil {
@@ -139,7 +137,7 @@ func initVariable() {
 
 	// prometheus_listen_address
 	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil {
@@ -150,7 +148,7 @@ func initVariable() {
 
 	// database_dsn
 	if errFlag := viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("database_dsn", "DATABASE_DSN"); errEnv != nil {
@@ -161,7 +159,7 @@ func initVariable() {
 
 	// redis_address
 	if errFlag := viper.BindPFlag("redis_address", pflag.Lookup("redis_address")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("redis_address", "REDIS_ADDRESS"); errEnv != nil {
@@ -172,7 +170,7 @@ func initVariable() {
 
 	// redis_password
 	if errFlag := viper.BindPFlag("redis_password", pflag.Lookup("redis_password")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("redis_password", "REDIS_PASSWORD"); errEnv != nil {
@@ -183,7 +181,7 @@ func initVariable() {
 
 	// redis_database
 	if errFlag := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("redis_database", "REDIS_DATABASE"); errEnv != nil {

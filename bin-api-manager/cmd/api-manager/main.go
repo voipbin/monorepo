@@ -39,59 +39,36 @@ import (
 )
 
 const (
-	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
+	defaultDatabaseDSN             = "testid:testpassword@tcp(127.0.0.1:3306)/test"
+	defaultGCPCredentialBase64     = ""
+	defaultGCPBucketName           = ""
+	defaultGCPProjectID            = ""
+	defaultJWTKey                  = ""
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
-	defaultDatabaseDSN             = "testid:testpassword@tcp(127.0.0.1:3306)/test"
+	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
 	defaultRedisAddress            = "127.0.0.1:6379"
-	defaultRedisPassword           = ""
 	defaultRedisDatabase           = 1
-
-	defaultSSLPrivKeyBase64 = ""
-	defaultSSLCertBase64    = ""
-
-	defaultGCPCredentialBase64 = ""
-	defaultGCPProjectID        = ""
-	defaultGCPBucketName       = ""
-
-	defaultJWTKey = ""
+	defaultRedisPassword           = ""
+	defaultSSLCertBase64           = ""
+	defaultSSLPrivKeyBase64        = ""
 )
 
 var (
-	rabbitMQAddress         = ""
+	databaseDSN             = ""
+	gcpBucketName           = ""
+	gcpCredentialBase64     = ""
+	gcpProjectID            = ""
+	jwtKey                  = ""
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
-	databaseDSN             = ""
+	rabbitMQAddress         = ""
 	redisAddress            = ""
-	redisPassword           = ""
 	redisDatabase           = 0
-
-	sslPrivkeyBase64    = ""
-	sslCertBase64       = ""
-	gcpCredentialBase64 = ""
-	gcpProjectID        = ""
-	gcpBucketName       = ""
-	jwtKey              = ""
+	redisPassword           = ""
+	sslCertBase64           = ""
+	sslPrivkeyBase64        = ""
 )
-
-// var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
-
-// var sslPrivkeyBase64 = flag.String("ssl_private_base64", "", "Base64 encoded private key for ssl connection.")
-// var sslCertBase64 = flag.String("ssl_cert_base64", "", "Base64 encoded cert key for ssl connection.")
-
-// var jwtKey = flag.String("jwt_key", "voipbin", "key string for jwt hashing")
-
-// var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-
-// // args for redis
-// var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
-// var redisPassword = flag.String("redis_password", "", "redis password")
-// var redisDB = flag.Int("redis_db", 1, "redis database.")
-
-// // gcp info
-// var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
-// var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
-// var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name for tmp storage")
 
 const (
 	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
@@ -173,7 +150,6 @@ func initVariable() {
 	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
-
 	pflag.String("ssl_privkey_base64", defaultSSLPrivKeyBase64, "Base64 encoded private key for ssl connection.")
 	pflag.String("ssl_cert_base64", defaultSSLCertBase64, "Base64 encoded cert key for ssl connection.")
 	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
@@ -183,11 +159,9 @@ func initVariable() {
 
 	pflag.Parse()
 
-	var err error
-
 	// rabbitmq_address
 	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil {
@@ -198,7 +172,7 @@ func initVariable() {
 
 	// prometheus_endpoint
 	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil {
@@ -209,7 +183,7 @@ func initVariable() {
 
 	// prometheus_listen_address
 	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil {
@@ -220,7 +194,7 @@ func initVariable() {
 
 	// database_dsn
 	if errFlag := viper.BindPFlag("database_dsn", pflag.Lookup("database_dsn")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("database_dsn", "DATABASE_DSN"); errEnv != nil {
@@ -231,7 +205,7 @@ func initVariable() {
 
 	// redis_address
 	if errFlag := viper.BindPFlag("redis_address", pflag.Lookup("redis_address")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("redis_address", "REDIS_ADDRESS"); errEnv != nil {
@@ -242,7 +216,7 @@ func initVariable() {
 
 	// redis_password
 	if errFlag := viper.BindPFlag("redis_password", pflag.Lookup("redis_password")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("redis_password", "REDIS_PASSWORD"); errEnv != nil {
@@ -253,7 +227,7 @@ func initVariable() {
 
 	// redis_database
 	if errFlag := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("redis_database", "REDIS_DATABASE"); errEnv != nil {
@@ -264,7 +238,7 @@ func initVariable() {
 
 	// ssl_privkey_base64
 	if errFlag := viper.BindPFlag("ssl_privkey_base64", pflag.Lookup("ssl_privkey_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("ssl_privkey_base64", "SSL_PRIVKEY_BASE64"); errEnv != nil {
@@ -275,7 +249,7 @@ func initVariable() {
 
 	// ssl_cert_base64
 	if errFlag := viper.BindPFlag("ssl_cert_base64", pflag.Lookup("ssl_cert_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("ssl_cert_base64", "SSL_CERT_BASE64"); errEnv != nil {
@@ -286,7 +260,7 @@ func initVariable() {
 
 	// gcp_credential_base64
 	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
@@ -297,7 +271,7 @@ func initVariable() {
 
 	// gcp_project_id
 	if errFlag := viper.BindPFlag("gcp_project_id", pflag.Lookup("gcp_project_id")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("gcp_project_id", "GCP_PROJECT_ID"); errEnv != nil {
@@ -308,7 +282,7 @@ func initVariable() {
 
 	// gcp_bucket_name
 	if errFlag := viper.BindPFlag("gcp_bucket_name", pflag.Lookup("gcp_bucket_name")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("gcp_bucket_name", "GCP_BUCKET_NAME"); errEnv != nil {
@@ -319,7 +293,7 @@ func initVariable() {
 
 	// jwt_key
 	if errFlag := viper.BindPFlag("jwt_key", pflag.Lookup("jwt_key")); errFlag != nil {
-		log.Errorf("Error binding flag: %v", err)
+		log.Errorf("Error binding flag: %v", errFlag)
 		panic(errFlag)
 	}
 	if errEnv := viper.BindEnv("jwt_key", "JWT_KEY"); errEnv != nil {
