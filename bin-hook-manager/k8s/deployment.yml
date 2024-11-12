@@ -23,16 +23,25 @@ spec:
           image: hook-manager-image
           command:
             - './hook-manager'
-          args:
-            - '-dsn'
-            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
-            - '-rabbit_addr'
-            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
-            - '-ssl_private_base64'
-            - '${SSL_PRIVKEY_HOOK_BASE64}'
-            - '-ssl_cert_base64'
-            - '${SSL_CERT_HOOK_BASE64}'
-
+          env:
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+            - name: SSL_PRIVKEY_BASE64
+              value: ${SSL_PRIVKEY_HOOK_BASE64}
+            - name: SSL_CERT_BASE64
+              value: ${SSL_CERT_HOOK_BASE64}
           ports:
             - name: metrics
               protocol: "TCP"

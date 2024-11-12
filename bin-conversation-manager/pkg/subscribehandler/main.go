@@ -5,7 +5,6 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"monorepo/bin-common-handler/models/sock"
@@ -34,8 +33,8 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	subscribeQueue    string
-	subscribesTargets string
+	subscribeQueue   string
+	subscribeTargets []string
 
 	accountHandler      accounthandler.AccountHandler
 	conversationHandler conversationhandler.ConversationHandler
@@ -67,15 +66,15 @@ func init() {
 func NewSubscribeHandler(
 	sockHandler sockhandler.SockHandler,
 	subscribeQueue string,
-	subscribeTargets string,
+	subscribeTargets []string,
 	accountHandler accounthandler.AccountHandler,
 	conversationHandler conversationhandler.ConversationHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		sockHandler: sockHandler,
 
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
+		subscribeQueue:   subscribeQueue,
+		subscribeTargets: subscribeTargets,
 
 		accountHandler: accountHandler,
 
@@ -96,8 +95,7 @@ func (h *subscribeHandler) Run() error {
 	}
 
 	// subscribe each targets
-	targets := strings.Split(h.subscribesTargets, ",")
-	for _, target := range targets {
+	for _, target := range h.subscribeTargets {
 		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
 			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
 			return errSubscribe
