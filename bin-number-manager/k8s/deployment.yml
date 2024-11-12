@@ -39,15 +39,15 @@ spec:
             - name: REDIS_DATABASE
               value: "1"
             - name: TWILIO_SID
-              value: ${TWILIO_SID}
+              value: "${TWILIO_SID}"
             - name: TWILIO_TOKEN
-              value: ${TWILIO_TOKEN}
+              value: "${TWILIO_TOKEN}"
             - name: TELNYX_CONNECTION_ID
-              value: ${TELNYX_CONNECTION_ID}
+              value: "${TELNYX_CONNECTION_ID}"
             - name: TELNYX_PROFILE_ID
-              value: ${TELNYX_PROFILE_ID}
+              value: "${TELNYX_PROFILE_ID}"
             - name: TELNYX_TOKEN
-              value: ${TELNYX_TOKEN}
+              value: "${TELNYX_TOKEN}"
           ports:
             - name: metrics
               protocol: "TCP"
