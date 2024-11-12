@@ -1462,15 +1462,30 @@ commands:
             cd << parameters.source-directory >>/k8s
             sed -i -e "s|\${AUTHTOKEN_MESSAGEBIRD}|$CC_AUTHTOKEN_MESSAGEBIRD|g" ./*
             sed -i -e "s|\${AUTHTOKEN_OPENAI}|$CC_AUTHTOKEN_OPENAI|g" ./*
+            sed -i -e "s|\${DATABASE_DSN}|$CC_DATABASE_DSN|g" ./*
+            sed -i -e "s|\${GCP_BUCKET_NAME_TMP}|$CC_GCP_BUCKET_NAME_TMP|g" ./*
+            sed -i -e "s|\${GCP_CLUSTER_NAME}|$CC_GCP_CLUSTER_NAME|g" ./*
+            sed -i -e "s|\${GCP_CLUSTER_REGION}|$CC_GCP_CLUSTER_REGION|g" ./*
+            sed -i -e "s|\${GCP_CLUSTER_ZONE}|$CC_GCP_CLUSTER_ZONE|g" ./*
+            sed -i -e "s|\${GCP_PROJECT_ID}|$CC_GCP_PROJECT_ID|g" ./*
+            sed -i -e "s|\${GCP_SERVICE_ACCOUNT}|$CC_GCP_SERVICE_ACCOUNT|g" ./*
+            sed -i -e "s|\${GCP_SERVICE_ACCOUNT_BASE64}|$CC_GCP_SERVICE_ACCOUNT_BASE64|g" ./*
+            sed -i -e "s|\${JWT_KEY}|$CC_JWT_KEY|g" ./*
+            sed -i -e "s|\${PROMETHEUS_ENDPOINT}|$CC_PROMETHEUS_ENDPOINT|g" ./*
+            sed -i -e "s|\${PROMETHEUS_LISTEN_ADDRESS}|$CC_PROMETHEUS_LISTEN_ADDRESS|g" ./*
+            sed -i -e "s|\${RABBITMQ_ADDRESS}|$CC_RABBITMQ_ADDRESS|g" ./*
+            sed -i -e "s|\${REDIS_ADDRESS}|$CC_REDIS_ADDRESS|g" ./*
+            sed -i -e "s|\${REDIS_PASSWORD}|$CC_REDIS_PASSWORD|g" ./*
+            sed -i -e "s|\${REDIS_DATABASE}|$CC_REDIS_DATABASE|g" ./*
             sed -i -e "s|\${SSL_PRIVKEY_API_BASE64}|$CC_SSL_PRIVKEY_API_BASE64|g" ./*
             sed -i -e "s|\${SSL_CERT_API_BASE64}|$CC_SSL_CERT_API_BASE64|g" ./*
             sed -i -e "s|\${SSL_PRIVKEY_HOOK_BASE64}|$CC_SSL_PRIVKEY_HOOK_BASE64|g" ./*
             sed -i -e "s|\${SSL_CERT_HOOK_BASE64}|$CC_SSL_CERT_HOOK_BASE64|g" ./*
-            sed -i -e "s|\${TWILIO_SID}|$CC_TWILIO_SID|g" ./*
-            sed -i -e "s|\${TWILIO_TOKEN}|$CC_TWILIO_TOKEN|g" ./*
             sed -i -e "s|\${TELNYX_CONNECTION_ID}|$CC_TELNYX_CONNECTION_ID|g" ./*
             sed -i -e "s|\${TELNYX_PROFILE_ID}|$CC_TELNYX_PROFILE_ID|g" ./*
             sed -i -e "s|\${TELNYX_TOKEN}|$CC_TELNYX_TOKEN|g" ./*
+            sed -i -e "s|\${TWILIO_SID}|$CC_TWILIO_SID|g" ./*
+            sed -i -e "s|\${TWILIO_TOKEN}|$CC_TWILIO_TOKEN|g" ./*
             kustomize edit set image << parameters.image-name >>-image=$CC_REGISTRY_LOCATION/$CC_GCP_PROJECT_ID/<< parameters.namespace >>/<< parameters.image-name >>:$CIRCLE_SHA1
             kubectl apply -k ./ -v6
 

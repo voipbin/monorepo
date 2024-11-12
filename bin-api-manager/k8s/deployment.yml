@@ -36,31 +36,32 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-          args:
-            # - '-prom_endpoint'
-            # - '/metrics'
-            # - '-prom_listen_addr'
-            # - ':2112'
-            - '-dsn'
-            - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
-            - '-rabbit_addr'
-            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
-            - '-redis_addr'
-            - '10.164.15.220:6379'
-            - '-redis_db'
-            - '1'
-            - '-jwt_key'
-            - 'voipbin'
-            - '-ssl_private_base64'
-            - '${SSL_PRIVKEY_API_BASE64}'
-            - '-ssl_cert_base64'
-            - '${SSL_CERT_API_BASE64}'
-            - '-gcp_credential'
-            - '../google_service_account.json'
-            - '-gcp_project_id'
-            - 'voipbin-production'
-            - '-gcp_bucket_name'
-            - 'voipbin-tmp-bucket-europe-west4'
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+            - name: SSL_PRIVKEY_BASE64
+              value: ${SSL_PRIVKEY_API_BASE64}
+            - name: SSL_CERT_BASE64
+              value: ${SSL_CERT_API_BASE64}
+            - name: GCP_CREDENTIAL_BASE64
+              value: ${GCP_SERVICE_ACCOUNT_BASE64}
+            - name: GCP_PROJECT_ID
+              value: ${GCP_PROJECT_ID}
+            - name: GCP_BUCKET_NAME
+              value: ${GCP_BUCKET_NAME_TMP}
+            - name: JWT_KEY
+              value: ${JWT_KEY}
           readinessProbe:
             httpGet:
               path: /ping
