@@ -17,7 +17,7 @@ spec:
             command:
             - /app/request-sender
             - -rabbit_addr
-            - ${RABBITMQ_ADDRESS}
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
             - -queue
             - 'bin-manager.number-manager.request'
             - -uri
