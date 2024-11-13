@@ -32,7 +32,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-          env:
             - name: DATABASE_DSN
               value: ${DATABASE_DSN}
             - name: PROMETHEUS_ENDPOINT
