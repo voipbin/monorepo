@@ -4,8 +4,8 @@ package buckethandler
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -76,10 +76,10 @@ func init() {
 }
 
 // NewBucketHandler create bucket handler
-func NewBucketHandler(credentialPath string, projectID string, bucketName string, osMediaBucketDirectory string, osAddress string) BucketHandler {
+func NewBucketHandler(credentialBase64 string, projectID string, bucketName string, osMediaBucketDirectory string, osAddress string) BucketHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                      "NewBucketHandler",
-		"credential_path":           credentialPath,
+		"credential_path":           credentialBase64,
 		"project_id":                projectID,
 		"bucket_name":               bucketName,
 		"os_media_bucket_directory": osMediaBucketDirectory,
@@ -89,21 +89,21 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 
 	ctx := context.Background()
 
-	jsonKey, err := os.ReadFile(credentialPath)
+	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
-		logrus.Errorf("Could not read the credential file. err: %v", err)
+		log.Printf("Error decoding base64 credential: %v", err)
 		return nil
 	}
 
 	// parse service account
-	conf, err := google.JWTConfigFromJSON(jsonKey)
+	conf, err := google.JWTConfigFromJSON(decodedCredential)
 	if err != nil {
 		logrus.Errorf("Could not parse the credential file. err: %v", err)
 		return nil
 	}
 
 	// create client
-	client, err := storage.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	client, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		logrus.Errorf("Could not create a new client. err: %v", err)
 		return nil

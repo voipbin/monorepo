@@ -4,6 +4,8 @@ package streaminghandler
 
 import (
 	"context"
+	"encoding/base64"
+	"log"
 	"math/rand"
 	"net"
 	"time"
@@ -74,11 +76,17 @@ func NewStreamingHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 	transcriptHandler transcripthandler.TranscriptHandler,
 
-	credentialPath string,
+	credentialBase64 string,
 ) StreamingHandler {
 
+	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
+	if err != nil {
+		log.Printf("Error decoding base64 credential: %v", err)
+		return nil
+	}
+
 	// create client speech
-	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsFile(credentialPath))
+	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		logrus.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil

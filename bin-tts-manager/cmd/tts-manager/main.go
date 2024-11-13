@@ -1,13 +1,15 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -30,17 +32,24 @@ const serviceName = commonoutline.ServiceNameTTSManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-// args for rabbitmq
-var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
+const (
+	defaultPrometheusEndpoint      = "/metrics"
+	defaultPrometheusListenAddress = ":2112"
+	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
+	defaultGCPCredentialBase64     = ""
+	defaultGCPProjectID            = ""
+	defaultGCPBucketName           = ""
+)
 
-// args for prometheus
-var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
-var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
+var (
+	prometheusEndpoint      = ""
+	prometheusListenAddress = ""
+	rabbitMQAddress         = ""
 
-// gcp info
-var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
-var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
-var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
+	gcpCredentialBase64 = ""
+	gcpProjectID        = ""
+	gcpBucketName       = ""
+)
 
 func main() {
 	log := logrus.WithFields(logrus.Fields{
@@ -56,7 +65,7 @@ func main() {
 
 // proces init
 func init() {
-	flag.Parse()
+	initVariable()
 
 	// init logs
 	initLog()
@@ -65,10 +74,7 @@ func init() {
 	initSignal()
 
 	// init prometheus setting
-	initProm(*promEndpoint, *promListenAddr)
-
-	logrus.Infof("init finished. credential: %s, prom_list: %s, rabbit_addr: %s, bucket_name: %s",
-		*gcpCredential, *promListenAddr, *rabbitAddr, *gcpBucketName)
+	initProm(prometheusEndpoint, prometheusListenAddress)
 }
 
 // signalHandler catches signals and set the done
@@ -76,6 +82,86 @@ func signalHandler() {
 	sig := <-chSigs
 	logrus.Debugf("Received signal. sig: %v", sig)
 	chDone <- true
+}
+
+func initVariable() {
+	log := logrus.WithField("func", "initVariable")
+	viper.AutomaticEnv()
+
+	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
+	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
+	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on (e.g., localhost:8080)")
+	pflag.String("gcp_credential_base64", defaultGCPCredentialBase64, "Base64 encoded GCP credential.")
+	pflag.String("gcp_project_id", defaultGCPProjectID, "GCP project id.")
+	pflag.String("gcp_bucket_name", defaultGCPBucketName, "GCP bucket name for tmp storage.")
+	pflag.Parse()
+
+	// rabbitmq_address
+	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	rabbitMQAddress = viper.GetString("rabbitmq_address")
+
+	// prometheus_endpoint
+	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	prometheusEndpoint = viper.GetString("prometheus_endpoint")
+
+	// prometheus_listen_address
+	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	prometheusListenAddress = viper.GetString("prometheus_listen_address")
+
+	// gcp_credential_base64
+	if errFlag := viper.BindPFlag("gcp_credential_base64", pflag.Lookup("gcp_credential_base64")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("gcp_credential_base64", "GCP_CREDENTIAL_BASE64"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	gcpCredentialBase64 = viper.GetString("gcp_credential_base64")
+
+	// gcp_project_id
+	if errFlag := viper.BindPFlag("gcp_project_id", pflag.Lookup("gcp_project_id")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("gcp_project_id", "GCP_PROJECT_ID"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	gcpProjectID = viper.GetString("gcp_project_id")
+
+	// gcp_bucket_name
+	if errFlag := viper.BindPFlag("gcp_bucket_name", pflag.Lookup("gcp_bucket_name")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("gcp_bucket_name", "GCP_BUCKET_NAME"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	gcpBucketName = viper.GetString("gcp_bucket_name")
+
 }
 
 // initLog inits log settings.
@@ -109,7 +195,7 @@ func initProm(endpoint, listen string) {
 // Run the services
 func run() error {
 	// rabbitmq sock connect
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
 	sockHandler.Connect()
 
 	// create listen handler
@@ -131,7 +217,7 @@ func runListen(sockHandler sockhandler.SockHandler, notifyHandler notifyhandler.
 	localAddress := os.Getenv("POD_IP")
 
 	// create tts handler
-	ttsHandler := ttshandler.NewTTSHandler(*gcpCredential, *gcpProjectID, *gcpBucketName, "/shared-data", localAddress)
+	ttsHandler := ttshandler.NewTTSHandler(gcpCredentialBase64, gcpProjectID, gcpBucketName, "/shared-data", localAddress, notifyHandler)
 	if ttsHandler == nil {
 		logrus.Errorf("Could not create tts handler.")
 		return fmt.Errorf("could not create tts handler")
