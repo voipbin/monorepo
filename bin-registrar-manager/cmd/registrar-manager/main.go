@@ -10,6 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -36,21 +39,27 @@ const serviceName = commonoutline.ServiceNameRegistrarManager
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
-// args for rabbitmq
-var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
+const (
+	defaultDatabaseDSNAsterisk     = "testid:testpassword@tcp(127.0.0.1:3306)/test"
+	defaultDatabaseDSNBin          = "testid:testpassword@tcp(127.0.0.1:3306)/test"
+	defaultPrometheusEndpoint      = "/metrics"
+	defaultPrometheusListenAddress = ":2112"
+	defaultRabbitMQAddress         = "amqp://guest:guest@localhost:5672"
+	defaultRedisAddress            = "127.0.0.1:6379"
+	defaultRedisDatabase           = 1
+	defaultRedisPassword           = ""
+)
 
-// args for database
-var dbDSNAst = flag.String("dbDSNAst", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for asterisk.")
-var dbDSNBin = flag.String("dbDSNBin", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for bin-manager.")
-
-// args for redis
-var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
-var redisPassword = flag.String("redis_password", "", "redis password")
-var redisDB = flag.Int("redis_db", 1, "redis database.")
-
-// args for prometheus
-var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
-var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
+var (
+	databaseDSNAsterisk     = ""
+	databaseDSNBin          = ""
+	prometheusEndpoint      = ""
+	prometheusListenAddress = ""
+	rabbitMQAddress         = ""
+	redisAddress            = ""
+	redisDatabase           = 0
+	redisPassword           = ""
+)
 
 func main() {
 	log := logrus.WithFields(logrus.Fields{
@@ -59,7 +68,7 @@ func main() {
 	fmt.Printf("hello world\n")
 
 	// connect to the database asterisk
-	sqlAst, err := sql.Open("mysql", *dbDSNAst)
+	sqlAst, err := sql.Open("mysql", databaseDSNAsterisk)
 	if err != nil {
 		log.Errorf("Could not access to database asterisk. err: %v", err)
 		return
@@ -67,7 +76,7 @@ func main() {
 	defer sqlAst.Close()
 
 	// connect to the database bin-manager
-	sqlBin, err := sql.Open("mysql", *dbDSNBin)
+	sqlBin, err := sql.Open("mysql", databaseDSNBin)
 	if err != nil {
 		log.Errorf("Could not access to database bin-manager. err: %v", err)
 		return
@@ -75,7 +84,7 @@ func main() {
 	defer sqlBin.Close()
 
 	// connect to cache
-	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
+	cache := cachehandler.NewHandler(redisAddress, redisPassword, redisDatabase)
 	if err := cache.Connect(); err != nil {
 		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
@@ -99,7 +108,7 @@ func init() {
 	initSignal()
 
 	// init prometheus setting
-	initProm(*promEndpoint, *promListenAddr)
+	initProm(prometheusEndpoint, prometheusListenAddress)
 
 	logrus.Info("init finished.")
 }
@@ -109,6 +118,109 @@ func signalHandler() {
 	sig := <-chSigs
 	logrus.Debugf("Received signal. sig: %v", sig)
 	chDone <- true
+}
+
+func initVariable() {
+	log := logrus.WithField("func", "initVariable")
+	viper.AutomaticEnv()
+
+	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
+	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
+	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on (e.g., localhost:8080)")
+	pflag.String("database_dsn_asterisk", defaultDatabaseDSNAsterisk, "Data Source Name for database connection-asterisk (e.g., user:password@tcp(localhost:3306)/dbname)")
+	pflag.String("database_dsn_bin", defaultDatabaseDSNBin, "Data Source Name for database connection-bin (e.g., user:password@tcp(localhost:3306)/dbname)")
+	pflag.String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
+	pflag.String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
+	pflag.Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
+	pflag.Parse()
+
+	// rabbitmq_address
+	if errFlag := viper.BindPFlag("rabbitmq_address", pflag.Lookup("rabbitmq_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	rabbitMQAddress = viper.GetString("rabbitmq_address")
+
+	// prometheus_endpoint
+	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	prometheusEndpoint = viper.GetString("prometheus_endpoint")
+
+	// prometheus_listen_address
+	if errFlag := viper.BindPFlag("prometheus_listen_address", pflag.Lookup("prometheus_listen_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	prometheusListenAddress = viper.GetString("prometheus_listen_address")
+
+	// database_dsn_asterisk
+	if errFlag := viper.BindPFlag("database_dsn_asterisk", pflag.Lookup("database_dsn_asterisk")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("database_dsn_asterisk", "DATABASE_DSN_ASTERISK"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	databaseDSNAsterisk = viper.GetString("database_dsn_asterisk")
+
+	// database_dsn_bin
+	if errFlag := viper.BindPFlag("database_dsn_bin", pflag.Lookup("database_dsn_bin")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("database_dsn_bin", "DATABASE_DSN_BIN"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	databaseDSNBin = viper.GetString("database_dsn_bin")
+
+	// redis_address
+	if errFlag := viper.BindPFlag("redis_address", pflag.Lookup("redis_address")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_address", "REDIS_ADDRESS"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	redisAddress = viper.GetString("redis_address")
+
+	// redis_password
+	if errFlag := viper.BindPFlag("redis_password", pflag.Lookup("redis_password")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_password", "REDIS_PASSWORD"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	redisPassword = viper.GetString("redis_password")
+
+	// redis_database
+	if errFlag := viper.BindPFlag("redis_database", pflag.Lookup("redis_database")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("redis_database", "REDIS_DATABASE"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	redisDatabase = viper.GetInt("redis_database")
 }
 
 // initLog inits log settings.
@@ -148,7 +260,7 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 	dbAst := dbhandler.NewHandler(sqlAst, cache)
 	dbBin := dbhandler.NewHandler(sqlBin, cache)
 
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, *rabbitAddr)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
 	sockHandler.Connect()
 
 	// create handlers
