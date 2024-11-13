@@ -7,4 +7,4 @@ resources:
   - namespace.yml
   - deployment.yml
   - service.yml
-  - cronjob.yml
+  # - cronjob.yml

@@ -1463,6 +1463,7 @@ commands:
             sed -i -e "s|\${AUTHTOKEN_MESSAGEBIRD}|$CC_AUTHTOKEN_MESSAGEBIRD|g" ./*
             sed -i -e "s|\${AUTHTOKEN_OPENAI}|$CC_AUTHTOKEN_OPENAI|g" ./*
             sed -i -e "s|\${DATABASE_DSN}|$CC_DATABASE_DSN|g" ./*
+            sed -i -e "s|\${DATABASE_DSN_ASTERISK}|$CC_DATABASE_DSN_ASTERISK|g" ./*
             sed -i -e "s|\${GCP_BUCKET_NAME_TMP}|$CC_GCP_BUCKET_NAME_TMP|g" ./*
             sed -i -e "s|\${GCP_CLUSTER_NAME}|$CC_GCP_CLUSTER_NAME|g" ./*
             sed -i -e "s|\${GCP_CLUSTER_REGION}|$CC_GCP_CLUSTER_REGION|g" ./*
