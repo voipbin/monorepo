@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-tts-manager/models/tts"
 	"monorepo/bin-tts-manager/pkg/audiohandler"
 	"monorepo/bin-tts-manager/pkg/buckethandler"
@@ -24,6 +25,8 @@ type ttsHandler struct {
 
 	audioHandler  audiohandler.AudioHandler
 	bucketHandler buckethandler.BucketHandler
+
+	notifyHandler notifyhandler.NotifyHandler
 }
 
 var (
@@ -49,7 +52,14 @@ func init() {
 }
 
 // NewTTSHandler create TTSHandler
-func NewTTSHandler(credentialPath string, projectID string, bucketName string, mediaBucketDirectory string, localAddress string) TTSHandler {
+func NewTTSHandler(
+	credentialBase64 string,
+	projectID string,
+	bucketName string,
+	mediaBucketDirectory string,
+	localAddress string,
+	notifyHandler notifyhandler.NotifyHandler,
+) TTSHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "NewTTSHandler",
 		"project_id":             projectID,
@@ -59,23 +69,25 @@ func NewTTSHandler(credentialPath string, projectID string, bucketName string, m
 	})
 	log.Debugf("Creating a new TTSHandler.")
 
-	audioHandler := audiohandler.NewAudioHandler(credentialPath)
+	audioHandler := audiohandler.NewAudioHandler(credentialBase64)
 	if audioHandler == nil {
 		log.Errorf("Could not create audio handler.")
 		return nil
 	}
 
-	bucketHandler := buckethandler.NewBucketHandler(credentialPath, projectID, bucketName, mediaBucketDirectory, localAddress)
+	bucketHandler := buckethandler.NewBucketHandler(credentialBase64, projectID, bucketName, mediaBucketDirectory, localAddress)
 	if bucketHandler == nil {
 		log.Errorf("Could not create bucket handler.")
 		return nil
 	}
 
 	h := &ttsHandler{
-		credentailPath: credentialPath,
+		credentailPath: credentialBase64,
 
 		audioHandler:  audioHandler,
 		bucketHandler: bucketHandler,
+
+		notifyHandler: notifyHandler,
 	}
 
 	return h
