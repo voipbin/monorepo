@@ -51,18 +51,6 @@ var (
 	gcpBucketName       = ""
 )
 
-// // args for rabbitmq
-// var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-
-// // args for prometheus
-// var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
-// var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
-
-// // gcp info
-// var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
-// var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
-// var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
-
 func main() {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "main",
