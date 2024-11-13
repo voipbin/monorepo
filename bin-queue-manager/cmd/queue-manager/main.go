@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"flag"
 	"net/http"
 	"os"
 	"os/signal"
@@ -90,7 +89,7 @@ func main() {
 
 // proces init
 func init() {
-	flag.Parse()
+	initVariable()
 
 	// init logs
 	initLog()

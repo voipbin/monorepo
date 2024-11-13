@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -99,7 +98,7 @@ func main() {
 
 // proces init
 func init() {
-	flag.Parse()
+	initVariable()
 
 	// init logs
 	initLog()
