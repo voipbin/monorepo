@@ -37,24 +37,31 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+            - name: GCP_CREDENTIAL_BASE64
+              value: ${GCP_SERVICE_ACCOUNT_BASE64}
+            - name: GCP_PROJECT_ID
+              value: ${GCP_PROJECT_ID}
+            - name: GCP_BUCKET_NAME
+              value: ${GCP_BUCKET_NAME_TMP}
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data
           command:
             - './tts-manager'
-          args:
-            - '-prom_endpoint'
-            - '/metrics'
-            - '-prom_listen_addr'
-            - ':2112'
-            - '-rabbit_addr'
-            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
-            - '-gcp_credential'
-            - '../google_service_account.json'
-            - '-gcp_project_id'
-            - 'voipbin-production'
-            - '-gcp_bucket_name'
-            - 'voipbin-tmp-bucket-europe-west4'
           ports:
             - name: metrics
               protocol: "TCP"

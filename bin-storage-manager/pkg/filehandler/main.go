@@ -5,8 +5,9 @@ package filehandler
 import (
 	"context"
 	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
-	"os"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -81,7 +82,7 @@ func NewFileHandler(
 	db dbhandler.DBHandler,
 	accountHandler accounthandler.AccountHandler,
 
-	credentialPath string,
+	credentialBase64 string,
 	projectID string,
 	bucketMedia string,
 	bucketTmp string,
@@ -89,23 +90,23 @@ func NewFileHandler(
 
 	ctx := context.Background()
 
-	jsonKey, err := os.ReadFile(credentialPath)
+	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
 	if err != nil {
-		logrus.Errorf("Could not read the credential file. err: %v", err)
+		log.Printf("Error decoding base64 credential: %v", err)
 		return nil
 	}
 
 	// parse service account
-	conf, err := google.JWTConfigFromJSON(jsonKey)
+	conf, err := google.JWTConfigFromJSON(decodedCredential)
 	if err != nil {
 		logrus.Errorf("Could not parse the credential file. err: %v", err)
 		return nil
 	}
 
-	// create client
-	client, err := storage.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	// Create storage client using the decoded credentials
+	client, err := storage.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
-		logrus.Errorf("Could not create a new client. err: %v", err)
+		log.Printf("Could not create a new storage client. Error: %v", err)
 		return nil
 	}
 

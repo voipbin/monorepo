@@ -4,6 +4,8 @@ package transcripthandler
 
 import (
 	"context"
+	"encoding/base64"
+	"log"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -70,11 +72,17 @@ func NewTranscriptHandler(
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 
-	credentialPath string,
+	credentialBase64 string,
 ) TranscriptHandler {
 
+	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
+	if err != nil {
+		log.Printf("Error decoding base64 credential: %v", err)
+		return nil
+	}
+
 	// create client speech
-	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsFile(credentialPath))
+	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		logrus.Errorf("Could not create a new client for speech. err: %v", err)
 		return nil

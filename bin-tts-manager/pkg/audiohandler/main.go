@@ -4,7 +4,9 @@ package audiohandler
 
 import (
 	"context"
+	"encoding/base64"
 	"io/fs"
+	"log"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
@@ -33,11 +35,17 @@ const (
 )
 
 // NewAudioHandler create AudioHandler
-func NewAudioHandler(credentialPath string) AudioHandler {
+func NewAudioHandler(credentialBase64 string) AudioHandler {
 	ctx := context.Background()
 
+	decodedCredential, err := base64.StdEncoding.DecodeString(credentialBase64)
+	if err != nil {
+		log.Printf("Error decoding base64 credential: %v", err)
+		return nil
+	}
+
 	// create client
-	client, err := texttospeech.NewClient(ctx, option.WithCredentialsFile(credentialPath))
+	client, err := texttospeech.NewClient(ctx, option.WithCredentialsJSON(decodedCredential))
 	if err != nil {
 		logrus.Errorf("Could not create a new client. err: %v", err)
 		return nil
