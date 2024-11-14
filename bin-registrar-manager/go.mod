@@ -1,6 +1,6 @@
 module monorepo/bin-registrar-manager
 
-go 1.22.0
+go 1.22.7
 
 toolchain go1.23.2
 
@@ -64,8 +64,8 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	golang.org/x/sys v0.27.0 // indirect
-	google.golang.org/genproto v0.0.0-20241104194629-dd2ea8efbc28 // indirect
-	google.golang.org/protobuf v1.35.1 // indirect
+	google.golang.org/genproto v0.0.0-20241113202542-65e8d215514f // indirect
+	google.golang.org/protobuf v1.35.2 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 
