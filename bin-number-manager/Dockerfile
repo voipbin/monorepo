@@ -1,9 +1,15 @@
-FROM golang:1.22-alpine
+# build
+FROM golang:1.23-alpine AS build
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
 WORKDIR /app
-COPY . .
+COPY ./ .
+RUN mkdir -p /app/bin
+RUN cd bin-number-manager && go build -o /app/bin/ ./cmd/...
 
-RUN cd bin-number-manager && go build ./cmd/...
-WORKDIR /app/bin-number-manager
+# run
+FROM alpine
+
+WORKDIR /app/bin/
+COPY --from=build /app/bin /app/bin

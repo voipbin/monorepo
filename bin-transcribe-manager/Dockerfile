@@ -1,10 +1,15 @@
-FROM golang:1.22-alpine
+# build
+FROM golang:1.23-alpine AS build
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
 WORKDIR /app
+COPY ./ .
+RUN mkdir -p /app/bin
+RUN cd bin-transcribe-manager && go build -o /app/bin/ ./cmd/...
 
-COPY . .
+# run
+FROM alpine
 
-RUN cd bin-transcribe-manager && go build ./cmd/...
-WORKDIR /app/bin-transcribe-manager
+WORKDIR /app/bin/
+COPY --from=build /app/bin /app/bin

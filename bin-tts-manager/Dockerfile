@@ -1,11 +1,15 @@
-FROM golang:1.22-bookworm
+# build
+FROM golang:1.23-alpine AS build
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
-RUN apt update && apt install python3
-
 WORKDIR /app
-COPY . .
+COPY ./ .
+RUN mkdir -p /app/bin
+RUN cd bin-tts-manager && go build -o /app/bin/ ./cmd/...
 
-RUN cd bin-tts-manager && go build ./cmd/...
-WORKDIR /app/bin-tts-manager
+# run
+FROM alpine
+
+WORKDIR /app/bin/
+COPY --from=build /app/bin /app/bin
