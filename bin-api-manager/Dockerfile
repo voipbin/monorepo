@@ -1,10 +1,26 @@
-FROM golang:1.22-bookworm
+# base
+FROM golang:1.23-bookworm AS base
 
-LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    apt-utils \
+    build-essential \
+    pkg-config \
+    libzmq5 \
+    libzmq3-dev \
+    libczmq4 \
+    libczmq-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# build
+FROM base AS build
 
 WORKDIR /app
-COPY . .
+COPY ./ .
+RUN mkdir -p /app/bin
+RUN cd bin-api-manager && go build -o /app/bin/ ./cmd/...
 
-RUN apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-RUN cd bin-api-manager && go build ./cmd/...
-WORKDIR /app/bin-api-manager
+# run
+FROM base
+
+WORKDIR /app/bin/
+COPY --from=build /app/bin /app/bin
