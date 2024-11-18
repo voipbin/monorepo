@@ -1,10 +1,15 @@
-FROM golang:1.22-bookworm
-
-LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
+# build
+FROM golang:1.23-bookworm AS build
 
 WORKDIR /app
-COPY . .
+COPY ./ .
+RUN mkdir -p /app/bin
+RUN apt update && apt install -y build-essential pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
+RUN cd bin-api-manager && go build -o /app/bin/ ./cmd/...
 
-RUN apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-RUN cd bin-api-manager && go build ./cmd/...
-WORKDIR /app/bin-api-manager
+# run
+FROM golang:1.23-bookworm
+
+WORKDIR /app/bin/
+RUN apt update && apt install -y build-essential pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
+COPY --from=build /app/bin /app/bin
