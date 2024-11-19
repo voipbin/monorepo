@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -16,7 +16,10 @@ import (
 	"monorepo/bin-api-manager/lib/common"
 )
 
-var secretKey []byte
+var (
+	secretKey   = []byte{}
+	utilHandler = utilhandler.NewUtilHandler()
+)
 
 // Init inits middlewares
 func Init(key string) {
@@ -33,7 +36,7 @@ func GenerateTokenWithData(data map[string]interface{}) (string, error) {
 	}
 
 	// token is valid for 7 days
-	claims["expire"] = time.Now().Add(time.Hour * 24 * 7).Unix()
+	claims["expire"] = utilHandler.TimeGetCurTimeAdd(common.TokenExpiration)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(secretKey)
@@ -60,6 +63,13 @@ func ValidateToken(tokenString string) (common.JSON, error) {
 		return common.JSON{}, errors.New("invalid token")
 	}
 
+	tmp := token.Claims.(jwt.MapClaims)
+
+	curTime := utilHandler.TimeGetCurTime()
+	if tmp["expire"].(string) < curTime {
+		return common.JSON{}, errors.New("token expired")
+	}
+
 	return token.Claims.(jwt.MapClaims), nil
 }
 
@@ -67,32 +77,15 @@ func ValidateToken(tokenString string) (common.JSON, error) {
 // JWT Token can be passed as cooke, or Authorization header
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// get token from the cookie
-		tokenString, err := c.Cookie("token")
-		if err != nil {
 
-			// get token from the url query
-			tokenString = c.Query("token")
-			if tokenString == "" {
-
-				// get token from the http header
-				// try reading HTTP header
-				authorization := c.Request.Header.Get("Authorization")
-				if authorization == "" {
-					c.Next()
-					return
-				}
-
-				sp := strings.Split(authorization, "Bearer ")
-				if len(sp) < 2 {
-					// invalid
-					c.Next()
-					return
-				}
-				tokenString = sp[1]
-			}
+		// get token string
+		tokenString := getTokenString(c)
+		if tokenString == "" {
+			c.Next()
+			return
 		}
 
+		// validate the token
 		tokenData, err := ValidateToken(tokenString)
 		if err != nil {
 			c.Next()
@@ -117,4 +110,35 @@ func JWTMiddleware() gin.HandlerFunc {
 		c.Set("token_expire", tokenData["expire"])
 		c.Next()
 	}
+}
+
+// getTokenString returns the token string from the gin context.
+func getTokenString(c *gin.Context) string {
+	// get token from the cookie
+	res, err := c.Cookie("token")
+	if err == nil && res != "" {
+		return res
+	}
+
+	// get token from the url query
+	res = c.Query("token")
+	if res != "" {
+		return res
+	}
+
+	// get token from the http header
+	// try reading HTTP header
+	authorization := c.Request.Header.Get("Authorization")
+	if authorization == "" {
+		return ""
+	}
+
+	sp := strings.Split(authorization, "Bearer ")
+	if len(sp) < 2 {
+		// invalid
+		return ""
+	}
+	res = sp[1]
+
+	return res
 }
