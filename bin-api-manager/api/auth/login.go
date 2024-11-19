@@ -1,6 +1,8 @@
 package auth
 
 import (
+	libcommon "monorepo/bin-api-manager/lib/common"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
@@ -46,8 +48,7 @@ func loginPost(c *gin.Context) {
 	}
 	log.Debugf("Created token string. token: %v", token)
 
-	// 1 week
-	c.SetCookie("token", token, 60*60*24*7, "/", "", false, true)
+	c.SetCookie("token", token, int(libcommon.TokenExpiration.Seconds()), "/", "", false, true)
 	res := response.BodyLoginPOST{
 		Username: req.Username,
 		Token:    token,
