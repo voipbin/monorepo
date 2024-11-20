@@ -1,6 +1,6 @@
 package messagehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package messagehandler -destination ./mock_messagehandler.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package messagehandler -destination ./mock_messagehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

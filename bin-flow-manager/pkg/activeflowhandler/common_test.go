@@ -5,7 +5,7 @@ import (
 
 	"monorepo/bin-flow-manager/models/action"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_compareCondition_string(t *testing.T) {

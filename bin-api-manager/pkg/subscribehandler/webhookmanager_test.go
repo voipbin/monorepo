@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 	"monorepo/bin-common-handler/models/sock"

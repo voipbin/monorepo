@@ -6,7 +6,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/pkg/callhandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"

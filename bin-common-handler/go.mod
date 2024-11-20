@@ -53,8 +53,8 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
-	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.9.3
+	go.uber.org/mock v0.5.0
 	golang.org/x/sys v0.27.0 // indirect
 )
 

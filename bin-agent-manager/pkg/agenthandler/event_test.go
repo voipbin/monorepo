@@ -15,7 +15,7 @@ import (
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/pkg/dbhandler"

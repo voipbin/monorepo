@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-flow-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Delete(t *testing.T) {

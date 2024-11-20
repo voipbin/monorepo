@@ -10,7 +10,7 @@ import (
 	caoutplan "monorepo/bin-campaign-manager/models/outplan"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"

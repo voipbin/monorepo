@@ -4,8 +4,8 @@ import (
 	reflect "reflect"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/pebbe/zmq4"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-api-manager/pkg/zmq"
 )

@@ -15,7 +15,7 @@ import (
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/call"

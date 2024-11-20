@@ -15,8 +15,8 @@ import (
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/pkg/cachehandler"

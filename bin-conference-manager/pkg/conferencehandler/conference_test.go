@@ -14,7 +14,7 @@ import (
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-conference-manager/models/conference"
 	"monorepo/bin-conference-manager/pkg/dbhandler"

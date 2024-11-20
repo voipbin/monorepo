@@ -16,7 +16,7 @@ import (
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/pkg/bridgehandler"

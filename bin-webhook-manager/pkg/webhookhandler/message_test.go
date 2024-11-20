@@ -3,7 +3,7 @@ package webhookhandler
 import (
 	"testing"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-webhook-manager/pkg/dbhandler"
 )

@@ -7,7 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-flow-manager/models/variable"
 	"monorepo/bin-flow-manager/pkg/dbhandler"

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-registrar-manager/models/astcontact"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"

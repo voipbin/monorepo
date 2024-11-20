@@ -7,7 +7,7 @@ import (
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"

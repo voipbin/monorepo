@@ -22,7 +22,7 @@ import (
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"

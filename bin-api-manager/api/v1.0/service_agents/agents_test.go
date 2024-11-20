@@ -5,7 +5,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"reflect"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/api/models/common"
