@@ -54,11 +54,11 @@ replace monorepo/bin-customer-manager => ../bin-customer-manager
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
-	go.uber.org/mock v0.5.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/ivahaev/amigo v0.1.10
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/sirupsen/logrus v1.9.3
+	go.uber.org/mock v0.5.0
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 
@@ -75,8 +75,6 @@ require (
 	github.com/prometheus/common v0.60.1 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	go.uber.org/mock v0.5.0 // indirect
-	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/sys v0.27.0 // indirect
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect

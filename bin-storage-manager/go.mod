@@ -56,11 +56,11 @@ require (
 	cloud.google.com/go/storage v1.47.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	go.uber.org/mock v0.5.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/prometheus/client_golang v1.20.5
 	github.com/prometheus/common v0.60.1 // indirect
 	github.com/sirupsen/logrus v1.9.3
+	go.uber.org/mock v0.5.0
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/text v0.20.0 // indirect
@@ -138,7 +138,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.32.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.32.0 // indirect
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
-	go.uber.org/mock v0.5.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.29.0 // indirect
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
