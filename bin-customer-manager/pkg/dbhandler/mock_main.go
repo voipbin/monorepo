@@ -6,6 +6,7 @@ package dbhandler
 
 import (
 	context "context"
+	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 
@@ -34,6 +35,78 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// AccesskeyCreate mocks base method.
+func (m *MockDBHandler) AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeyCreate", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccesskeyCreate indicates an expected call of AccesskeyCreate.
+func (mr *MockDBHandlerMockRecorder) AccesskeyCreate(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyCreate", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyCreate), ctx, c)
+}
+
+// AccesskeyDelete mocks base method.
+func (m *MockDBHandler) AccesskeyDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeyDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccesskeyDelete indicates an expected call of AccesskeyDelete.
+func (mr *MockDBHandlerMockRecorder) AccesskeyDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyDelete", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyDelete), ctx, id)
+}
+
+// AccesskeyGet mocks base method.
+func (m *MockDBHandler) AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeyGet", ctx, id)
+	ret0, _ := ret[0].(*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccesskeyGet indicates an expected call of AccesskeyGet.
+func (mr *MockDBHandlerMockRecorder) AccesskeyGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGet", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyGet), ctx, id)
+}
+
+// AccesskeyGets mocks base method.
+func (m *MockDBHandler) AccesskeyGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeyGets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccesskeyGets indicates an expected call of AccesskeyGets.
+func (mr *MockDBHandlerMockRecorder) AccesskeyGets(ctx, size, token, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGets", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyGets), ctx, size, token, filters)
+}
+
+// AccesskeySetBasicInfo mocks base method.
+func (m *MockDBHandler) AccesskeySetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeySetBasicInfo", ctx, id, name, detail)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccesskeySetBasicInfo indicates an expected call of AccesskeySetBasicInfo.
+func (mr *MockDBHandlerMockRecorder) AccesskeySetBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeySetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).AccesskeySetBasicInfo), ctx, id, name, detail)
 }
 
 // CustomerCreate mocks base method.

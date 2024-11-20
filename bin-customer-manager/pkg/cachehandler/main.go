@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/models/customer"
 )
 
@@ -22,6 +23,9 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error)
+	AccesskeySet(ctx context.Context, a *accesskey.Accesskey) error
 
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	CustomerSet(ctx context.Context, c *customer.Customer) error

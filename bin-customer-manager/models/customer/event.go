@@ -1,6 +1,6 @@
 package customer
 
-// list of call event types
+// list of event types
 const (
 	EventTypeCustomerCreated string = "customer_created" // the customer has created
 	EventTypeCustomerUpdated string = "customer_updated" // the customer's info has updated

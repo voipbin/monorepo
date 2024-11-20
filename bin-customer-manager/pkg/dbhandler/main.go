@@ -11,12 +11,19 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 )
 
 // DBHandler interface
 type DBHandler interface {
+	AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) error
+	AccesskeyDelete(ctx context.Context, id uuid.UUID) error
+	AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error)
+	AccesskeyGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error)
+	AccesskeySetBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) error
+
 	CustomerCreate(ctx context.Context, b *customer.Customer) error
 	CustomerDelete(ctx context.Context, id uuid.UUID) error
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)

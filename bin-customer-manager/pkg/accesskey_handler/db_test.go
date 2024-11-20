@@ -1,0 +1,222 @@
+package accesskey_handler
+
+import (
+	"context"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-customer-manager/models/accesskey"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
+	"testing"
+	"time"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+)
+
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		size    uint64
+		token   string
+		filters map[string]string
+
+		result []*accesskey.Accesskey
+	}{
+		{
+			"normal",
+			10,
+			"",
+			map[string]string{
+				"deleted": "false",
+			},
+
+			[]*accesskey.Accesskey{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &accesskeyHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccesskeyGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
+			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_Create(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		userName   string
+		detail     string
+		expire     time.Duration
+
+		responseUUID    uuid.UUID
+		responseExpire  string
+		expectAccesskey *accesskey.Accesskey
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("58d43704-a75e-11ef-b9b7-279abaf5dda3"),
+			userName:   "test1",
+			detail:     "detail1",
+			expire:     time.Duration(time.Hour * 24 * 365),
+
+			responseUUID:   uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
+			responseExpire: "2024-04-04 07:15:59.233415",
+			expectAccesskey: &accesskey.Accesskey{
+				ID:         uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
+				CustomerID: uuid.FromStringOrNil("58d43704-a75e-11ef-b9b7-279abaf5dda3"),
+				Name:       "test1",
+				Detail:     "detail1",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &accesskeyHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expire).Return(tt.responseExpire)
+			mockDB.EXPECT().AccesskeyCreate(ctx, tt.expectAccesskey).Return(nil)
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.responseUUID).Return(&accesskey.Accesskey{}, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any()).Return()
+
+			_, err := h.Create(ctx, tt.customerID, tt.userName, tt.detail, tt.expire)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+	tests := []struct {
+		name string
+		id   uuid.UUID
+
+		responseAccesskey *accesskey.Accesskey
+	}{
+		{
+			name: "normal",
+			id:   uuid.FromStringOrNil("b5be1332-a75d-11ef-8871-ef7e4ff7506a"),
+
+			responseAccesskey: &accesskey.Accesskey{
+				ID:       uuid.FromStringOrNil("b5be1332-a75d-11ef-8871-ef7e4ff7506a"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &accesskeyHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.id).Return(tt.responseAccesskey, nil)
+			mockDB.EXPECT().AccesskeyDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.id).Return(tt.responseAccesskey, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyDeleted, tt.responseAccesskey).Return()
+
+			_, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_UpdateBasicInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		customerName string
+		detail       string
+	}{
+		{
+			name: "normal",
+
+			id:           uuid.FromStringOrNil("459d01b2-a75d-11ef-80a3-03acd83f53cc"),
+			customerName: "name new",
+			detail:       "detail new",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &accesskeyHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccesskeySetBasicInfo(gomock.Any(), tt.id, tt.customerName, tt.detail).Return(nil)
+			mockDB.EXPECT().AccesskeyGet(gomock.Any(), gomock.Any()).Return(&accesskey.Accesskey{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), accesskey.EventTypeAccesskeyUpdated, gomock.Any()).Return()
+
+			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.customerName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}

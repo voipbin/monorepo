@@ -36,6 +36,21 @@ func (m *MockUtilHandler) EXPECT() *MockUtilHandlerMockRecorder {
 	return m.recorder
 }
 
+// StringGenerateRandom mocks base method.
+func (m *MockUtilHandler) StringGenerateRandom(size int) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StringGenerateRandom", size)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StringGenerateRandom indicates an expected call of StringGenerateRandom.
+func (mr *MockUtilHandlerMockRecorder) StringGenerateRandom(size interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StringGenerateRandom", reflect.TypeOf((*MockUtilHandler)(nil).StringGenerateRandom), size)
+}
+
 // TimeGetCurTime mocks base method.
 func (m *MockUtilHandler) TimeGetCurTime() string {
 	m.ctrl.T.Helper()
