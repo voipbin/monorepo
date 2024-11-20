@@ -4,7 +4,7 @@ import (
 	reflect "reflect"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-message-manager/models/messagebird"
 )

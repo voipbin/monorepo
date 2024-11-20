@@ -1,6 +1,6 @@
 package servicehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package servicehandler -destination ./mock_servicehandler.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package servicehandler -destination ./mock_servicehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/stack"

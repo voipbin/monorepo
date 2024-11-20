@@ -9,8 +9,8 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"

@@ -14,7 +14,7 @@ import (
 	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )

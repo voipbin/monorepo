@@ -14,7 +14,7 @@ import (
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-chatbot-manager/models/chatbotcall"
 	"monorepo/bin-chatbot-manager/pkg/chatbothandler"

@@ -13,7 +13,7 @@ import (
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_RouteV1ProviderCreate(t *testing.T) {

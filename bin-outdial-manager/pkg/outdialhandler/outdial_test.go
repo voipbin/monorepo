@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-outdial-manager/models/outdial"
 	"monorepo/bin-outdial-manager/pkg/dbhandler"

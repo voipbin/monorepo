@@ -10,7 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/message"

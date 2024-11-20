@@ -10,7 +10,7 @@ import (
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"

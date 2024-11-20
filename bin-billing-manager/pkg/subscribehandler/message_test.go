@@ -8,7 +8,7 @@ import (
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 )

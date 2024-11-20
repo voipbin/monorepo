@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-message-manager/models/messagebird"
 	"monorepo/bin-message-manager/models/target"

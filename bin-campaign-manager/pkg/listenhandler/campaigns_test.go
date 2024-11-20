@@ -10,7 +10,7 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-campaign-manager/models/campaign"
 	"monorepo/bin-campaign-manager/pkg/campaignhandler"
