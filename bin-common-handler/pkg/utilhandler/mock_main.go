@@ -10,7 +10,7 @@ import (
 	time "time"
 
 	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockUtilHandler is a mock of UtilHandler interface.

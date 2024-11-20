@@ -8,7 +8,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_validateTopics(t *testing.T) {

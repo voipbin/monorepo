@@ -11,7 +11,7 @@ import (
 	providernumber "monorepo/bin-number-manager/models/providernumber"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockNumberHandlerTelnyx is a mock of NumberHandlerTelnyx interface.

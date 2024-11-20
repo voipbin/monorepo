@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	websocket "github.com/gorilla/websocket"
 )
 

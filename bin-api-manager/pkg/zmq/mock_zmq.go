@@ -7,7 +7,7 @@ package zmq
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	zmq4 "github.com/pebbe/zmq4"
 )
 

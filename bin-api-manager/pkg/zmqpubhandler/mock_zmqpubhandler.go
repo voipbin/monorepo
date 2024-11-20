@@ -7,7 +7,7 @@ package zmqpubhandler
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 // MockZMQPubHandler is a mock of ZMQPubHandler interface.

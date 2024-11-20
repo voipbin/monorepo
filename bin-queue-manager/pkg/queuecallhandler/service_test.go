@@ -17,7 +17,7 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"

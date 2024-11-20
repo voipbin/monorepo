@@ -11,7 +11,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-chat-manager/models/chatroom"
 	"monorepo/bin-chat-manager/pkg/cachehandler"

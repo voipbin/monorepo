@@ -7,7 +7,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-queue-manager/pkg/queuecallhandler"
 )

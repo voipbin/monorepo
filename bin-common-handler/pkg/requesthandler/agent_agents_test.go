@@ -8,7 +8,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/address"
 	commonaddress "monorepo/bin-common-handler/models/address"

@@ -9,7 +9,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-outdial-manager/models/outdialtargetcall"
 	"monorepo/bin-outdial-manager/pkg/cachehandler"

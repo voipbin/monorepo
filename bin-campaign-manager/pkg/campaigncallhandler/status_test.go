@@ -14,7 +14,7 @@ import (
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_Done(t *testing.T) {

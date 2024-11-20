@@ -5,7 +5,7 @@
 package dbhandler
 
 import (
-	gomock "github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

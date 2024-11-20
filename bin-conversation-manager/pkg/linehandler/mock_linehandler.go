@@ -13,7 +13,7 @@ import (
 	message "monorepo/bin-conversation-manager/models/message"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockLineHandler is a mock of LineHandler interface.

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
+	"go.uber.org/mock/gomock"
 )
 
 var upgrader = websocket.Upgrader{} // use default options

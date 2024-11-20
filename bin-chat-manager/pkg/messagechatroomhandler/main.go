@@ -1,6 +1,6 @@
 package messagechatroomhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package messagechatroomhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package messagechatroomhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

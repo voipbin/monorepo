@@ -11,7 +11,7 @@ import (
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_EventCUCustomerDeleted(t *testing.T) {

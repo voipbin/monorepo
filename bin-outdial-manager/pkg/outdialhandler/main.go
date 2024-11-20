@@ -1,6 +1,6 @@
 package outdialhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package outdialhandler -destination ./mock_outdialhandler.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package outdialhandler -destination ./mock_outdialhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

@@ -8,7 +8,7 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"

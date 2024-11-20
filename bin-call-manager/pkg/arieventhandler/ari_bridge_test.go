@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"

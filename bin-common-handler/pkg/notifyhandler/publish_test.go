@@ -9,7 +9,7 @@ import (
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"

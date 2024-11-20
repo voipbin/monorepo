@@ -8,7 +8,7 @@ import (
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"

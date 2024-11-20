@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_dbDelete(t *testing.T) {

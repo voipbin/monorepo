@@ -9,7 +9,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/pkg/agenthandler"

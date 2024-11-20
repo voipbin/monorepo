@@ -56,7 +56,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang/mock v1.6.0
+	go.uber.org/mock v0.5.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/prometheus/client_golang v1.20.5
@@ -64,7 +64,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	golang.org/x/sys v0.27.0 // indirect
-	google.golang.org/genproto v0.0.0-20241113202542-65e8d215514f // indirect
+	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
@@ -98,6 +98,7 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	go.uber.org/mock v0.5.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
 	golang.org/x/text v0.20.0 // indirect

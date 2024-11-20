@@ -1,6 +1,6 @@
 package campaignhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package campaignhandler -destination ./mock_campaignhandler.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package campaignhandler -destination ./mock_campaignhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

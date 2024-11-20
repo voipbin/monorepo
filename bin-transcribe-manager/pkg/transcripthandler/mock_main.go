@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTranscriptHandler is a mock of TranscriptHandler interface.

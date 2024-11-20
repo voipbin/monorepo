@@ -35,7 +35,7 @@ import (
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"

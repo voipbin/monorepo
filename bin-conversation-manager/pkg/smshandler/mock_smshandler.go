@@ -11,7 +11,7 @@ import (
 	message "monorepo/bin-conversation-manager/models/message"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockSMSHandler is a mock of SMSHandler interface.

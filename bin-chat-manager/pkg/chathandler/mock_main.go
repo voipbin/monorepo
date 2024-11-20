@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 // MockChatHandler is a mock of ChatHandler interface.

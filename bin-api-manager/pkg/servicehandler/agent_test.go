@@ -12,8 +12,8 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )

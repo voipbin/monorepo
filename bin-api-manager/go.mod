@@ -58,11 +58,11 @@ require (
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
-	github.com/go-playground/validator/v10 v10.22.1 // indirect
+	github.com/go-playground/validator/v10 v10.23.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang/mock v1.6.0
+	go.uber.org/mock v0.5.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/prometheus/client_golang v1.20.5
@@ -78,7 +78,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/storage v1.46.0
+	cloud.google.com/go/storage v1.47.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/pebbe/zmq4 v1.2.11
 	github.com/pion/rtp v1.8.9
@@ -86,8 +86,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
+	go.uber.org/mock v0.5.0
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
-	google.golang.org/api v0.205.0
+	google.golang.org/api v0.207.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
@@ -138,7 +139,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.13.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.6 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -197,9 +198,9 @@ require (
 	golang.org/x/oauth2 v0.24.0 // indirect
 	golang.org/x/sync v0.9.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
-	google.golang.org/genproto v0.0.0-20241113202542-65e8d215514f // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241113202542-65e8d215514f // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241113202542-65e8d215514f // indirect
+	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20241118233622-e639e219e697 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/grpc v1.68.0 // indirect
 	google.golang.org/grpc/stats/opentelemetry v0.0.0-20241028142157-ada6787961b3 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect

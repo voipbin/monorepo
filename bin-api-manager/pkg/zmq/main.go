@@ -1,6 +1,6 @@
 package zmq
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package zmq -destination ./mock_zmq.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package zmq -destination ./mock_zmq.go -source main.go -build_flags=-mod=mod
 
 import (
 	"github.com/pebbe/zmq4"

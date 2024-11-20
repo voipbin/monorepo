@@ -8,7 +8,7 @@ import (
 	telnyx "monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockRequestExternal is a mock of RequestExternal interface.

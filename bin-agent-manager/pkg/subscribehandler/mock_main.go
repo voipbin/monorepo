@@ -7,7 +7,7 @@ package subscribehandler
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 // MockSubscribeHandler is a mock of SubscribeHandler interface.

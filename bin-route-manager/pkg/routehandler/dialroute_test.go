@@ -8,7 +8,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-route-manager/models/route"
 	"monorepo/bin-route-manager/pkg/dbhandler"

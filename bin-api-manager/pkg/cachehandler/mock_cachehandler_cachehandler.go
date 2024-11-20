@@ -7,7 +7,7 @@ package cachehandler
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
