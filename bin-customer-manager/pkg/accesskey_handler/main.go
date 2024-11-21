@@ -1,10 +1,15 @@
 package accesskey_handler
 
 import (
+	"context"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
+	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 const (
@@ -13,30 +18,22 @@ const (
 
 // AccesskeyHandler interface
 type AccesskeyHandler interface {
-	// Create(
-	// 	ctx context.Context,
-	// 	name string,
-	// 	detail string,
-	// 	email string,
-	// 	phoneNumber string,
-	// 	address string,
-	// 	webhookMethod customer.WebhookMethod,
-	// 	webhookURI string,
-	// ) (*customer.Customer, error)
-	// Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
-	// Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
-	// Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error)
-	// UpdateBasicInfo(
-	// 	ctx context.Context,
-	// 	id uuid.UUID,
-	// 	name string,
-	// 	detail string,
-	// 	email string,
-	// 	phoneNumber string,
-	// 	address string,
-	// 	webhookMethod customer.WebhookMethod,
-	// 	webhookURI string,
-	// ) (*customer.Customer, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error)
+	Get(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error)
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		expire time.Duration,
+	) (*accesskey.Accesskey, error)
+	Delete(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error)
+	UpdateBasicInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+	) (*accesskey.Accesskey, error)
 }
 
 type accesskeyHandler struct {
