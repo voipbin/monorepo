@@ -1,6 +1,6 @@
 package billinghandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package billinghandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package billinghandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

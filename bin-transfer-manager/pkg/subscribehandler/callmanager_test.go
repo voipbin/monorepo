@@ -11,7 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-transfer-manager/models/transfer"
 	"monorepo/bin-transfer-manager/pkg/transferhandler"

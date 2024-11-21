@@ -13,7 +13,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/pkg/dbhandler"

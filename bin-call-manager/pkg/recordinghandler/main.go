@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package recordinghandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package recordinghandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 // RecordingHandler is interface for service handle
 type RecordingHandler interface {

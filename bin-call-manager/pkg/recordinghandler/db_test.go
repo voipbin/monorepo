@@ -13,7 +13,7 @@ import (
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/dbhandler"

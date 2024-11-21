@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-campaign-manager/models/campaigncall"
 	"monorepo/bin-campaign-manager/pkg/campaigncallhandler"

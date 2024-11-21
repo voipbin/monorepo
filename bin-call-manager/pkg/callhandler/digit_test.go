@@ -11,7 +11,7 @@ import (
 	"monorepo/bin-flow-manager/models/variable"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"

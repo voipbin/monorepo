@@ -1,6 +1,6 @@
 package zmqpubhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package zmqpubhandler -destination ./mock_zmqpubhandler.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package zmqpubhandler -destination ./mock_zmqpubhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"github.com/sirupsen/logrus"

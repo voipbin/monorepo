@@ -1,6 +1,6 @@
 package zmqsubhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package zmqsubhandler -destination ./mock_zmqsubhandler.go -source main.go -build_flags=-mod=mod
+//go:generate mockgen -package zmqsubhandler -destination ./mock_zmqsubhandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"

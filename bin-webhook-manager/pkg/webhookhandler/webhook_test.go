@@ -9,7 +9,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-webhook-manager/models/account"
 	"monorepo/bin-webhook-manager/models/webhook"

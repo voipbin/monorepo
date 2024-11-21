@@ -8,8 +8,8 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"

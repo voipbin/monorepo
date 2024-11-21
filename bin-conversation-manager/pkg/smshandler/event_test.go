@@ -12,7 +12,7 @@ import (
 	mmtarget "monorepo/bin-message-manager/models/target"
 
 	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/models/conversation"

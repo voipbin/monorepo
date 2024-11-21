@@ -56,7 +56,6 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
@@ -66,6 +65,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
+	go.uber.org/mock v0.5.0
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4

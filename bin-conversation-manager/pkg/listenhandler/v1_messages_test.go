@@ -12,7 +12,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_processV1MessagesGet(t *testing.T) {

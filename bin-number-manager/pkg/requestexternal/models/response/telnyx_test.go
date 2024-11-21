@@ -5,7 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-number-manager/pkg/requestexternal/models/telnyx"
 )
