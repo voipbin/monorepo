@@ -2,8 +2,6 @@ package accesskey_handler
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
@@ -58,11 +56,10 @@ func (h *accesskeyHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 	tmExpire := h.utilHandler.TimeGetCurTimeAdd(expire)
 
-	// token := h.utilHandler.String
-
-	bytes := make([]byte, 16)
-	rand.Read(bytes)
-	token := base64.RawURLEncoding.EncodeToString(bytes)
+	token, err := h.utilHandler.StringGenerateRandom(defaultLenToken)
+	if err != nil {
+		log.Errorf("Could not generate the token. err: %v", err)
+	}
 
 	a := &accesskey.Accesskey{
 		ID:         id,

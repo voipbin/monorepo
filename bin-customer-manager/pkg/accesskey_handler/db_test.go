@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Gets(t *testing.T) {
@@ -73,6 +73,7 @@ func Test_Create(t *testing.T) {
 		expire     time.Duration
 
 		responseUUID    uuid.UUID
+		responseToken   string
 		responseExpire  string
 		expectAccesskey *accesskey.Accesskey
 	}{
@@ -85,12 +86,15 @@ func Test_Create(t *testing.T) {
 			expire:     time.Duration(time.Hour * 24 * 365),
 
 			responseUUID:   uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
+			responseToken:  "test_token",
 			responseExpire: "2024-04-04 07:15:59.233415",
 			expectAccesskey: &accesskey.Accesskey{
 				ID:         uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
 				CustomerID: uuid.FromStringOrNil("58d43704-a75e-11ef-b9b7-279abaf5dda3"),
 				Name:       "test1",
 				Detail:     "detail1",
+				Token:      "test_token",
+				TMExpire:   "2024-04-04 07:15:59.233415",
 			},
 		},
 	}
@@ -115,6 +119,7 @@ func Test_Create(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expire).Return(tt.responseExpire)
+			mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return(tt.responseToken, nil)
 			mockDB.EXPECT().AccesskeyCreate(ctx, tt.expectAccesskey).Return(nil)
 			mockDB.EXPECT().AccesskeyGet(ctx, tt.responseUUID).Return(&accesskey.Accesskey{}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any()).Return()

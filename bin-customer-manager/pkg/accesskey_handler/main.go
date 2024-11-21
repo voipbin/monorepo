@@ -7,6 +7,10 @@ import (
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
+const (
+	defaultLenToken = 16
+)
+
 // AccesskeyHandler interface
 type AccesskeyHandler interface {
 	// Create(
