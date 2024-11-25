@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/models/customer"
 )
 
@@ -55,29 +54,6 @@ func (h *handler) CustomerSet(ctx context.Context, c *customer.Customer) error {
 	key := fmt.Sprintf("customer:%s", c.ID)
 
 	if err := h.setSerialize(ctx, key, c); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AccesskeyGet returns cached accesskey info
-func (h *handler) AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error) {
-	key := fmt.Sprintf("customer_accesskey:%s", id)
-
-	var res accesskey.Accesskey
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// AccesskeySet sets the accesskey info into the cache.
-func (h *handler) AccesskeySet(ctx context.Context, a *accesskey.Accesskey) error {
-	key := fmt.Sprintf("customer_accesskey:%s", a.ID)
-
-	if err := h.setSerialize(ctx, key, a); err != nil {
 		return err
 	}
 

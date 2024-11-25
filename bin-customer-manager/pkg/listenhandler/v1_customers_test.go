@@ -276,7 +276,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 	}
 }
 
-func Test_processV1CustomersIDDelete(t *testing.T) {
+func Test_processV1UsersIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -337,7 +337,7 @@ func Test_processV1CustomersIDDelete(t *testing.T) {
 	}
 }
 
-func Test_processV1CustomersIDPut(t *testing.T) {
+func Test_processV1UsersIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string

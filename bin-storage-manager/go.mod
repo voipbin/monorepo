@@ -64,7 +64,7 @@ require (
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/text v0.20.0 // indirect
-	google.golang.org/api v0.209.0
+	google.golang.org/api v0.207.0
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/grpc v1.68.0 // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
@@ -86,8 +86,8 @@ require (
 require (
 	cel.dev/expr v0.18.0 // indirect
 	cloud.google.com/go v0.116.0 // indirect
-	cloud.google.com/go/auth v0.11.0 // indirect
-	cloud.google.com/go/auth/oauth2adapt v0.2.6 // indirect
+	cloud.google.com/go/auth v0.10.2 // indirect
+	cloud.google.com/go/auth/oauth2adapt v0.2.5 // indirect
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect

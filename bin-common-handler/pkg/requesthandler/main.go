@@ -20,7 +20,6 @@ import (
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 	caoutplan "monorepo/bin-campaign-manager/models/outplan"
-	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	chatchat "monorepo/bin-chat-manager/models/chat"
@@ -518,13 +517,6 @@ type RequestHandler interface {
 		language string,
 		requestTimeout int,
 	) (*cbservice.Service, error)
-
-	// customer-manager accesskeys
-	CustomerV1AccesskeyCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, expire int32) (*csaccesskey.Accesskey, error)
-	CustomerV1AccesskeyDelete(ctx context.Context, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error)
-	CustomerV1AccesskeyGet(ctx context.Context, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error)
-	CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]csaccesskey.Accesskey, error)
-	CustomerV1AccesskeyUpdate(ctx context.Context, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.Accesskey, error)
 
 	// customer-manager customer
 	CustomerV1CustomerCreate(
