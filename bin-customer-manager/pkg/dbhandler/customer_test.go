@@ -215,6 +215,9 @@ func Test_CustomerGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// clean test database users
+			_ = cleanTestDBCustomers()
+
 			for _, u := range tt.customers {
 				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().CustomerSet(ctx, gomock.Any())
@@ -228,8 +231,8 @@ func Test_CustomerGets(t *testing.T) {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
 
-			if len(res) < len(tt.customers) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", len(tt.customers), len(res))
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
 			}
 		})
 	}

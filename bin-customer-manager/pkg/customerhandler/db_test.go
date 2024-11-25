@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	bmaccount "monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -76,8 +77,9 @@ func Test_Create(t *testing.T) {
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
 
-		responseUUID uuid.UUID
-		responseHash string
+		responseUUID           uuid.UUID
+		responseBillingAccount *bmaccount.Account
+		responseHash           string
 
 		expectCustomer *customer.Customer
 	}{
@@ -93,6 +95,9 @@ func Test_Create(t *testing.T) {
 			webhookURI:    "test.com",
 
 			responseUUID: uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
+			responseBillingAccount: &bmaccount.Account{
+				ID: uuid.FromStringOrNil("2d5d9a8c-0e87-11ee-aeaf-4b3b6fad0c9b"),
+			},
 			responseHash: "$2a$12$KEqTmfExiTmQ0HBspD6x7.XBkG1mVVAKidWG6J.zUeTtdgb0NXppq",
 
 			expectCustomer: &customer.Customer{
