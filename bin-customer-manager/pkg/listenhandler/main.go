@@ -16,6 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 )
 
@@ -33,15 +34,22 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	reqHandler      requesthandler.RequestHandler
-	utilHandler     utilhandler.UtilHandler
-	customerHandler customerhandler.CustomerHandler
+	reqHandler       requesthandler.RequestHandler
+	utilHandler      utilhandler.UtilHandler
+	customerHandler  customerhandler.CustomerHandler
+	accesskeyHandler accesskeyhandler.AccesskeyHandler
 }
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" //nolint:deadcode,unused,varcheck // this is ok
 
 	// v1
+
+	// accesskeys
+	regV1Accesskeys    = regexp.MustCompile("/v1/accesskeys$")
+	regV1AccesskeysGet = regexp.MustCompile(`/v1/accesskeys\?(.*)$`)
+	regV1AccesskeysID  = regexp.MustCompile("/v1/accesskeys/" + regUUID + "$")
+
 	// customers
 	regV1Customers                     = regexp.MustCompile("/v1/customers$")
 	regV1CustomersGet                  = regexp.MustCompile(`/v1/customers\?(.*)$`)
@@ -84,12 +92,14 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	reqHandler requesthandler.RequestHandler,
 	customerHandler customerhandler.CustomerHandler,
+	accesskeyHandler accesskeyhandler.AccesskeyHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler:     sockHandler,
-		reqHandler:      reqHandler,
-		utilHandler:     utilhandler.NewUtilHandler(),
-		customerHandler: customerHandler,
+		sockHandler:      sockHandler,
+		reqHandler:       reqHandler,
+		utilHandler:      utilhandler.NewUtilHandler(),
+		customerHandler:  customerHandler,
+		accesskeyHandler: accesskeyHandler,
 	}
 
 	return h
@@ -134,6 +144,34 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1
 	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//////////////
+	// accesskeys
+	//////////////
+	// GET /accesskeys
+	case regV1AccesskeysGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AccesskeysGet(ctx, m)
+		requestType = "/v1/accesskeys"
+
+	// POST /accesskeys
+	case regV1Accesskeys.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AccesskeysPost(ctx, m)
+		requestType = "/v1/accesskeys"
+
+	// GET /accesskeys/<accesskey-id>
+	case regV1AccesskeysID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AccesskeysIDGet(ctx, m)
+		requestType = "/v1/accesskeys/<accesskey-id>"
+
+	// PUT /accesskeys/<accesskey-id>
+	case regV1AccesskeysID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1AccesskeysIDPut(ctx, m)
+		requestType = "/v1/accesskeys/<accesskey-id>"
+
+	// DELETE /accesskeys/<accesskey-id>
+	case regV1AccesskeysID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1AccesskeysIDDelete(ctx, m)
+		requestType = "/v1/accesskeys/<accesskey-id>"
 
 	////////////
 	// customers
