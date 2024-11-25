@@ -159,7 +159,7 @@ func Test_AccesskeyGets(t *testing.T) {
 		expectRes       []*accesskey.Accesskey
 	}{
 		{
-			name: "normal",
+			name: "gets by customer_id",
 			accesskeys: []*accesskey.Accesskey{
 				{
 					ID:         uuid.FromStringOrNil("6b3fd5ba-a759-11ef-acd6-6f1a8cacd51f"),
@@ -188,6 +188,39 @@ func Test_AccesskeyGets(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("6b6f4818-a759-11ef-b6cc-0b5bb0dbad8a"),
 					CustomerID: uuid.FromStringOrNil("6b9a880c-a759-11ef-93e6-f757c578bc3b"),
+					TMCreate:   "2020-04-18 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+			},
+		},
+		{
+			name: "gets by token",
+			accesskeys: []*accesskey.Accesskey{
+				{
+					ID:         uuid.FromStringOrNil("cfd12b46-ab0f-11ef-a45f-ebb9ad8f8a2c"),
+					CustomerID: uuid.FromStringOrNil("d03eb274-ab0f-11ef-aa02-d771ad6ee1b9"),
+					Token:      "d07da3da-ab0f-11ef-8826-4f93ce3ceaa5",
+				},
+				{
+					ID:         uuid.FromStringOrNil("d05cb4fe-ab0f-11ef-9a9c-57570390a427"),
+					CustomerID: uuid.FromStringOrNil("d03eb274-ab0f-11ef-aa02-d771ad6ee1b9"),
+					Token:      "d09df996-ab0f-11ef-862c-e3a5ac697296",
+				},
+			},
+			size:  2,
+			token: "2020-04-18 03:22:17.995001",
+			filters: map[string]string{
+				"deleted": "false",
+				"token":   "d09df996-ab0f-11ef-862c-e3a5ac697296",
+			},
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: []*accesskey.Accesskey{
+				{
+					ID:         uuid.FromStringOrNil("d05cb4fe-ab0f-11ef-9a9c-57570390a427"),
+					CustomerID: uuid.FromStringOrNil("d03eb274-ab0f-11ef-aa02-d771ad6ee1b9"),
+					Token:      "d09df996-ab0f-11ef-862c-e3a5ac697296",
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,

@@ -16,6 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 )
 
@@ -33,9 +34,10 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	reqHandler      requesthandler.RequestHandler
-	utilHandler     utilhandler.UtilHandler
-	customerHandler customerhandler.CustomerHandler
+	reqHandler       requesthandler.RequestHandler
+	utilHandler      utilhandler.UtilHandler
+	customerHandler  customerhandler.CustomerHandler
+	accesskeyHandler accesskeyhandler.AccesskeyHandler
 }
 
 var (

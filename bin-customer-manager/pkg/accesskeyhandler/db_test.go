@@ -1,4 +1,4 @@
-package accesskey_handler
+package accesskeyhandler
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
+	"reflect"
 	"testing"
 	"time"
 
@@ -57,6 +58,80 @@ func Test_Gets(t *testing.T) {
 			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_GetsByCustomerID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		size       uint64
+		token      string
+		customerID uuid.UUID
+
+		responseAccesskeys []*accesskey.Accesskey
+		expectFilter       map[string]string
+		expectRes          []*accesskey.Accesskey
+	}{
+		{
+			name: "normal",
+
+			size:       100,
+			token:      "",
+			customerID: uuid.FromStringOrNil("7fdfe8d6-ab12-11ef-9387-339121720d4f"),
+
+			responseAccesskeys: []*accesskey.Accesskey{
+				{
+					ID: uuid.FromStringOrNil("8032c2ae-ab12-11ef-b470-3772725e480e"),
+				},
+				{
+					ID: uuid.FromStringOrNil("805a864a-ab12-11ef-9dfd-376fdcb46270"),
+				},
+			},
+			expectFilter: map[string]string{
+				"customer_id": "7fdfe8d6-ab12-11ef-9387-339121720d4f",
+			},
+			expectRes: []*accesskey.Accesskey{
+				{
+					ID: uuid.FromStringOrNil("8032c2ae-ab12-11ef-b470-3772725e480e"),
+				},
+				{
+					ID: uuid.FromStringOrNil("805a864a-ab12-11ef-9dfd-376fdcb46270"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &accesskeyHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
+
+			res, err := h.GetsByCustomerID(ctx, tt.size, tt.token, tt.customerID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got:%v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -127,6 +202,123 @@ func Test_Create(t *testing.T) {
 			_, err := h.Create(ctx, tt.customerID, tt.userName, tt.detail, tt.expire)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}
+
+func Test_Get(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseAccesskey *accesskey.Accesskey
+		expectRes         *accesskey.Accesskey
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("3c998326-ab11-11ef-a2f1-9359a11fc578"),
+			responseAccesskey: &accesskey.Accesskey{
+				ID: uuid.FromStringOrNil("3c998326-ab11-11ef-a2f1-9359a11fc578"),
+			},
+			expectRes: &accesskey.Accesskey{
+				ID: uuid.FromStringOrNil("3c998326-ab11-11ef-a2f1-9359a11fc578"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &accesskeyHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.id).Return(tt.responseAccesskey, nil)
+
+			res, err := h.Get(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got:%v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_GetByToken(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		token string
+
+		responseAccesskeys []*accesskey.Accesskey
+		expectFilter       map[string]string
+		expectRes          *accesskey.Accesskey
+	}{
+		{
+			name: "normal",
+
+			token: "8043e3fa-ab11-11ef-ba54-cf942545cefe",
+
+			responseAccesskeys: []*accesskey.Accesskey{
+				{
+					ID: uuid.FromStringOrNil("8061b60a-ab11-11ef-8cd0-4721783d6664"),
+				},
+			},
+			expectFilter: map[string]string{
+				"token": "8043e3fa-ab11-11ef-ba54-cf942545cefe",
+			},
+			expectRes: &accesskey.Accesskey{
+				ID: uuid.FromStringOrNil("8061b60a-ab11-11ef-8cd0-4721783d6664"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &accesskeyHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
+
+			res, err := h.GetByToken(ctx, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got:%v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

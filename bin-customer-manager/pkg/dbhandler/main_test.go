@@ -46,13 +46,3 @@ func TestMain(m *testing.M) {
 
 	os.Exit(m.Run())
 }
-
-// // clean test database customers
-// func cleanTestDBCustomers() error {
-// 	_, err := dbTest.Exec("delete from customer_customers")
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }

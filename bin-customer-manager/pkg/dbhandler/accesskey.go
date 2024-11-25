@@ -194,6 +194,10 @@ func (h *handler) AccesskeyGets(ctx context.Context, size uint64, token string, 
 		tm_create < ?
 	`, accesskeySelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
 		token,
 	}
@@ -206,6 +210,15 @@ func (h *handler) AccesskeyGets(ctx context.Context, size uint64, token string, 
 				q = fmt.Sprintf("%s and tm_delete >= ?", q)
 				values = append(values, DefaultTimeStamp)
 			}
+
+		case "token":
+			q = fmt.Sprintf("%s and token =?", q)
+			values = append(values, v)
+
+		case "customer_id":
+			q = fmt.Sprintf("%s and customer_id = ?", q)
+			tmp := uuid.FromStringOrNil(v)
+			values = append(values, tmp.Bytes())
 
 		default:
 			q = fmt.Sprintf("%s and %s = ?", q, k)

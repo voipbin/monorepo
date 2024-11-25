@@ -1,4 +1,4 @@
-package accesskey_handler
+package accesskeyhandler
 
 import (
 	"context"
@@ -24,6 +24,23 @@ func (h *accesskeyHandler) Gets(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
+// GetsByCustomerID returns list of accesskeys by the customer id
+func (h *accesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64, token string, customerID uuid.UUID) ([]*accesskey.Accesskey, error) {
+	log := logrus.WithField("func", "Gets")
+
+	filter := map[string]string{
+		"customer_id": customerID.String(),
+	}
+
+	res, err := h.db.AccesskeyGets(ctx, size, token, filter)
+	if err != nil {
+		log.Errorf("Could not get accesskey info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // Get returns accesskey info.
 func (h *accesskeyHandler) Get(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "Get")
@@ -34,6 +51,24 @@ func (h *accesskeyHandler) Get(ctx context.Context, id uuid.UUID) (*accesskey.Ac
 		return nil, err
 	}
 
+	return res, nil
+}
+
+// GetByToken returns accesskey info.
+func (h *accesskeyHandler) GetByToken(ctx context.Context, token string) (*accesskey.Accesskey, error) {
+	log := logrus.WithField("func", "GetByToken")
+
+	filter := map[string]string{
+		"token": token,
+	}
+
+	tmp, err := h.db.AccesskeyGets(ctx, 100, "", filter)
+	if err != nil || len(tmp) == 0 || len(tmp) > 1 {
+		log.Errorf("Could not get accesskeys info. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp[0]
 	return res, nil
 }
 
