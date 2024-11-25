@@ -14,9 +14,6 @@ type UtilHandler interface {
 	// uuid helpers
 	UUIDCreate() uuid.UUID
 
-	// string helpers
-	StringGenerateRandom(size int) (string, error)
-
 	// time helpers
 	TimeGetCurTime() string
 	TimeGetCurTimeAdd(duration time.Duration) string

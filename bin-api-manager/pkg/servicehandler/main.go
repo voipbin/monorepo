@@ -22,7 +22,6 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
-	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	chatchat "monorepo/bin-chat-manager/models/chat"
@@ -88,13 +87,6 @@ const (
 
 // ServiceHandler is interface for service handle
 type ServiceHandler interface {
-
-	// accesskeys
-	AccesskeyCreate(ctx context.Context, a *amagent.Agent, name string, detail string, expire int32) (*csaccesskey.WebhookMessage, error)
-	AccesskeyGet(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error)
-	AccesskeyGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*csaccesskey.WebhookMessage, error)
-	AccesskeyDelete(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error)
-	AccesskeyUpdate(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error)
 
 	// activeflows
 	ActiveflowCreate(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.WebhookMessage, error)

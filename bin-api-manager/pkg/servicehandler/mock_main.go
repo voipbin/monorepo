@@ -36,7 +36,6 @@ import (
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media0 "monorepo/bin-conversation-manager/models/media"
 	message "monorepo/bin-conversation-manager/models/message"
-	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
@@ -88,81 +87,6 @@ func NewMockServiceHandler(ctrl *gomock.Controller) *MockServiceHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
-}
-
-// AccesskeyCreate mocks base method.
-func (m *MockServiceHandler) AccesskeyCreate(ctx context.Context, a *agent.Agent, name, detail string, expire int32) (*accesskey.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeyCreate", ctx, a, name, detail, expire)
-	ret0, _ := ret[0].(*accesskey.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AccesskeyCreate indicates an expected call of AccesskeyCreate.
-func (mr *MockServiceHandlerMockRecorder) AccesskeyCreate(ctx, a, name, detail, expire any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyCreate", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyCreate), ctx, a, name, detail, expire)
-}
-
-// AccesskeyDelete mocks base method.
-func (m *MockServiceHandler) AccesskeyDelete(ctx context.Context, a *agent.Agent, accesskeyID uuid.UUID) (*accesskey.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeyDelete", ctx, a, accesskeyID)
-	ret0, _ := ret[0].(*accesskey.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AccesskeyDelete indicates an expected call of AccesskeyDelete.
-func (mr *MockServiceHandlerMockRecorder) AccesskeyDelete(ctx, a, accesskeyID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyDelete", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyDelete), ctx, a, accesskeyID)
-}
-
-// AccesskeyGet mocks base method.
-func (m *MockServiceHandler) AccesskeyGet(ctx context.Context, a *agent.Agent, accesskeyID uuid.UUID) (*accesskey.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeyGet", ctx, a, accesskeyID)
-	ret0, _ := ret[0].(*accesskey.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AccesskeyGet indicates an expected call of AccesskeyGet.
-func (mr *MockServiceHandlerMockRecorder) AccesskeyGet(ctx, a, accesskeyID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGet", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyGet), ctx, a, accesskeyID)
-}
-
-// AccesskeyGets mocks base method.
-func (m *MockServiceHandler) AccesskeyGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*accesskey.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeyGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*accesskey.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AccesskeyGets indicates an expected call of AccesskeyGets.
-func (mr *MockServiceHandlerMockRecorder) AccesskeyGets(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGets", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyGets), ctx, a, size, token)
-}
-
-// AccesskeyUpdate mocks base method.
-func (m *MockServiceHandler) AccesskeyUpdate(ctx context.Context, a *agent.Agent, accesskeyID uuid.UUID, name, detail string) (*accesskey.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeyUpdate", ctx, a, accesskeyID, name, detail)
-	ret0, _ := ret[0].(*accesskey.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AccesskeyUpdate indicates an expected call of AccesskeyUpdate.
-func (mr *MockServiceHandlerMockRecorder) AccesskeyUpdate(ctx, a, accesskeyID, name, detail any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyUpdate", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyUpdate), ctx, a, accesskeyID, name, detail)
 }
 
 // ActiveflowCreate mocks base method.
