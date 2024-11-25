@@ -22,10 +22,10 @@ def upgrade():
             id          binary(16),
             customer_id binary(16),
 
-            name varchar(255),
-            detail text,
+            name    varchar(255),
+            detail  text,
 
-            token text,
+            token varchar(1023),
 
             tm_expire datetime(6), -- Expiry timestamp
 
