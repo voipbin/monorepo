@@ -1,5 +1,7 @@
 package accesskeyhandler
 
+//go:generate mockgen -package accesskeyhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
 import (
 	"context"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
