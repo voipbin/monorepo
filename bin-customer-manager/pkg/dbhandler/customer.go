@@ -214,6 +214,10 @@ func (h *handler) CustomerGets(ctx context.Context, size uint64, token string, f
 		tm_create < ?
 	`, customerSelect)
 
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
 	values := []interface{}{
 		token,
 	}
