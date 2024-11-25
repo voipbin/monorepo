@@ -92,12 +92,14 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	reqHandler requesthandler.RequestHandler,
 	customerHandler customerhandler.CustomerHandler,
+	accesskeyHandler accesskeyhandler.AccesskeyHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler:     sockHandler,
-		reqHandler:      reqHandler,
-		utilHandler:     utilhandler.NewUtilHandler(),
-		customerHandler: customerHandler,
+		sockHandler:      sockHandler,
+		reqHandler:       reqHandler,
+		utilHandler:      utilhandler.NewUtilHandler(),
+		customerHandler:  customerHandler,
+		accesskeyHandler: accesskeyHandler,
 	}
 
 	return h
