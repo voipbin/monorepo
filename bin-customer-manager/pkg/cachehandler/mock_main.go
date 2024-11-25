@@ -11,6 +11,7 @@ package cachehandler
 
 import (
 	context "context"
+	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 
@@ -40,6 +41,35 @@ func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
+}
+
+// AccesskeyGet mocks base method.
+func (m *MockCacheHandler) AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeyGet", ctx, id)
+	ret0, _ := ret[0].(*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccesskeyGet indicates an expected call of AccesskeyGet.
+func (mr *MockCacheHandlerMockRecorder) AccesskeyGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGet", reflect.TypeOf((*MockCacheHandler)(nil).AccesskeyGet), ctx, id)
+}
+
+// AccesskeySet mocks base method.
+func (m *MockCacheHandler) AccesskeySet(ctx context.Context, a *accesskey.Accesskey) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeySet", ctx, a)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccesskeySet indicates an expected call of AccesskeySet.
+func (mr *MockCacheHandlerMockRecorder) AccesskeySet(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeySet", reflect.TypeOf((*MockCacheHandler)(nil).AccesskeySet), ctx, a)
 }
 
 // Connect mocks base method.
