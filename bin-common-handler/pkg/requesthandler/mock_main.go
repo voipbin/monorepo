@@ -44,6 +44,7 @@ import (
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media0 "monorepo/bin-conversation-manager/models/media"
 	message "monorepo/bin-conversation-manager/models/message"
+	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
@@ -2971,6 +2972,81 @@ func (m *MockRequestHandler) ConversationV1MessageSend(ctx context.Context, conv
 func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageSend(ctx, conversationID, text, medias any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageSend), ctx, conversationID, text, medias)
+}
+
+// CustomerV1AccesskeyCreate mocks base method.
+func (m *MockRequestHandler) CustomerV1AccesskeyCreate(ctx context.Context, customerID uuid.UUID, name, detail string, expire int32) (*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1AccesskeyCreate", ctx, customerID, name, detail, expire)
+	ret0, _ := ret[0].(*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1AccesskeyCreate indicates an expected call of CustomerV1AccesskeyCreate.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyCreate(ctx, customerID, name, detail, expire any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyCreate", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyCreate), ctx, customerID, name, detail, expire)
+}
+
+// CustomerV1AccesskeyDelete mocks base method.
+func (m *MockRequestHandler) CustomerV1AccesskeyDelete(ctx context.Context, accesskeyID uuid.UUID) (*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1AccesskeyDelete", ctx, accesskeyID)
+	ret0, _ := ret[0].(*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1AccesskeyDelete indicates an expected call of CustomerV1AccesskeyDelete.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyDelete(ctx, accesskeyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyDelete", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyDelete), ctx, accesskeyID)
+}
+
+// CustomerV1AccesskeyGet mocks base method.
+func (m *MockRequestHandler) CustomerV1AccesskeyGet(ctx context.Context, accesskeyID uuid.UUID) (*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1AccesskeyGet", ctx, accesskeyID)
+	ret0, _ := ret[0].(*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1AccesskeyGet indicates an expected call of CustomerV1AccesskeyGet.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGet(ctx, accesskeyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyGet", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyGet), ctx, accesskeyID)
+}
+
+// CustomerV1AccesskeyGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) CustomerV1AccesskeyGetsByCustomerID(ctx context.Context, pageToken string, pageSize uint64, customerID uuid.UUID) ([]accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1AccesskeyGetsByCustomerID", ctx, pageToken, pageSize, customerID)
+	ret0, _ := ret[0].([]accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1AccesskeyGetsByCustomerID indicates an expected call of CustomerV1AccesskeyGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGetsByCustomerID(ctx, pageToken, pageSize, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyGetsByCustomerID), ctx, pageToken, pageSize, customerID)
+}
+
+// CustomerV1AccesskeyUpdate mocks base method.
+func (m *MockRequestHandler) CustomerV1AccesskeyUpdate(ctx context.Context, accesskeyID uuid.UUID, name, detail string) (*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1AccesskeyUpdate", ctx, accesskeyID, name, detail)
+	ret0, _ := ret[0].(*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1AccesskeyUpdate indicates an expected call of CustomerV1AccesskeyUpdate.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyUpdate(ctx, accesskeyID, name, detail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyUpdate), ctx, accesskeyID, name, detail)
 }
 
 // CustomerV1CustomerCreate mocks base method.
