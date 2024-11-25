@@ -14,6 +14,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
@@ -85,9 +86,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
 	customerHandler := customerhandler.NewCustomerHandler(reqHandler, db, notifyHandler)
+	accesskeyHandler := accesskeyhandler.NewAccesskeyHandler(reqHandler, db, notifyHandler)
 
 	// run listen
-	if err := runListen(sockHandler, reqHandler, customerHandler); err != nil {
+	if err := runListen(sockHandler, reqHandler, customerHandler, accesskeyHandler); err != nil {
 		return err
 	}
 
@@ -95,9 +97,14 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, customerHandler customerhandler.CustomerHandler) error {
+func runListen(
+	sockHandler sockhandler.SockHandler,
+	reqHandler requesthandler.RequestHandler,
+	customerHandler customerhandler.CustomerHandler,
+	accesskeyHandler accesskeyhandler.AccesskeyHandler,
+) error {
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, reqHandler, customerHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, reqHandler, customerHandler, accesskeyHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameCustomerRequest), string(commonoutline.QueueNameDelay)); err != nil {
