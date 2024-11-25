@@ -24,4 +24,4 @@ FROM base
 
 WORKDIR /app/bin/
 COPY --from=build /app/bin /app/bin
-COPY --from=build /app/bin-api-manager/docsdev/build /docs
+COPY --from=build /app/bin-api-manager/docsdev /app/bin/docsdev
