@@ -17,3 +17,4 @@ create table customer_accesskeys (
 );
 
 create index idx_customer_accesskeys_customer_id on customer_accesskeys(customer_id);
+create index idx_customer_accesskeys_token on customer_accesskeys(token);

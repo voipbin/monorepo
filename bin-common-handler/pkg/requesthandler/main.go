@@ -523,7 +523,7 @@ type RequestHandler interface {
 	CustomerV1AccesskeyCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, expire int32) (*csaccesskey.Accesskey, error)
 	CustomerV1AccesskeyDelete(ctx context.Context, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error)
 	CustomerV1AccesskeyGet(ctx context.Context, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error)
-	CustomerV1AccesskeyGetsByCustomerID(ctx context.Context, pageToken string, pageSize uint64, customerID uuid.UUID) ([]csaccesskey.Accesskey, error)
+	CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]csaccesskey.Accesskey, error)
 	CustomerV1AccesskeyUpdate(ctx context.Context, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.Accesskey, error)
 
 	// customer-manager customer

@@ -13,7 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_CustomerV1AccesskeyGetsByCustomerID(t *testing.T) {
+func Test_CustomerV1AccesskeyGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -21,11 +21,11 @@ func Test_CustomerV1AccesskeyGetsByCustomerID(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 		customerID uuid.UUID
+		filters    map[string]string
 
 		response *sock.Response
 
 		expectedURL     string
-		expectedFilter  map[string]string
 		expectedTarget  string
 		expectedRequest *sock.Request
 
@@ -37,6 +37,9 @@ func Test_CustomerV1AccesskeyGetsByCustomerID(t *testing.T) {
 			pageToken:  "2021-03-02 03:23:20.995000",
 			pageSize:   10,
 			customerID: uuid.FromStringOrNil("eee40e32-ab3b-11ef-8190-ab49eeb155a1"),
+			filters: map[string]string{
+				"deleted": "false",
+			},
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -44,14 +47,10 @@ func Test_CustomerV1AccesskeyGetsByCustomerID(t *testing.T) {
 				Data:       []byte(`[{"id":"db965d74-ab3d-11ef-a273-17bee7b8b789"},{"id":"dc5d389a-ab3d-11ef-bc7f-ab1929a9dc03"}]`),
 			},
 
-			expectedURL: "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
-			expectedFilter: map[string]string{
-				"customer_id": "eee40e32-ab3b-11ef-8190-ab49eeb155a1",
-				"deleted":     "false",
-			},
+			expectedURL:    "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectedTarget: "bin-manager.customer-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_customer_id=eee40e32-ab3b-11ef-8190-ab49eeb155a1&filter_deleted=false",
+				URI:      "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -79,10 +78,10 @@ func Test_CustomerV1AccesskeyGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectedURL, tt.expectedFilter).Return(utilhandler.URLMergeFilters(tt.expectedURL, tt.expectedFilter))
+			mockUtil.EXPECT().URLMergeFilters(tt.expectedURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectedURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			res, err := h.CustomerV1AccesskeyGetsByCustomerID(ctx, tt.pageToken, tt.pageSize, tt.customerID)
+			res, err := h.CustomerV1AccesskeyGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

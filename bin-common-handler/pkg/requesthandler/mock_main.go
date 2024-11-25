@@ -3019,19 +3019,19 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGet(ctx, accesskeyI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyGet", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyGet), ctx, accesskeyID)
 }
 
-// CustomerV1AccesskeyGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) CustomerV1AccesskeyGetsByCustomerID(ctx context.Context, pageToken string, pageSize uint64, customerID uuid.UUID) ([]accesskey.Accesskey, error) {
+// CustomerV1AccesskeyGets mocks base method.
+func (m *MockRequestHandler) CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1AccesskeyGetsByCustomerID", ctx, pageToken, pageSize, customerID)
+	ret := m.ctrl.Call(m, "CustomerV1AccesskeyGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]accesskey.Accesskey)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerV1AccesskeyGetsByCustomerID indicates an expected call of CustomerV1AccesskeyGetsByCustomerID.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGetsByCustomerID(ctx, pageToken, pageSize, customerID any) *gomock.Call {
+// CustomerV1AccesskeyGets indicates an expected call of CustomerV1AccesskeyGets.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyGetsByCustomerID), ctx, pageToken, pageSize, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyGets", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyGets), ctx, pageToken, pageSize, filters)
 }
 
 // CustomerV1AccesskeyUpdate mocks base method.

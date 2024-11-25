@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// activeflowGet validates the activeflow's ownership and returns the activeflow info.
+// activeflowGet returns activeflow
 func (h *serviceHandler) activeflowGet(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "activeflowGet",
@@ -110,7 +110,7 @@ func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *amagent.Agent, ac
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActiveflowGet",
 		"customer_id":   a.CustomerID,
-		"agent_id":      a.CustomerID,
+		"agent_id":      a.ID,
 		"activeflow_id": activeflowID,
 	})
 
@@ -139,7 +139,7 @@ func (h *serviceHandler) ActiveflowGets(ctx context.Context, a *amagent.Agent, s
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ActiveflowGets",
 		"customer_id": a.CustomerID,
-		"agent_id":    a.CustomerID,
+		"agent_id":    a.ID,
 		"size":        size,
 		"token":       token,
 	})
@@ -181,7 +181,7 @@ func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *amagent.Agent, a
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActiveflowStop",
 		"customer_id":   a.CustomerID,
-		"agent_id":      a.CustomerID,
+		"agent_id":      a.ID,
 		"activeflow_id": activeflowID,
 	})
 
@@ -216,7 +216,7 @@ func (h *serviceHandler) ActiveflowDelete(ctx context.Context, a *amagent.Agent,
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActiveflowDelete",
 		"customer_id":   a.CustomerID,
-		"agent_id":      a.CustomerID,
+		"agent_id":      a.ID,
 		"activeflow_id": activeflowID,
 	})
 
