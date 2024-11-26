@@ -68,7 +68,7 @@ func Test_GenerateTokenWithData(t *testing.T) {
 	}
 }
 
-func TestGetTokenString(t *testing.T) {
+func Test_getTokenString(t *testing.T) {
 
 	tests := []struct {
 		name         string
