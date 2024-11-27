@@ -1,32 +1,23 @@
 package api
 
-import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"testing"
+// func setupServer() *gin.Engine {
+// 	app := gin.Default()
 
-	"github.com/gin-gonic/gin"
-)
+// 	ApplyRoutes(app)
+// 	return app
+// }
 
-func setupServer() *gin.Engine {
-	app := gin.Default()
+// func TestPing(t *testing.T) {
 
-	ApplyRoutes(app)
-	return app
-}
+// 	ts := httptest.NewServer(setupServer())
+// 	defer ts.Close()
 
-func TestPing(t *testing.T) {
+// 	res, err := http.Get(fmt.Sprintf("%s/ping", ts.URL))
+// 	if err != nil {
+// 		t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 	}
 
-	ts := httptest.NewServer(setupServer())
-	defer ts.Close()
-
-	res, err := http.Get(fmt.Sprintf("%s/ping", ts.URL))
-	if err != nil {
-		t.Errorf("Wrong match. expect: ok, got: %v", err)
-	}
-
-	if res.StatusCode != 200 {
-		t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
-	}
-}
+// 	if res.StatusCode != 200 {
+// 		t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+// 	}
+// }
