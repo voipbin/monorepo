@@ -14,7 +14,6 @@ import (
 	multipart "mime/multipart"
 	agent "monorepo/bin-agent-manager/models/agent"
 	request "monorepo/bin-api-manager/api/models/request"
-	common "monorepo/bin-api-manager/lib/common"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
@@ -404,6 +403,51 @@ func (m *MockServiceHandler) AgentUpdateTagIDs(ctx context.Context, a *agent.Age
 func (mr *MockServiceHandlerMockRecorder) AgentUpdateTagIDs(ctx, a, agentID, tagIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdateTagIDs", reflect.TypeOf((*MockServiceHandler)(nil).AgentUpdateTagIDs), ctx, a, agentID, tagIDs)
+}
+
+// AuthAccesskeyParse mocks base method.
+func (m *MockServiceHandler) AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthAccesskeyParse", ctx, accesskey)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthAccesskeyParse indicates an expected call of AuthAccesskeyParse.
+func (mr *MockServiceHandlerMockRecorder) AuthAccesskeyParse(ctx, accesskey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthAccesskeyParse", reflect.TypeOf((*MockServiceHandler)(nil).AuthAccesskeyParse), ctx, accesskey)
+}
+
+// AuthJWTGenerate mocks base method.
+func (m *MockServiceHandler) AuthJWTGenerate(data map[string]any) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthJWTGenerate", data)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthJWTGenerate indicates an expected call of AuthJWTGenerate.
+func (mr *MockServiceHandlerMockRecorder) AuthJWTGenerate(data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthJWTGenerate", reflect.TypeOf((*MockServiceHandler)(nil).AuthJWTGenerate), data)
+}
+
+// AuthJWTParse mocks base method.
+func (m *MockServiceHandler) AuthJWTParse(tokenString string) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthJWTParse", tokenString)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthJWTParse indicates an expected call of AuthJWTParse.
+func (mr *MockServiceHandlerMockRecorder) AuthJWTParse(tokenString any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthJWTParse", reflect.TypeOf((*MockServiceHandler)(nil).AuthJWTParse), tokenString)
 }
 
 // AuthLogin mocks base method.
@@ -2089,36 +2133,6 @@ func (m *MockServiceHandler) GroupcallHangup(ctx context.Context, a *agent.Agent
 func (mr *MockServiceHandlerMockRecorder) GroupcallHangup(ctx, a, groupcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallHangup", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallHangup), ctx, a, groupcallID)
-}
-
-// JWTGenerate mocks base method.
-func (m *MockServiceHandler) JWTGenerate(data map[string]any) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JWTGenerate", data)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// JWTGenerate indicates an expected call of JWTGenerate.
-func (mr *MockServiceHandlerMockRecorder) JWTGenerate(data any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JWTGenerate", reflect.TypeOf((*MockServiceHandler)(nil).JWTGenerate), data)
-}
-
-// JWTParse mocks base method.
-func (m *MockServiceHandler) JWTParse(tokenString string) (common.JSON, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JWTParse", tokenString)
-	ret0, _ := ret[0].(common.JSON)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// JWTParse indicates an expected call of JWTParse.
-func (mr *MockServiceHandlerMockRecorder) JWTParse(tokenString any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JWTParse", reflect.TypeOf((*MockServiceHandler)(nil).JWTParse), tokenString)
 }
 
 // MessageDelete mocks base method.

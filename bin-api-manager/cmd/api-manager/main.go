@@ -204,6 +204,8 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 		c.Next()
 	})
 
+	// app.GET("ping", testPing)
+
 	// set jwt middleware
 	app.Use(middleware.JWTMiddleware())
 
@@ -214,4 +216,18 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	if errAppRun := app.RunTLS(":443", constSSLCertFilename, constSSLPrivFilename); errAppRun != nil {
 		log.Errorf("The api service ended with error. err: %v", errAppRun)
 	}
+}
+
+// ping handler
+//
+//	@Summary		Returns message pong
+//	@Description	Used to check the server is alive
+//	@Produce		json
+//	@Router			/ping [get]
+//	@Success		200	"{"message": "pong"}"
+//	@BasePath
+func testPing(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
 }

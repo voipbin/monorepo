@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -17,41 +18,78 @@ import (
 // JWT Token can be passed as cooke, or Authorization header
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log := logrus.WithFields(logrus.Fields{
+			"func":            "JWTMiddleware",
+			"request_address": c.ClientIP,
+		})
 
-		serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
-
-		// get token string
-		tokenString := getTokenString(c)
-		if tokenString == "" {
-			c.Next()
-			return
-		}
-
-		// validate the token
-		tokenData, err := serviceHandler.JWTParse(tokenString)
+		tokenData, err := getTokenData(c)
 		if err != nil {
-			c.Next()
+			c.AbortWithStatus(401)
 			return
+
+			// c.Next()
+			// return
 		}
 
 		// get agent info
 		tmpAgent, err := json.Marshal(tokenData["agent"])
 		if err != nil {
-			logrus.Errorf("Could not marshal the token data. err: %v", err)
-			c.Next()
+			log.Errorf("Could not marshal the token data. err: %v", err)
+			c.AbortWithStatus(401)
 			return
+
+			// c.Next()
+			// return
 		}
+
 		a := amagent.Agent{}
 		if err := json.Unmarshal(tmpAgent, &a); err != nil {
-			logrus.Errorf("Could not marshal the customer. err: %v", err)
-			c.Next()
+			log.Errorf("Could not marshal the customer. err: %v", err)
+
+			c.AbortWithStatus(401)
 			return
+
+			// c.Next()
+			// return
 		}
 
 		c.Set("agent", a)
-		c.Set("token_expire", tokenData["expire"])
 		c.Next()
 	}
+}
+
+func getTokenData(c *gin.Context) (map[string]interface{}, error) {
+	t, ts, err := getToken(c)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
+	switch t {
+	case "token":
+		return serviceHandler.AuthJWTParse(ts)
+
+	case "accesskey":
+		return serviceHandler.AuthAccesskeyParse(c.Request.Context(), ts)
+
+	default:
+		return nil, fmt.Errorf("unknown token type: %s", t)
+	}
+}
+
+func getToken(c *gin.Context) (string, string, error) {
+	tokenString := getTokenString(c)
+	if tokenString != "" {
+		return "token", tokenString, nil
+	}
+
+	accesskey := getAccesskey(c)
+	if accesskey != "" {
+		return "accesskey", accesskey, nil
+	}
+
+	return "", "", fmt.Errorf("no token found")
 }
 
 // getTokenString returns the token string from the gin context.
@@ -83,4 +121,21 @@ func getTokenString(c *gin.Context) string {
 	res = sp[1]
 
 	return res
+}
+
+// getTokenString returns the token string from the gin context.
+func getAccesskey(c *gin.Context) string {
+	// get token from the cookie
+	res, err := c.Cookie("accesskey")
+	if err == nil && res != "" {
+		return res
+	}
+
+	// get token from the url query
+	res = c.Query("accesskey")
+	if res != "" {
+		return res
+	}
+
+	return ""
 }

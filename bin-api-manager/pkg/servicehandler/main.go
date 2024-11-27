@@ -76,7 +76,6 @@ import (
 	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/api/models/request"
-	"monorepo/bin-api-manager/lib/common"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
 
@@ -130,6 +129,9 @@ type ServiceHandler interface {
 
 	// auth handlers
 	AuthLogin(ctx context.Context, username, password string) (string, error)
+	AuthJWTGenerate(data map[string]interface{}) (string, error)
+	AuthJWTParse(tokenString string) (map[string]interface{}, error)
+	AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]interface{}, error)
 
 	// available numbers
 	AvailableNumberGets(ctx context.Context, a *amagent.Agent, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
@@ -404,10 +406,6 @@ type ServiceHandler interface {
 	GroupcallCreate(ctx context.Context, a *amagent.Agent, source commonaddress.Address, destinations []commonaddress.Address, flowID uuid.UUID, actions []fmaction.Action, ringMethod cmgroupcall.RingMethod, answerMethod cmgroupcall.AnswerMethod) (*cmgroupcall.WebhookMessage, error)
 	GroupcallHangup(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error)
 	GroupcallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmgroupcall.WebhookMessage, error)
-
-	// jwt
-	JWTGenerate(data map[string]interface{}) (string, error)
-	JWTParse(tokenString string) (common.JSON, error)
 
 	// message handlers
 	MessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*mmmessage.WebhookMessage, error)
