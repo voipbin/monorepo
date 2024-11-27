@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-
-	"monorepo/bin-api-manager/lib/middleware"
 )
 
 // AuthLogin generate jwt token of an customer
@@ -29,7 +27,7 @@ func (h *serviceHandler) AuthLogin(ctx context.Context, username string, passwor
 		"agent": a,
 	}
 
-	res, err := middleware.GenerateTokenWithData(data)
+	res, err := h.JWTGenerate(data)
 	if err != nil {
 		log.Errorf("Could not create a jwt token. err: %v", err)
 		return "", fmt.Errorf("could not create a jwt token. err: %v", err)

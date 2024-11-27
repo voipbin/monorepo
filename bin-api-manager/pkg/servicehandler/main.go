@@ -76,6 +76,7 @@ import (
 	"google.golang.org/api/option"
 
 	"monorepo/bin-api-manager/api/models/request"
+	"monorepo/bin-api-manager/lib/common"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
 
@@ -92,6 +93,7 @@ type ServiceHandler interface {
 	// accesskeys
 	AccesskeyCreate(ctx context.Context, a *amagent.Agent, name string, detail string, expire int32) (*csaccesskey.WebhookMessage, error)
 	AccesskeyGet(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error)
+	AccesskeyRawGetByToken(ctx context.Context, token string) (*csaccesskey.Accesskey, error)
 	AccesskeyGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*csaccesskey.WebhookMessage, error)
 	AccesskeyDelete(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error)
 	AccesskeyUpdate(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error)
@@ -403,6 +405,10 @@ type ServiceHandler interface {
 	GroupcallHangup(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error)
 	GroupcallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmgroupcall.WebhookMessage, error)
 
+	// jwt
+	JWTGenerate(data map[string]interface{}) (string, error)
+	JWTParse(tokenString string) (common.JSON, error)
+
 	// message handlers
 	MessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*mmmessage.WebhookMessage, error)
 	MessageGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*mmmessage.WebhookMessage, error)
@@ -666,6 +672,9 @@ type serviceHandler struct {
 	storageClient *storage.Client
 	projectID     string
 	bucketName    string
+
+	// etc
+	jwtKey []byte
 }
 
 // NewServiceHandler return ServiceHandler interface
@@ -677,6 +686,8 @@ func NewServiceHandler(
 	credentialBase64 string,
 	projectID string,
 	bucketName string,
+
+	jwtKey string,
 ) ServiceHandler {
 	log := logrus.WithField("func", "NewServiceHandler")
 
@@ -705,6 +716,8 @@ func NewServiceHandler(
 		storageClient: storageClient,
 		projectID:     projectID,
 		bucketName:    bucketName,
+
+		jwtKey: []byte(jwtKey),
 	}
 }
 

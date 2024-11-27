@@ -1,72 +1,13 @@
 package middleware
 
 import (
-	"monorepo/bin-api-manager/lib/common"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/mock/gomock"
 )
-
-func Test_GenerateTokenWithData(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		data map[string]interface{}
-
-		responseCurTime string
-
-		expectRes common.JSON
-	}{
-		{
-			name: "normal",
-
-			data: map[string]interface{}{
-				"key1": "val1",
-				"key2": "val2",
-			},
-
-			responseCurTime: "2023-11-19 09:29:11.763331118",
-			expectRes: common.JSON{
-				"key1":   "val1",
-				"key2":   "val2",
-				"expire": "2023-11-19 09:29:11.763331118",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			utilHandler = mockUtil
-
-			mockUtil.EXPECT().TimeGetCurTimeAdd(common.TokenExpiration).Return(tt.responseCurTime)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-
-			token, err := GenerateTokenWithData(tt.data)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			res, err := ValidateToken(token)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
 
 func Test_getTokenString(t *testing.T) {
 

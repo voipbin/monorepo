@@ -1,7 +1,6 @@
 package main
 
 import (
-	"monorepo/bin-api-manager/lib/middleware"
 	"net/http"
 	"time"
 
@@ -37,9 +36,6 @@ func init() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	initProm(prometheusEndpoint, prometheusListenAddress)
-
-	// init middleware
-	middleware.Init(jwtKey)
 
 	// init ssl
 	if errWrite := writeBase64(constSSLCertFilename, sslCertBase64); errWrite != nil {

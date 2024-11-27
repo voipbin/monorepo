@@ -134,7 +134,7 @@ func run(
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpCredentialBase64, gcpProjectID, gcpBucketName)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpCredentialBase64, gcpProjectID, gcpBucketName, jwtKey)
 
 	if errSub := runSubscribe(sockHandler, zmqPubHandler); errSub != nil {
 		log.Errorf("Could not run subscribe handler. err: %v", errSub)
