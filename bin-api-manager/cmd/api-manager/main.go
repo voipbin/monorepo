@@ -204,7 +204,8 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 		c.Next()
 	})
 
-	// app.GET("ping", testPing)
+	app.GET("ping", testPing)
+	app.GET("pong", testPing)
 
 	// set jwt middleware
 	app.Use(middleware.JWTMiddleware())
@@ -218,16 +219,16 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	}
 }
 
-// // ping handler
-// //
-// //	@Summary		Returns message pong
-// //	@Description	Used to check the server is alive
-// //	@Produce		json
-// //	@Router			/ping [get]
-// //	@Success		200	"{"message": "pong"}"
-// //	@BasePath
-// func testPing(c *gin.Context) {
-// 	c.JSON(200, gin.H{
-// 		"message": "pong",
-// 	})
-// }
+// ping handler
+//
+//	@Summary		Returns message pong
+//	@Description	Used to check the server is alive
+//	@Produce		json
+//	@Router			/ping [get]
+//	@Success		200	"{"message": "pong"}"
+//	@BasePath
+func testPing(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
+}
