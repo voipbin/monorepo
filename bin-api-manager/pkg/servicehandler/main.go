@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"mime/multipart"
 	"net/http"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -84,6 +85,7 @@ import (
 
 const (
 	defaultTimestamp string = "9999-01-01 00:00:00.000000" // default timestamp
+	TokenExpiration         = time.Hour * 24 * 7           // default token expiration time. 1 week(7 days)
 )
 
 // ServiceHandler is interface for service handle

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/lib/common"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/dgrijalva/jwt-go"
@@ -51,7 +50,7 @@ func (h *serviceHandler) AuthJWTGenerate(data map[string]interface{}) (string, e
 	}
 
 	// token is valid for 7 days
-	claims["expire"] = h.utilHandler.TimeGetCurTimeAdd(common.TokenExpiration)
+	claims["expire"] = h.utilHandler.TimeGetCurTimeAdd(TokenExpiration)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	res, err := token.SignedString(h.jwtKey)

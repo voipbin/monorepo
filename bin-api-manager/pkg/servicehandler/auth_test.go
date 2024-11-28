@@ -14,7 +14,6 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
-	"monorepo/bin-api-manager/lib/common"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -65,7 +64,7 @@ func Test_AuthLogin(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().AgentV1Login(ctx, gomock.Any(), tt.username, tt.password).Return(tt.responseAgent, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(common.TokenExpiration).Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(TokenExpiration).Return(tt.responseCurTime)
 
 			res, err := h.AuthLogin(ctx, tt.username, tt.password)
 			if err != nil {
@@ -88,7 +87,7 @@ func Test_AuthJWTGenerate(t *testing.T) {
 
 		responseCurTime string
 
-		expectRes common.JSON
+		expectRes map[string]interface{}
 	}{
 		{
 			name: "normal",
@@ -99,7 +98,7 @@ func Test_AuthJWTGenerate(t *testing.T) {
 			},
 
 			responseCurTime: "2023-11-19 09:29:11.763331118",
-			expectRes: common.JSON{
+			expectRes: map[string]interface{}{
 				"key1":   "val1",
 				"key2":   "val2",
 				"expire": "2023-11-19 09:29:11.763331118",
@@ -122,7 +121,7 @@ func Test_AuthJWTGenerate(t *testing.T) {
 				jwtKey:      []byte("testkey"),
 			}
 
-			mockUtil.EXPECT().TimeGetCurTimeAdd(common.TokenExpiration).Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(TokenExpiration).Return(tt.responseCurTime)
 			token, err := h.AuthJWTGenerate(tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

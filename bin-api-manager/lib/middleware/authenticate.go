@@ -14,12 +14,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// JWTMiddleware parses JWT token from cookie and stores data and expires date to the context
+// Authenticate parses JWT token from cookie and stores data and expires date to the context
 // JWT Token can be passed as cooke, or Authorization header
-func JWTMiddleware() gin.HandlerFunc {
+func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logrus.WithFields(logrus.Fields{
-			"func":            "JWTMiddleware",
+			"func":            "Authenticate",
 			"request_address": c.ClientIP,
 		})
 
@@ -27,9 +27,6 @@ func JWTMiddleware() gin.HandlerFunc {
 		if err != nil {
 			c.AbortWithStatus(401)
 			return
-
-			// c.Next()
-			// return
 		}
 
 		// get agent info
@@ -38,9 +35,6 @@ func JWTMiddleware() gin.HandlerFunc {
 			log.Errorf("Could not marshal the token data. err: %v", err)
 			c.AbortWithStatus(401)
 			return
-
-			// c.Next()
-			// return
 		}
 
 		a := amagent.Agent{}
@@ -49,9 +43,6 @@ func JWTMiddleware() gin.HandlerFunc {
 
 			c.AbortWithStatus(401)
 			return
-
-			// c.Next()
-			// return
 		}
 
 		c.Set("agent", a)

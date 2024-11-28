@@ -10,7 +10,6 @@ import (
 
 	"monorepo/bin-api-manager/api/models/common"
 	"monorepo/bin-api-manager/api/models/request"
-	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +20,7 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	v1 := app.RouterGroup.Group("/v1.0")
 	ApplyRoutes(v1)
 }
 
