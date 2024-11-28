@@ -47,12 +47,11 @@ import (
 	"monorepo/bin-api-manager/api/v1.0/transfers"
 	"monorepo/bin-api-manager/api/v1.0/trunks"
 	"monorepo/bin-api-manager/api/v1.0/ws"
-	"monorepo/bin-api-manager/lib/middleware"
 )
 
 // ApplyRoutes applies router to the gin Engine
 func ApplyRoutes(r *gin.RouterGroup) {
-	v1 := r.Group("/v1.0", middleware.Authorized)
+	v1 := r.Group("/v1.0")
 
 	// v1.0
 	accesskeys.ApplyRoutes(v1)

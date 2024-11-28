@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"mime/multipart"
 	"net/http"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -84,6 +85,7 @@ import (
 
 const (
 	defaultTimestamp string = "9999-01-01 00:00:00.000000" // default timestamp
+	TokenExpiration         = time.Hour * 24 * 7           // default token expiration time. 1 week(7 days)
 )
 
 // ServiceHandler is interface for service handle
@@ -92,6 +94,7 @@ type ServiceHandler interface {
 	// accesskeys
 	AccesskeyCreate(ctx context.Context, a *amagent.Agent, name string, detail string, expire int32) (*csaccesskey.WebhookMessage, error)
 	AccesskeyGet(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error)
+	AccesskeyRawGetByToken(ctx context.Context, token string) (*csaccesskey.Accesskey, error)
 	AccesskeyGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*csaccesskey.WebhookMessage, error)
 	AccesskeyDelete(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error)
 	AccesskeyUpdate(ctx context.Context, a *amagent.Agent, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error)
@@ -128,6 +131,9 @@ type ServiceHandler interface {
 
 	// auth handlers
 	AuthLogin(ctx context.Context, username, password string) (string, error)
+	AuthJWTGenerate(data map[string]interface{}) (string, error)
+	AuthJWTParse(ctx context.Context, tokenString string) (map[string]interface{}, error)
+	AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]interface{}, error)
 
 	// available numbers
 	AvailableNumberGets(ctx context.Context, a *amagent.Agent, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
@@ -666,6 +672,9 @@ type serviceHandler struct {
 	storageClient *storage.Client
 	projectID     string
 	bucketName    string
+
+	// etc
+	jwtKey []byte
 }
 
 // NewServiceHandler return ServiceHandler interface
@@ -677,6 +686,8 @@ func NewServiceHandler(
 	credentialBase64 string,
 	projectID string,
 	bucketName string,
+
+	jwtKey string,
 ) ServiceHandler {
 	log := logrus.WithField("func", "NewServiceHandler")
 
@@ -705,6 +716,8 @@ func NewServiceHandler(
 		storageClient: storageClient,
 		projectID:     projectID,
 		bucketName:    bucketName,
+
+		jwtKey: []byte(jwtKey),
 	}
 }
 
