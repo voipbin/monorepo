@@ -5,7 +5,6 @@ import (
 	"mime/multipart"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/api/models/common"
-	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	smfile "monorepo/bin-storage-manager/models/file"
@@ -19,7 +18,7 @@ import (
 )
 
 func setupServer(app *gin.Engine) {
-	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
+	v1 := app.RouterGroup.Group("/v1.0")
 	ApplyRoutes(v1)
 }
 

@@ -5,6 +5,7 @@ import (
 
 	"monorepo/bin-api-manager/api/auth"
 	apiv1 "monorepo/bin-api-manager/api/v1.0"
+	"monorepo/bin-api-manager/lib/middleware"
 )
 
 // ApplyRoutes applies router to gin Router
@@ -12,8 +13,9 @@ func ApplyRoutes(r *gin.Engine) {
 	api := r.Group("/")
 
 	api.GET("ping", ping)
-
 	auth.ApplyRoutes(api)
+
+	api.Use(middleware.Authenticate())
 	apiv1.ApplyRoutes(api)
 }
 

@@ -150,6 +150,21 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyGets(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGets", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyGets), ctx, a, size, token)
 }
 
+// AccesskeyRawGetByToken mocks base method.
+func (m *MockServiceHandler) AccesskeyRawGetByToken(ctx context.Context, token string) (*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccesskeyRawGetByToken", ctx, token)
+	ret0, _ := ret[0].(*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccesskeyRawGetByToken indicates an expected call of AccesskeyRawGetByToken.
+func (mr *MockServiceHandlerMockRecorder) AccesskeyRawGetByToken(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyRawGetByToken", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyRawGetByToken), ctx, token)
+}
+
 // AccesskeyUpdate mocks base method.
 func (m *MockServiceHandler) AccesskeyUpdate(ctx context.Context, a *agent.Agent, accesskeyID uuid.UUID, name, detail string) (*accesskey.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -388,6 +403,51 @@ func (m *MockServiceHandler) AgentUpdateTagIDs(ctx context.Context, a *agent.Age
 func (mr *MockServiceHandlerMockRecorder) AgentUpdateTagIDs(ctx, a, agentID, tagIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdateTagIDs", reflect.TypeOf((*MockServiceHandler)(nil).AgentUpdateTagIDs), ctx, a, agentID, tagIDs)
+}
+
+// AuthAccesskeyParse mocks base method.
+func (m *MockServiceHandler) AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthAccesskeyParse", ctx, accesskey)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthAccesskeyParse indicates an expected call of AuthAccesskeyParse.
+func (mr *MockServiceHandlerMockRecorder) AuthAccesskeyParse(ctx, accesskey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthAccesskeyParse", reflect.TypeOf((*MockServiceHandler)(nil).AuthAccesskeyParse), ctx, accesskey)
+}
+
+// AuthJWTGenerate mocks base method.
+func (m *MockServiceHandler) AuthJWTGenerate(data map[string]any) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthJWTGenerate", data)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthJWTGenerate indicates an expected call of AuthJWTGenerate.
+func (mr *MockServiceHandlerMockRecorder) AuthJWTGenerate(data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthJWTGenerate", reflect.TypeOf((*MockServiceHandler)(nil).AuthJWTGenerate), data)
+}
+
+// AuthJWTParse mocks base method.
+func (m *MockServiceHandler) AuthJWTParse(ctx context.Context, tokenString string) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthJWTParse", ctx, tokenString)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthJWTParse indicates an expected call of AuthJWTParse.
+func (mr *MockServiceHandlerMockRecorder) AuthJWTParse(ctx, tokenString any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthJWTParse", reflect.TypeOf((*MockServiceHandler)(nil).AuthJWTParse), ctx, tokenString)
 }
 
 // AuthLogin mocks base method.

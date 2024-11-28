@@ -84,6 +84,34 @@ func (h *serviceHandler) AccesskeyGet(ctx context.Context, a *amagent.Agent, acc
 	return res, nil
 }
 
+// AccesskeyRawGetByToken sends a request to customer-manager
+// to getting a accesskey.
+// it returns accesskey if it succeed.
+func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token string) (*csaccesskey.Accesskey, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "AccesskeyGetByToken",
+	})
+
+	// filters
+	filters := map[string]string{
+		"token":   token,
+		"deleted": "false",
+	}
+
+	tmps, err := h.reqHandler.CustomerV1AccesskeyGets(ctx, token, 10, filters)
+	if err != nil {
+		log.Infof("Could not get accesskeys info. err: %v", err)
+		return nil, err
+	}
+
+	if len(tmps) == 0 {
+		return nil, fmt.Errorf("not found")
+	}
+
+	res := tmps[0]
+	return &res, nil
+}
+
 // AccesskeyGets sends a request to customer-manager
 // to getting a list of accesskeys.
 // it returns list of accesskeys if it succeed.
