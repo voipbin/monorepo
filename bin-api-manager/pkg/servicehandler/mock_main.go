@@ -436,18 +436,18 @@ func (mr *MockServiceHandlerMockRecorder) AuthJWTGenerate(data any) *gomock.Call
 }
 
 // AuthJWTParse mocks base method.
-func (m *MockServiceHandler) AuthJWTParse(tokenString string) (map[string]any, error) {
+func (m *MockServiceHandler) AuthJWTParse(ctx context.Context, tokenString string) (map[string]any, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AuthJWTParse", tokenString)
+	ret := m.ctrl.Call(m, "AuthJWTParse", ctx, tokenString)
 	ret0, _ := ret[0].(map[string]any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AuthJWTParse indicates an expected call of AuthJWTParse.
-func (mr *MockServiceHandlerMockRecorder) AuthJWTParse(tokenString any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AuthJWTParse(ctx, tokenString any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthJWTParse", reflect.TypeOf((*MockServiceHandler)(nil).AuthJWTParse), tokenString)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthJWTParse", reflect.TypeOf((*MockServiceHandler)(nil).AuthJWTParse), ctx, tokenString)
 }
 
 // AuthLogin mocks base method.

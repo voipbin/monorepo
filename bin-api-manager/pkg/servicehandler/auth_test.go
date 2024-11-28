@@ -120,6 +120,7 @@ func Test_AuthJWTGenerate(t *testing.T) {
 				utilHandler: mockUtil,
 				jwtKey:      []byte("testkey"),
 			}
+			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTimeAdd(TokenExpiration).Return(tt.responseCurTime)
 			token, err := h.AuthJWTGenerate(tt.data)
@@ -128,7 +129,7 @@ func Test_AuthJWTGenerate(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			res, err := h.AuthJWTParse(token)
+			res, err := h.AuthJWTParse(ctx, token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

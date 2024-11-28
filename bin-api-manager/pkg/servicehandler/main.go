@@ -132,7 +132,7 @@ type ServiceHandler interface {
 	// auth handlers
 	AuthLogin(ctx context.Context, username, password string) (string, error)
 	AuthJWTGenerate(data map[string]interface{}) (string, error)
-	AuthJWTParse(tokenString string) (map[string]interface{}, error)
+	AuthJWTParse(ctx context.Context, tokenString string) (map[string]interface{}, error)
 	AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]interface{}, error)
 
 	// available numbers

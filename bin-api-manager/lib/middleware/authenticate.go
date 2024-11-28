@@ -14,8 +14,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Authenticate parses JWT token from cookie and stores data and expires date to the context
-// JWT Token can be passed as cooke, or Authorization header
+const (
+	authTypeNone      = ""
+	authTypeToken     = "token"
+	authTypeAccesskey = "accesskey"
+)
+
 func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logrus.WithFields(logrus.Fields{
@@ -23,14 +27,14 @@ func Authenticate() gin.HandlerFunc {
 			"request_address": c.ClientIP,
 		})
 
-		tokenData, err := getTokenData(c)
+		authData, err := getAuthData(c)
 		if err != nil {
 			c.AbortWithStatus(401)
 			return
 		}
 
 		// get agent info
-		tmpAgent, err := json.Marshal(tokenData["agent"])
+		tmpAgent, err := json.Marshal(authData["agent"])
 		if err != nil {
 			log.Errorf("Could not marshal the token data. err: %v", err)
 			c.AbortWithStatus(401)
@@ -50,37 +54,37 @@ func Authenticate() gin.HandlerFunc {
 	}
 }
 
-func getTokenData(c *gin.Context) (map[string]interface{}, error) {
-	t, ts, err := getToken(c)
+func getAuthData(c *gin.Context) (map[string]interface{}, error) {
+	authType, authString, err := getAuthString(c)
 	if err != nil {
 		return nil, err
 	}
 
 	serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
-	switch t {
-	case "token":
-		return serviceHandler.AuthJWTParse(ts)
+	switch authType {
+	case authTypeToken:
+		return serviceHandler.AuthJWTParse(c.Request.Context(), authString)
 
-	case "accesskey":
-		return serviceHandler.AuthAccesskeyParse(c.Request.Context(), ts)
+	case authTypeAccesskey:
+		return serviceHandler.AuthAccesskeyParse(c.Request.Context(), authString)
 
 	default:
-		return nil, fmt.Errorf("unknown token type: %s", t)
+		return nil, fmt.Errorf("unknown auth type: %s", authType)
 	}
 }
 
-func getToken(c *gin.Context) (string, string, error) {
+func getAuthString(c *gin.Context) (string, string, error) {
 	tokenString := getTokenString(c)
 	if tokenString != "" {
-		return "token", tokenString, nil
+		return authTypeToken, tokenString, nil
 	}
 
 	accesskey := getAccesskey(c)
 	if accesskey != "" {
-		return "accesskey", accesskey, nil
+		return authTypeAccesskey, accesskey, nil
 	}
 
-	return "", "", fmt.Errorf("no token found")
+	return authTypeNone, "", fmt.Errorf("no auth found")
 }
 
 // getTokenString returns the token string from the gin context.

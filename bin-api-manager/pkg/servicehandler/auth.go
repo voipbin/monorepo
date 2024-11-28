@@ -61,7 +61,7 @@ func (h *serviceHandler) AuthJWTGenerate(data map[string]interface{}) (string, e
 	return res, nil
 }
 
-func (h *serviceHandler) AuthJWTParse(tokenString string) (map[string]interface{}, error) {
+func (h *serviceHandler) AuthJWTParse(ctx context.Context, tokenString string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// don't forget to validate the alg is what you expect
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
