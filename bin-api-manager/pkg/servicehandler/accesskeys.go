@@ -98,7 +98,7 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 		"deleted": "false",
 	}
 
-	tmps, err := h.reqHandler.CustomerV1AccesskeyGets(ctx, token, 10, filters)
+	tmps, err := h.reqHandler.CustomerV1AccesskeyGets(ctx, "", 10, filters)
 	if err != nil {
 		log.Infof("Could not get accesskeys info. err: %v", err)
 		return nil, err

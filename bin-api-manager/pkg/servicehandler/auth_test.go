@@ -8,6 +8,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -136,6 +137,153 @@ func Test_AuthJWTGenerate(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AuthAccesskeyParse(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accesskey string
+
+		responseAccesskeys []csaccesskey.Accesskey
+		responseCurTime    string
+
+		expectRes map[string]interface{}
+	}{
+		{
+			name: "normal",
+
+			accesskey: "test_accesskey",
+
+			responseAccesskeys: []csaccesskey.Accesskey{
+				{
+					ID:         uuid.FromStringOrNil("42ea8504-af3f-11ef-8714-d3091c69e57f"),
+					CustomerID: uuid.FromStringOrNil("a68a0422-af3f-11ef-a15e-5f3bf088a0e3"),
+					Name:       "test key name",
+					Detail:     "test key detail",
+					TMExpire:   defaultTimestamp,
+					TMDelete:   defaultTimestamp,
+				},
+			},
+			responseCurTime: "2023-11-19 09:29:11.763331118",
+			expectRes: map[string]interface{}{
+				"agent": &amagent.Agent{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("42ea8504-af3f-11ef-8714-d3091c69e57f"),
+						CustomerID: uuid.FromStringOrNil("a68a0422-af3f-11ef-a15e-5f3bf088a0e3"),
+					},
+					Name:   "test key name",
+					Detail: "test key detail",
+
+					Permission: amagent.PermissionCustomerAdmin,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &serviceHandler{
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
+				jwtKey:      []byte("testkey"),
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+
+			res, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AuthAccesskeyParse_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accesskey string
+
+		responseAccesskeys []csaccesskey.Accesskey
+		responseCurTime    string
+	}{
+		{
+			name: "accesskey has expired",
+
+			accesskey: "test_accesskey",
+
+			responseAccesskeys: []csaccesskey.Accesskey{
+				{
+					ID:         uuid.FromStringOrNil("42ea8504-af3f-11ef-8714-d3091c69e57f"),
+					CustomerID: uuid.FromStringOrNil("a68a0422-af3f-11ef-a15e-5f3bf088a0e3"),
+					Name:       "test key name",
+					Detail:     "test key detail",
+					TMExpire:   "2023-11-19 09:29:11.763331117",
+					TMDelete:   defaultTimestamp,
+				},
+			},
+			responseCurTime: "2023-11-19 09:29:11.763331118",
+		},
+		{
+			name: "token has deleted",
+
+			accesskey: "test_accesskey",
+
+			responseAccesskeys: []csaccesskey.Accesskey{
+				{
+					ID:         uuid.FromStringOrNil("42ea8504-af3f-11ef-8714-d3091c69e57f"),
+					CustomerID: uuid.FromStringOrNil("a68a0422-af3f-11ef-a15e-5f3bf088a0e3"),
+					Name:       "test key name",
+					Detail:     "test key detail",
+					TMExpire:   defaultTimestamp,
+					TMDelete:   "2023-11-19 09:29:11.763331117",
+				},
+			},
+			responseCurTime: "2023-11-19 09:29:11.763331118",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &serviceHandler{
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
+				jwtKey:      []byte("testkey"),
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+
+			_, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
+			if err == nil {
+				t.Errorf("Wrong match. expected: error, got: ok")
 			}
 		})
 	}
