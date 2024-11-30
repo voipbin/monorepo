@@ -99,6 +99,8 @@ func (h *serviceHandler) AuthAccesskeyParse(ctx context.Context, accesskey strin
 	curTime := h.utilHandler.TimeGetCurTime()
 	if ak.TMExpire < curTime {
 		return nil, errors.New("token expired")
+	} else if ak.TMDelete < curTime {
+		return nil, errors.New("access key deleted")
 	}
 
 	// generate dummy agent with
