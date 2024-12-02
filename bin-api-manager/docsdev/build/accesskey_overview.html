@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-        <title>Token &mdash; voipbin  documentation</title>
+        <title>Accesskey API Overview &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=ea6a6c20" />
@@ -74,6 +74,7 @@
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
@@ -123,7 +124,7 @@
                         <nav aria-label="breadcrumb">
     <ol class="breadcrumb m-0 p-0 bg-transparent">
         <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Token</li>
+        <li class="breadcrumb-item active" aria-current="page">Accesskey API Overview</li>
     </ol>
 </nav>
                     </div>
@@ -135,7 +136,7 @@
                             <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
                             <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
                         </button>
-    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/quickstart_token.rst.txt" rel="nofollow">
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/accesskey_overview.rst.txt" rel="nofollow">
         <span class="btn-icon"><span class="fas fa-code"></span></span>
         <span class="btn-text">View source</span>
     </a>
@@ -150,30 +151,45 @@
                 <div class="row">
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
-    <section id="token">
-<span id="quickstart-token"></span><h1>Token<a class="headerlink" href="#token" title="Link to this heading"></a></h1>
-<p>In this Quickstart, you’ll learn how to sign up and generate to your token.</p>
-<section id="sign-up-to-voipbin">
-<h2>Sign up to VoIPBin<a class="headerlink" href="#sign-up-to-voipbin" title="Link to this heading"></a></h2>
-<p>Send the sign up request to <cite>pchero21&#64;gmail.com</cite></p>
-</section>
-<section id="generate-token">
-<h2>Generate token<a class="headerlink" href="#generate-token" title="Link to this heading"></a></h2>
-<p>To generate jwt token, you need to send the request with your username and password like the below.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/login&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;username&quot;: &quot;your-voipbin-username&quot;,
-        &quot;password&quot;: &quot;your-voipbin-password&quot;
-    }&#39;
-
-{
-    &quot;username&quot;: &quot;voipbin&quot;,
-    &quot;token&quot;: &quot;eyJhbsdiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VubG1ieXVqamowbWcueC5waXBlZHJlYW0ubmV0XCIsXCJsaW5lX3NlY3JldFwiOlwiYmE1ZjA1NzVkODI2ZDViNGEwNTJhNDMxNDVlZjEzOTFcIixcImxpbmVfdG9rZW5cIjpcInRzZklpREIvMmNHSTVzSFJNSW9wN1MzU1M0S3NiRWxKL3VrUUtzNkxwSFkxWG9HMnBUTUhxZGl5TE51OGFNZGEycGkzdlRYc2NDS3A4WEdFdmZsNmRtSVQxbmZUVGRNa21ZODRpUkxJT0lBbDg1aUcvWFp1ZUkxV0JSdmNoZlY4VGxad0RtRUNiU1N6TCtXdXYrak8rZ2RCMDR0ODkvMU8vdzFjRG55aWxGVT1cIixcInBlcm1pc3Npb25faWRzXCI6W1wiMDM3OTZlMTQtN2NiNC0xMWVjLTlkYmEtZTcyMDIzZWZkMWM2XCJdLFwidG1fY3JlYXRlXCI6XCIyMDIyLTAyLTAxIDAwOjAwOjAwLjAwMDAwMFwiLFwidG1fdXBkYXRlXCI6XCIyMDIzLTAyLTIxIDA4OjAxOjEyLjI2MDM4OFwiLFwidG1fZGVsZXRlXCI6XCI5OTk5LTAxLTAxIDAwOjAwOjAwLjAwMDAsMFwifSIsamV4cCI6MTY4MDcxNTQ5M30.mEYsKYdRnoVGVOl7Zk21YBbxMvD-0lD1dlQVnav4kRw&quot;
-}
+    <section id="accesskey-api-overview">
+<span id="accesskey-overview"></span><h1>Accesskey API Overview<a class="headerlink" href="#accesskey-api-overview" title="Link to this heading"></a></h1>
+<p>The Accesskey API provides a secure and efficient way to authenticate and interact with the VoIPBIN platform. It utilizes access keys as API tokens to enable authorized access to API endpoints. This ensures seamless integration while maintaining the security and integrity of your operations.</p>
+<section id="api-usage">
+<h2>API Usage<a class="headerlink" href="#api-usage" title="Link to this heading"></a></h2>
+<p>To use the Accesskey, pass the <cite>token</cite> in the query parameters or headers of your API requests. Below is an example usage:</p>
+<section id="example-request">
+<h3>Example Request<a class="headerlink" href="#example-request" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;https://api.voipbin.net/v1.0/calls?accesskey=DuRWq5T4DAK32dw4&#39;</span>
 </pre></div>
 </div>
-<p>The token is valid for 7 days.</p>
+</section>
+<section id="description-of-parameters">
+<h3>Description of Parameters<a class="headerlink" href="#description-of-parameters" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Accesskey</strong>: The <cite>accesskey</cite> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.</p></li>
+</ul>
+</section>
+</section>
+<section id="authentication">
+<h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
+<p>The <cite>token</cite> serves as the authentication credential. Ensure you store it securely and avoid exposing it in client-side code or public repositories.</p>
+</section>
+<section id="lifecycles-and-expiry">
+<h2>Lifecycles and Expiry<a class="headerlink" href="#lifecycles-and-expiry" title="Link to this heading"></a></h2>
+<p>Accesskeys come with lifecycle timestamps:</p>
+<ul class="simple">
+<li><p><strong>tm_create</strong>: The creation timestamp.</p></li>
+<li><p><strong>tm_update</strong>: The last updated timestamp.</p></li>
+<li><p><strong>tm_expire</strong>: The expiration timestamp. Ensure you rotate keys before this date.</p></li>
+<li><p><strong>tm_delete</strong>: The deletion timestamp, if applicable.</p></li>
+</ul>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Always use HTTPS to ensure secure communication.</p></li>
+<li><p>Tokens should be rotated periodically to enhance security.</p></li>
+</ul>
 </section>
 </section>
 
@@ -185,9 +201,15 @@
                         <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
-<li><a class="reference internal" href="#">Token</a><ul>
-<li><a class="reference internal" href="#sign-up-to-voipbin">Sign up to VoIPBin</a></li>
-<li><a class="reference internal" href="#generate-token">Generate token</a></li>
+<li><a class="reference internal" href="#">Accesskey API Overview</a><ul>
+<li><a class="reference internal" href="#api-usage">API Usage</a><ul>
+<li><a class="reference internal" href="#example-request">Example Request</a></li>
+<li><a class="reference internal" href="#description-of-parameters">Description of Parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#authentication">Authentication</a></li>
+<li><a class="reference internal" href="#lifecycles-and-expiry">Lifecycles and Expiry</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
 </ul>
 </li>
 </ul>
