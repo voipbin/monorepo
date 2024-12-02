@@ -163,8 +163,7 @@
 <p>To use the Accesskey, pass the <cite>token</cite> in the query parameters or headers of your API requests. Below is an example usage:</p>
 <section id="example-request">
 <h4>Example Request<a class="headerlink" href="#example-request" title="Link to this heading"></a></h4>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=DuRWq5T4DAK32dw4&#39;</span><span class="w"> </span><span class="se">\</span>
---data<span class="w"> </span><span class="s1">&#39;&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;https://api.voipbin.net/v1.0/calls?accesskey=DuRWq5T4DAK32dw4&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -174,23 +173,6 @@
 <li><p><strong>Accesskey</strong>: The <cite>accesskey</cite> query parameter must contain the token issued for the customer. This token uniquely identifies and authorizes the request.</p></li>
 </ul>
 </section>
-</section>
-<section id="json-structure">
-<h3>JSON Structure<a class="headerlink" href="#json-structure" title="Link to this heading"></a></h3>
-<p>Below is the JSON representation of the Accesskey resource:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">   </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5f1f8f7e-9b3d-4c60-8465-b69e9f28b6db&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My API Key&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;For accessing reporting APIs&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DuRWq5T4DAK32dw4&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;tm_expire&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-04-28 01:41:40.503790&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;tm_create&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2022-04-28 01:41:40.503790&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;tm_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2022-04-28 01:41:40.503790&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;tm_delete&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
 </section>
 <section id="authentication">
 <h3>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h3>
@@ -357,7 +339,6 @@ A timestamp (<cite>ISO 8601 format</cite>) indicating when the key was marked fo
 <li><a class="reference internal" href="#description-of-parameters">Description of Parameters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#json-structure">JSON Structure</a></li>
 <li><a class="reference internal" href="#authentication">Authentication</a></li>
 <li><a class="reference internal" href="#lifecycles-and-expiry">Lifecycles and Expiry</a></li>
 <li><a class="reference internal" href="#notes">Notes</a></li>
