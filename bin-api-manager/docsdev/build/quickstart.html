@@ -76,6 +76,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
@@ -154,16 +155,39 @@
                         <main role="main" id="main">
     <section id="quickstart">
 <span id="quickstart-main"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
-<section id="token">
-<span id="quickstart-token"></span><h2>Token<a class="headerlink" href="#token" title="Link to this heading"></a></h2>
-<p>In this Quickstart, you’ll learn how to sign up and generate to your token.</p>
+<section id="signup">
+<span id="quickstart-signup"></span><h2>Signup<a class="headerlink" href="#signup" title="Link to this heading"></a></h2>
+<p>In this Quickstart, you’ll learn how to sign up and receive your account credentials to start using the VoIPBin API.</p>
 <section id="sign-up-to-voipbin">
 <h3>Sign up to VoIPBin<a class="headerlink" href="#sign-up-to-voipbin" title="Link to this heading"></a></h3>
-<p>Send the sign up request to <cite>pchero21&#64;gmail.com</cite></p>
+<p>To begin, send a sign-up request email to:</p>
+<p><strong>pchero21&#64;gmail.com</strong></p>
+<p>Include the following details in your email:</p>
+<ul class="simple">
+<li><p>Your name or organization name.</p></li>
+<li><p>Contact information.</p></li>
+<li><p>A brief description of how you plan to use VoIPBin.</p></li>
+</ul>
+<p><strong>Note:</strong> VoIPBin is currently a personal project. Automatic account creation is not available at this time, so all requests are handled manually. Please allow some time for your request to be processed.</p>
 </section>
+<section id="what-happens-next">
+<h3>What Happens Next<a class="headerlink" href="#what-happens-next" title="Link to this heading"></a></h3>
+<p>Once your request is processed, you will receive an email with the following account credentials:</p>
+<ul class="simple">
+<li><p><strong>ID</strong>: Your unique account identifier.</p></li>
+<li><p><strong>Password</strong>: A secure password to access your account.</p></li>
+</ul>
+<p>Keep these credentials secure, as they are required to log in and access VoIPBin services.</p>
+<p>After receiving your account credentials, you can start exploring VoIPBin features. Begin with the tutorial guides to understand how to configure and use the API effectively.</p>
+</section>
+</section>
+<section id="authentication">
+<span id="quickstart-authentication"></span><h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
+<p>In this Quickstart, you’ll learn how to authenticate your requests using either a <strong>Token</strong> or an <strong>Accesskey</strong>.</p>
+<p>To interact with the VoIPBin API, you need to authenticate your requests using either a <strong>Token</strong> or an <strong>Accesskey</strong>. Both options serve the same purpose — validating your request and authenticating your identity.</p>
 <section id="generate-token">
-<h3>Generate token<a class="headerlink" href="#generate-token" title="Link to this heading"></a></h3>
-<p>To generate jwt token, you need to send the request with your username and password like the below.</p>
+<h3>Generate Token<a class="headerlink" href="#generate-token" title="Link to this heading"></a></h3>
+<p>To generate a JWT token, send a request with your username and password, as shown in the example below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/login&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -172,12 +196,43 @@
     }&#39;
 
 {
-    &quot;username&quot;: &quot;voipbin&quot;,
-    &quot;token&quot;: &quot;eyJhbsdiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VubG1ieXVqamowbWcueC5waXBlZHJlYW0ubmV0XCIsXCJsaW5lX3NlY3JldFwiOlwiYmE1ZjA1NzVkODI2ZDViNGEwNTJhNDMxNDVlZjEzOTFcIixcImxpbmVfdG9rZW5cIjpcInRzZklpREIvMmNHSTVzSFJNSW9wN1MzU1M0S3NiRWxKL3VrUUtzNkxwSFkxWG9HMnBUTUhxZGl5TE51OGFNZGEycGkzdlRYc2NDS3A4WEdFdmZsNmRtSVQxbmZUVGRNa21ZODRpUkxJT0lBbDg1aUcvWFp1ZUkxV0JSdmNoZlY4VGxad0RtRUNiU1N6TCtXdXYrak8rZ2RCMDR0ODkvMU8vdzFjRG55aWxGVT1cIixcInBlcm1pc3Npb25faWRzXCI6W1wiMDM3OTZlMTQtN2NiNC0xMWVjLTlkYmEtZTcyMDIzZWZkMWM2XCJdLFwidG1fY3JlYXRlXCI6XCIyMDIyLTAyLTAxIDAwOjAwOjAwLjAwMDAwMFwiLFwidG1fdXBkYXRlXCI6XCIyMDIzLTAyLTIxIDA4OjAxOjEyLjI2MDM4OFwiLFwidG1fZGVsZXRlXCI6XCI5OTk5LTAxLTAxIDAwOjAwOjAwLjAwMDAsMFwifSIsamV4cCI6MTY4MDcxNTQ5M30.mEYsKYdRnoVGVOl7Zk21YBbxMvD-0lD1dlQVnav4kRw&quot;
+    &quot;username&quot;: &quot;your-voipbin-username&quot;,
+    &quot;token&quot;: &quot;eyJhbsdiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1TcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VubG1ieXVqamowbWcueC5waXBlZHJlYW0ubmV0XCIsXCJsaW5lX3NlY3JldFwiOlwiYmE1ZjA1NzVkODI2ZDViNGEwNTJhNDMxNDVlZjEzOTFcIixcImxpbmVfdG9rZW5cIjpcInRzZklpREIvMmNHSTVzSFJNSW9wN1MzU1M0S3NiRWxKL3VrUUtzNkxwSFkxWG9GM2hxdi9sF0CtLg0SY9U0&quot;
 }
 </pre></div>
 </div>
-<p>The token is valid for 7 days.</p>
+<p>The token will be valid for 7 days.</p>
+</section>
+<section id="generate-accesskey">
+<h3>Generate Accesskey<a class="headerlink" href="#generate-accesskey" title="Link to this heading"></a></h3>
+<p>You can generate your access key directly from the VoIPBin admin page, as shown in the image below.</p>
+<p>To use the API, you will need an access key, so generating it from the admin page is required. When creating the access key, you can specify an expire parameter to define how long the access key will remain valid.</p>
+<img alt="_images/quickstart_authentication_accesskey.png" src="_images/quickstart_authentication_accesskey.png" />
+<p>For more details on how to use the <strong>Accesskey</strong>, refer to the full tutorial <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="using-your-token-or-accesskey">
+<h3>Using Your Token or Accesskey<a class="headerlink" href="#using-your-token-or-accesskey" title="Link to this heading"></a></h3>
+<p>You can use either a <strong>Token</strong> or an <strong>Accesskey</strong> for authentication in API requests. Both serve the same purpose, so choose the one that best fits your workflow.</p>
+<ul class="simple">
+<li><p>For <strong>Token</strong>: Include it in the request header or body when making API requests.</p></li>
+<li><p>For <strong>Accesskey</strong>: Include the access key token in the <cite>accesskey</cite> query parameter when making API requests.</p></li>
+</ul>
+</section>
+<section id="example-to-retrieve-a-list-of-access-keys">
+<h3>Example to retrieve a list of access keys<a class="headerlink" href="#example-to-retrieve-a-list-of-access-keys" title="Link to this heading"></a></h3>
+<p>Using <strong>Accesskey</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=AuTKq6F5ABCD3xw9&#39;
+</pre></div>
+</div>
+<p>Using <strong>Token</strong> (in the request header):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys&#39; \
+    --header &#39;Authorization: Bearer &lt;your-token&gt;&#39;
+</pre></div>
+</div>
+<p>Using <strong>Token</strong> (in the request parameter):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?token=&lt;your token&gt;&#39;
+</pre></div>
+</div>
 </section>
 </section>
 <section id="call">
@@ -415,9 +470,16 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Quickstart</a><ul>
-<li><a class="reference internal" href="#token">Token</a><ul>
+<li><a class="reference internal" href="#signup">Signup</a><ul>
 <li><a class="reference internal" href="#sign-up-to-voipbin">Sign up to VoIPBin</a></li>
-<li><a class="reference internal" href="#generate-token">Generate token</a></li>
+<li><a class="reference internal" href="#what-happens-next">What Happens Next</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#authentication">Authentication</a><ul>
+<li><a class="reference internal" href="#generate-token">Generate Token</a></li>
+<li><a class="reference internal" href="#generate-accesskey">Generate Accesskey</a></li>
+<li><a class="reference internal" href="#using-your-token-or-accesskey">Using Your Token or Accesskey</a></li>
+<li><a class="reference internal" href="#example-to-retrieve-a-list-of-access-keys">Example to retrieve a list of access keys</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#call">Call</a><ul>
