@@ -1,23 +1,22 @@
-package ws
+package service_agents
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/api/models/common"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-
-	"monorepo/bin-api-manager/api/models/common"
-	"monorepo/bin-api-manager/pkg/servicehandler"
 )
 
-// wsGET handles POST /ws request.
+// wsGET handles POST service_agents/ws request.
 // It creates a new websocket connection.
 //
 //	@Summary		Create a new websocket connection.
 //	@Description	create a new websocket connection
 //	@Produce		json
 //	@Success		200	{object}	queue.WebhookMessage
-//	@Router			/v1.0/ws [get]
+//	@Router			/v1.0/service_agents/ws [get]
 func wsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "wsGET",
