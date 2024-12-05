@@ -10,6 +10,7 @@ import (
 // v1 data type request struct for
 // /v1/external-medias POST
 type V1DataExternalMediasPost struct {
+	ID             uuid.UUID                   `json:"id,omitempty"`
 	ReferenceType  externalmedia.ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID    uuid.UUID                   `json:"reference_id,omitempty"`
 	NoInsertMedia  bool                        `json:"no_insert_media,omitempty"` // note: do not set this true without caution. the only transcribe-manager sets this to true.

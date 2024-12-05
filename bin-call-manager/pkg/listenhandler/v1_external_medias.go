@@ -72,6 +72,7 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock
 
 	tmp, err := h.externalMediaHandler.Start(
 		ctx,
+		req.ID,
 		req.ReferenceType,
 		req.ReferenceID,
 		req.NoInsertMedia,

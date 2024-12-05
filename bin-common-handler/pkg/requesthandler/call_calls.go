@@ -362,6 +362,7 @@ func (r *requestHandler) CallV1CallRemoveChainedCall(ctx context.Context, callID
 func (r *requestHandler) CallV1CallExternalMediaStart(
 	ctx context.Context,
 	callID uuid.UUID,
+	externalMediaID uuid.UUID,
 	externalHost string, // external host:port
 	encapsulation string, // rtp
 	transport string, // udp
@@ -372,12 +373,13 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDExternalMediaPost{
-		ExternalHost:   externalHost,
-		Encapsulation:  encapsulation,
-		Transport:      transport,
-		ConnectionType: connectionType,
-		Format:         format,
-		Direction:      direction,
+		ExternalMediaID: externalMediaID,
+		ExternalHost:    externalHost,
+		Encapsulation:   encapsulation,
+		Transport:       transport,
+		ConnectionType:  connectionType,
+		Format:          format,
+		Direction:       direction,
 	})
 	if err != nil {
 		return nil, err
