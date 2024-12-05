@@ -79,6 +79,7 @@ require (
 
 require (
 	cloud.google.com/go/storage v1.47.0
+	github.com/CyCoreSystems/audiosocket v0.2.1
 	github.com/gorilla/websocket v1.5.3
 	github.com/pebbe/zmq4 v1.2.11
 	github.com/pion/rtp v1.8.9
