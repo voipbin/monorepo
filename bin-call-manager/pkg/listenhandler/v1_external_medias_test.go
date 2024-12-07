@@ -22,6 +22,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
+		expectID             uuid.UUID
 		expectReferenceType  externalmedia.ReferenceType
 		expectReferenceID    uuid.UUID
 		expectNoInsertMedia  bool
@@ -43,9 +44,10 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 				URI:      "/v1/external-medias",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"reference_type":"call","reference_id":"45832182-97b2-11ed-8f17-33590535a404","no_insert_media":false,"external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","reference_type":"call","reference_id":"45832182-97b2-11ed-8f17-33590535a404","no_insert_media":false,"external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 
+			uuid.FromStringOrNil("077a8dce-b332-11ef-a775-d39c4839f5a6"),
 			externalmedia.ReferenceTypeCall,
 			uuid.FromStringOrNil("45832182-97b2-11ed-8f17-33590535a404"),
 			false,
@@ -57,12 +59,12 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 			"both",
 
 			&externalmedia.ExternalMedia{
-				ID: uuid.FromStringOrNil("1fc622f4-97b3-11ed-b8f9-bfd2a55f5399"),
+				ID: uuid.FromStringOrNil("077a8dce-b332-11ef-a775-d39c4839f5a6"),
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1fc622f4-97b3-11ed-b8f9-bfd2a55f5399","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),
+				Data:       []byte(`{"id":"077a8dce-b332-11ef-a775-d39c4839f5a6","asterisk_id":"","channel_id":"","reference_typee":"","reference_id":"00000000-0000-0000-0000-000000000000","local_ip":"","local_port":0,"external_host":"","encapsulation":"","transport":"","connection_type":"","format":"","direction":""}`),
 			},
 		},
 	}
@@ -82,6 +84,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 
 			mockExternal.EXPECT().Start(
 				gomock.Any(),
+				tt.expectID,
 				tt.expectReferenceType,
 				tt.expectReferenceID,
 				tt.expectNoInsertMedia,

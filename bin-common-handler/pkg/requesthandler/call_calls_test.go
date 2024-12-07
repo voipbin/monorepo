@@ -823,13 +823,14 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID         uuid.UUID
-		externalHost   string
-		encapsulation  string
-		transport      string
-		connectionType string
-		format         string
-		direction      string
+		callID          uuid.UUID
+		externalMediaID uuid.UUID
+		externalHost    string
+		encapsulation   string
+		transport       string
+		connectionType  string
+		format          string
+		direction       string
 
 		response *sock.Response
 
@@ -840,6 +841,7 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
+			uuid.FromStringOrNil("766dd784-b334-11ef-a452-ef0fb4017ab9"),
 			"localhost:5060",
 			"rtp",
 			"udp",
@@ -857,7 +859,7 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 				URI:      "/v1/calls/a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb/external-media",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"external_media_id":"766dd784-b334-11ef-a452-ef0fb4017ab9","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 			&cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -881,7 +883,7 @@ func Test_CallV1CallExternalMediaStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallExternalMediaStart(ctx, tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1CallExternalMediaStart(ctx, tt.callID, tt.externalMediaID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

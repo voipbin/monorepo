@@ -112,7 +112,7 @@ func (h *channelHandler) parseStasisData(e *ari.StasisStart) map[channel.StasisD
 		i := 0
 		for k := range e.Args {
 			if i == 0 {
-				res[channel.StasisDataTypeBridgeID] = k
+				res[channel.StasisDataTypeExternalMediaID] = k
 			}
 			i++
 		}
