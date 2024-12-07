@@ -22,13 +22,14 @@ func Test_ExternalMediaStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id             uuid.UUID
-		externalHost   string
-		encapsulation  externalmedia.Encapsulation
-		transport      externalmedia.Transport
-		connectionType string
-		format         string
-		direction      string
+		id              uuid.UUID
+		externalMediaID uuid.UUID
+		externalHost    string
+		encapsulation   externalmedia.Encapsulation
+		transport       externalmedia.Transport
+		connectionType  string
+		format          string
+		direction       string
 
 		responseCall          *confbridge.Confbridge
 		responseExternalMedia *externalmedia.ExternalMedia
@@ -37,6 +38,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("45c1a114-996f-11ed-b089-575b5e0a4a0d"),
+			uuid.FromStringOrNil("620b555c-b332-11ef-af24-271a7cd9ab2a"),
 			"example.com",
 			externalmedia.EncapsulationRTP,
 			externalmedia.TransportUDP,
@@ -73,11 +75,11 @@ func Test_ExternalMediaStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockExternal.EXPECT().Start(ctx, externalmedia.ReferenceTypeConfbridge, tt.id, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Start(ctx, tt.externalMediaID, externalmedia.ReferenceTypeConfbridge, tt.id, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
 			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseCall, nil)
 
-			res, err := h.ExternalMediaStart(ctx, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := h.ExternalMediaStart(ctx, tt.id, tt.externalMediaID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

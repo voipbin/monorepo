@@ -69,10 +69,11 @@ func (r *requestHandler) CallV1ExternalMediaGet(ctx context.Context, externalMed
 // CallV1ExternalMediaStart sends a request to call-manager
 // to start the external media.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1ExternalMediaStart(ctx context.Context, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, noInsertMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmexternalmedia.ExternalMedia, error) {
+func (r *requestHandler) CallV1ExternalMediaStart(ctx context.Context, externalMediaID uuid.UUID, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, noInsertMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmexternalmedia.ExternalMedia, error) {
 	uri := "/v1/external-medias"
 
 	reqData := &cmrequest.V1DataExternalMediasPost{
+		ID:             externalMediaID,
 		ReferenceType:  referenceType,
 		ReferenceID:    referenceID,
 		NoInsertMedia:  noInsertMedia,

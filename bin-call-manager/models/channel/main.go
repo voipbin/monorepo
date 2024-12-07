@@ -158,19 +158,20 @@ type StasisDataType string
 // List of StasisDataType types
 const (
 	// voipbin dependent types
-	StasisDataTypeContextType     StasisDataType = "context_type"     // type: channel's contexr type
-	StasisDataTypeContext         StasisDataType = "context"          // context: channel's context
-	StasisDataTypeContextFrom     StasisDataType = "context_from"     // represents based context. used for service return stasis arg
-	StasisDataTypeDomain          StasisDataType = "domain"           // requested domain name.
-	StasisDataTypeSource          StasisDataType = "source"           // request source ip
-	StasisDataTypeDirection       StasisDataType = "direction"        // channel's direction. incoming for this case.
-	StasisDataTypeCallID          StasisDataType = "call_id"          // voipbin call id
-	StasisDataTypeConfbridgeID    StasisDataType = "confbridge_id"    // voipbin confbridge id
-	StasisDataTypeTransport       StasisDataType = "transport"        // channel's transport(SIP transport)
-	StasisDataTypeApplicationName StasisDataType = "application_name" // application name
-	StasisDataTypeBridgeID        StasisDataType = "bridge_id"        // bridge's id
-	StasisDataTypeReferenceType   StasisDataType = "reference_type"   // given channel's reference type
-	StasisDataTypeReferenceID     StasisDataType = "reference_id"     // given channel's reference id
+	StasisDataTypeContextType     StasisDataType = "context_type"      // type: channel's contexr type
+	StasisDataTypeContext         StasisDataType = "context"           // context: channel's context
+	StasisDataTypeContextFrom     StasisDataType = "context_from"      // represents based context. used for service return stasis arg
+	StasisDataTypeDomain          StasisDataType = "domain"            // requested domain name.
+	StasisDataTypeSource          StasisDataType = "source"            // request source ip
+	StasisDataTypeDirection       StasisDataType = "direction"         // channel's direction. incoming for this case.
+	StasisDataTypeCallID          StasisDataType = "call_id"           // voipbin call id
+	StasisDataTypeConfbridgeID    StasisDataType = "confbridge_id"     // voipbin confbridge id
+	StasisDataTypeExternalMediaID StasisDataType = "external_media_id" // voipbin external media id
+	StasisDataTypeTransport       StasisDataType = "transport"         // channel's transport(SIP transport)
+	StasisDataTypeApplicationName StasisDataType = "application_name"  // application name
+	StasisDataTypeBridgeID        StasisDataType = "bridge_id"         // bridge's id
+	StasisDataTypeReferenceType   StasisDataType = "reference_type"    // given channel's reference type
+	StasisDataTypeReferenceID     StasisDataType = "reference_id"      // given channel's reference id
 
 	// SIP dependent types
 	StasisDataTypeSIPCallID  StasisDataType = "sip_call_id" // SIP Call-ID

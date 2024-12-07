@@ -168,13 +168,14 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		confbridgeID   uuid.UUID
-		externalHost   string
-		encapsulation  string
-		transport      string
-		connectionType string
-		format         string
-		direction      string
+		confbridgeID    uuid.UUID
+		externalMediaID uuid.UUID
+		externalHost    string
+		encapsulation   string
+		transport       string
+		connectionType  string
+		format          string
+		direction       string
 
 		response *sock.Response
 
@@ -185,6 +186,7 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
+			uuid.FromStringOrNil("7ef0bc4e-b336-11ef-b176-9ffcf00e7082"),
 			"localhost:5060",
 			"rtp",
 			"udp",
@@ -202,7 +204,7 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 				URI:      "/v1/confbridges/8bb7a268-97d0-11ed-bb1d-efd9a3f33560/external-media",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"external_media_id":"7ef0bc4e-b336-11ef-b176-9ffcf00e7082","external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 			&cmconfbridge.Confbridge{
 				ID: uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
@@ -224,7 +226,7 @@ func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ConfbridgeExternalMediaStart(ctx, tt.confbridgeID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1ConfbridgeExternalMediaStart(ctx, tt.confbridgeID, tt.externalMediaID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

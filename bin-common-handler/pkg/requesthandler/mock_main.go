@@ -1019,18 +1019,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallDelete(ctx, callID any) *gom
 }
 
 // CallV1CallExternalMediaStart mocks base method.
-func (m *MockRequestHandler) CallV1CallExternalMediaStart(ctx context.Context, callID uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*call.Call, error) {
+func (m *MockRequestHandler) CallV1CallExternalMediaStart(ctx context.Context, callID, externalMediaID uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallExternalMediaStart", ctx, callID, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret := m.ctrl.Call(m, "CallV1CallExternalMediaStart", ctx, callID, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1CallExternalMediaStart indicates an expected call of CallV1CallExternalMediaStart.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallExternalMediaStart(ctx, callID, externalHost, encapsulation, transport, connectionType, format, direction any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallExternalMediaStart(ctx, callID, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallExternalMediaStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallExternalMediaStart), ctx, callID, externalHost, encapsulation, transport, connectionType, format, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallExternalMediaStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallExternalMediaStart), ctx, callID, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction)
 }
 
 // CallV1CallExternalMediaStop mocks base method.
@@ -1452,6 +1452,36 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeDelete(ctx, confbridge
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeDelete), ctx, confbridgeID)
 }
 
+// CallV1ConfbridgeExternalMediaStart mocks base method.
+func (m *MockRequestHandler) CallV1ConfbridgeExternalMediaStart(ctx context.Context, confbridgeID, externalMediaID uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeExternalMediaStart", ctx, confbridgeID, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ConfbridgeExternalMediaStart indicates an expected call of CallV1ConfbridgeExternalMediaStart.
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeExternalMediaStart(ctx, confbridgeID, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeExternalMediaStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeExternalMediaStart), ctx, confbridgeID, externalMediaID, externalHost, encapsulation, transport, connectionType, format, direction)
+}
+
+// CallV1ConfbridgeExternalMediaStop mocks base method.
+func (m *MockRequestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeExternalMediaStop", ctx, confbridgeID)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ConfbridgeExternalMediaStop indicates an expected call of CallV1ConfbridgeExternalMediaStop.
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeExternalMediaStop(ctx, confbridgeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeExternalMediaStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeExternalMediaStop), ctx, confbridgeID)
+}
+
 // CallV1ConfbridgeFlagAdd mocks base method.
 func (m *MockRequestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridgeID uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
@@ -1587,18 +1617,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaGets(ctx, pageToken
 }
 
 // CallV1ExternalMediaStart mocks base method.
-func (m *MockRequestHandler) CallV1ExternalMediaStart(ctx context.Context, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, noInsertMedia bool, externalHost, encapsulation, transport, connectionType, format, direction string) (*externalmedia.ExternalMedia, error) {
+func (m *MockRequestHandler) CallV1ExternalMediaStart(ctx context.Context, externalMediaID uuid.UUID, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, noInsertMedia bool, externalHost, encapsulation, transport, connectionType, format, direction string) (*externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1ExternalMediaStart", ctx, referenceType, referenceID, noInsertMedia, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret := m.ctrl.Call(m, "CallV1ExternalMediaStart", ctx, externalMediaID, referenceType, referenceID, noInsertMedia, externalHost, encapsulation, transport, connectionType, format, direction)
 	ret0, _ := ret[0].(*externalmedia.ExternalMedia)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1ExternalMediaStart indicates an expected call of CallV1ExternalMediaStart.
-func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaStart(ctx, referenceType, referenceID, noInsertMedia, externalHost, encapsulation, transport, connectionType, format, direction any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaStart(ctx, externalMediaID, referenceType, referenceID, noInsertMedia, externalHost, encapsulation, transport, connectionType, format, direction any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaStart), ctx, referenceType, referenceID, noInsertMedia, externalHost, encapsulation, transport, connectionType, format, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaStart), ctx, externalMediaID, referenceType, referenceID, noInsertMedia, externalHost, encapsulation, transport, connectionType, format, direction)
 }
 
 // CallV1ExternalMediaStop mocks base method.

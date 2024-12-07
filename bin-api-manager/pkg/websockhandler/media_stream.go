@@ -89,6 +89,7 @@ func (h *websockHandler) mediaStreamRunAudioSocket(ctx context.Context, cancel c
 	// start external media
 	em, err := h.reqHandler.CallV1ExternalMediaStart(
 		ctx,
+		uuid.Nil,
 		referenceType,
 		referenceID,
 		false,
@@ -266,6 +267,7 @@ func (h *websockHandler) mediaStreamRunRTP(ctx context.Context, cancel context.C
 	// start external media
 	em, err := h.reqHandler.CallV1ExternalMediaStart(
 		ctx,
+		uuid.Nil,
 		referenceType,
 		referenceID,
 		false,
@@ -464,6 +466,7 @@ func (h *websockHandler) mediaStreamRunSLN(ctx context.Context, cancel context.C
 	// start external media
 	em, err := h.reqHandler.CallV1ExternalMediaStart(
 		ctx,
+		uuid.Nil,
 		referenceType,
 		referenceID,
 		false,

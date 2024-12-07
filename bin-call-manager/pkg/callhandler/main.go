@@ -112,7 +112,7 @@ type CallHandler interface {
 	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 	ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 
-	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*call.Call, error)
+	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID, externalHost string, encapsulation externalmedia.Encapsulation, transport externalmedia.Transport, connectionType string, format string, direction string) (*call.Call, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error

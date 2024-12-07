@@ -21,6 +21,7 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id             uuid.UUID
 		asteriskID     string
 		channelID      string
 		referenceType  externalmedia.ReferenceType
@@ -39,29 +40,62 @@ func Test_Create(t *testing.T) {
 		expectExternalMedia *externalmedia.ExternalMedia
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"3e:50:6b:43:bb:30",
-			"6295f80e-97b6-11ed-88e0-ffb00420fb1a",
-			externalmedia.ReferenceTypeCall,
-			uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
-			"127.0.0.1",
-			8080,
-			"127.0.0.1:8090",
-			defaultEncapsulation,
-			defaultTransport,
-			defaultConnectionType,
-			defaultFormat,
-			defaultDirection,
+			id:             uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
+			asteriskID:     "3e:50:6b:43:bb:30",
+			channelID:      "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
+			referenceType:  externalmedia.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
+			localIP:        "127.0.0.1",
+			localPort:      8080,
+			externalHost:   "127.0.0.1:8090",
+			encapsulation:  defaultEncapsulation,
+			transport:      defaultTransport,
+			connectionType: defaultConnectionType,
+			format:         defaultFormat,
+			direction:      defaultDirection,
 
-			uuid.FromStringOrNil("905be206-97b8-11ed-94ee-4316f5a24184"),
-
-			&externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("905be206-97b8-11ed-94ee-4316f5a24184"),
+			expectExternalMedia: &externalmedia.ExternalMedia{
+				ID:             uuid.FromStringOrNil("a59fb054-b32f-11ef-8b11-6395ff848e6c"),
 				AsteriskID:     "3e:50:6b:43:bb:30",
 				ChannelID:      "6295f80e-97b6-11ed-88e0-ffb00420fb1a",
 				ReferenceType:  externalmedia.ReferenceTypeCall,
 				ReferenceID:    uuid.FromStringOrNil("da311f40-97b8-11ed-99f4-13108e8918da"),
+				LocalIP:        "127.0.0.1",
+				LocalPort:      8080,
+				ExternalHost:   "127.0.0.1:8090",
+				Encapsulation:  defaultEncapsulation,
+				Transport:      defaultTransport,
+				ConnectionType: defaultConnectionType,
+				Format:         defaultFormat,
+				Direction:      defaultDirection,
+			},
+		},
+		{
+			name: "has no id given",
+
+			id:             uuid.Nil,
+			asteriskID:     "3e:50:6b:43:bb:30",
+			channelID:      "09d1321e-b330-11ef-ad3e-170da10752c8",
+			referenceType:  externalmedia.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
+			localIP:        "127.0.0.1",
+			localPort:      8080,
+			externalHost:   "127.0.0.1:8090",
+			encapsulation:  defaultEncapsulation,
+			transport:      defaultTransport,
+			connectionType: defaultConnectionType,
+			format:         defaultFormat,
+			direction:      defaultDirection,
+
+			responseUUID: uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
+			expectExternalMedia: &externalmedia.ExternalMedia{
+				ID:             uuid.FromStringOrNil("0a05e55e-b330-11ef-a24c-07a8913a053b"),
+				AsteriskID:     "3e:50:6b:43:bb:30",
+				ChannelID:      "09d1321e-b330-11ef-ad3e-170da10752c8",
+				ReferenceType:  externalmedia.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("09ec9a0e-b330-11ef-b9dc-6701b7b5d325"),
 				LocalIP:        "127.0.0.1",
 				LocalPort:      8080,
 				ExternalHost:   "127.0.0.1:8090",
@@ -93,10 +127,13 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			if tt.id == uuid.Nil {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			}
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 			res, err := h.Create(
 				ctx,
+				tt.id,
 				tt.asteriskID,
 				tt.channelID,
 				tt.referenceType,

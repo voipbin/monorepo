@@ -12,6 +12,7 @@ import (
 // Create creates a new external media
 func (h *externalMediaHandler) Create(
 	ctx context.Context,
+	id uuid.UUID,
 	asteriskID string,
 	channelID string,
 	referenceType externalmedia.ReferenceType,
@@ -31,7 +32,9 @@ func (h *externalMediaHandler) Create(
 		"reference_id":   referenceID,
 	})
 
-	id := h.utilHandler.UUIDCreate()
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+	}
 	extMedia := &externalmedia.ExternalMedia{
 		ID: id,
 
@@ -88,6 +91,28 @@ func (h *externalMediaHandler) Gets(ctx context.Context, size uint64, token stri
 		}
 
 		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
+// Gets returns list of external medias of the given filters.
+func (h *externalMediaHandler) UpdateLocalAddress(ctx context.Context, id uuid.UUID, localIP string, localPort int) (*externalmedia.ExternalMedia, error) {
+	tmp, err := h.db.ExternalMediaGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp.LocalIP = localIP
+	tmp.LocalPort = localPort
+
+	if errDB := h.db.ExternalMediaSet(ctx, tmp); errDB != nil {
+		return nil, errDB
+	}
+
+	res, err := h.db.ExternalMediaGet(ctx, id)
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil

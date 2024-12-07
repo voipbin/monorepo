@@ -924,13 +924,14 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 
 		responseCall *call.Call
 
-		expectCallID         uuid.UUID
-		expectExternalHost   string
-		expectEncapsulation  externalmedia.Encapsulation
-		expectTransport      externalmedia.Transport
-		expectConnectionType string
-		expectFormat         string
-		expectDirection      string
+		expectCallID          uuid.UUID
+		expectExternalMediaID uuid.UUID
+		expectExternalHost    string
+		expectEncapsulation   externalmedia.Encapsulation
+		expectTransport       externalmedia.Transport
+		expectConnectionType  string
+		expectFormat          string
+		expectDirection       string
 
 		expectRes *sock.Response
 	}
@@ -943,7 +944,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				URI:      "/v1/calls/31255b7c-0a6b-11ec-87e2-afe5a545df76/external-media",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"external_host": "127.0.0.1:5060", "encapsulation": "rtp", "transport": "udp", "connection_type": "client", "format": "ulaw", "direction": "both", "data": ""}`),
+				Data:     []byte(`{"external_media_id":"6e4d943c-b333-11ef-8f62-fb15e69cf29c","external_host": "127.0.0.1:5060", "encapsulation": "rtp", "transport": "udp", "connection_type": "client", "format": "ulaw", "direction": "both", "data": ""}`),
 			},
 
 			&call.Call{
@@ -953,6 +954,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
+			uuid.FromStringOrNil("6e4d943c-b333-11ef-8f62-fb15e69cf29c"),
 			"127.0.0.1:5060",
 			"rtp",
 			"udp",
@@ -986,6 +988,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			mockCall.EXPECT().ExternalMediaStart(
 				context.Background(),
 				tt.expectCallID,
+				tt.expectExternalMediaID,
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,
