@@ -28,9 +28,11 @@ import (
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/externalmediahandler"
 )
 
 func Test_GetTypeContextIncomingCall(t *testing.T) {
@@ -536,25 +538,41 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 
 		channel *channel.Channel
 
-		expectBridgeID string
+		responseExternalMedia *externalmedia.ExternalMedia
+		responseCall          *call.Call
+
+		expectExternalMediaID uuid.UUID
+		expectBridgeID        string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&channel.Channel{
+			channel: &channel.Channel{
 				AsteriskID:        "80:fa:5b:5e:da:81",
 				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
 				Name:              "PJSIP/in-voipbin-00000915",
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context":   string(channel.ContextExternalMedia),
-					"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
-					"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
+					"context":           string(channel.ContextExternalMedia),
+					"external_media_id": "45efbb3c-b33d-11ef-8648-fbef93b5f7dc",
 				},
 			},
 
-			"fab96694-0300-11ec-b4d4-c3bcab7364fd",
+			responseExternalMedia: &externalmedia.ExternalMedia{
+				ID:            uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
+				ReferenceType: externalmedia.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("0648d6c0-0301-11ec-818e-53865044b15c"),
+			},
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0648d6c0-0301-11ec-818e-53865044b15c"),
+				},
+				BridgeID: "6acf04f2-b33e-11ef-b32f-8f571d44cc7a",
+			},
+
+			expectExternalMediaID: uuid.FromStringOrNil("45efbb3c-b33d-11ef-8648-fbef93b5f7dc"),
+			expectBridgeID:        "6acf04f2-b33e-11ef-b32f-8f571d44cc7a",
 		},
 	}
 
@@ -568,15 +586,20 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &callHandler{
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				db:             mockDB,
-				channelHandler: mockChannel,
-				bridgeHandler:  mockBridge,
+				reqHandler:           mockReq,
+				notifyHandler:        mockNotify,
+				db:                   mockDB,
+				channelHandler:       mockChannel,
+				bridgeHandler:        mockBridge,
+				externalMediaHandler: mockExternal,
 			}
 			ctx := context.Background()
+
+			mockExternal.EXPECT().Get(ctx, tt.expectExternalMediaID).Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseExternalMedia.ReferenceID).Return(tt.responseCall, nil)
 
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {

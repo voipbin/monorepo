@@ -222,7 +222,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Cont
 		return nil, err
 	}
 
-	tmp, err := h.confbridgeHandler.ExternalMediaStart(ctx, id, req.ExternalHost, externalmedia.Encapsulation(req.Encapsulation), externalmedia.Transport(req.Transport), req.ConnectionType, req.Format, req.Direction)
+	tmp, err := h.confbridgeHandler.ExternalMediaStart(ctx, id, req.ExternalMediaID, req.ExternalHost, externalmedia.Encapsulation(req.Encapsulation), externalmedia.Transport(req.Transport), req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. confbridge_id: %s, err: %v", id, err)
 		return nil, err

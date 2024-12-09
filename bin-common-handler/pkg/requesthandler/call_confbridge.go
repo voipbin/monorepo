@@ -130,6 +130,7 @@ func (r *requestHandler) CallV1ConfbridgeCallAdd(ctx context.Context, confbridge
 func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 	ctx context.Context,
 	confbridgeID uuid.UUID,
+	externalMediaID uuid.UUID,
 	externalHost string, // external host:port
 	encapsulation string, // rtp
 	transport string, // udp
@@ -140,12 +141,13 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", confbridgeID)
 
 	reqData := &cmrequest.V1DataConfbridgesIDExternalMediaPost{
-		ExternalHost:   externalHost,
-		Encapsulation:  encapsulation,
-		Transport:      transport,
-		ConnectionType: connectionType,
-		Format:         format,
-		Direction:      direction,
+		ExternalMediaID: externalMediaID,
+		ExternalHost:    externalHost,
+		Encapsulation:   encapsulation,
+		Transport:       transport,
+		ConnectionType:  connectionType,
+		Format:          format,
+		Direction:       direction,
 	}
 
 	m, err := json.Marshal(reqData)

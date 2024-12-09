@@ -74,12 +74,13 @@ type V1DataCallsIDActionNextPost struct {
 // v1 data type for V1DataCallsIDExternalMediaPost
 // /v1/calls/<call-id>/external-media POST
 type V1DataCallsIDExternalMediaPost struct {
-	ExternalHost   string `json:"external_host,omitempty"`
-	Encapsulation  string `json:"encapsulation,omitempty"`
-	Transport      string `json:"transport,omitempty"`
-	ConnectionType string `json:"connection_type,omitempty"`
-	Format         string `json:"format,omitempty"`
-	Direction      string `json:"direction,omitempty"`
+	ExternalMediaID uuid.UUID `json:"external_media_id,omitempty"`
+	ExternalHost    string    `json:"external_host,omitempty"`
+	Encapsulation   string    `json:"encapsulation,omitempty"`
+	Transport       string    `json:"transport,omitempty"`
+	ConnectionType  string    `json:"connection_type,omitempty"`
+	Format          string    `json:"format,omitempty"`
+	Direction       string    `json:"direction,omitempty"`
 }
 
 // V1DataCallsIDDigitsPost is

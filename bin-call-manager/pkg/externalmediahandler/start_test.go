@@ -27,6 +27,7 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id             uuid.UUID
 		referenceType  externalmedia.ReferenceType
 		referenceID    uuid.UUID
 		externalHost   string
@@ -36,10 +37,9 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 		format         string
 		direction      string
 
-		responseCall                *call.Call
-		responseChannel             *channel.Channel
-		responseUUIDChannelID       uuid.UUID
-		responseUUIDExternalMediaID uuid.UUID
+		responseCall          *call.Call
+		responseChannel       *channel.Channel
+		responseUUIDChannelID uuid.UUID
 
 		expectBridgeArgs     string
 		expectExternalHost   string
@@ -54,6 +54,7 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("77e08632-b331-11ef-b2b5-cfa11dfce0d5"),
 			externalmedia.ReferenceTypeCall,
 			uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
 			"example.com",
@@ -75,7 +76,6 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 				ID:         "8066017c-02fb-11ec-ba6c-c320820accf1",
 			},
 			uuid.FromStringOrNil("488feb00-96e3-11ed-8ae7-1fe9bc7a995f"),
-			uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
 
 			"reference_type=call-snoop,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
 			"example.com",
@@ -84,9 +84,9 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 			"client",
 			"ulaw",
 			"both",
-			"context_type=call,context=call-externalmedia,bridge_id=500d0b6e-eb39-11ee-a30a-9392749106cc,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
+			"context_type=call,context=call-externalmedia,bridge_id=500d0b6e-eb39-11ee-a30a-9392749106cc,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57,external_media_id=77e08632-b331-11ef-b2b5-cfa11dfce0d5",
 			&externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
+				ID:             uuid.FromStringOrNil("77e08632-b331-11ef-b2b5-cfa11dfce0d5"),
 				AsteriskID:     "42:01:0a:a4:00:05",
 				ChannelID:      "488feb00-96e3-11ed-8ae7-1fe9bc7a995f",
 				ReferenceType:  externalmedia.ReferenceTypeCall,
@@ -130,10 +130,13 @@ func Test_Start_reference_type_call_with_insert_media(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
 			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 
-			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+
+			res, err := h.Start(ctx, tt.id, tt.referenceType, tt.referenceID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -149,6 +152,7 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id             uuid.UUID
 		referenceType  externalmedia.ReferenceType
 		referenceID    uuid.UUID
 		externalHost   string
@@ -158,13 +162,12 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 		format         string
 		direction      channel.SnoopDirection
 
-		responseCall                *call.Call
-		responseChannel             *channel.Channel
-		responseUUIDBridgeID        uuid.UUID
-		responseBridge              *bridge.Bridge
-		responseUUIDSnoopID         uuid.UUID
-		responseUUIDChannelID       uuid.UUID
-		responseUUIDExternalMediaID uuid.UUID
+		responseCall          *call.Call
+		responseChannel       *channel.Channel
+		responseUUIDBridgeID  uuid.UUID
+		responseBridge        *bridge.Bridge
+		responseUUIDSnoopID   uuid.UUID
+		responseUUIDChannelID uuid.UUID
 
 		expectBridgeArgs    string
 		expectChannelData   string
@@ -173,6 +176,7 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("78473c24-b331-11ef-aa9c-e7c52f9d3f7b"),
 			externalmedia.ReferenceTypeCall,
 			uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
 			"example.com",
@@ -199,12 +203,11 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 			},
 			uuid.FromStringOrNil("80981342-96e3-11ed-bc85-830940cba8ea"),
 			uuid.FromStringOrNil("488feb00-96e3-11ed-8ae7-1fe9bc7a995f"),
-			uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
 
 			"reference_type=call-snoop,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
-			"context_type=call,context=call-externalmedia,bridge_id=9b6c7a78-96e3-11ed-904b-9baa2c0183fd,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
+			"context_type=call,context=call-externalmedia,bridge_id=9b6c7a78-96e3-11ed-904b-9baa2c0183fd,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57,external_media_id=78473c24-b331-11ef-aa9c-e7c52f9d3f7b",
 			&externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
+				ID:             uuid.FromStringOrNil("78473c24-b331-11ef-aa9c-e7c52f9d3f7b"),
 				AsteriskID:     "42:01:0a:a4:00:05",
 				ChannelID:      "488feb00-96e3-11ed-8ae7-1fe9bc7a995f",
 				ReferenceType:  externalmedia.ReferenceTypeCall,
@@ -254,10 +257,13 @@ func Test_Start_reference_type_call_without_insert_media(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
 			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.externalHost, string(tt.encapsulation), string(tt.transport), tt.connectionType, tt.format, string(tt.direction), tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 
-			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, string(tt.direction))
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+
+			res, err := h.Start(ctx, tt.id, tt.referenceType, tt.referenceID, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, string(tt.direction))
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -273,6 +279,7 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id             uuid.UUID
 		referenceType  externalmedia.ReferenceType
 		referenceID    uuid.UUID
 		externalHost   string
@@ -282,10 +289,9 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 		format         string
 		direction      string
 
-		responseConfbridge          *confbridge.Confbridge
-		responseBridge              *bridge.Bridge
-		responseUUIDChannelID       uuid.UUID
-		responseUUIDExternalMediaID uuid.UUID
+		responseConfbridge    *confbridge.Confbridge
+		responseBridge        *bridge.Bridge
+		responseUUIDChannelID uuid.UUID
 
 		expectExternalHost  string
 		expectChannelData   string
@@ -294,6 +300,7 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("79076e90-b331-11ef-bc31-33cb17f32724"),
 			externalmedia.ReferenceTypeConfbridge,
 			uuid.FromStringOrNil("543f0d00-97ba-11ed-86fe-ef2b82ea3c6f"),
 			"example.com",
@@ -312,12 +319,11 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 			},
 			uuid.FromStringOrNil("548cc82e-97ba-11ed-9f0c-43e1928c2d6e"),
-			uuid.FromStringOrNil("54b24914-97ba-11ed-952b-7ff363f5a0a0"),
 
 			"example.com",
-			"context_type=call,context=call-externalmedia,bridge_id=5466b238-97ba-11ed-9021-0b336edbced2,reference_type=confbridge,reference_id=543f0d00-97ba-11ed-86fe-ef2b82ea3c6f",
+			"context_type=call,context=call-externalmedia,bridge_id=5466b238-97ba-11ed-9021-0b336edbced2,reference_type=confbridge,reference_id=543f0d00-97ba-11ed-86fe-ef2b82ea3c6f,external_media_id=79076e90-b331-11ef-bc31-33cb17f32724",
 			&externalmedia.ExternalMedia{
-				ID:             uuid.FromStringOrNil("54b24914-97ba-11ed-952b-7ff363f5a0a0"),
+				ID:             uuid.FromStringOrNil("79076e90-b331-11ef-bc31-33cb17f32724"),
 				AsteriskID:     "42:01:0a:a4:00:05",
 				ChannelID:      "548cc82e-97ba-11ed-9f0c-43e1928c2d6e",
 				ReferenceType:  externalmedia.ReferenceTypeConfbridge,
@@ -361,10 +367,13 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			// startExternalMedia
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
 			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseBridge.AsteriskID, tt.responseUUIDChannelID.String(), tt.expectExternalHost, string(tt.encapsulation), string(tt.transport), defaultConnectionType, defaultFormat, defaultDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 
-			res, err := h.Start(ctx, tt.referenceType, tt.referenceID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, "both")
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+
+			res, err := h.Start(ctx, tt.id, tt.referenceType, tt.referenceID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, "both")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

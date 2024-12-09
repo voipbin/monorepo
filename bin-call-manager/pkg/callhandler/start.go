@@ -23,6 +23,7 @@ import (
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
+	"monorepo/bin-call-manager/models/externalmedia"
 )
 
 // list of application name
@@ -171,9 +172,31 @@ func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel
 	})
 	log.Infof("Executing startHandlerContextExternalMedia. channel_id: %s", cn.ID)
 
-	callID := cn.StasisData[channel.StasisDataTypeCallID]
-	bridgeID := cn.StasisData[channel.StasisDataTypeBridgeID]
-	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
+	externalMediaID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeExternalMediaID])
+	em, err := h.externalMediaHandler.Get(ctx, externalMediaID)
+	if err != nil {
+		log.Errorf("Could not find external media. external_media_id: %s, err: %v", externalMediaID, err)
+		return errors.Wrap(err, "could not find external media")
+	}
+
+	bridgeID := ""
+	if em.ReferenceType == externalmedia.ReferenceTypeCall {
+		c, err := h.Get(ctx, em.ReferenceID)
+		if err != nil {
+			log.Errorf("Could not get reference call info. err: %v", err)
+			return errors.Wrap(err, "could not get reference call info")
+		}
+		bridgeID = c.BridgeID
+	} else if em.ReferenceType == externalmedia.ReferenceTypeConfbridge {
+		c, err := h.confbridgeHandler.Get(ctx, em.ReferenceID)
+		if err != nil {
+			log.Errorf("Could not get reference confbridge info. err: %v", err)
+			return errors.Wrap(err, "could not get reference confbridge info")
+		}
+		bridgeID = c.BridgeID
+	}
+
+	log.Debugf("Parsed info. external_media_id: %s, bridge: %s", em.ID, bridgeID)
 	log = log.WithField("bridge_id", bridgeID)
 
 	// put the channel to the bridge

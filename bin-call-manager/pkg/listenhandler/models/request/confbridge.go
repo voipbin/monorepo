@@ -19,12 +19,13 @@ type V1DataConfbridgesPost struct {
 // v1 data type for
 // /v1/confbridges/<confbridge-id>/external-media POST
 type V1DataConfbridgesIDExternalMediaPost struct {
-	ExternalHost   string `json:"external_host,omitempty"`
-	Encapsulation  string `json:"encapsulation,omitempty"`
-	Transport      string `json:"transport,omitempty"`
-	ConnectionType string `json:"connection_type,omitempty"`
-	Format         string `json:"format,omitempty"`
-	Direction      string `json:"direction,omitempty"`
+	ExternalMediaID uuid.UUID `json:"external_media_id,omitempty"`
+	ExternalHost    string    `json:"external_host,omitempty"`
+	Encapsulation   string    `json:"encapsulation,omitempty"`
+	Transport       string    `json:"transport,omitempty"`
+	ConnectionType  string    `json:"connection_type,omitempty"`
+	Format          string    `json:"format,omitempty"`
+	Direction       string    `json:"direction,omitempty"`
 }
 
 // V1DataConfbridgesIDRecordingStartPost is

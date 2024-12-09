@@ -24,13 +24,14 @@ func Test_ExternalMediaStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id             uuid.UUID
-		externalHost   string
-		encapsulation  externalmedia.Encapsulation
-		transport      externalmedia.Transport
-		connectionType string
-		format         string
-		direction      string
+		id              uuid.UUID
+		externalMediaID uuid.UUID
+		externalHost    string
+		encapsulation   externalmedia.Encapsulation
+		transport       externalmedia.Transport
+		connectionType  string
+		format          string
+		direction       string
 
 		responseCall          *call.Call
 		responseExternalMedia *externalmedia.ExternalMedia
@@ -38,6 +39,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("10320c34-b333-11ef-a431-6796e4efd447"),
 			uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
 			"example.com",
 			externalmedia.EncapsulationRTP,
@@ -48,11 +50,11 @@ func Test_ExternalMediaStart(t *testing.T) {
 
 			&call.Call{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+					ID: uuid.FromStringOrNil("10320c34-b333-11ef-a431-6796e4efd447"),
 				},
 			},
 			&externalmedia.ExternalMedia{
-				ID: uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
+				ID: uuid.FromStringOrNil("10320c34-b333-11ef-a431-6796e4efd447"),
 			},
 		},
 	}
@@ -77,11 +79,11 @@ func Test_ExternalMediaStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockExternal.EXPECT().Start(ctx, externalmedia.ReferenceTypeCall, tt.id, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Start(ctx, tt.externalMediaID, externalmedia.ReferenceTypeCall, tt.id, true, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
 			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
-			res, err := h.ExternalMediaStart(ctx, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := h.ExternalMediaStart(ctx, tt.id, tt.externalMediaID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

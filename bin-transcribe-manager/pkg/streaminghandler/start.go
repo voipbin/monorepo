@@ -40,6 +40,7 @@ func (h *streamingHandler) Start(ctx context.Context, customerID uuid.UUID, tran
 	hostAddr := conn.LocalAddr().String()
 	em, err := h.reqHandler.CallV1ExternalMediaStart(
 		ctx,
+		uuid.Nil,
 		externalmedia.ReferenceType(referenceType),
 		referenceID,
 		true,

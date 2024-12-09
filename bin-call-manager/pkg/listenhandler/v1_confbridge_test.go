@@ -287,13 +287,14 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		expectConfbridgeID   uuid.UUID
-		expectExternalHost   string
-		expectEncapsulation  externalmedia.Encapsulation
-		expectTransport      externalmedia.Transport
-		expectConnectionType string
-		expectFormat         string
-		expectDirection      string
+		expectExternalMediaID uuid.UUID
+		expectConfbridgeID    uuid.UUID
+		expectExternalHost    string
+		expectEncapsulation   externalmedia.Encapsulation
+		expectTransport       externalmedia.Transport
+		expectConnectionType  string
+		expectFormat          string
+		expectDirection       string
 
 		responseConfbridge *confbridge.Confbridge
 		expectRes          *sock.Response
@@ -306,9 +307,10 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 				URI:      "/v1/confbridges/594c42fe-97ce-11ed-8d9f-ab7694f63546/external-media",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+				Data:     []byte(`{"external_media_id":"a8ede278-b332-11ef-9ee0-4f6311cf9409","external_host":"127.0.0.1:8080","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
 
+			uuid.FromStringOrNil("a8ede278-b332-11ef-9ee0-4f6311cf9409"),
 			uuid.FromStringOrNil("594c42fe-97ce-11ed-8d9f-ab7694f63546"),
 			"127.0.0.1:8080",
 			"rtp",
@@ -344,7 +346,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 
-			mockConfbridge.EXPECT().ExternalMediaStart(gomock.Any(), tt.expectConfbridgeID, tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection).Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().ExternalMediaStart(gomock.Any(), tt.expectConfbridgeID, tt.expectExternalMediaID, tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection).Return(tt.responseConfbridge, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
