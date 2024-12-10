@@ -3,6 +3,8 @@ package streamhandler
 import (
 	"context"
 	"monorepo/bin-api-manager/models/stream"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"net"
 	"sync"
 
@@ -17,6 +19,9 @@ type StreamHandler interface {
 }
 
 type streamHandler struct {
+	utilHandler utilhandler.UtilHandler
+	reqHandler  requesthandler.RequestHandler
+
 	listenAddress string
 
 	listenSockUDP *net.UDPConn
@@ -26,8 +31,11 @@ type streamHandler struct {
 	streamData map[string]*stream.Stream
 }
 
-func NewStreamHandler(listenAddress string) StreamHandler {
+func NewStreamHandler(reqHandler requesthandler.RequestHandler, listenAddress string) StreamHandler {
 	return &streamHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  reqHandler,
+
 		listenAddress: listenAddress,
 	}
 }
