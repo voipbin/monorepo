@@ -25,9 +25,10 @@ const (
 	defaultRedisPassword           = ""
 	defaultSSLCertBase64           = ""
 	defaultSSLPrivKeyBase64        = ""
+	defaultLocalIP                 = ""
 )
 
-func init() {
+func Init() {
 	// flag.Parse()
 	initVariable()
 
@@ -66,6 +67,7 @@ func initVariable() {
 	pflag.String("gcp_project_id", defaultGCPProjectID, "GCP project id.")
 	pflag.String("gcp_bucket_name", defaultGCPBucketName, "GCP bucket name for tmp storage.")
 	pflag.String("jwt_key", defaultJWTKey, "JWT Key for parse the jwt.")
+	pflag.String("listen_ip_audiosock", defaultLocalIP, "Listen IP address for audiosocket connection listen")
 
 	pflag.Parse()
 
@@ -211,6 +213,17 @@ func initVariable() {
 		panic(errEnv)
 	}
 	jwtKey = viper.GetString("jwt_key")
+
+	// listen_ip_audiosock
+	if errFlag := viper.BindPFlag("listen_ip_audiosock", pflag.Lookup("listen_ip_audiosock")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("listen_ip_audiosock", "POD_IP"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	listenIPAudiosock = viper.GetString("listen_ip_audiosock")
 }
 
 // initProm inits prometheus settings

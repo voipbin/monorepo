@@ -78,6 +78,9 @@ spec:
             - containerPort: 443
               name: service
               protocol: TCP
+            - containerPort: 9000
+              name: audiosocket
+              protocol: TCP
             - containerPort: 10000
               name: media-udp-10000
               protocol: UDP
