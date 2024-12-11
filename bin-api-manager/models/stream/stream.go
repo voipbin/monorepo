@@ -10,9 +10,9 @@ import (
 )
 
 type Stream struct {
-	ID              uuid.UUID
-	ConnWebsocket   *websocket.Conn
-	ConnAusiosocket net.Conn
+	ID            uuid.UUID
+	ConnWebsocket *websocket.Conn
+	ConnAsterisk  net.Conn
 
 	Encapsulation Encapsulation
 	ExternalMedia *cmexternalmedia.ExternalMedia

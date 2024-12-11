@@ -16,10 +16,16 @@ func (h *streamHandler) handleStreamFromWebsocket(ctx context.Context, st *strea
 		"func":   "handleStreamFromWebsocket",
 		"stream": st,
 	})
+	defer h.Terminate(st.ID)
 
 	for {
 		if ctx.Err() != nil {
 			log.Debugf("The context is over. Exiting the process.")
+			return
+		}
+
+		if st.ConnWebsocket == nil {
+			// connection is closed
 			return
 		}
 
@@ -35,8 +41,8 @@ func (h *streamHandler) handleStreamFromWebsocket(ctx context.Context, st *strea
 			continue
 		}
 
-		if st.ConnAusiosocket == nil {
-			// audiosocket is not ready.
+		if st.ConnAsterisk == nil {
+			// asterisk connection is not ready.
 			continue
 		}
 
@@ -46,7 +52,7 @@ func (h *streamHandler) handleStreamFromWebsocket(ctx context.Context, st *strea
 			continue
 		}
 
-		_, err = st.ConnAusiosocket.Write(d)
+		_, err = st.ConnAsterisk.Write(d)
 		if err != nil {
 			log.Errorf("Could not send the data. err: %v", err)
 			return
@@ -54,20 +60,21 @@ func (h *streamHandler) handleStreamFromWebsocket(ctx context.Context, st *strea
 	}
 }
 
-// handleStreamFromAudiosocket handles the stream data
+// handleStreamFromAsterisk handles the stream data
 // asterisk -> api-manager -> websocket client
-func (h *streamHandler) handleStreamFromAudiosocket(st *stream.Stream) {
+func (h *streamHandler) handleStreamFromAsterisk(st *stream.Stream) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "handleStreamFromAudiosocket",
+		"func":   "handleStreamFromAsterisk",
 		"stream": st,
 	})
+	defer h.Terminate(st.ID)
 
 	sequence := uint16(0)
 	timestamp := uint32(0)
 	ssrc := uint32(0)
 
 	for {
-		m, err := audiosocket.NextMessage(st.ConnAusiosocket)
+		m, err := audiosocket.NextMessage(st.ConnAsterisk)
 		if err != nil {
 			log.Errorf("Could not receive audiosock data. err: %v", err)
 			return

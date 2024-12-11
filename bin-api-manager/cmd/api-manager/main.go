@@ -34,6 +34,10 @@ import (
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 )
 
+// channels
+var chSigs = make(chan os.Signal, 1)
+var chDone = make(chan bool, 1)
+
 const (
 	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
 	constSSLCertFilename = "/tmp/ssl_cert.pem"
@@ -70,8 +74,6 @@ var (
 func main() {
 	ctx := context.Background()
 
-	Init()
-
 	log := logrus.WithField("func", "main")
 
 	// connect to database
@@ -98,7 +100,8 @@ func main() {
 
 	run(ctx, sockHandler, db)
 
-	<-ctx.Done()
+	sig := <-chSigs
+	log.Infof("Terminating api-manager. sig: %v", sig)
 }
 
 func writeBase64(filename string, data string) error {
@@ -141,13 +144,13 @@ func run(
 	// create handlers
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
-	websockHandler := websockhandler.NewWebsockHandler(requestHandler)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpCredentialBase64, gcpProjectID, gcpBucketName, jwtKey)
 	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
+	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler)
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpCredentialBase64, gcpProjectID, gcpBucketName, jwtKey)
 
 	go runSubscribe(sockHandler, zmqPubHandler)
 	go runListenHTTP(serviceHandler)
-	go runListenAudiosock(ctx, streamHandler)
+	go runListenStreamsock(ctx, streamHandler)
 
 }
 
@@ -222,7 +225,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	}
 }
 
-func runListenAudiosock(ctx context.Context, streamHandler streamhandler.StreamHandler) {
+func runListenStreamsock(ctx context.Context, streamHandler streamhandler.StreamHandler) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListenAudiosock",
 	})
@@ -254,7 +257,7 @@ func runListenAudiosock(ctx context.Context, streamHandler streamhandler.StreamH
 			continue
 		}
 
-		go streamHandler.Run(conn)
+		go streamHandler.Process(conn)
 	}
 }
 

@@ -12,17 +12,23 @@ import (
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 )
 
-func (h *streamHandler) Start(ctx context.Context, ws *websocket.Conn, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, encapsulation stream.Encapsulation) (*stream.Stream, error) {
+func (h *streamHandler) Start(
+	ctx context.Context,
+	ws *websocket.Conn,
+	referenceType cmexternalmedia.ReferenceType,
+	referenceID uuid.UUID,
+	encapsulation stream.Encapsulation,
+) (*stream.Stream, error) {
 	log := logrus.WithField("func", "Start")
 
-	// generate external media id
-	streamID := h.utilHandler.UUIDCreate()
+	id := h.utilHandler.UUIDCreate()
+	log = log.WithField("id", id)
 
 	// create stream should be done before starting stream handler because
 	// the call-manager(asterisk) will initiate the stream sending immediately.
 	//
 	// create stream
-	tmp, err := h.Create(ctx, streamID, ws, encapsulation)
+	tmp, err := h.Create(ctx, id, ws, encapsulation)
 	if err != nil {
 		log.Errorf("Could not create stream. err: %v", err)
 		return nil, fmt.Errorf("could not create stream. err: %v", err)
@@ -35,11 +41,11 @@ func (h *streamHandler) Start(ctx context.Context, ws *websocket.Conn, reference
 		referenceID,
 		false,
 		h.listenAddress,
-		defaultEncapsulationForAudioSocket,
-		defaultTransportForAudioSocket,
-		defaultConnectionType,
-		defaultFormat,
-		defualtDirection,
+		defaultExternalMediaEncapsulation,
+		defaultExternalMediaTransport,
+		defaultExternalMediaConnectionType,
+		defaultExternalMediaFormat,
+		defaultExternalMediaDirection,
 	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)

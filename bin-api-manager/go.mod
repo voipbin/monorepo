@@ -1,8 +1,6 @@
 module monorepo/bin-api-manager
 
-go 1.22.7
-
-toolchain go1.23.2
+go 1.23
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 

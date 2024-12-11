@@ -5,8 +5,8 @@ package websockhandler
 import (
 	"context"
 	"net/http"
-	"time"
 
+	"monorepo/bin-api-manager/pkg/streamhandler"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -15,22 +15,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
-)
-
-const (
-	defaultTransportForAudioSocket     = "tcp"
-	defaultEncapsulationForAudioSocket = "audiosocket"
-
-	defaultTransportForRTP     = "udp"
-	defaultEncapsulationForRTP = "rtp"
-
-	defaultConnectionType = "client"
-	defaultFormat         = "ulaw"
-	defualtDirection      = "both"
-
-	defaultAudioSocketHeaderSize = 3 // audosocket's default header size. https://docs.asterisk.org/Configuration/Channel-Drivers/AudioSocket/
-
-	defaultReferenceWatcherDelay = time.Second * 5
 )
 
 // WebsockHandler defines
@@ -44,14 +28,16 @@ var upgrader = websocket.Upgrader{
 }
 
 type websockHandler struct {
-	reqHandler requesthandler.RequestHandler
+	reqHandler    requesthandler.RequestHandler
+	streamHandler streamhandler.StreamHandler
 }
 
 // NewWebsockHandler creates a new HookHandler
-func NewWebsockHandler(reqHandler requesthandler.RequestHandler) WebsockHandler {
+func NewWebsockHandler(reqHandler requesthandler.RequestHandler, streamHandler streamhandler.StreamHandler) WebsockHandler {
 
 	res := &websockHandler{
-		reqHandler: reqHandler,
+		reqHandler:    reqHandler,
+		streamHandler: streamHandler,
 	}
 
 	endpointInit()

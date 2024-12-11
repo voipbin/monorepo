@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+	"os/signal"
+	"syscall"
 	"time"
 
 	joonix "github.com/joonix/log"
@@ -28,7 +30,8 @@ const (
 	defaultLocalIP                 = ""
 )
 
-func Init() {
+func init() {
+
 	// flag.Parse()
 	initVariable()
 
@@ -37,6 +40,8 @@ func Init() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	initProm(prometheusEndpoint, prometheusListenAddress)
+
+	initSignal()
 
 	// init ssl
 	if errWrite := writeBase64(constSSLCertFilename, sslCertBase64); errWrite != nil {
@@ -245,4 +250,9 @@ func initProm(endpoint, listen string) {
 			break
 		}
 	}()
+}
+
+// initSignal inits sinal settings.
+func initSignal() {
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 }

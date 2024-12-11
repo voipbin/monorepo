@@ -10,7 +10,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ConvertFromAudiosocket(t *testing.T) {
+func Test_ConvertFromAsterisk(t *testing.T) {
 	type test struct {
 		name string
 
@@ -27,26 +27,81 @@ func Test_ConvertFromAudiosocket(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "normal audiosocket",
+			name: "encapsulation audiosocket",
 
 			st: &stream.Stream{
 				Encapsulation: stream.EncapsulationAudiosocket,
 			},
 			data: []byte{
-				0x01,       // Type: UUID type
-				0x10, 0x00, // Payload length: 16 bytes
-				0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, // UUID part 1
-				0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, // UUID part 2
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
 			},
 			sequence:  uint16(0),
 			timestamp: uint32(0),
 			ssrc:      uint32(0),
 
 			expectedData: []byte{
-				0x01,       // Type: UUID type
-				0x10, 0x00, // Payload length: 16 bytes
-				0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, // UUID part 1
-				0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, // UUID part 2
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+			},
+			expectedSequence:  uint16(0),
+			expectedTimestamp: uint32(0),
+		},
+		{
+			name: "encapsulation rtp",
+
+			st: &stream.Stream{
+				Encapsulation: stream.EncapsulationRTP,
+			},
+			data: []byte{
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+			},
+			sequence:  uint16(0),
+			timestamp: uint32(0),
+			ssrc:      uint32(0),
+
+			expectedData: []byte{
+				0x80,       // Version (2), no padding, no extension, 0 CSRCs
+				0x00,       // Marker (0), Payload Type (0)
+				0x00, 0x01, // Sequence Number: 1
+				0x00, 0x00, 0x00, 0x10, // Timestamp: 16
+				0x00, 0x00, 0x00, 0x00, // SSRC Identifier: 0
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, // Payload data (bytes 1-8)
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, // Payload data (bytes 9-16)
+			},
+			expectedSequence:  uint16(1),
+			expectedTimestamp: uint32(16),
+		},
+		{
+			name: "encapsulation sln",
+
+			st: &stream.Stream{
+				Encapsulation: stream.EncapsulationSLN,
+			},
+			data: []byte{
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+			},
+			sequence:  uint16(0),
+			timestamp: uint32(0),
+			ssrc:      uint32(0),
+
+			expectedData: []byte{
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, // Payload data (bytes 1-8)
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, // Payload data (bytes 9-16)
 			},
 			expectedSequence:  uint16(0),
 			expectedTimestamp: uint32(0),
@@ -68,13 +123,13 @@ func Test_ConvertFromAudiosocket(t *testing.T) {
 				t.Errorf("Wrong match.\nexpected: ok\ngot: %v\n", err)
 			}
 
-			if !reflect.DeepEqual(resData, tt.data) {
-				t.Errorf("Wrong match.\nExpected: %+v\nGot: %+v", tt.data, resData)
+			if !reflect.DeepEqual(resData, tt.expectedData) {
+				t.Errorf("Wrong match.\nExpected: %v\nGot: %v", tt.data, resData)
 			}
-			if resSequence != tt.sequence {
+			if resSequence != tt.expectedSequence {
 				t.Errorf("Wrong match.\nExpected: %d\nGot: %d", tt.sequence, resSequence)
 			}
-			if resTimestamp != tt.timestamp {
+			if resTimestamp != tt.expectedTimestamp {
 				t.Errorf("Wrong match.\nExpected: %d\nGot: %d", tt.timestamp, resTimestamp)
 			}
 		})
@@ -87,20 +142,74 @@ func Test_ConvertFromWebsocket(t *testing.T) {
 
 		st   *stream.Stream
 		data []byte
+
+		expectedData []byte
 	}
 
 	tests := []test{
 		{
-			name: "normal",
+			name: "encapsulation audiosocket",
 
 			st: &stream.Stream{
 				Encapsulation: stream.EncapsulationAudiosocket,
 			},
 			data: []byte{
-				0x01,       // Type: UUID type
-				0x10, 0x00, // Payload length: 16 bytes
-				0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, // UUID part 1
-				0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, // UUID part 2
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+			},
+
+			expectedData: []byte{
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+			},
+		},
+		{
+			name: "encapsulation rtp",
+
+			st: &stream.Stream{
+				Encapsulation: stream.EncapsulationRTP,
+			},
+			data: []byte{
+				0x80,       // Version (2), no padding, no extension, 0 CSRCs
+				0x00,       // Marker (0), Payload Type (0)
+				0x00, 0x01, // Sequence Number: 1
+				0x00, 0x00, 0x00, 0x10, // Timestamp: 16
+				0x00, 0x00, 0x00, 0x00, // SSRC Identifier: 0
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, // Payload data (bytes 1-8)
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, // Payload data (bytes 9-16)
+			},
+
+			expectedData: []byte{
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+			},
+		},
+		{
+			name: "encapsulation sln",
+
+			st: &stream.Stream{
+				Encapsulation: stream.EncapsulationSLN,
+			},
+			data: []byte{
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, // Payload data (bytes 1-8)
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, // Payload data (bytes 9-16)
+			},
+
+			expectedData: []byte{
+				0x10,       // Type: PCM (SLIN)
+				0x00, 0x10, // Payload length: 16 bytes
+				// 16 bytes of PCM data (just a dummy example)
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
 			},
 		},
 	}
@@ -115,13 +224,13 @@ func Test_ConvertFromWebsocket(t *testing.T) {
 				reqHandler: mockReq,
 			}
 
-			res, err := h.ConvertFromWebsocket(tt.st, tt.data)
+			resData, err := h.ConvertFromWebsocket(tt.st, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match.\nexpected: ok\ngot: %v\n", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.data) {
-				t.Errorf("Wrong match.\nExpected: %+v\nGot: %+v", tt.data, res)
+			if !reflect.DeepEqual(resData, tt.expectedData) {
+				t.Errorf("Wrong match.\nExpected: %v\nGot: %v", tt.data, resData)
 			}
 		})
 	}
@@ -209,7 +318,7 @@ func Test_convertAudiosocketToRTP(t *testing.T) {
 	}
 }
 
-func Test_convertAudiosocketToSLNP(t *testing.T) {
+func Test_convertAudiosocketToSLN(t *testing.T) {
 	type test struct {
 		name string
 
