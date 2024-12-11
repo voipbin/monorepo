@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"net"
 	"os"
 	"time"
 
@@ -26,14 +28,19 @@ import (
 	"monorepo/bin-api-manager/pkg/cachehandler"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	"monorepo/bin-api-manager/pkg/streamhandler"
 	"monorepo/bin-api-manager/pkg/subscribehandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 )
 
+// channels
+var chSigs = make(chan os.Signal, 1)
+
 const (
 	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
 	constSSLCertFilename = "/tmp/ssl_cert.pem"
+	defaultAudiosockPort = 9000
 )
 
 var (
@@ -50,6 +57,7 @@ var (
 	redisPassword           = ""
 	sslCertBase64           = ""
 	sslPrivkeyBase64        = ""
+	listenIPAudiosock       = ""
 )
 
 //	@title			VoIPBIN project API
@@ -63,6 +71,7 @@ var (
 // @host	api.voipbin.net
 // @BasePath
 func main() {
+	ctx := context.Background()
 
 	log := logrus.WithField("func", "main")
 
@@ -88,7 +97,10 @@ func main() {
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
 	sockHandler.Connect()
 
-	run(sockHandler, db)
+	run(ctx, sockHandler, db)
+
+	sig := <-chSigs
+	log.Infof("Terminating api-manager. sig: %v", sig)
 }
 
 func writeBase64(filename string, data string) error {
@@ -122,30 +134,32 @@ func writeBase64(filename string, data string) error {
 }
 
 func run(
+	ctx context.Context,
 	sockHandler sockhandler.SockHandler,
 	db dbhandler.DBHandler,
 ) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "run",
-	})
+	addressListenStream := getAddressListenAudiosock()
 
 	// create handlers
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
-	websockHandler := websockhandler.NewWebsockHandler(requestHandler)
+	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
+	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler)
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, gcpCredentialBase64, gcpProjectID, gcpBucketName, jwtKey)
 
-	if errSub := runSubscribe(sockHandler, zmqPubHandler); errSub != nil {
-		log.Errorf("Could not run subscribe handler. err: %v", errSub)
-	}
+	go runSubscribe(sockHandler, zmqPubHandler)
+	go runListenHTTP(serviceHandler)
+	go runListenStreamsock(ctx, streamHandler)
 
-	runListen(serviceHandler)
 }
 
 func runSubscribe(
 	sockHandler sockhandler.SockHandler,
 	zmqHandler zmqpubhandler.ZMQPubHandler,
-) error {
+) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runSubscribe",
+	})
 
 	queueNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
 
@@ -161,15 +175,13 @@ func runSubscribe(
 		zmqHandler,
 	)
 
-	// run
-	if err := subHandler.Run(); err != nil {
-		return err
+	if errRun := subHandler.Run(); errRun != nil {
+		log.Errorf("Could not run the subscribe handler. err: %v", errRun)
+		return
 	}
-
-	return nil
 }
 
-func runListen(serviceHandler servicehandler.ServiceHandler) {
+func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
@@ -210,4 +222,46 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	if errAppRun := app.RunTLS(":443", constSSLCertFilename, constSSLPrivFilename); errAppRun != nil {
 		log.Errorf("The api service ended with error. err: %v", errAppRun)
 	}
+}
+
+func runListenStreamsock(ctx context.Context, streamHandler streamhandler.StreamHandler) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListenAudiosock",
+	})
+
+	listenAddress := fmt.Sprintf("%s:%d", listenIPAudiosock, defaultAudiosockPort)
+	log.Debugf("Listening audiosock address. address: %s", listenAddress)
+
+	addr, err := net.ResolveTCPAddr("tcp", listenAddress)
+	if err != nil {
+		log.Errorf("Could not resovle the address. err: %v", err)
+		return
+	}
+
+	listen, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		log.Errorf("Could not listen the address. err: %v", err)
+		return
+	}
+	defer listen.Close()
+
+	for {
+		if ctx.Err() != nil {
+			return
+		}
+
+		conn, err := listen.Accept()
+		if err != nil {
+			log.Errorf("Could not accept the connection. err: %v", err)
+			continue
+		}
+
+		go streamHandler.Process(conn)
+	}
+}
+
+func getAddressListenAudiosock() string {
+	res := fmt.Sprintf("%s:%d", listenIPAudiosock, defaultAudiosockPort)
+
+	return res
 }
