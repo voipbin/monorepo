@@ -93,6 +93,5 @@ func (h *streamHandler) handleStreamFromAudiosocket(st *stream.Stream) {
 			log.Debugf("Could not write the message. err: %v", errWrite)
 			return
 		}
-
 	}
 }

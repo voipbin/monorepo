@@ -6,23 +6,15 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"net"
 	"sync"
-	"time"
 )
 
 const (
 	defaultTransportForAudioSocket     = "tcp"
 	defaultEncapsulationForAudioSocket = "audiosocket"
 
-	defaultTransportForRTP     = "udp"
-	defaultEncapsulationForRTP = "rtp"
-
 	defaultConnectionType = "client"
 	defaultFormat         = "ulaw"
 	defualtDirection      = "both"
-
-	defaultAudioSocketHeaderSize = 3 // audosocket's default header size. https://docs.asterisk.org/Configuration/Channel-Drivers/AudioSocket/
-
-	defaultReferenceWatcherDelay = time.Second * 5
 )
 
 type StreamHandler interface {
