@@ -62,6 +62,10 @@ func (h *streamHandler) handleStreamFromAudiosocket(st *stream.Stream) {
 		"stream": st,
 	})
 
+	sequence := uint16(0)
+	timestamp := uint32(0)
+	ssrc := uint32(0)
+
 	for {
 		m, err := audiosocket.NextMessage(st.ConnAusiosocket)
 		if err != nil {
@@ -83,11 +87,13 @@ func (h *streamHandler) handleStreamFromAudiosocket(st *stream.Stream) {
 			continue
 		}
 
-		d, err := h.ConvertFromAudiosocket(st, m)
+		d, s, t, err := h.ConvertFromAsterisk(st, m, sequence, timestamp, ssrc)
 		if err != nil {
 			// could not convert the stream data from the websocket
 			continue
 		}
+		sequence = s
+		timestamp = t
 
 		if errWrite := st.ConnWebsocket.WriteMessage(websocket.BinaryMessage, d); errWrite != nil {
 			log.Debugf("Could not write the message. err: %v", errWrite)

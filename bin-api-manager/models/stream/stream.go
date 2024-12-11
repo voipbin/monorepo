@@ -21,6 +21,7 @@ type Stream struct {
 type Encapsulation string
 
 const (
+	EncapsulationNone        Encapsulation = ""
 	EncapsulationAudiosocket Encapsulation = "audiosocket"
 	EncapsulationRTP         Encapsulation = "rtp"
 	EncapsulationSLN         Encapsulation = "sln"
