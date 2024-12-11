@@ -36,7 +36,6 @@ import (
 
 // channels
 var chSigs = make(chan os.Signal, 1)
-var chDone = make(chan bool, 1)
 
 const (
 	constSSLPrivFilename = "/tmp/ssl_privkey.pem"
