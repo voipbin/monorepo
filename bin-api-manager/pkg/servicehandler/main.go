@@ -619,6 +619,13 @@ type ServiceHandler interface {
 		medias []cvmedia.Media,
 	) (*cvmessage.WebhookMessage, error)
 
+	// service_agent me
+	ServiceAgentMeGet(ctx context.Context, a *amagent.Agent) (*amagent.WebhookMessage, error)
+	ServiceAgentMeUpdate(ctx context.Context, a *amagent.Agent, name string, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
+	ServiceAgentMeUpdateAddresses(ctx context.Context, a *amagent.Agent, addresses []commonaddress.Address) (*amagent.WebhookMessage, error)
+	ServiceAgentMeUpdateStatus(ctx context.Context, a *amagent.Agent, status amagent.Status) (*amagent.WebhookMessage, error)
+	ServiceAgentMeUpdatePassword(ctx context.Context, a *amagent.Agent, password string) (*amagent.WebhookMessage, error)
+
 	// storage account
 	StorageAccountCreate(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*smaccount.WebhookMessage, error)
 	StorageAccountGet(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)

@@ -208,7 +208,7 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, a *amagent.Agent, agen
 	// send request
 	tmp, err := h.reqHandler.AgentV1AgentUpdate(ctx, agentID, name, detail, ringMethod)
 	if err != nil {
-		log.Infof("Could not delete the agent info. err: %v", err)
+		log.Infof("Could not update the agent info. err: %v", err)
 		return nil, err
 	}
 
