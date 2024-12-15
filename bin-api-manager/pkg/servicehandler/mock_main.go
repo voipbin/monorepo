@@ -3245,6 +3245,81 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageSend(ct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationMessageSend), ctx, a, conversationID, text, medias)
 }
 
+// ServiceAgentMeGet mocks base method.
+func (m *MockServiceHandler) ServiceAgentMeGet(ctx context.Context, a *agent.Agent) (*agent.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentMeGet", ctx, a)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentMeGet indicates an expected call of ServiceAgentMeGet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeGet(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentMeGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentMeGet), ctx, a)
+}
+
+// ServiceAgentMeUpdate mocks base method.
+func (m *MockServiceHandler) ServiceAgentMeUpdate(ctx context.Context, a *agent.Agent, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentMeUpdate", ctx, a, name, detail, ringMethod)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentMeUpdate indicates an expected call of ServiceAgentMeUpdate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdate(ctx, a, name, detail, ringMethod any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentMeUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentMeUpdate), ctx, a, name, detail, ringMethod)
+}
+
+// ServiceAgentMeUpdateAddresses mocks base method.
+func (m *MockServiceHandler) ServiceAgentMeUpdateAddresses(ctx context.Context, a *agent.Agent, addresses []address.Address) (*agent.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentMeUpdateAddresses", ctx, a, addresses)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentMeUpdateAddresses indicates an expected call of ServiceAgentMeUpdateAddresses.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdateAddresses(ctx, a, addresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentMeUpdateAddresses", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentMeUpdateAddresses), ctx, a, addresses)
+}
+
+// ServiceAgentMeUpdatePassword mocks base method.
+func (m *MockServiceHandler) ServiceAgentMeUpdatePassword(ctx context.Context, a *agent.Agent, password string) (*agent.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentMeUpdatePassword", ctx, a, password)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentMeUpdatePassword indicates an expected call of ServiceAgentMeUpdatePassword.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdatePassword(ctx, a, password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentMeUpdatePassword", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentMeUpdatePassword), ctx, a, password)
+}
+
+// ServiceAgentMeUpdateStatus mocks base method.
+func (m *MockServiceHandler) ServiceAgentMeUpdateStatus(ctx context.Context, a *agent.Agent, status agent.Status) (*agent.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentMeUpdateStatus", ctx, a, status)
+	ret0, _ := ret[0].(*agent.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentMeUpdateStatus indicates an expected call of ServiceAgentMeUpdateStatus.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdateStatus(ctx, a, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentMeUpdateStatus", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentMeUpdateStatus), ctx, a, status)
+}
+
 // StorageAccountCreate mocks base method.
 func (m *MockServiceHandler) StorageAccountCreate(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*account1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
