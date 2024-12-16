@@ -33,6 +33,10 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	targets.GET("/conversations/:id/messages", conversationsIDMessagesGet)
 	targets.POST("/conversations/:id/messages", conversationsIDMessagesPost)
 
+	// extensions
+	targets.GET("/extensions", extensionsGET)
+	targets.GET("/extensions/:id", extensionsIDGET)
+
 	// me
 	targets.GET("/me", meGET)
 	targets.PUT("/me", mePUT)

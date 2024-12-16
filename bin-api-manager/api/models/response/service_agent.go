@@ -8,6 +8,7 @@ import (
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
+	rmextension "monorepo/bin-registrar-manager/models/extension"
 )
 
 // BodyServiceAgentsAgentsGET is response body define for
@@ -56,5 +57,12 @@ type BodyServiceAgentsChatroommessagesGET struct {
 // GET /v1.0/service_agents/conversations/<conversation-id>/messages
 type BodyServiceAgentsConversationsIDMessagesGET struct {
 	Result []*cvmessage.WebhookMessage `json:"result"`
+	Pagination
+}
+
+// BodyServiceAgentsExtensionsGET is response body define for
+// GET /v1.0/service_agent/extensions
+type BodyServiceAgentsExtensionsGET struct {
+	Result []*rmextension.WebhookMessage `json:"result"`
 	Pagination
 }
