@@ -620,6 +620,9 @@ type ServiceHandler interface {
 		medias []cvmedia.Media,
 	) (*cvmessage.WebhookMessage, error)
 
+	// service_agent customer
+	ServiceAgentCustomerGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
+
 	// service_agent me
 	ServiceAgentMeGet(ctx context.Context, a *amagent.Agent) (*amagent.WebhookMessage, error)
 	ServiceAgentMeUpdate(ctx context.Context, a *amagent.Agent, name string, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)

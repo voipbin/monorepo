@@ -3260,6 +3260,21 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageSend(ct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationMessageSend), ctx, a, conversationID, text, medias)
 }
 
+// ServiceAgentCustomerGet mocks base method.
+func (m *MockServiceHandler) ServiceAgentCustomerGet(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCustomerGet", ctx, a)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCustomerGet indicates an expected call of ServiceAgentCustomerGet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCustomerGet(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCustomerGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCustomerGet), ctx, a)
+}
+
 // ServiceAgentMeGet mocks base method.
 func (m *MockServiceHandler) ServiceAgentMeGet(ctx context.Context, a *agent.Agent) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
