@@ -10,18 +10,18 @@ import (
 type WebhookMessage struct {
 	ID uuid.UUID `json:"id"` // Customer's ID
 
-	Name   string `json:"name"`   // name
-	Detail string `json:"detail"` // detail
+	Name   string `json:"name,omitempty"`   // name
+	Detail string `json:"detail,omitempty"` // detail
 
 	Email       string `json:"email,omitempty"`
 	PhoneNumber string `json:"phone_number,omitempty"`
 	Address     string `json:"address,omitempty"`
 
 	// webhook info
-	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
-	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
+	WebhookMethod WebhookMethod `json:"webhook_method,omitempty"` // webhook method
+	WebhookURI    string        `json:"webhook_uri,omitempty"`    // webhook uri
 
-	BillingAccountID uuid.UUID `json:"billing_account_id"` // default billing account id
+	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty"` // default billing account id
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
