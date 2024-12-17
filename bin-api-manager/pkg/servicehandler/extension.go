@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -182,5 +183,33 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ExtensionGetsByOwner gets the list of extensions of the given agent.
+// It returns list of extensions if it succeed.
+func (h *serviceHandler) ExtensionGetsByOwner(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "ExtensionGetsByOwner",
+		"agent": a,
+	})
+	log.Debug("Getting a extensions.")
+
+	res := []*rmextension.WebhookMessage{}
+	for _, address := range a.Addresses {
+		if address.Type != commonaddress.TypeExtension {
+			continue
+		}
+
+		extensionID := uuid.FromStringOrNil(address.Target)
+		ext, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
+		if err != nil {
+			log.Errorf("Could not get extension info. err: %v", err)
+			continue
+		}
+
+		res = append(res, ext.ConvertWebhookMessage())
+	}
+
 	return res, nil
 }
