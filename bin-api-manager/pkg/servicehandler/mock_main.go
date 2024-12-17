@@ -1970,6 +1970,21 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGets(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGets", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGets), ctx, a, size, token)
 }
 
+// ExtensionGetsByOwner mocks base method.
+func (m *MockServiceHandler) ExtensionGetsByOwner(ctx context.Context, a *agent.Agent) ([]*extension.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGetsByOwner", ctx, a)
+	ret0, _ := ret[0].([]*extension.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGetsByOwner indicates an expected call of ExtensionGetsByOwner.
+func (mr *MockServiceHandlerMockRecorder) ExtensionGetsByOwner(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByOwner", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGetsByOwner), ctx, a)
+}
+
 // ExtensionUpdate mocks base method.
 func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
