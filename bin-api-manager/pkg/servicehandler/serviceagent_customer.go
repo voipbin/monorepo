@@ -27,11 +27,8 @@ func (h *serviceHandler) ServiceAgentCustomerGet(ctx context.Context, a *amagent
 	res := &cscustomer.WebhookMessage{
 		ID: tmp.ID,
 
-		Name:        tmp.Name,
-		Detail:      tmp.Detail,
-		Email:       tmp.Email,
-		PhoneNumber: tmp.PhoneNumber,
-		Address:     tmp.Address,
+		Name:   tmp.Name,
+		Detail: tmp.Detail,
 
 		TMCreate: tmp.TMCreate,
 		TMUpdate: tmp.TMUpdate,

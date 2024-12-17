@@ -61,10 +61,6 @@ func Test_ServiceAgentCustomerGet(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 
-				Email:       "test@voipbin.net",
-				PhoneNumber: "+123456789",
-				Address:     "somewhere over the rainbow",
-
 				TMCreate: "2024-12-01 10:15:30.123456",
 				TMUpdate: "2024-12-01 10:15:30.123457",
 				TMDelete: "2024-12-01 10:15:30.123458",
