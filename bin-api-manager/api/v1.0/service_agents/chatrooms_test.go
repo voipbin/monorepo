@@ -144,7 +144,6 @@ func Test_chatroomsPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			// create body
 			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
@@ -356,7 +355,6 @@ func Test_chatroomsIDPUT(t *testing.T) {
 			})
 			setupServer(r)
 
-			// create body
 			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
