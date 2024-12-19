@@ -62,7 +62,6 @@ func Test_chatroomsGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -131,7 +130,6 @@ func Test_chatroomsPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -207,7 +205,6 @@ func Test_chatroomsIDGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -274,7 +271,6 @@ func Test_chatroomsIDDELETE(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -346,7 +342,6 @@ func Test_chatroomsIDPUT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
