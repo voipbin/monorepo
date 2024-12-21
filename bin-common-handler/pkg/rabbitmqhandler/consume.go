@@ -38,7 +38,7 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, 
 
 		// process message
 		for message := range messages {
-			log.Info("TEST: Processing message .... message: %v", message)
+			log.Infof("TEST: Processing message .... message: %v", message)
 
 			workers <- 1 // will block if there is MAX ints in workers
 			go func(m amqp.Delivery) {
