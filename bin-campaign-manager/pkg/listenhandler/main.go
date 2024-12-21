@@ -110,9 +110,11 @@ func NewListenHandler(
 }
 
 func (h *listenHandler) Run(queue, exchangeDelay string) error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"queue": queue,
-	}).Info("Creating rabbitmq queue for listen.")
+	})
+
+	log.Info("Creating rabbitmq queue for listen.")
 
 	if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
@@ -120,11 +122,8 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// process the received request
 	go func() {
-		for {
-			err := h.sockHandler.ConsumeRPC(queue, "campaign-manager", false, false, false, 10, h.processRequest)
-			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
-			}
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "campaign-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+			log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
 

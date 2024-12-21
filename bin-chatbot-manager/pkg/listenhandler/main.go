@@ -139,10 +139,8 @@ func (h *listenHandler) Run() error {
 
 	// process requests
 	go func() {
-		for {
-			if errConsume := h.sockHandler.ConsumeRPC(h.queueListen, "chatbot-manager", false, false, false, 10, h.processRequest); errConsume != nil {
-				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
-			}
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), h.queueListen, "chatbot-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+			log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
 

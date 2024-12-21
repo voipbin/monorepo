@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -105,10 +106,8 @@ func (h *listenHandler) listenRun() error {
 	for _, listenQueue := range listenQueues {
 		logrus.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
-			for {
-				if err := h.sockHandler.ConsumeRPC(queue, "", false, false, false, 10, h.listenHandler); err != nil {
-					logrus.Errorf("Could not handle the request message correctly. err: %v", err)
-				}
+			if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "", false, false, false, 10, h.listenHandler); errConsume != nil {
+				logrus.Errorf("Could not handle the request message correctly. err: %v", errConsume)
 			}
 		}(listenQueue)
 	}

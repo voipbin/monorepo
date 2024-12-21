@@ -170,12 +170,13 @@ func (h *bridgeHandler) getWithTimeout(ctx context.Context, id string, timeout t
 	defer cancel()
 
 	chanRes := make(chan *bridge.Bridge)
-	chanStop := make(chan bool)
 
 	go func() {
+		defer close(chanRes)
 		for {
+
 			select {
-			case <-chanStop:
+			case <-cctx.Done():
 				return
 
 			default:
@@ -194,7 +195,6 @@ func (h *bridgeHandler) getWithTimeout(ctx context.Context, id string, timeout t
 	case res := <-chanRes:
 		return res, nil
 	case <-cctx.Done():
-		chanStop <- true
 		return nil, fmt.Errorf("could not get a bridge. GetWithTimeout. err: %v", cctx.Err())
 	}
 }
