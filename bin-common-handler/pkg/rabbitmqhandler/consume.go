@@ -84,23 +84,23 @@ func (r *rabbit) ConsumeMessage(queueName string, consumerName string, exclusive
 		return fmt.Errorf("queue '%s' not found", queueName)
 	}
 
-	// Start consuming messages.
-	// Consume messages from the queue.
-	messages, err := queue.channel.Consume(
-		queueName,    // Queue name
-		consumerName, // Consumer name
-		false,        // auto-ack (manual acknowledgement)
-		exclusive,    // Exclusive (used for binding the queue to the current connection)
-		noLocal,      // No-local (only send messages to consumers on the same connection)
-		noWait,       // No-wait (do not wait for confirmation)
-		nil,          // Additional arguments (nil in this case)
-	)
-	if err != nil {
-		log.Errorf("Failed to consume message from queue '%s': %v", queueName, err)
-		return fmt.Errorf("could not consume messages: %v", err)
-	}
-
 	for i := 0; i < numWorkers; i++ {
+		// Start consuming messages.
+		// Consume messages from the queue.
+		messages, err := queue.channel.Consume(
+			queueName,    // Queue name
+			consumerName, // Consumer name
+			false,        // auto-ack (manual acknowledgement)
+			exclusive,    // Exclusive (used for binding the queue to the current connection)
+			noLocal,      // No-local (only send messages to consumers on the same connection)
+			noWait,       // No-wait (do not wait for confirmation)
+			nil,          // Additional arguments (nil in this case)
+		)
+		if err != nil {
+			log.Errorf("Failed to consume message from queue '%s': %v", queueName, err)
+			return fmt.Errorf("could not consume messages: %v", err)
+		}
+
 		go r.consumeMessageWorker(messages, messageConsume)
 	}
 
