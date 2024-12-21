@@ -70,7 +70,7 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, 
 	}
 
 	// Create a buffered channel to manage the number of concurrent workers.
-	workers := make(chan struct{}, numWorkers)
+	// workers := make(chan struct{}, numWorkers)
 
 	// Start consuming messages.
 	for {
@@ -88,17 +88,17 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, 
 			log.Errorf("Failed to consume message from queue '%s': %v", queueName, err)
 			return fmt.Errorf("could not consume messages: %v", err)
 		}
-		log.Infof("TEST: Processing messages. messages: %v", messages)
+		log.Infof("TEST: Processing multiple messages. messages: %v", messages)
 
 		// Process messages received from the queue.
 		for message := range messages {
-			workers <- struct{}{} // Block if the max number of workers is reached.
+			// workers <- struct{}{} // Block if the max number of workers is reached.
 
 			log.Infof("TEST: Processing single message. message: %v", message)
 
 			// Process each message in a goroutine.
 			go func(m amqp.Delivery) {
-				defer func() { <-workers }() // Release worker slot when done.
+				// defer func() { <-workers }() // Release worker slot when done.
 
 				// Execute the callback function to process the message.
 				if err := r.executeConsumeMessage(m, messageConsume); err != nil {
