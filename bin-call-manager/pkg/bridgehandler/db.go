@@ -75,8 +75,7 @@ func (h *bridgeHandler) Get(ctx context.Context, id string) (*bridge.Bridge, err
 		"bridge_id": id,
 	})
 
-	// res, err := h.getWithTimeout(ctx, id, defaultExistTimeout)
-	res, err := h.getWithTimeout(ctx, id, time.Second*10)
+	res, err := h.getWithTimeout(ctx, id, defaultExistTimeout)
 	if err != nil {
 		log.Errorf("Could not get bridge. err: %v", err)
 		return nil, err
