@@ -94,21 +94,22 @@ func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, 
 		for message := range messages {
 			// workers <- struct{}{} // Block if the max number of workers is reached.
 
-			log.Infof("TEST: Processing single message. message: %v", message)
+			log.Infof("TEST: Processing single message!!!!!!!!!!!!!!!. message: %v", message)
 
 			// Process each message in a goroutine.
 			go func(m amqp.Delivery) {
 				// defer func() { <-workers }() // Release worker slot when done.
+
+				// Acknowledge the message after it has been processed successfully.
+				if err := m.Ack(false); err != nil {
+					log.Errorf("Error acknowledging message: %v", err)
+				}
 
 				// Execute the callback function to process the message.
 				if err := r.executeConsumeMessage(m, messageConsume); err != nil {
 					log.Errorf("Error while processing message: %v", err)
 				}
 
-				// Acknowledge the message after it has been processed successfully.
-				if err := m.Ack(false); err != nil {
-					log.Errorf("Error acknowledging message: %v", err)
-				}
 			}(message)
 		}
 	}
