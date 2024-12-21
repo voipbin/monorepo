@@ -23,7 +23,7 @@ func (h *bridgeHandler) Start(ctx context.Context, asteriskID string, bridgeID s
 
 	res, err := h.Get(ctx, bridgeID)
 	if err != nil {
-		log.Errorf("Could not get started bridge info. err: %v", err)
+		log.Errorf("Could not get created bridge info. err: %v", err)
 		return nil, errors.Wrap(err, "could not get started bridge info")
 	}
 

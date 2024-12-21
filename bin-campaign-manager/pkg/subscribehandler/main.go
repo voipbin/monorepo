@@ -111,11 +111,8 @@ func (h *subscribeHandler) Run() error {
 
 	// receive subscribe events
 	go func() {
-		for {
-			err := h.sockHandler.ConsumeMessage(h.subscribeQueue, string(commonoutline.ServiceNameQueueManager), false, false, false, 10, h.processEventRun)
-			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
-			}
+		if errConsume := h.sockHandler.ConsumeMessage(context.Background(), h.subscribeQueue, string(commonoutline.ServiceNameQueueManager), false, false, false, 10, h.processEventRun); errConsume != nil {
+			logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
 

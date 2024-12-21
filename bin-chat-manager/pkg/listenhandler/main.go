@@ -134,11 +134,8 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// process the received request
 	go func() {
-		for {
-			err := h.sockHandler.ConsumeRPC(queue, string(commonoutline.ServiceNameChatManager), false, false, false, 10, h.processRequest)
-			if err != nil {
-				log.Errorf("Could not consume the request message correctly. err: %v", err)
-			}
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, string(commonoutline.ServiceNameChatManager), false, false, false, 10, h.processRequest); errConsume != nil {
+			log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
 
