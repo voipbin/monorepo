@@ -31,3 +31,5 @@ create table call_bridges(
 
 create index idx_call_bridges_create on call_bridges(tm_create);
 create index idx_call_bridges_reference_id on call_bridges(reference_id);
+create index idx_call_bridges_id on call_bridges(id);
+create index idx_call_bridges_asterisk_id_id on call_bridges(asterisk_id, id);
