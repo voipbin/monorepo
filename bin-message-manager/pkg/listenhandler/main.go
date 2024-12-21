@@ -100,12 +100,8 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// receive requests
 	go func() {
-		for {
-			// consume the request
-			err := h.sockHandler.ConsumeRPC(queue, constCosumerName, false, false, false, 10, h.processRequest)
-			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
-			}
+		if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, constCosumerName, false, false, false, 10, h.processRequest); errConsume != nil {
+			logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 		}
 	}()
 

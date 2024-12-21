@@ -13,7 +13,7 @@ import (
 // ConsumeMessage consumes messages from the given queue with provided options.
 // If the queueName is not provided, it defaults to a pre-configured queue.
 // It uses goroutines with a worker pool to process messages concurrently.
-func (r *rabbit) ConsumeMessage(queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
+func (r *rabbit) ConsumeMessage(ctx context.Context, queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConsumeMessage",
 		"queue_name":    queueName,
@@ -46,7 +46,8 @@ func (r *rabbit) ConsumeMessage(queueName string, consumerName string, exclusive
 		go r.consumeMessageWorker(messages, messageConsume)
 	}
 
-	select {}
+	<-ctx.Done()
+	return nil
 }
 
 func (r *rabbit) consumeMessageWorker(messages <-chan amqp.Delivery, messageConsume sock.CbMsgConsume) {
@@ -83,7 +84,7 @@ func (r *rabbit) executeConsumeMessage(message amqp.Delivery, messageConsume soc
 }
 
 // ConsumeRPC consumes RPC message with given options
-func (r *rabbit) ConsumeRPC(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, cbConsume sock.CbMsgRPC) error {
+func (r *rabbit) ConsumeRPC(ctx context.Context, queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, cbConsume sock.CbMsgRPC) error {
 	queue := r.queueGet(queueName)
 	if queue == nil {
 		return fmt.Errorf("queue not found")
@@ -106,7 +107,8 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, exclusive bool, noLo
 		go r.consumeRPCWorker(messages, cbConsume)
 	}
 
-	select {}
+	<-ctx.Done()
+	return nil
 }
 
 func (r *rabbit) consumeRPCWorker(messages <-chan amqp.Delivery, cbConsume sock.CbMsgRPC) {

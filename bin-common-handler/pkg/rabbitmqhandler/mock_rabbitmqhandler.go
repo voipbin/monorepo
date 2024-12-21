@@ -66,31 +66,31 @@ func (mr *MockRabbitMockRecorder) Connect() *gomock.Call {
 }
 
 // ConsumeMessage mocks base method.
-func (m *MockRabbit) ConsumeMessage(queueName, consumerName string, exclusive, noLocal, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
+func (m *MockRabbit) ConsumeMessage(ctx context.Context, queueName, consumerName string, exclusive, noLocal, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConsumeMessage", queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume)
+	ret := m.ctrl.Call(m, "ConsumeMessage", ctx, queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConsumeMessage indicates an expected call of ConsumeMessage.
-func (mr *MockRabbitMockRecorder) ConsumeMessage(queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume any) *gomock.Call {
+func (mr *MockRabbitMockRecorder) ConsumeMessage(ctx, queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeMessage", reflect.TypeOf((*MockRabbit)(nil).ConsumeMessage), queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeMessage", reflect.TypeOf((*MockRabbit)(nil).ConsumeMessage), ctx, queueName, consumerName, exclusive, noLocal, noWait, numWorkers, messageConsume)
 }
 
 // ConsumeRPC mocks base method.
-func (m *MockRabbit) ConsumeRPC(queueName, consumerName string, exclusive, noLocal, noWait bool, workerNum int, cbConsume sock.CbMsgRPC) error {
+func (m *MockRabbit) ConsumeRPC(ctx context.Context, queueName, consumerName string, exclusive, noLocal, noWait bool, workerNum int, cbConsume sock.CbMsgRPC) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConsumeRPC", queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume)
+	ret := m.ctrl.Call(m, "ConsumeRPC", ctx, queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConsumeRPC indicates an expected call of ConsumeRPC.
-func (mr *MockRabbitMockRecorder) ConsumeRPC(queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume any) *gomock.Call {
+func (mr *MockRabbitMockRecorder) ConsumeRPC(ctx, queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPC", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPC), queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeRPC", reflect.TypeOf((*MockRabbit)(nil).ConsumeRPC), ctx, queueName, consumerName, exclusive, noLocal, noWait, workerNum, cbConsume)
 }
 
 // EventPublish mocks base method.
