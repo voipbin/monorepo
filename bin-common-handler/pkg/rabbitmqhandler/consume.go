@@ -10,48 +10,105 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ConsumeMessage consumes message with given options
-// If the queueName was not defined, then uses with default queue name values.
-func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
-	log := logrus.WithField("func", "ConsumeMessageOpt")
+// // ConsumeMessage consumes message with given options
+// // If the queueName was not defined, then uses with default queue name values.
+// func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
+// 	log := logrus.WithField("func", "ConsumeMessageOpt")
 
+// 	queue := r.queueGet(queueName)
+// 	if queue == nil {
+// 		return fmt.Errorf("queue not found")
+// 	}
+
+// 	workers := make(chan int, numWorkers)
+// 	for {
+// 		// fetch the messages
+// 		messages, err := queue.channel.Consume(
+// 			queueName,    // queue
+// 			consumerName, // messageConsumer
+// 			false,        // auto-ack
+// 			exclusive,    // exclusive
+// 			noLocal,      // no-local
+// 			noWait,       // no-wait
+// 			nil,          // args
+// 		)
+// 		if err != nil {
+// 			return fmt.Errorf("could not consume the message. err: %v", err)
+// 		}
+
+// 		// process message
+// 		for message := range messages {
+// 			log.Infof("TEST: Processing message .... message: %v", message)
+
+// 			workers <- 1 // will block if there is MAX ints in workers
+// 			go func(m amqp.Delivery) {
+// 				// execute callback
+// 				if errConsume := r.executeConsumeMessage(m, messageConsume); errConsume != nil {
+// 					logrus.Errorf("Could not execute the message consume callback. err: %v", errConsume)
+// 				}
+
+// 				// ack
+// 				if errAck := m.Ack(false); errAck != nil {
+// 					log.Errorf("Could not ack the message. err: %v", errAck)
+// 				}
+// 				<-workers // removes an int from workers, allowing another to proceed
+// 			}(message)
+// 		}
+// 	}
+// }
+
+// ConsumeMessage consumes messages from the given queue with provided options.
+// If the queueName is not provided, it defaults to a pre-configured queue.
+// It uses goroutines with a worker pool to process messages concurrently.
+func (r *rabbit) ConsumeMessage(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error {
+	log := logrus.WithField("func", "ConsumeMessage")
+
+	// Get the queue; if not found, return an error.
 	queue := r.queueGet(queueName)
 	if queue == nil {
-		return fmt.Errorf("queue not found")
+		return fmt.Errorf("queue '%s' not found", queueName)
 	}
 
-	workers := make(chan int, numWorkers)
+	// Create a buffered channel to manage the number of concurrent workers.
+	workers := make(chan struct{}, numWorkers)
+
+	// Start consuming messages.
 	for {
-		// fetch the messages
+		// Consume messages from the queue.
 		messages, err := queue.channel.Consume(
-			queueName,    // queue
-			consumerName, // messageConsumer
-			false,        // auto-ack
-			exclusive,    // exclusive
-			noLocal,      // no-local
-			noWait,       // no-wait
-			nil,          // args
+			queueName,    // Queue name
+			consumerName, // Consumer name
+			false,        // auto-ack (manual acknowledgement)
+			exclusive,    // Exclusive (used for binding the queue to the current connection)
+			noLocal,      // No-local (only send messages to consumers on the same connection)
+			noWait,       // No-wait (do not wait for confirmation)
+			nil,          // Additional arguments (nil in this case)
 		)
 		if err != nil {
-			return fmt.Errorf("could not consume the message. err: %v", err)
+			log.Errorf("Failed to consume message from queue '%s': %v", queueName, err)
+			return fmt.Errorf("could not consume messages: %v", err)
 		}
+		log.Infof("TEST: Processing messages. messages: %v", messages)
 
-		// process message
+		// Process messages received from the queue.
 		for message := range messages {
-			log.Infof("TEST: Processing message .... message: %v", message)
+			workers <- struct{}{} // Block if the max number of workers is reached.
 
-			workers <- 1 // will block if there is MAX ints in workers
+			log.Infof("TEST: Processing single message. message: %v", message)
+
+			// Process each message in a goroutine.
 			go func(m amqp.Delivery) {
-				// execute callback
-				if errConsume := r.executeConsumeMessage(m, messageConsume); errConsume != nil {
-					logrus.Errorf("Could not execute the message consume callback. err: %v", errConsume)
+				defer func() { <-workers }() // Release worker slot when done.
+
+				// Execute the callback function to process the message.
+				if err := r.executeConsumeMessage(m, messageConsume); err != nil {
+					log.Errorf("Error while processing message: %v", err)
 				}
 
-				// ack
-				if errAck := m.Ack(false); errAck != nil {
-					log.Errorf("Could not ack the message. err: %v", errAck)
+				// Acknowledge the message after it has been processed successfully.
+				if err := m.Ack(false); err != nil {
+					log.Errorf("Error acknowledging message: %v", err)
 				}
-				<-workers // removes an int from workers, allowing another to proceed
 			}(message)
 		}
 	}
