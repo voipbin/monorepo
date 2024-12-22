@@ -40,6 +40,12 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	targets.GET("/extensions", extensionsGET)
 	targets.GET("/extensions/:id", extensionsIDGET)
 
+	// files
+	targets.GET("/files", filesGET)
+	targets.POST("/files", filesPOST)
+	targets.GET("/files/:id", filesIDGET)
+	targets.DELETE("/files/:id", filesIDDELETE)
+
 	// me
 	targets.GET("/me", meGET)
 	targets.PUT("/me", mePUT)
