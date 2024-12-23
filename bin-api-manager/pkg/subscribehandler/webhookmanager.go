@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
 
@@ -14,10 +15,8 @@ import (
 )
 
 type commonWebhookData struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	AgentID    uuid.UUID `json:"agent_id"`
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
+	commonidentity.Owner
 }
 
 // processEventWebhookManagerWebhookPublished handles the webhook-manager's webhook_published event.
@@ -85,15 +84,17 @@ func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData
 	res := []string{}
 
 	tmps := strings.Split(messageType, "_")
-	if len(tmps) < 1 {
-		return res, fmt.Errorf("wrong type of webhook message. message_type: %s", messageType)
+	if len(tmps) < 2 {
+		return nil, fmt.Errorf("wrong type of webhook message. message_type: %s", messageType)
 	}
 
 	resource := tmps[0]
-	res = append(res, fmt.Sprintf("customer_id:%s:%s:%s", d.CustomerID, resource, d.ID))
 
-	if d.AgentID != uuid.Nil {
-		res = append(res, fmt.Sprintf("agent_id:%s:%s:%s", d.AgentID, resource, d.ID))
+	if d.CustomerID != uuid.Nil {
+		res = append(res, fmt.Sprintf("customer_id:%s:%s:%s", d.CustomerID, resource, d.ID))
+	}
+	if d.OwnerID != uuid.Nil {
+		res = append(res, fmt.Sprintf("agent_id:%s:%s:%s", d.OwnerID, resource, d.ID))
 	}
 
 	return res, nil
