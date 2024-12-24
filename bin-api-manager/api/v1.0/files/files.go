@@ -1,16 +1,5 @@
 package files
 
-import (
-	amagent "monorepo/bin-agent-manager/models/agent"
-
-	"monorepo/bin-api-manager/api/models/common"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-
-	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
-)
-
 // // filesPOST handles POST /files request.
 // // It creates a temp file and create a call with temp file.
 // //
@@ -129,87 +118,87 @@ import (
 // 	c.JSON(200, res)
 // }
 
-// filesIDGET handles GET /files/{id} request.
-// It returns detail file info.
-//
-//	@Summary		Returns detail file info.
-//	@Description	Returns detail file info of the given file id.
-//	@Produce		json
-//	@Param			id	path		string	true	"The ID of the file"
-//	@Success		200	{object}	file.File
-//	@Router			/v1.0/files/{id} [get]
-func filesIDGET(c *gin.Context) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "filesIDGET",
-		"request_address": c.ClientIP,
-	})
+// // filesIDGET handles GET /files/{id} request.
+// // It returns detail file info.
+// //
+// //	@Summary		Returns detail file info.
+// //	@Description	Returns detail file info of the given file id.
+// //	@Produce		json
+// //	@Param			id	path		string	true	"The ID of the file"
+// //	@Success		200	{object}	file.File
+// //	@Router			/v1.0/files/{id} [get]
+// func filesIDGET(c *gin.Context) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":            "filesIDGET",
+// 		"request_address": c.ClientIP,
+// 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+// 	tmp, exists := c.Get("agent")
+// 	if !exists {
+// 		log.Errorf("Could not find agent info.")
+// 		c.AbortWithStatus(400)
+// 		return
+// 	}
+// 	a := tmp.(amagent.Agent)
+// 	log = log.WithFields(logrus.Fields{
+// 		"agent": a,
+// 	})
 
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	log = log.WithField("file_id", id)
-	log.Debug("Executing filesIDGET.")
+// 	// get id
+// 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+// 	log = log.WithField("file_id", id)
+// 	log.Debug("Executing filesIDGET.")
 
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.StorageFileGet(c.Request.Context(), &a, id)
-	if err != nil {
-		log.Errorf("Could not get a file. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
+// 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+// 	res, err := serviceHandler.StorageFileGet(c.Request.Context(), &a, id)
+// 	if err != nil {
+// 		log.Errorf("Could not get a file. err: %v", err)
+// 		c.AbortWithStatus(400)
+// 		return
+// 	}
 
-	c.JSON(200, res)
-}
+// 	c.JSON(200, res)
+// }
 
-// filesIDDELETE handles DELETE /files/{id} request.
-// It deletes a exist file info.
-//
-//	@Summary		Delete a file.
-//	@Description	Delete a file.
-//	@Produce		json
-//	@Param			id	query	string	true	"The file's id"
-//	@Success		200
-//	@Router			/v1.0/files/{id} [delete]
-func filesIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "filesIDDELETE",
-		"request_address": c.ClientIP,
-	})
+// // filesIDDELETE handles DELETE /files/{id} request.
+// // It deletes a exist file info.
+// //
+// //	@Summary		Delete a file.
+// //	@Description	Delete a file.
+// //	@Produce		json
+// //	@Param			id	query	string	true	"The file's id"
+// //	@Success		200
+// //	@Router			/v1.0/files/{id} [delete]
+// func filesIDDELETE(c *gin.Context) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":            "filesIDDELETE",
+// 		"request_address": c.ClientIP,
+// 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+// 	tmp, exists := c.Get("agent")
+// 	if !exists {
+// 		log.Errorf("Could not find agent info.")
+// 		c.AbortWithStatus(400)
+// 		return
+// 	}
+// 	a := tmp.(amagent.Agent)
+// 	log = log.WithFields(logrus.Fields{
+// 		"agent": a,
+// 	})
 
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	log = log.WithField("file_id", id)
-	log.Debug("Executing filesIDDELETE.")
+// 	// get id
+// 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+// 	log = log.WithField("file_id", id)
+// 	log.Debug("Executing filesIDDELETE.")
 
-	// delete a file
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.StorageFileDelete(c.Request.Context(), &a, id)
-	if err != nil {
-		log.Errorf("Could not delete the file. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
+// 	// delete a file
+// 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+// 	res, err := serviceHandler.StorageFileDelete(c.Request.Context(), &a, id)
+// 	if err != nil {
+// 		log.Errorf("Could not delete the file. err: %v", err)
+// 		c.AbortWithStatus(400)
+// 		return
+// 	}
 
-	c.JSON(200, res)
-}
+// 	c.JSON(200, res)
+// }
