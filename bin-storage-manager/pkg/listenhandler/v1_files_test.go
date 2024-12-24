@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -52,12 +53,14 @@ func Test_v1FilesPost(t *testing.T) {
 			filepath:      "test/file/path",
 
 			responseFile: &file.File{
-				ID: uuid.FromStringOrNil("9de3d544-1739-11ef-acf1-e7fe99b5d7d0"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9de3d544-1739-11ef-acf1-e7fe99b5d7d0"),
+				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9de3d544-1739-11ef-acf1-e7fe99b5d7d0","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9de3d544-1739-11ef-acf1-e7fe99b5d7d0","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -120,13 +123,15 @@ func Test_v1FilesGet(t *testing.T) {
 
 			[]*file.File{
 				{
-					ID:         uuid.FromStringOrNil("bec1be20-15ea-11ef-ab62-ab3b98e4ee3c"),
-					CustomerID: uuid.FromStringOrNil("bd47c576-15ea-11ef-93f4-7b6a665b785d")},
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("bec1be20-15ea-11ef-ab62-ab3b98e4ee3c"),
+						CustomerID: uuid.FromStringOrNil("bd47c576-15ea-11ef-93f4-7b6a665b785d")},
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bec1be20-15ea-11ef-ab62-ab3b98e4ee3c","customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"bec1be20-15ea-11ef-ab62-ab3b98e4ee3c","customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -178,12 +183,14 @@ func Test_v1FilesIDGet(t *testing.T) {
 			},
 
 			&file.File{
-				ID: uuid.FromStringOrNil("2a5db58a-15eb-11ef-b669-bba0fb7a717d"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a5db58a-15eb-11ef-b669-bba0fb7a717d"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2a5db58a-15eb-11ef-b669-bba0fb7a717d","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2a5db58a-15eb-11ef-b669-bba0fb7a717d","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -201,7 +208,7 @@ func Test_v1FilesIDGet(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().FileGet(gomock.Any(), tt.responseFile.ID).Return(tt.responseFile, nil)
+			mockStorage.EXPECT().FileGet(gomock.Any(), tt.responseFile.Identity.ID).Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -236,12 +243,14 @@ func Test_v1FilesIDDelete(t *testing.T) {
 			uuid.FromStringOrNil("97a4e91a-15eb-11ef-bf44-eb05a9976a61"),
 
 			&file.File{
-				ID: uuid.FromStringOrNil("97a4e91a-15eb-11ef-bf44-eb05a9976a61"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("97a4e91a-15eb-11ef-bf44-eb05a9976a61"),
+				},
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"97a4e91a-15eb-11ef-bf44-eb05a9976a61","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"97a4e91a-15eb-11ef-bf44-eb05a9976a61","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","bucket_name":"","filename":"","filepath":"","filesize":0,"uri_bucket":"","uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

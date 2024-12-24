@@ -8,6 +8,8 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -27,10 +29,14 @@ func Test_FileCreate(t *testing.T) {
 		{
 			"normal",
 			&file.File{
-				ID:               uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
-				CustomerID:       uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
+					CustomerID: uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
+				},
 				AccountID:        uuid.FromStringOrNil("2e716278-19ad-11ef-b03d-67ce8ed81b5a"),
-				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
 				ReferenceType:    file.ReferenceTypeRecording,
 				ReferenceID:      uuid.FromStringOrNil("305ff91a-1538-11ef-8ceb-f7ad81138af6"),
 				Name:             "test name",
@@ -46,10 +52,14 @@ func Test_FileCreate(t *testing.T) {
 
 			"2024-05-18 03:22:17.995000",
 			&file.File{
-				ID:               uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
-				CustomerID:       uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
+					CustomerID: uuid.FromStringOrNil("fb7b9494-13f1-11ef-b22b-13707d54c279"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
+				},
 				AccountID:        uuid.FromStringOrNil("2e716278-19ad-11ef-b03d-67ce8ed81b5a"),
-				OwnerID:          uuid.FromStringOrNil("fb9db6fa-13f1-11ef-8684-e33adef1ce98"),
 				ReferenceType:    file.ReferenceTypeRecording,
 				ReferenceID:      uuid.FromStringOrNil("305ff91a-1538-11ef-8ceb-f7ad81138af6"),
 				Name:             "test name",
@@ -119,14 +129,18 @@ func Test_FileGets(t *testing.T) {
 			"normal",
 			[]file.File{
 				{
-					ID:         uuid.FromStringOrNil("a3f9552a-13f2-11ef-bbbd-23b99b535400"),
-					CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
-					Name:       "test1",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a3f9552a-13f2-11ef-bbbd-23b99b535400"),
+						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
+					},
+					Name: "test1",
 				},
 				{
-					ID:         uuid.FromStringOrNil("a45d53cc-13f2-11ef-af26-cbcf0eb06b9e"),
-					CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
-					Name:       "test2",
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a45d53cc-13f2-11ef-af26-cbcf0eb06b9e"),
+						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
+					},
+					Name: "test2",
 				},
 			},
 
@@ -139,20 +153,24 @@ func Test_FileGets(t *testing.T) {
 			"2024-05-16 03:22:17.995000",
 			[]*file.File{
 				{
-					ID:         uuid.FromStringOrNil("a3f9552a-13f2-11ef-bbbd-23b99b535400"),
-					CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
-					Name:       "test1",
-					TMCreate:   "2024-05-16 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a3f9552a-13f2-11ef-bbbd-23b99b535400"),
+						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
+					},
+					Name:     "test1",
+					TMCreate: "2024-05-16 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("a45d53cc-13f2-11ef-af26-cbcf0eb06b9e"),
-					CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
-					Name:       "test2",
-					TMCreate:   "2024-05-16 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("a45d53cc-13f2-11ef-af26-cbcf0eb06b9e"),
+						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
+					},
+					Name:     "test2",
+					TMCreate: "2024-05-16 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
@@ -206,14 +224,18 @@ func Test_FileUpdate(t *testing.T) {
 		{
 			"test normal",
 			&file.File{
-				ID: uuid.FromStringOrNil("886d7d76-13f3-11ef-aef8-436d1fc7ffca"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("886d7d76-13f3-11ef-aef8-436d1fc7ffca"),
+				},
 			},
 
 			"test name",
 			"test detail",
 
 			&file.File{
-				ID:     uuid.FromStringOrNil("886d7d76-13f3-11ef-aef8-436d1fc7ffca"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("886d7d76-13f3-11ef-aef8-436d1fc7ffca"),
+				},
 				Name:   "test name",
 				Detail: "test detail",
 			},
@@ -274,7 +296,9 @@ func Test_FileDelete(t *testing.T) {
 		{
 			"normal",
 			&file.File{
-				ID:     uuid.FromStringOrNil("f435e9b2-13f3-11ef-b332-9374d7dca9d5"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f435e9b2-13f3-11ef-b332-9374d7dca9d5"),
+				},
 				Name:   "test file name",
 				Detail: "test file detail",
 			},
