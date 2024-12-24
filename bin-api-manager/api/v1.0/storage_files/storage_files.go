@@ -55,7 +55,7 @@ func storageFilesPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	res, err := serviceHandler.ServiceAgentFileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
+	res, err := serviceHandler.StorageFileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
@@ -111,7 +111,7 @@ func storageFilesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get files
-	files, err := serviceHandler.ServiceAgentFileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
+	files, err := serviceHandler.StorageFileGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -164,7 +164,7 @@ func storageFilesIDGET(c *gin.Context) {
 	log.Debug("Executing filesIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ServiceAgentFileGet(c.Request.Context(), &a, id)
+	res, err := serviceHandler.StorageFileGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a file. err: %v", err)
 		c.AbortWithStatus(400)

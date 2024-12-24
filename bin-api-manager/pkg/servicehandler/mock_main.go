@@ -3335,19 +3335,19 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGet(ctx, a, id any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileGet), ctx, a, id)
 }
 
-// ServiceAgentFileGetsByOnwerID mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileGetsByOnwerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
+// ServiceAgentFileGets mocks base method.
+func (m *MockServiceHandler) ServiceAgentFileGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentFileGetsByOnwerID", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentFileGets", ctx, a, size, token)
 	ret0, _ := ret[0].([]*file.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentFileGetsByOnwerID indicates an expected call of ServiceAgentFileGetsByOnwerID.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGetsByOnwerID(ctx, a, size, token any) *gomock.Call {
+// ServiceAgentFileGets indicates an expected call of ServiceAgentFileGets.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGets(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileGetsByOnwerID", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileGetsByOnwerID), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileGets), ctx, a, size, token)
 }
 
 // ServiceAgentMeGet mocks base method.
@@ -3500,6 +3500,21 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountGets(ctx, a, size, token
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountGets", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountGets), ctx, a, size, token)
 }
 
+// StorageFileCreate mocks base method.
+func (m *MockServiceHandler) StorageFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail, filename string) (*file.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageFileCreate", ctx, a, f, name, detail, filename)
+	ret0, _ := ret[0].(*file.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageFileCreate indicates an expected call of StorageFileCreate.
+func (mr *MockServiceHandlerMockRecorder) StorageFileCreate(ctx, a, f, name, detail, filename any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileCreate", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileCreate), ctx, a, f, name, detail, filename)
+}
+
 // StorageFileDelete mocks base method.
 func (m *MockServiceHandler) StorageFileDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3528,6 +3543,21 @@ func (m *MockServiceHandler) StorageFileGet(ctx context.Context, a *agent.Agent,
 func (mr *MockServiceHandlerMockRecorder) StorageFileGet(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileGet", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileGet), ctx, a, id)
+}
+
+// StorageFileGets mocks base method.
+func (m *MockServiceHandler) StorageFileGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageFileGets", ctx, a, size, token)
+	ret0, _ := ret[0].([]*file.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageFileGets indicates an expected call of StorageFileGets.
+func (mr *MockServiceHandlerMockRecorder) StorageFileGets(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileGets", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileGets), ctx, a, size, token)
 }
 
 // TagCreate mocks base method.

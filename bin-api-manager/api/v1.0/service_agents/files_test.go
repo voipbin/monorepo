@@ -72,7 +72,7 @@ func Test_filesGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentFileGetsByOnwerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFiles, nil)
+			mockSvc.EXPECT().ServiceAgentFileGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFiles, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

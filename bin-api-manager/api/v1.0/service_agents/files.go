@@ -109,7 +109,7 @@ func filesGET(c *gin.Context) {
 	log.Debugf("filesGET. Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	files, err := serviceHandler.ServiceAgentFileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
+	files, err := serviceHandler.ServiceAgentFileGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)

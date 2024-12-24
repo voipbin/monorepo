@@ -17,12 +17,11 @@ import (
 // it returns created file info if it succeed.
 func (h *serviceHandler) ServiceAgentFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "StorageFileCreate",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"name":        name,
-		"detail":      detail,
-		"filename":    filename,
+		"func":     "ServiceAgentFileCreate",
+		"agent":    a,
+		"name":     name,
+		"detail":   detail,
+		"filename": filename,
 	})
 	log.Debug("Creating a new file.")
 
@@ -50,7 +49,7 @@ func (h *serviceHandler) ServiceAgentFileCreate(ctx context.Context, a *amagent.
 
 	// create file
 	// set timeout for 60 secs
-	tmp, err := h.reqHandler.StorageV1FileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, filename, h.bucketName, filepath, 60000)
+	tmp, err := h.storageFileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, name, detail, filename, h.bucketName, filepath)
 	if err != nil {
 		log.Errorf("Could not create a file. err: %v", err)
 		return nil, err
@@ -61,9 +60,9 @@ func (h *serviceHandler) ServiceAgentFileCreate(ctx context.Context, a *amagent.
 	return res, nil
 }
 
-// ServiceAgentFileGetsByOnwerID gets the list of file of the given customer id.
+// ServiceAgentFileGets gets the list of file of the given customer id.
 // It returns list of files if it succeed.
-func (h *serviceHandler) ServiceAgentFileGetsByOnwerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentFileGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageFileGetsByOnwerID",
 		"customer_id": a.CustomerID,
@@ -72,11 +71,6 @@ func (h *serviceHandler) ServiceAgentFileGetsByOnwerID(ctx context.Context, a *a
 		"token":       token,
 	})
 	log.Debug("Getting a file.")
-
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
-	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
