@@ -13,20 +13,11 @@ import (
 )
 
 // tagGet validates the tag's ownership and returns the tag info.
-func (h *serviceHandler) tagGet(ctx context.Context, a *amagent.Agent, tagID uuid.UUID) (*tmtag.Tag, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "tagGet",
-		"customer_id": a.CustomerID,
-		"tag_id":      tagID,
-	})
-
-	// send request
+func (h *serviceHandler) tagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error) {
 	res, err := h.reqHandler.TagV1TagGet(ctx, tagID)
 	if err != nil {
-		log.Errorf("Could not get an tag. err: %v", err)
 		return nil, err
 	}
-	log.WithField("tag", res).Debug("Received result.")
 
 	return res, nil
 }
@@ -71,7 +62,7 @@ func (h *serviceHandler) TagGet(ctx context.Context, a *amagent.Agent, id uuid.U
 		"tag_id":      id,
 	})
 
-	t, err := h.tagGet(ctx, a, id)
+	t, err := h.tagGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not validate the tag info. err: %v", err)
 		return nil, err
@@ -132,7 +123,7 @@ func (h *serviceHandler) TagDelete(ctx context.Context, a *amagent.Agent, id uui
 		"tag_id":      id,
 	})
 
-	t, err := h.tagGet(ctx, a, id)
+	t, err := h.tagGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not validate the tag info. err: %v", err)
 		return nil, err
@@ -167,7 +158,7 @@ func (h *serviceHandler) TagUpdate(ctx context.Context, a *amagent.Agent, id uui
 		"tag_id":      id,
 	})
 
-	t, err := h.tagGet(ctx, a, id)
+	t, err := h.tagGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not validate the tag info. err: %v", err)
 		return nil, err

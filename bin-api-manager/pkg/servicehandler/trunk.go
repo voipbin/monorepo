@@ -14,20 +14,11 @@ import (
 )
 
 // trunkGet validates the trunk's ownership and returns the trunk info.
-func (h *serviceHandler) trunkGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmtrunk.Trunk, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "trunkGet",
-		"customer_id": a.CustomerID,
-		"domain_id":   id,
-	})
-
-	// send request
+func (h *serviceHandler) trunkGet(ctx context.Context, id uuid.UUID) (*rmtrunk.Trunk, error) {
 	res, err := h.reqHandler.RegistrarV1TrunkGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get the trunk info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("trunk", res).Debug("Received result.")
 
 	return res, nil
 }
@@ -68,7 +59,7 @@ func (h *serviceHandler) TrunkDelete(ctx context.Context, a *amagent.Agent, id u
 	})
 	log.Debug("Deleting the domain.")
 
-	t, err := h.trunkGet(ctx, a, id)
+	t, err := h.trunkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the domain info. err: %v", err)
 		return nil, fmt.Errorf("could not get domain info. err: %v", err)
@@ -102,7 +93,7 @@ func (h *serviceHandler) TrunkGet(ctx context.Context, a *amagent.Agent, id uuid
 	log.Debug("Getting a trunk.")
 
 	// get trunk
-	tmp, err := h.trunkGet(ctx, a, id)
+	tmp, err := h.trunkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get trunk info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get trunk info. err: %v", err)
@@ -174,7 +165,7 @@ func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *amagent.Ag
 	log.Debug("Updating a trunk.")
 
 	// get
-	t, err := h.trunkGet(ctx, a, id)
+	t, err := h.trunkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get trunk info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find domain info. err: %v", err)

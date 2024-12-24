@@ -14,12 +14,10 @@ import (
 )
 
 // billingAccountGet validates the billing account's ownership and returns the billing account info.
-func (h *serviceHandler) billingAccountGet(ctx context.Context, a *amagent.Agent, accountID uuid.UUID) (*bmaccount.Account, error) {
+func (h *serviceHandler) billingAccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "billingAccountGet",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"account_id":  accountID,
+		"func":       "billingAccountGet",
+		"account_id": accountID,
 	})
 
 	// send request
@@ -50,13 +48,13 @@ func (h *serviceHandler) BillingAccountGet(ctx context.Context, a *amagent.Agent
 	})
 
 	// get billing account
-	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -77,13 +75,13 @@ func (h *serviceHandler) BillingAccountDelete(ctx context.Context, a *amagent.Ag
 	})
 
 	// get billing account
-	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -112,7 +110,7 @@ func (h *serviceHandler) BillingAccountGets(ctx context.Context, a *amagent.Agen
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -149,7 +147,7 @@ func (h *serviceHandler) BillingAccountCreate(ctx context.Context, a *amagent.Ag
 		"username":    a.Username,
 	})
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -175,13 +173,13 @@ func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *a
 	})
 
 	// get billing account
-	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -207,13 +205,13 @@ func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a 
 	})
 
 	// get billing account
-	ba, err := h.billingAccountGet(ctx, a, billingAccountID)
+	ba, err := h.billingAccountGet(ctx, billingAccountID)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 

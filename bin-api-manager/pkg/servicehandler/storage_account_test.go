@@ -61,7 +61,7 @@ func Test_storageAccountGet(t *testing.T) {
 
 			mockReq.EXPECT().StorageV1AccountGet(ctx, tt.storageAccountID).Return(tt.responseStorageAccount, nil)
 
-			res, err := h.storageAccountGet(ctx, tt.agent, tt.storageAccountID)
+			res, err := h.storageAccountGet(ctx, tt.storageAccountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

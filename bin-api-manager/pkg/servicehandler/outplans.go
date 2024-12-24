@@ -16,12 +16,10 @@ import (
 
 // outplanGet gets the outplan of the given id.
 // It returns outplan if it succeed.
-func (h *serviceHandler) outplanGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*caoutplan.Outplan, error) {
+func (h *serviceHandler) outplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "outplanGet",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"outplan_id":  id,
+		"func":       "outplanGet",
+		"outplan_id": id,
 	})
 	log.Debug("Getting an outplan.")
 
@@ -83,7 +81,7 @@ func (h *serviceHandler) OutplanDelete(ctx context.Context, a *amagent.Agent, id
 	})
 	log.Debug("Deleting a outplan.")
 
-	op, err := h.outplanGet(ctx, a, id)
+	op, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info. err: %v", err)
 		return nil, fmt.Errorf("could not get outplan info. err: %v", err)
@@ -153,7 +151,7 @@ func (h *serviceHandler) OutplanGet(ctx context.Context, a *amagent.Agent, id uu
 	log.Debug("Getting an outplan.")
 
 	// get outplan
-	tmp, err := h.outplanGet(ctx, a, id)
+	tmp, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
@@ -180,7 +178,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *amagent.
 	log.Debug("Updating an outplan.")
 
 	// get outplan
-	op, err := h.outplanGet(ctx, a, id)
+	op, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
@@ -225,7 +223,7 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 	log.Debug("Updating an outplan.")
 
 	// get outplan
-	op, err := h.outplanGet(ctx, a, id)
+	op, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)

@@ -15,10 +15,9 @@ import (
 )
 
 // campaignGet validates the campaign's ownership and returns the campaign info.
-func (h *serviceHandler) campaignGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cacampaign.Campaign, error) {
+func (h *serviceHandler) campaignGet(ctx context.Context, id uuid.UUID) (*cacampaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "campaignGet",
-		"customer_id": a.CustomerID,
 		"campaign_id": id,
 	})
 
@@ -132,7 +131,7 @@ func (h *serviceHandler) CampaignGet(ctx context.Context, a *amagent.Agent, id u
 	log.Debug("Getting an campaign.")
 
 	// get campaign
-	tmp, err := h.campaignGet(ctx, a, id)
+	tmp, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
@@ -157,7 +156,7 @@ func (h *serviceHandler) CampaignDelete(ctx context.Context, a *amagent.Agent, i
 	log.Debug("Deleting a campaign.")
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, id)
+	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
@@ -203,7 +202,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, id)
+	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
@@ -235,7 +234,7 @@ func (h *serviceHandler) CampaignUpdateStatus(ctx context.Context, a *amagent.Ag
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, id)
+	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
@@ -267,7 +266,7 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(ctx context.Context, a *amag
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, id)
+	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
@@ -299,7 +298,7 @@ func (h *serviceHandler) CampaignUpdateActions(ctx context.Context, a *amagent.A
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, id)
+	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
@@ -331,7 +330,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, a *amag
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, id)
+	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
@@ -363,7 +362,7 @@ func (h *serviceHandler) CampaignUpdateNextCampaignID(ctx context.Context, a *am
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, id)
+	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)

@@ -13,10 +13,9 @@ import (
 )
 
 // conferencecallGet vaildates the customer's ownership and returns the conferencecall info.
-func (h *serviceHandler) conferencecallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconferencecall.Conferencecall, error) {
+func (h *serviceHandler) conferencecallGet(ctx context.Context, id uuid.UUID) (*cfconferencecall.Conferencecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "conferencecallGet",
-		"customer_id":       a.CustomerID,
 		"conferencecall_id": id,
 	})
 
@@ -42,13 +41,13 @@ func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *amagent.Agent
 	log.Debugf("Get conferencecall. conferencecall_id: %s", id)
 
 	// get conference
-	tmp, err := h.conferencecallGet(ctx, a, id)
+	tmp, err := h.conferencecallGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -72,7 +71,7 @@ func (h *serviceHandler) ConferencecallGets(ctx context.Context, a *amagent.Agen
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -109,13 +108,13 @@ func (h *serviceHandler) ConferencecallKick(ctx context.Context, a *amagent.Agen
 	})
 
 	// get conference for ownership check
-	c, err := h.conferencecallGet(ctx, a, conferencecallID)
+	c, err := h.conferencecallGet(ctx, conferencecallID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}

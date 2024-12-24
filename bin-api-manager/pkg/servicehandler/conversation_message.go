@@ -34,13 +34,13 @@ func (h *serviceHandler) ConversationMessageGetsByConversationID(
 	log.Debug("Getting a conversation messages.")
 
 	// get conversation to check the permission
-	c, err := h.conversationGet(ctx, a, conversationID)
+	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info. err: %v", err)
 		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -109,13 +109,13 @@ func (h *serviceHandler) ConversationMessageSend(
 	log.Debugf("Sending a message. conversation_id: %s", conversationID)
 
 	// get conversation to check the permission
-	c, err := h.conversationGet(ctx, a, conversationID)
+	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info. err: %v", err)
 		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}

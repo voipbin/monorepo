@@ -11,24 +11,13 @@ import (
 )
 
 // storageAccountGet validates the storage account info.
-func (h *serviceHandler) storageAccountGet(ctx context.Context, a *amagent.Agent, accountID uuid.UUID) (*smaccount.Account, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "storageAccountGet",
-		"customer_id": a.CustomerID,
-		"username":    a.Username,
-		"account_id":  accountID,
-	})
-
-	// send request
+func (h *serviceHandler) storageAccountGet(ctx context.Context, accountID uuid.UUID) (*smaccount.Account, error) {
 	res, err := h.reqHandler.StorageV1AccountGet(ctx, accountID)
 	if err != nil {
-		log.Errorf("Could not get the storage account info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("storage_account", res).Debug("Received result.")
 
 	if res.TMDelete < defaultTimestamp {
-		log.Debugf("Deleted storage_account. storage_account_id: %s", res.ID)
 		return nil, fmt.Errorf("not found")
 	}
 
@@ -47,7 +36,7 @@ func (h *serviceHandler) StorageAccountGet(ctx context.Context, a *amagent.Agent
 	})
 
 	// get storage account
-	sa, err := h.storageAccountGet(ctx, a, storageAccountID)
+	sa, err := h.storageAccountGet(ctx, storageAccountID)
 	if err != nil {
 		log.Infof("Could not get storage account info. err: %v", err)
 		return nil, err
@@ -105,7 +94,7 @@ func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *amagent.Ag
 	})
 
 	// get storage account
-	ba, err := h.storageAccountGet(ctx, a, storageAccountID)
+	ba, err := h.storageAccountGet(ctx, storageAccountID)
 	if err != nil {
 		log.Infof("Could not get storage account info. err: %v", err)
 		return nil, err

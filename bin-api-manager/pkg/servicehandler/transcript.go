@@ -23,7 +23,7 @@ func (h *serviceHandler) TranscriptGets(ctx context.Context, a *amagent.Agent, t
 		"transcribe_id": transcribeID,
 	})
 
-	t, err := h.transcribeGet(ctx, a, transcribeID)
+	t, err := h.transcribeGet(ctx, transcribeID)
 	if err != nil {
 		log.Infof("Could not get transcribe info. err: %v", err)
 		return nil, err

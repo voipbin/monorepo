@@ -14,10 +14,9 @@ import (
 )
 
 // conversationAccountGet validates the conversation account's ownership and returns the conversation account info.
-func (h *serviceHandler) conversationAccountGet(ctx context.Context, a *amagent.Agent, conversationAccountID uuid.UUID) (*cvaccount.Account, error) {
+func (h *serviceHandler) conversationAccountGet(ctx context.Context, conversationAccountID uuid.UUID) (*cvaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                    "conversationAccountGet",
-		"customer_id":             a.CustomerID,
 		"conversation_account_id": conversationAccountID,
 	})
 
@@ -88,7 +87,7 @@ func (h *serviceHandler) ConversationAccountGet(ctx context.Context, a *amagent.
 	log.Debug("Getting an conversation account.")
 
 	// get
-	tmp, err := h.conversationAccountGet(ctx, a, id)
+	tmp, err := h.conversationAccountGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conversation account info from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find conversation account info. err: %v", err)
@@ -153,7 +152,7 @@ func (h *serviceHandler) ConversationAccountUpdate(
 	log.Debug("Creating a new conversation account.")
 
 	// get campaign
-	ca, err := h.conversationAccountGet(ctx, a, accountID)
+	ca, err := h.conversationAccountGet(ctx, accountID)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
@@ -184,7 +183,7 @@ func (h *serviceHandler) ConversationAccountDelete(ctx context.Context, a *amage
 	log.Debug("Creating a new conversation account.")
 
 	// get campaign
-	ca, err := h.conversationAccountGet(ctx, a, accountID)
+	ca, err := h.conversationAccountGet(ctx, accountID)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find conversation info. err: %v", err)

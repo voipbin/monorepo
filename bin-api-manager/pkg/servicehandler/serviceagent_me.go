@@ -16,7 +16,7 @@ func (h *serviceHandler) ServiceAgentMeGet(ctx context.Context, a *amagent.Agent
 		"agent": a,
 	})
 
-	tmp, err := h.agentGet(ctx, a, a.ID)
+	tmp, err := h.agentGet(ctx, a.ID)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
 		return nil, err
@@ -35,7 +35,7 @@ func (h *serviceHandler) ServiceAgentMeUpdate(ctx context.Context, a *amagent.Ag
 	})
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdate(ctx, a.ID, name, detail, ringMethod)
+	tmp, err := h.agentUpdate(ctx, a.ID, name, detail, ringMethod)
 	if err != nil {
 		log.Infof("Could not update the agent info. err: %v", err)
 		return nil, err
@@ -54,7 +54,7 @@ func (h *serviceHandler) ServiceAgentMeUpdateAddresses(ctx context.Context, a *a
 	})
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdateAddresses(ctx, a.ID, addresses)
+	tmp, err := h.agentUpdateAddresses(ctx, a.ID, addresses)
 	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return nil, err
@@ -73,7 +73,7 @@ func (h *serviceHandler) ServiceAgentMeUpdateStatus(ctx context.Context, a *amag
 	})
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdateStatus(ctx, a.ID, status)
+	tmp, err := h.agentUpdateStatus(ctx, a.ID, status)
 	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return nil, err
@@ -93,7 +93,7 @@ func (h *serviceHandler) ServiceAgentMeUpdatePassword(ctx context.Context, a *am
 	})
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdatePassword(ctx, 30000, a.ID, password)
+	tmp, err := h.agentUpdatePassword(ctx, a.ID, password)
 	if err != nil {
 		log.Infof("Could not update the agent password. err: %v", err)
 		return nil, err

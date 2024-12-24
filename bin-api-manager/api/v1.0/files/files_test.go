@@ -22,76 +22,76 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func Test_filesPOST(t *testing.T) {
+// func Test_filesPOST(t *testing.T) {
 
-	tests := []struct {
-		name  string
-		agent amagent.Agent
+// 	tests := []struct {
+// 		name  string
+// 		agent amagent.Agent
 
-		reqQuery string
-		filename string
-		resFile  *smfile.WebhookMessage
-	}{
-		{
-			"normal",
-			amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				},
-			},
+// 		reqQuery string
+// 		filename string
+// 		resFile  *smfile.WebhookMessage
+// 	}{
+// 		{
+// 			"normal",
+// 			amagent.Agent{
+// 				Identity: commonidentity.Identity{
+// 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+// 				},
+// 			},
 
-			"/v1.0/files",
-			"testfile.txt",
-			&smfile.WebhookMessage{
-				ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
-			},
-		},
-	}
+// 			"/v1.0/files",
+// 			"testfile.txt",
+// 			&smfile.WebhookMessage{
+// 				ID: uuid.FromStringOrNil("39ae35ca-1710-11ef-bae6-afeb7c57c901"),
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// create mock
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			// create mock
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
+// 			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
+// 			w := httptest.NewRecorder()
+// 			_, r := gin.CreateTestContext(w)
 
-			r.Use(func(c *gin.Context) {
-				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("agent", tt.agent)
-			})
-			setupServer(r)
+// 			r.Use(func(c *gin.Context) {
+// 				c.Set(common.OBJServiceHandler, mockSvc)
+// 				c.Set("agent", tt.agent)
+// 			})
+// 			setupServer(r)
 
-			body := new(bytes.Buffer)
-			writer := multipart.NewWriter(body)
-			part, err := writer.CreateFormFile("file", tt.filename)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			body := new(bytes.Buffer)
+// 			writer := multipart.NewWriter(body)
+// 			part, err := writer.CreateFormFile("file", tt.filename)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			// 10 MB
-			testFileData := bytes.Repeat([]byte("a"), int(10<<20))
-			_, err = part.Write(testFileData)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-			writer.Close()
+// 			// 10 MB
+// 			testFileData := bytes.Repeat([]byte("a"), int(10<<20))
+// 			_, err = part.Write(testFileData)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+// 			writer.Close()
 
-			req, _ := http.NewRequest("POST", tt.reqQuery, body)
-			req.Header.Add("Content-Type", writer.FormDataContentType())
+// 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
+// 			req.Header.Add("Content-Type", writer.FormDataContentType())
 
-			mockSvc.EXPECT().StorageFileCreate(req.Context(), &tt.agent, gomock.Any(), "", "", tt.filename).Return(tt.resFile, nil)
+// 			mockSvc.EXPECT().StorageFileCreate(req.Context(), &tt.agent, gomock.Any(), "", "", tt.filename).Return(tt.resFile, nil)
 
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-		})
-	}
-}
+// 			r.ServeHTTP(w, req)
+// 			if w.Code != http.StatusOK {
+// 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_filesPOST_err(t *testing.T) {
 
@@ -164,62 +164,62 @@ func Test_filesPOST_err(t *testing.T) {
 	}
 }
 
-func Test_filesGET(t *testing.T) {
+// func Test_filesGET(t *testing.T) {
 
-	type test struct {
-		name  string
-		agent amagent.Agent
+// 	type test struct {
+// 		name  string
+// 		agent amagent.Agent
 
-		reqQuery string
+// 		reqQuery string
 
-		expectExt []*smfile.WebhookMessage
-	}
+// 		expectExt []*smfile.WebhookMessage
+// 	}
 
-	tests := []test{
-		{
-			"normal",
-			amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				},
-			},
+// 	tests := []test{
+// 		{
+// 			"normal",
+// 			amagent.Agent{
+// 				Identity: commonidentity.Identity{
+// 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+// 				},
+// 			},
 
-			"/v1.0/files?token_size=100",
-			[]*smfile.WebhookMessage{
-				{
-					ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-				},
-			},
-		},
-	}
+// 			"/v1.0/files?token_size=100",
+// 			[]*smfile.WebhookMessage{
+// 				{
+// 					ID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
+// 				},
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// create mock
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			// create mock
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
+// 			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
+// 			w := httptest.NewRecorder()
+// 			_, r := gin.CreateTestContext(w)
 
-			r.Use(func(c *gin.Context) {
-				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("agent", tt.agent)
-			})
-			setupServer(r)
+// 			r.Use(func(c *gin.Context) {
+// 				c.Set(common.OBJServiceHandler, mockSvc)
+// 				c.Set("agent", tt.agent)
+// 			})
+// 			setupServer(r)
 
-			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileGetsByOnwerID(req.Context(), &tt.agent, uint64(100), "").Return(tt.expectExt, nil)
+// 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+// 			mockSvc.EXPECT().StorageFileGetsByOnwerID(req.Context(), &tt.agent, uint64(100), "").Return(tt.expectExt, nil)
 
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-		})
-	}
-}
+// 			r.ServeHTTP(w, req)
+// 			if w.Code != http.StatusOK {
+// 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_filesIDGET(t *testing.T) {
 

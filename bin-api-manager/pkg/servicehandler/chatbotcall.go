@@ -13,10 +13,9 @@ import (
 )
 
 // chatbotcallGet validates the chatbotcall's ownership and returns the chatbotcall info.
-func (h *serviceHandler) chatbotcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error) {
+func (h *serviceHandler) chatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "chatbotcallGet",
-		"customer_id":    a.CustomerID,
 		"chatbotcall_id": id,
 	})
 
@@ -85,7 +84,7 @@ func (h *serviceHandler) ChatbotcallGet(ctx context.Context, a *amagent.Agent, i
 	log.Debug("Getting a chatbotcall.")
 
 	// get chatbot
-	tmp, err := h.chatbotcallGet(ctx, a, id)
+	tmp, err := h.chatbotcallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chatbot manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbotcall info. err: %v", err)
@@ -111,7 +110,7 @@ func (h *serviceHandler) ChatbotcallDelete(ctx context.Context, a *amagent.Agent
 	log.Debug("Deleting a chatbotcall.")
 
 	// get chatbotcall
-	c, err := h.chatbotcallGet(ctx, a, id)
+	c, err := h.chatbotcallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chatbot manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbotcall info. err: %v", err)

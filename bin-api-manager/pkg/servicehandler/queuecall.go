@@ -13,11 +13,10 @@ import (
 )
 
 // queuecallGet validates the queuecall's ownership and returns the queuecall info.
-func (h *serviceHandler) queuecallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*qmqueuecall.Queuecall, error) {
+func (h *serviceHandler) queuecallGet(ctx context.Context, id uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "queuecallGet",
-		"customer_id": a.CustomerID,
-		"agent_id":    id,
+		"func":     "queuecallGet",
+		"agent_id": id,
 	})
 
 	// send request
@@ -66,14 +65,14 @@ func (h *serviceHandler) QueuecallGet(ctx context.Context, a *amagent.Agent, que
 		"agent_id":    queueID,
 	})
 
-	tmp, err := h.queuecallGet(ctx, a, queueID)
+	tmp, err := h.queuecallGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not validate the queue info. err: %v", err)
 		return nil, err
 	}
 
 	// permission check
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -99,7 +98,7 @@ func (h *serviceHandler) QueuecallGets(ctx context.Context, a *amagent.Agent, si
 	}
 
 	// permission check
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -134,7 +133,7 @@ func (h *serviceHandler) QueuecallDelete(ctx context.Context, a *amagent.Agent, 
 		"username":    a.Username,
 	})
 
-	qc, err := h.queuecallGet(ctx, a, queuecallID)
+	qc, err := h.queuecallGet(ctx, queuecallID)
 	if err != nil {
 		log.Errorf("Could not get queuecall. err: %v", err)
 		return nil, err
@@ -166,7 +165,7 @@ func (h *serviceHandler) QueuecallKick(ctx context.Context, a *amagent.Agent, qu
 		"username":    a.Username,
 	})
 
-	qc, err := h.queuecallGet(ctx, a, queuecallID)
+	qc, err := h.queuecallGet(ctx, queuecallID)
 	if err != nil {
 		log.Errorf("Could not get queuecall. err: %v", err)
 		return nil, err

@@ -67,7 +67,7 @@ func Test_activeflowGet(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 
-			res, err := h.activeflowGet(ctx, tt.agent, tt.activeflowID)
+			res, err := h.activeflowGet(ctx, tt.activeflowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

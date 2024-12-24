@@ -15,11 +15,10 @@ import (
 )
 
 // messageGet validates the tag's ownership and returns the message info.
-func (h *serviceHandler) messageGet(ctx context.Context, a *amagent.Agent, messageID uuid.UUID) (*mmmessage.Message, error) {
+func (h *serviceHandler) messageGet(ctx context.Context, messageID uuid.UUID) (*mmmessage.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "messageGet",
-		"customer_id": a.CustomerID,
-		"tag_id":      messageID,
+		"func":   "messageGet",
+		"tag_id": messageID,
 	})
 
 	// send request
@@ -50,7 +49,7 @@ func (h *serviceHandler) MessageGets(ctx context.Context, a *amagent.Agent, size
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -87,7 +86,7 @@ func (h *serviceHandler) MessageSend(ctx context.Context, a *amagent.Agent, sour
 		return nil, fmt.Errorf("destination is empty")
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -115,13 +114,13 @@ func (h *serviceHandler) MessageGet(ctx context.Context, a *amagent.Agent, id uu
 	})
 
 	// get message info
-	tmp, err := h.messageGet(ctx, a, id)
+	tmp, err := h.messageGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get message info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -148,7 +147,7 @@ func (h *serviceHandler) MessageDelete(ctx context.Context, a *amagent.Agent, id
 	})
 
 	// get message info
-	m, err := h.messageGet(ctx, a, id)
+	m, err := h.messageGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get message info. err: %v", err)
 		return nil, err

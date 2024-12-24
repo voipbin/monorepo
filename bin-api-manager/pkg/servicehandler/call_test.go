@@ -73,7 +73,7 @@ func Test_callGet(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 
-			res, err := h.callGet(ctx, tt.agent, tt.callID)
+			res, err := h.callGet(ctx, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -146,7 +146,7 @@ func Test_callGet_error(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, tt.responseCallError)
 
-			_, err := h.callGet(ctx, tt.agent, tt.callID)
+			_, err := h.callGet(ctx, tt.callID)
 			if err == nil {
 				t.Error("Wrong match. expect: error, got: nil")
 			}

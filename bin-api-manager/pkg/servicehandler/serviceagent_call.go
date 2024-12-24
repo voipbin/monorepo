@@ -58,7 +58,7 @@ func (h *serviceHandler) ServiceAgentCallGet(ctx context.Context, a *amagent.Age
 	})
 
 	// get call
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -85,7 +85,7 @@ func (h *serviceHandler) ServiceAgentCallDelete(ctx context.Context, a *amagent.
 	})
 
 	// get call
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)

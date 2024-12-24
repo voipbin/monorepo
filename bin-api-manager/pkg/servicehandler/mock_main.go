@@ -1970,21 +1970,6 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGets(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGets", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGets), ctx, a, size, token)
 }
 
-// ExtensionGetsByOwner mocks base method.
-func (m *MockServiceHandler) ExtensionGetsByOwner(ctx context.Context, a *agent.Agent) ([]*extension.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionGetsByOwner", ctx, a)
-	ret0, _ := ret[0].([]*extension.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ExtensionGetsByOwner indicates an expected call of ExtensionGetsByOwner.
-func (mr *MockServiceHandlerMockRecorder) ExtensionGetsByOwner(ctx, a any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByOwner", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGetsByOwner), ctx, a)
-}
-
 // ExtensionUpdate mocks base method.
 func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3275,6 +3260,96 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCustomerGet(ctx, a any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCustomerGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCustomerGet), ctx, a)
 }
 
+// ServiceAgentExtensionGet mocks base method.
+func (m *MockServiceHandler) ServiceAgentExtensionGet(ctx context.Context, a *agent.Agent, extensionID uuid.UUID) (*extension.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentExtensionGet", ctx, a, extensionID)
+	ret0, _ := ret[0].(*extension.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentExtensionGet indicates an expected call of ServiceAgentExtensionGet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionGet(ctx, a, extensionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentExtensionGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentExtensionGet), ctx, a, extensionID)
+}
+
+// ServiceAgentExtensionGets mocks base method.
+func (m *MockServiceHandler) ServiceAgentExtensionGets(ctx context.Context, a *agent.Agent) ([]*extension.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentExtensionGets", ctx, a)
+	ret0, _ := ret[0].([]*extension.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentExtensionGets indicates an expected call of ServiceAgentExtensionGets.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionGets(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentExtensionGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentExtensionGets), ctx, a)
+}
+
+// ServiceAgentFileCreate mocks base method.
+func (m *MockServiceHandler) ServiceAgentFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail, filename string) (*file.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentFileCreate", ctx, a, f, name, detail, filename)
+	ret0, _ := ret[0].(*file.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentFileCreate indicates an expected call of ServiceAgentFileCreate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileCreate(ctx, a, f, name, detail, filename any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileCreate), ctx, a, f, name, detail, filename)
+}
+
+// ServiceAgentFileDelete mocks base method.
+func (m *MockServiceHandler) ServiceAgentFileDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentFileDelete", ctx, a, id)
+	ret0, _ := ret[0].(*file.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentFileDelete indicates an expected call of ServiceAgentFileDelete.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileDelete), ctx, a, id)
+}
+
+// ServiceAgentFileGet mocks base method.
+func (m *MockServiceHandler) ServiceAgentFileGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentFileGet", ctx, a, id)
+	ret0, _ := ret[0].(*file.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentFileGet indicates an expected call of ServiceAgentFileGet.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileGet), ctx, a, id)
+}
+
+// ServiceAgentFileGetsByOnwerID mocks base method.
+func (m *MockServiceHandler) ServiceAgentFileGetsByOnwerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentFileGetsByOnwerID", ctx, a, size, token)
+	ret0, _ := ret[0].([]*file.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentFileGetsByOnwerID indicates an expected call of ServiceAgentFileGetsByOnwerID.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGetsByOnwerID(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileGetsByOnwerID", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileGetsByOnwerID), ctx, a, size, token)
+}
+
 // ServiceAgentMeGet mocks base method.
 func (m *MockServiceHandler) ServiceAgentMeGet(ctx context.Context, a *agent.Agent) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3425,21 +3500,6 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountGets(ctx, a, size, token
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountGets", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountGets), ctx, a, size, token)
 }
 
-// StorageFileCreate mocks base method.
-func (m *MockServiceHandler) StorageFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, name, detail, filename string) (*file.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageFileCreate", ctx, a, f, name, detail, filename)
-	ret0, _ := ret[0].(*file.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// StorageFileCreate indicates an expected call of StorageFileCreate.
-func (mr *MockServiceHandlerMockRecorder) StorageFileCreate(ctx, a, f, name, detail, filename any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileCreate", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileCreate), ctx, a, f, name, detail, filename)
-}
-
 // StorageFileDelete mocks base method.
 func (m *MockServiceHandler) StorageFileDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3468,21 +3528,6 @@ func (m *MockServiceHandler) StorageFileGet(ctx context.Context, a *agent.Agent,
 func (mr *MockServiceHandlerMockRecorder) StorageFileGet(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileGet", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileGet), ctx, a, id)
-}
-
-// StorageFileGetsByOnwerID mocks base method.
-func (m *MockServiceHandler) StorageFileGetsByOnwerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageFileGetsByOnwerID", ctx, a, size, token)
-	ret0, _ := ret[0].([]*file.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// StorageFileGetsByOnwerID indicates an expected call of StorageFileGetsByOnwerID.
-func (mr *MockServiceHandlerMockRecorder) StorageFileGetsByOnwerID(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileGetsByOnwerID", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileGetsByOnwerID), ctx, a, size, token)
 }
 
 // TagCreate mocks base method.

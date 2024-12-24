@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -14,10 +13,9 @@ import (
 )
 
 // extensionGet validates the extension's ownership and returns the extension info.
-func (h *serviceHandler) extensionGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.Extension, error) {
+func (h *serviceHandler) extensionGet(ctx context.Context, id uuid.UUID) (*rmextension.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "extensionGet",
-		"customer_id":  a.CustomerID,
 		"extension_id": id,
 	})
 
@@ -68,7 +66,7 @@ func (h *serviceHandler) ExtensionDelete(ctx context.Context, a *amagent.Agent, 
 	})
 	log.Debug("Deleting a extension.")
 
-	e, err := h.extensionGet(ctx, a, id)
+	e, err := h.extensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
@@ -99,13 +97,13 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *amagent.Agent, id 
 	})
 	log.Debug("Getting a extension.")
 
-	tmp, err := h.extensionGet(ctx, a, id)
+	tmp, err := h.extensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -165,7 +163,7 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 	})
 	log.Debug("Updating an extension.")
 
-	e, err := h.extensionGet(ctx, a, id)
+	e, err := h.extensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
@@ -183,33 +181,5 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 	}
 
 	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
-// ExtensionGetsByOwner gets the list of extensions of the given agent.
-// It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGetsByOwner(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "ExtensionGetsByOwner",
-		"agent": a,
-	})
-	log.Debug("Getting a extensions.")
-
-	res := []*rmextension.WebhookMessage{}
-	for _, address := range a.Addresses {
-		if address.Type != commonaddress.TypeExtension {
-			continue
-		}
-
-		extensionID := uuid.FromStringOrNil(address.Target)
-		ext, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, extensionID)
-		if err != nil {
-			log.Errorf("Could not get extension info. err: %v", err)
-			continue
-		}
-
-		res = append(res, ext.ConvertWebhookMessage())
-	}
-
 	return res, nil
 }

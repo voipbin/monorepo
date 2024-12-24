@@ -39,7 +39,7 @@ func (h *serviceHandler) OutdialtargetCreate(
 	log.Debug("Executing OutdialUpdateData.")
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, outdialID)
+	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
@@ -84,7 +84,7 @@ func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *amagent.Agent,
 	log.Debug("Executing OutdialtargetGet.")
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, outdialID)
+	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
@@ -129,7 +129,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *am
 	}
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, outdialID)
+	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
@@ -169,7 +169,7 @@ func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *amagent.Age
 	log.Debug("Executing OutdialtargetDelete.")
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, outdialID)
+	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outdial info. err: %v", err)

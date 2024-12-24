@@ -13,11 +13,10 @@ import (
 )
 
 // chatGet validates the chat's ownership and returns the chat info.
-func (h *serviceHandler) chatGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.Chat, error) {
+func (h *serviceHandler) chatGet(ctx context.Context, id uuid.UUID) (*chatchat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "chatGet",
-		"customer_id": a.CustomerID,
-		"chat_id":     id,
+		"func":    "chatGet",
+		"chat_id": id,
 	})
 
 	// send request
@@ -52,9 +51,29 @@ func (h *serviceHandler) ChatCreate(
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ChatV1ChatCreate(
+	tmp, err := h.chatCreate(ctx, a.CustomerID, chatType, roomOwnerID, participantIDs, name, detail)
+	if err != nil {
+		log.Errorf("Could not create a new chat. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ChatCreate is a service handler for chat creation.
+func (h *serviceHandler) chatCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	chatType chatchat.Type,
+	roomOwnerID uuid.UUID,
+	participantIDs []uuid.UUID,
+	name string,
+	detail string,
+) (*chatchat.Chat, error) {
+	res, err := h.reqHandler.ChatV1ChatCreate(
 		ctx,
-		a.CustomerID,
+		customerID,
 		chatType,
 		roomOwnerID,
 		participantIDs,
@@ -62,11 +81,9 @@ func (h *serviceHandler) ChatCreate(
 		detail,
 	)
 	if err != nil {
-		log.Errorf("Could not create a new chat. err: %v", err)
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -86,7 +103,7 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, a *amagent.Ag
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
@@ -123,13 +140,13 @@ func (h *serviceHandler) ChatGet(ctx context.Context, a *amagent.Agent, id uuid.
 	log.Debug("Getting a chat.")
 
 	// get chat
-	tmp, err := h.chatGet(ctx, a, id)
+	tmp, err := h.chatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
@@ -148,7 +165,7 @@ func (h *serviceHandler) ChatDelete(ctx context.Context, a *amagent.Agent, id uu
 	log.Debug("Deleting a chat.")
 
 	// get chat
-	c, err := h.chatGet(ctx, a, id)
+	c, err := h.chatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
@@ -180,13 +197,13 @@ func (h *serviceHandler) ChatUpdateBasicInfo(ctx context.Context, a *amagent.Age
 	log.Debug("Updating a chat.")
 
 	// get chat
-	c, err := h.chatGet(ctx, a, id)
+	c, err := h.chatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
@@ -212,7 +229,7 @@ func (h *serviceHandler) ChatUpdateRoomOwnerID(ctx context.Context, a *amagent.A
 	log.Debug("Updating an chat.")
 
 	// get chat
-	c, err := h.chatGet(ctx, a, id)
+	c, err := h.chatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
@@ -244,13 +261,13 @@ func (h *serviceHandler) ChatAddParticipantID(ctx context.Context, a *amagent.Ag
 	log.Debug("Adding the participant id to the chat.")
 
 	// get chat
-	c, err := h.chatGet(ctx, a, id)
+	c, err := h.chatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
@@ -276,13 +293,13 @@ func (h *serviceHandler) ChatRemoveParticipantID(ctx context.Context, a *amagent
 	log.Debug("Removing the participant id from the chat.")
 
 	// get chat
-	c, err := h.chatGet(ctx, a, id)
+	c, err := h.chatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 

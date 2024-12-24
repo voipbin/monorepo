@@ -16,7 +16,7 @@ import (
 // to getting the list of conversation messages of the given conversation id.
 // it returns list of conversation messages if it succeed.
 func (h *serviceHandler) ServiceAgentConversationMessageGets(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error) {
-	cv, err := h.conversationGet(ctx, a, conversationID)
+	cv, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get conversation.")
 	}
@@ -60,7 +60,7 @@ func (h *serviceHandler) ServiceAgentConversationMessageSend(
 	log.Debugf("Sending a message. conversation_id: %s", conversationID)
 
 	// get conversation to check the permission
-	c, err := h.conversationGet(ctx, a, conversationID)
+	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info. err: %v", err)
 		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)

@@ -56,7 +56,7 @@ func filesPOST(c *gin.Context) {
 	log.WithField("file", header).Debugf("Checking uploaded file header. filename: %s", header.Filename)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.StorageFileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
+	res, err := serviceHandler.ServiceAgentFileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
 	if err != nil {
 		log.Errorf("Could not upload the file. err: %v", err)
 		c.AbortWithStatus(400)
@@ -109,7 +109,7 @@ func filesGET(c *gin.Context) {
 	log.Debugf("filesGET. Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	files, err := serviceHandler.StorageFileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
+	files, err := serviceHandler.ServiceAgentFileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -162,7 +162,7 @@ func filesIDGET(c *gin.Context) {
 	log.Debug("Executing filesIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.StorageFileGet(c.Request.Context(), &a, id)
+	res, err := serviceHandler.ServiceAgentFileGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get a file. err: %v", err)
 		c.AbortWithStatus(400)
@@ -204,7 +204,7 @@ func filesIDDELETE(c *gin.Context) {
 	log.Debug("Executing storageFilesIDDELETE.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.StorageFileDelete(c.Request.Context(), &a, id)
+	res, err := serviceHandler.ServiceAgentFileDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the file. err: %v", err)
 		c.AbortWithStatus(400)

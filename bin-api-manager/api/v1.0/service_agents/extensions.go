@@ -40,7 +40,7 @@ func extensionsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	tmps, err := serviceHandler.ExtensionGetsByOwner(c.Request.Context(), &a)
+	tmps, err := serviceHandler.ServiceAgentExtensionGets(c.Request.Context(), &a)
 	if err != nil {
 		log.Errorf("Could not get extensions info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -95,7 +95,7 @@ func extensionsIDGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.ExtensionGet(c.Request.Context(), &a, id)
+	res, err := serviceHandler.ServiceAgentExtensionGet(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
 		c.AbortWithStatus(400)

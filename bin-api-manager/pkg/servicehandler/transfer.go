@@ -27,7 +27,7 @@ func (h *serviceHandler) TransferStart(ctx context.Context, a *amagent.Agent, tr
 		"transferee_addresses": transfereeAddresses,
 	})
 
-	c, err := h.callGet(ctx, a, transfererCallID)
+	c, err := h.callGet(ctx, transfererCallID)
 	if err != nil {
 		log.Infof("Could not get transferer call info. err: %v", err)
 		return nil, err

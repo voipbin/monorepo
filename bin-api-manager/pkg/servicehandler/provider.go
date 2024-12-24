@@ -13,10 +13,9 @@ import (
 )
 
 // providerGet validates the provider's ownership and returns the provider info.
-func (h *serviceHandler) providerGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmprovider.Provider, error) {
+func (h *serviceHandler) providerGet(ctx context.Context, id uuid.UUID) (*rmprovider.Provider, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "providerGet",
-		"customer_id": a.CustomerID,
 		"provider_id": id,
 	})
 
@@ -42,7 +41,7 @@ func (h *serviceHandler) ProviderGet(ctx context.Context, a *amagent.Agent, prov
 		"provider_id": providerID,
 	})
 
-	tmp, err := h.providerGet(ctx, a, providerID)
+	tmp, err := h.providerGet(ctx, providerID)
 	if err != nil {
 		log.Errorf("Could not validate the provider info. err: %v", err)
 		return nil, err
@@ -199,7 +198,7 @@ func (h *serviceHandler) ProviderUpdate(
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	_, err := h.providerGet(ctx, a, providerID)
+	_, err := h.providerGet(ctx, providerID)
 	if err != nil {
 		log.Errorf("Could not get provider. err: %v", err)
 		return nil, err

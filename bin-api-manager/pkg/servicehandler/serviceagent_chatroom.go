@@ -138,11 +138,22 @@ func (h *serviceHandler) ServiceAgentChatroomUpdateBasicInfo(ctx context.Context
 	})
 	log.Debug("Updating the chatroom.")
 
-	res, err := h.ChatroomUpdateBasicInfo(ctx, a, id, name, detail)
+	tmp, err := h.chatroomGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get chatroom info. err: %v", err)
+		return nil, err
+	}
+
+	if a.ID != tmp.OwnerID {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmpRes, err := h.chatroomUpdateBasicInfo(ctx, id, name, detail)
 	if err != nil {
 		logrus.Errorf("Could not update the chatroom. err: %v", err)
 		return nil, err
 	}
 
+	res := tmpRes.ConvertWebhookMessage()
 	return res, nil
 }
