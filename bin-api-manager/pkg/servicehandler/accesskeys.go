@@ -202,7 +202,7 @@ func (h *serviceHandler) AccesskeyUpdate(ctx context.Context, a *amagent.Agent, 
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ak.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, ak.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 

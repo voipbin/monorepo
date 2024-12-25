@@ -13,11 +13,10 @@ import (
 )
 
 // outdialGet validates the outdial's ownership and returns the outdial info.
-func (h *serviceHandler) outdialGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*omoutdial.Outdial, error) {
+func (h *serviceHandler) outdialGet(ctx context.Context, id uuid.UUID) (*omoutdial.Outdial, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "outdialGet",
-		"customer_id": a.CustomerID,
-		"agent_id":    id,
+		"func":     "outdialGet",
+		"agent_id": id,
 	})
 
 	// send request
@@ -105,7 +104,7 @@ func (h *serviceHandler) OutdialDelete(ctx context.Context, a *amagent.Agent, id
 	log.Debug("Deleting a outdial.")
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, id)
+	od, err := h.outdialGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
@@ -138,7 +137,7 @@ func (h *serviceHandler) OutdialGet(ctx context.Context, a *amagent.Agent, id uu
 	log.Debug("Getting an outdial.")
 
 	// get outdial
-	tmp, err := h.outdialGet(ctx, a, id)
+	tmp, err := h.outdialGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
@@ -165,7 +164,7 @@ func (h *serviceHandler) OutdialUpdateBasicInfo(ctx context.Context, a *amagent.
 	log.Debug("Updating an outdial.")
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, id)
+	od, err := h.outdialGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
@@ -199,7 +198,7 @@ func (h *serviceHandler) OutdialUpdateCampaignID(ctx context.Context, a *amagent
 	log.Debug("Executing OutdialUpdateCampaignID.")
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, id)
+	od, err := h.outdialGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
@@ -233,7 +232,7 @@ func (h *serviceHandler) OutdialUpdateData(ctx context.Context, a *amagent.Agent
 	log.Debug("Executing OutdialUpdateData.")
 
 	// get outdial
-	od, err := h.outdialGet(ctx, a, id)
+	od, err := h.outdialGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)

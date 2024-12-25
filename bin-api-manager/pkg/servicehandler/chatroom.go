@@ -50,14 +50,14 @@ func (h *serviceHandler) ChatroomGetsByOwnerID(ctx context.Context, a *amagent.A
 	}
 
 	// get owner
-	owner, err := h.agentGet(ctx, a, ownerID)
+	owner, err := h.agentGet(ctx, ownerID)
 	if err != nil {
 		log.Errorf("Could not get owner info. err: %v", err)
 		return nil, err
 	}
 	log.WithField("owner", owner).Debugf("Found owner info. owner_id: %s", owner.ID)
 
-	if (a.ID != owner.ID) && (!h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin)) {
+	if !h.hasPermission(ctx, a, owner.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -159,7 +159,7 @@ func (h *serviceHandler) ChatroomGet(ctx context.Context, a *amagent.Agent, id u
 		return nil, fmt.Errorf("could not find chatroom info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -186,17 +186,29 @@ func (h *serviceHandler) ChatroomUpdateBasicInfo(ctx context.Context, a *amagent
 		return nil, fmt.Errorf("could not find chat info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) || a.ID != c.OwnerID {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) || a.ID != c.OwnerID {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ChatV1ChatroomUpdateBasicInfo(ctx, id, name, detail)
+	tmp, err := h.chatroomUpdateBasicInfo(ctx, id, name, detail)
 	if err != nil {
 		logrus.Errorf("Could not update the chat. err: %v", err)
 		return nil, err
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ChatroomUpdateBasicInfo updates the chatroom's basic info.
+// It returns updated chatroom if it succeed.
+func (h *serviceHandler) chatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchatroom.Chatroom, error) {
+	res, err := h.reqHandler.ChatV1ChatroomUpdateBasicInfo(ctx, id, name, detail)
+	if err != nil {
+		logrus.Errorf("Could not update the chat. err: %v", err)
+		return nil, err
+	}
+
 	return res, nil
 }
 
@@ -269,15 +281,15 @@ func (h *serviceHandler) ChatroomCreate(ctx context.Context, a *amagent.Agent, p
 			continue
 		}
 
-		tmp, err := h.agentGet(ctx, a, participantID)
+		tmp, err := h.agentGet(ctx, participantID)
 		if err != nil {
 			log.Errorf("Could not get participant info. err: %v", err)
 			return nil, err
 		}
 
-		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
-			log.Errorf("User has no permission")
-			return nil, fmt.Errorf("user has no permission")
+		if tmp.CustomerID != a.CustomerID {
+			log.Errorf("Customer id does not match. customer_id: %s", tmp.CustomerID)
+			return nil, fmt.Errorf("customer id does not match")
 		}
 	}
 	if !found {
@@ -290,7 +302,7 @@ func (h *serviceHandler) ChatroomCreate(ctx context.Context, a *amagent.Agent, p
 		ct = chatchat.TypeGroup
 	}
 
-	c, err := h.ChatCreate(ctx, a, ct, a.ID, participantIDs, name, detail)
+	c, err := h.chatCreate(ctx, a.CustomerID, ct, a.ID, participantIDs, name, detail)
 	if err != nil {
 		log.Errorf("Could not create the chat. err: %v", err)
 		return nil, err

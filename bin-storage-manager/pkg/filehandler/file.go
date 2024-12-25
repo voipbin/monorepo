@@ -3,6 +3,7 @@ package filehandler
 import (
 	"context"
 	"fmt"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-storage-manager/models/file"
 	"time"
 
@@ -79,10 +80,15 @@ func (h *fileHandler) Create(
 
 	// create db row
 	f := &file.File{
-		ID:               id,
-		CustomerID:       customerID,
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeAgent,
+			OwnerID:   ownerID,
+		},
 		AccountID:        a.ID,
-		OwnerID:          ownerID,
 		ReferenceType:    referenceType,
 		ReferenceID:      referenceID,
 		Name:             name,

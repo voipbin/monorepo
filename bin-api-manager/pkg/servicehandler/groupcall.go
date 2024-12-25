@@ -17,10 +17,9 @@ import (
 )
 
 // groupcallGet validates the call's ownership and returns the call info.
-func (h *serviceHandler) groupcallGet(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
+func (h *serviceHandler) groupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "groupcallGet",
-		"customer_id":  a.CustomerID,
 		"groupcall_id": groupcallID,
 	})
 
@@ -51,7 +50,7 @@ func (h *serviceHandler) GroupcallGets(ctx context.Context, a *amagent.Agent, si
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -91,14 +90,14 @@ func (h *serviceHandler) GroupcallGet(ctx context.Context, a *amagent.Agent, gro
 	})
 
 	// get call
-	c, err := h.groupcallGet(ctx, a, groupcallID)
+	c, err := h.groupcallGet(ctx, groupcallID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -125,7 +124,7 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *amagent.Agent, 
 	})
 	log.Debug("Creating a new groupcall.")
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -164,14 +163,14 @@ func (h *serviceHandler) GroupcallHangup(ctx context.Context, a *amagent.Agent, 
 		"groupcall_id": groupcallID,
 	})
 
-	gc, err := h.groupcallGet(ctx, a, groupcallID)
+	gc, err := h.groupcallGet(ctx, groupcallID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get groupcall info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, gc.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, gc.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -201,7 +200,7 @@ func (h *serviceHandler) GroupcallDelete(ctx context.Context, a *amagent.Agent, 
 		"call_id":     callID,
 	})
 
-	gc, err := h.groupcallGet(ctx, a, callID)
+	gc, err := h.groupcallGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get groupcall info. err: %v", err)

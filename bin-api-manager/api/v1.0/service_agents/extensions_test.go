@@ -69,7 +69,7 @@ func Test_extensionsGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionGetsByOwner(req.Context(), &tt.agent).Return(tt.responseExtensions, nil)
+			mockSvc.EXPECT().ServiceAgentExtensionGets(req.Context(), &tt.agent).Return(tt.responseExtensions, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -131,7 +131,7 @@ func Test_extensionsIDGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionGet(req.Context(), &tt.agent, tt.expectedExtensionID).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ServiceAgentExtensionGet(req.Context(), &tt.agent, tt.expectedExtensionID).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

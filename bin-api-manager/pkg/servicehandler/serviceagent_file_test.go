@@ -38,9 +38,11 @@ func Test_storageFileGet(t *testing.T) {
 			},
 			uuid.FromStringOrNil("ee294376-1c03-11ef-b40d-372468bd9437"),
 			&smfile.File{
-				ID:         uuid.FromStringOrNil("ee294376-1c03-11ef-b40d-372468bd9437"),
-				CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ee294376-1c03-11ef-b40d-372468bd9437"),
+					CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 		},
 	}
@@ -73,7 +75,7 @@ func Test_storageFileGet(t *testing.T) {
 	}
 }
 
-func Test_StorageFileDelete(t *testing.T) {
+func Test_ServiceAgentFileDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -97,13 +99,19 @@ func Test_StorageFileDelete(t *testing.T) {
 			storageFileID: uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
 
 			responseStorageFile: &smfile.File{
-				ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
-				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
-				TMDelete:   defaultTimestamp,
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
+					CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
+				},
+				TMDelete: defaultTimestamp,
 			},
 			expectRes: &smfile.WebhookMessage{
 				ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
 				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
+				OwnerID:    uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
 				TMDelete:   defaultTimestamp,
 			},
 		},
@@ -126,7 +134,7 @@ func Test_StorageFileDelete(t *testing.T) {
 			mockReq.EXPECT().StorageV1FileGet(ctx, tt.storageFileID).Return(tt.responseStorageFile, nil)
 			mockReq.EXPECT().StorageV1FileDelete(ctx, tt.storageFileID, 60000).Return(tt.responseStorageFile, nil)
 
-			res, err := h.StorageFileDelete(ctx, tt.agent, tt.storageFileID)
+			res, err := h.ServiceAgentFileDelete(ctx, tt.agent, tt.storageFileID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -165,10 +173,14 @@ func Test_StorageFileGets(t *testing.T) {
 
 			responseStorageFiles: []smfile.File{
 				{
-					ID: uuid.FromStringOrNil("6a1a3db8-1bd8-11ef-bffb-8bab4b517f52"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6a1a3db8-1bd8-11ef-bffb-8bab4b517f52"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("6a5476cc-1bd8-11ef-9863-3b26eb47b0e0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6a5476cc-1bd8-11ef-9863-3b26eb47b0e0"),
+					},
 				},
 			},
 			expectFilters: map[string]string{
@@ -204,7 +216,7 @@ func Test_StorageFileGets(t *testing.T) {
 
 			mockReq.EXPECT().StorageV1FileGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageFiles, nil)
 
-			res, err := h.StorageFileGetsByOnwerID(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.ServiceAgentFileGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -17,7 +17,7 @@ func (h *serviceHandler) ServiceAgentCustomerGet(ctx context.Context, a *amagent
 		"agent": a,
 	})
 
-	tmp, err := h.customerGet(ctx, a, a.CustomerID)
+	tmp, err := h.customerGet(ctx, a.CustomerID)
 	if err != nil {
 		log.Errorf("Could not customer info. err: %v", err)
 		return nil, err

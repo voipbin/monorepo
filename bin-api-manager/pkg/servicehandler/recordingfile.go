@@ -19,7 +19,7 @@ func (h *serviceHandler) RecordingfileGet(ctx context.Context, a *amagent.Agent,
 	})
 
 	// get r info from call-manager
-	r, err := h.recordingGet(ctx, a, id)
+	r, err := h.recordingGet(ctx, id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)

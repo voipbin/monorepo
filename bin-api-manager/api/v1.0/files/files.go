@@ -2,12 +2,11 @@ package files
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"net/http"
-
 	"monorepo/bin-api-manager/api/models/common"
 	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/api/models/response"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -51,10 +50,8 @@ func filesPOST(c *gin.Context) {
 	}
 	log.WithField("file", header).Debugf("Checking uploaded file header. filename: %s", header.Filename)
 
-	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	// create call
 	res, err := serviceHandler.StorageFileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
@@ -111,7 +108,7 @@ func filesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get files
-	files, err := serviceHandler.StorageFileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
+	files, err := serviceHandler.StorageFileGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)

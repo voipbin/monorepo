@@ -13,12 +13,10 @@ import (
 )
 
 // agentGet validates the agent's ownership and returns the agent info.
-func (h *serviceHandler) agentGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amagent.Agent, error) {
+func (h *serviceHandler) agentGet(ctx context.Context, id uuid.UUID) (*amagent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "agentGet",
-		"customer_id": a.CustomerID,
-		"agent_id":    id,
-		"username":    a.Username,
+		"func":     "agentGet",
+		"agent_id": id,
 	})
 
 	// send request
@@ -80,7 +78,7 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 		"agent_id":    agentID,
 	})
 
-	tmp, err := h.agentGet(ctx, a, agentID)
+	tmp, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
@@ -164,7 +162,7 @@ func (h *serviceHandler) AgentDelete(ctx context.Context, a *amagent.Agent, agen
 		"agent_id":    agentID,
 	})
 
-	af, err := h.agentGet(ctx, a, agentID)
+	af, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
@@ -195,7 +193,7 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, a *amagent.Agent, agen
 		"agent_id":    agentID,
 	})
 
-	af, err := h.agentGet(ctx, a, agentID)
+	af, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
@@ -206,13 +204,22 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, a *amagent.Agent, agen
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdate(ctx, agentID, name, detail, ringMethod)
+	tmp, err := h.agentUpdate(ctx, agentID, name, detail, ringMethod)
 	if err != nil {
 		log.Infof("Could not update the agent info. err: %v", err)
 		return nil, err
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) agentUpdate(ctx context.Context, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error) {
+	res, err := h.reqHandler.AgentV1AgentUpdate(ctx, agentID, name, detail, ringMethod)
+	if err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
@@ -226,7 +233,7 @@ func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, a *amagent.Ag
 		"agent_id":    agentID,
 	})
 
-	af, err := h.agentGet(ctx, a, agentID)
+	af, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
@@ -237,13 +244,22 @@ func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, a *amagent.Ag
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdateAddresses(ctx, agentID, addresses)
+	tmp, err := h.agentUpdateAddresses(ctx, agentID, addresses)
 	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return nil, err
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) agentUpdateAddresses(ctx context.Context, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.Agent, error) {
+	res, err := h.reqHandler.AgentV1AgentUpdateAddresses(ctx, agentID, addresses)
+	if err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
@@ -257,7 +273,7 @@ func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, a *amagent.Agent
 		"agent_id":    agentID,
 	})
 
-	af, err := h.agentGet(ctx, a, agentID)
+	af, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
@@ -288,7 +304,7 @@ func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *amagent.Agent
 		"agent_id":    agentID,
 	})
 
-	af, err := h.agentGet(ctx, a, agentID)
+	af, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
@@ -299,13 +315,22 @@ func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *amagent.Agent
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdateStatus(ctx, agentID, status)
+	tmp, err := h.agentUpdateStatus(ctx, agentID, status)
 	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return nil, err
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) agentUpdateStatus(ctx context.Context, agentID uuid.UUID, status amagent.Status) (*amagent.Agent, error) {
+	res, err := h.reqHandler.AgentV1AgentUpdateStatus(ctx, agentID, status)
+	if err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
@@ -319,7 +344,7 @@ func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *amagent.A
 		"agent_id":    agentID,
 	})
 
-	af, err := h.agentGet(ctx, a, agentID)
+	af, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
@@ -361,25 +386,34 @@ func (h *serviceHandler) AgentUpdatePassword(ctx context.Context, a *amagent.Age
 		"password": len(password),
 	})
 
-	af, err := h.agentGet(ctx, a, agentID)
+	af, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not validate the agent info. err: %v", err)
 		return nil, err
 	}
 	log.Debugf("Updating agent password. agent_id: %s, password: %d", agentID, len(password))
 
-	if a.ID != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionProjectSuperAdmin|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Debugf("The agent has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AgentV1AgentUpdatePassword(ctx, 30000, agentID, password)
+	tmp, err := h.agentUpdatePassword(ctx, agentID, password)
 	if err != nil {
 		log.Infof("Could not update the agent password. err: %v", err)
 		return nil, err
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) agentUpdatePassword(ctx context.Context, agentID uuid.UUID, password string) (*amagent.Agent, error) {
+	res, err := h.reqHandler.AgentV1AgentUpdatePassword(ctx, 30000, agentID, password)
+	if err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }

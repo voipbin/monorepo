@@ -13,11 +13,10 @@ import (
 )
 
 // routeGet validates the route's ownership and returns the route info.
-func (h *serviceHandler) routeGet(ctx context.Context, a *amagent.Agent, routeID uuid.UUID) (*rmroute.Route, error) {
+func (h *serviceHandler) routeGet(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "routeGet",
-		"customer_id": a.CustomerID,
-		"route_id":    routeID,
+		"func":     "routeGet",
+		"route_id": routeID,
 	})
 
 	// send request
@@ -49,7 +48,7 @@ func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.routeGet(ctx, a, routeID)
+	tmp, err := h.routeGet(ctx, routeID)
 	if err != nil {
 		log.Errorf("Could not validate the route info. err: %v", err)
 		return nil, err
@@ -198,7 +197,7 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, a *amagent.Agent, rout
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	_, err := h.routeGet(ctx, a, routeID)
+	_, err := h.routeGet(ctx, routeID)
 	if err != nil {
 		log.Errorf("Could not get route. err: %v", err)
 		return nil, err
@@ -241,7 +240,7 @@ func (h *serviceHandler) RouteUpdate(
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	_, err := h.routeGet(ctx, a, routeID)
+	_, err := h.routeGet(ctx, routeID)
 	if err != nil {
 		log.Errorf("Could not get route. err: %v", err)
 		return nil, err

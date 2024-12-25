@@ -13,10 +13,9 @@ import (
 )
 
 // campaigncallGet validates the campaigncall's ownership and returns the campaigncall info.
-func (h *serviceHandler) campaigncallGet(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.Campaigncall, error) {
+func (h *serviceHandler) campaigncallGet(ctx context.Context, campaigncallID uuid.UUID) (*cacampaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaigncallGet",
-		"customer_id":     a.CustomerID,
 		"campaigncall_id": campaigncallID,
 	})
 
@@ -47,7 +46,7 @@ func (h *serviceHandler) CampaigncallGets(ctx context.Context, a *amagent.Agent,
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -85,13 +84,13 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *am
 	}
 
 	// get campaign
-	c, err := h.campaignGet(ctx, a, campaignID)
+	c, err := h.campaignGet(ctx, campaignID)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -123,13 +122,13 @@ func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *amagent.Agent, 
 	})
 	log.Debug("Getting campaigncall.")
 
-	tmp, err := h.campaigncallGet(ctx, a, campaigncallID)
+	tmp, err := h.campaigncallGet(ctx, campaigncallID)
 	if err != nil {
 		log.Errorf("Could not get campaigncall info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigncall info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -147,7 +146,7 @@ func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *amagent.Agen
 	log.Debug("Deleting a campaigncall.")
 
 	// get campaign
-	c, err := h.campaigncallGet(ctx, a, campaigncallID)
+	c, err := h.campaigncallGet(ctx, campaigncallID)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)

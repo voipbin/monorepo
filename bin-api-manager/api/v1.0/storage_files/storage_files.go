@@ -111,7 +111,7 @@ func storageFilesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get files
-	files, err := serviceHandler.StorageFileGetsByOnwerID(c.Request.Context(), &a, pageSize, req.PageToken)
+	files, err := serviceHandler.StorageFileGets(c.Request.Context(), &a, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -207,7 +207,7 @@ func storageFilesIDDELETE(c *gin.Context) {
 
 	// delete a file
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.StorageFileDelete(c.Request.Context(), &a, id)
+	res, err := serviceHandler.ServiceAgentFileDelete(c.Request.Context(), &a, id)
 	if err != nil {
 		log.Errorf("Could not delete the file. err: %v", err)
 		c.AbortWithStatus(400)

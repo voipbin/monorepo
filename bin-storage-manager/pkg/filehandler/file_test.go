@@ -2,6 +2,7 @@ package filehandler
 
 import (
 	"context"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/file"
@@ -28,7 +29,9 @@ func Test_Get(t *testing.T) {
 			id: uuid.FromStringOrNil("5f67906c-1531-11ef-acd7-cf9b57d65bcc"),
 
 			responseFile: &file.File{
-				ID: uuid.FromStringOrNil("5f67906c-1531-11ef-acd7-cf9b57d65bcc"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5f67906c-1531-11ef-acd7-cf9b57d65bcc"),
+				},
 			},
 		},
 	}
@@ -84,7 +87,9 @@ func Test_Gets(t *testing.T) {
 
 			responseFiles: []*file.File{
 				{
-					ID: uuid.FromStringOrNil("e05c0c20-1531-11ef-8c1f-e79b24c34783"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e05c0c20-1531-11ef-8c1f-e79b24c34783"),
+					},
 				},
 			},
 		},

@@ -2,6 +2,7 @@ package storagehandler
 
 import (
 	"context"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/file"
@@ -46,7 +47,9 @@ func Test_FileCreate(t *testing.T) {
 			filepath:      "/test/file/path",
 
 			responseFile: &file.File{
-				ID: uuid.FromStringOrNil("86940b22-1534-11ef-81e6-cf09fa8054e4"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("86940b22-1534-11ef-81e6-cf09fa8054e4"),
+				},
 			},
 		},
 	}
@@ -100,7 +103,9 @@ func Test_FileGet(t *testing.T) {
 			id: uuid.FromStringOrNil("5ddf17ac-1535-11ef-b4bc-ef75d13601ab"),
 
 			responseFile: &file.File{
-				ID: uuid.FromStringOrNil("5ddf17ac-1535-11ef-b4bc-ef75d13601ab"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5ddf17ac-1535-11ef-b4bc-ef75d13601ab"),
+				},
 			},
 		},
 	}
@@ -161,7 +166,9 @@ func Test_FileGets(t *testing.T) {
 
 			responseFiles: []*file.File{
 				{
-					ID: uuid.FromStringOrNil("fe803ee8-1535-11ef-892e-a7b2c7cc99b0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("fe803ee8-1535-11ef-892e-a7b2c7cc99b0"),
+					},
 				},
 			},
 		},
@@ -216,7 +223,9 @@ func Test_FileDelete(t *testing.T) {
 			id: uuid.FromStringOrNil("fd11a6ae-1536-11ef-86ad-9fab2a4d002f"),
 
 			responseFile: &file.File{
-				ID: uuid.FromStringOrNil("fd11a6ae-1536-11ef-86ad-9fab2a4d002f"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fd11a6ae-1536-11ef-86ad-9fab2a4d002f"),
+				},
 			},
 		},
 	}

@@ -20,11 +20,10 @@ import (
 )
 
 // callGet validates the call's ownership and returns the call info.
-func (h *serviceHandler) callGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.Call, error) {
+func (h *serviceHandler) callGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "callGet",
-		"customer_id": a.CustomerID,
-		"call_id":     callID,
+		"func":    "callGet",
+		"call_id": callID,
 	})
 
 	// send request
@@ -119,7 +118,7 @@ func (h *serviceHandler) CallGet(ctx context.Context, a *amagent.Agent, callID u
 	})
 
 	// get call
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -151,7 +150,7 @@ func (h *serviceHandler) CallGets(ctx context.Context, a *amagent.Agent, size ui
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -214,7 +213,7 @@ func (h *serviceHandler) CallDelete(ctx context.Context, a *amagent.Agent, callI
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -269,7 +268,7 @@ func (h *serviceHandler) CallHangup(ctx context.Context, a *amagent.Agent, callI
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -306,7 +305,7 @@ func (h *serviceHandler) CallTalk(ctx context.Context, a *amagent.Agent, callID 
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -338,7 +337,7 @@ func (h *serviceHandler) CallHoldOn(ctx context.Context, a *amagent.Agent, callI
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -370,7 +369,7 @@ func (h *serviceHandler) CallHoldOff(ctx context.Context, a *amagent.Agent, call
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -402,7 +401,7 @@ func (h *serviceHandler) CallMuteOn(ctx context.Context, a *amagent.Agent, callI
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -434,7 +433,7 @@ func (h *serviceHandler) CallMuteOff(ctx context.Context, a *amagent.Agent, call
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -466,7 +465,7 @@ func (h *serviceHandler) CallMOHOn(ctx context.Context, a *amagent.Agent, callID
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -498,7 +497,7 @@ func (h *serviceHandler) CallMOHOff(ctx context.Context, a *amagent.Agent, callI
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -530,7 +529,7 @@ func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *amagent.Agent, ca
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -562,7 +561,7 @@ func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *amagent.Agent, c
 		"call_id":     callID,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -594,14 +593,14 @@ func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *amagent.Ag
 		"encapsulation": encapsulation,
 	})
 
-	c, err := h.callGet(ctx, a, callID)
+	c, err := h.callGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}

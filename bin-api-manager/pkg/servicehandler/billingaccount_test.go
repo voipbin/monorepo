@@ -61,7 +61,7 @@ func Test_billingAccountGet(t *testing.T) {
 
 			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.billingAccountGet(ctx, tt.agent, tt.billingAccountID)
+			res, err := h.billingAccountGet(ctx, tt.billingAccountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
