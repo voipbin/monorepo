@@ -15,20 +15,11 @@ import (
 )
 
 // transcribeGet validates the transcribe's ownership and returns the transcribe info.
-func (h *serviceHandler) transcribeGet(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":          "transcribeGet",
-		"customer_id":   a.CustomerID,
-		"transcribe_id": transcribeID,
-	})
-
-	// send request
+func (h *serviceHandler) transcribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
 	res, err := h.reqHandler.TranscribeV1TranscribeGet(ctx, transcribeID)
 	if err != nil {
-		log.Errorf("Could not get the transcribe info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("transcribe", res).Debug("Received result.")
 
 	return res, nil
 }
@@ -43,7 +34,7 @@ func (h *serviceHandler) TranscribeGet(ctx context.Context, a *amagent.Agent, tr
 		"transcribe_id": transcribeID,
 	})
 
-	tmp, err := h.transcribeGet(ctx, a, transcribeID)
+	tmp, err := h.transcribeGet(ctx, transcribeID)
 	if err != nil {
 		log.Errorf("Could not get transcribe info. err: %v", err)
 		return nil, err
@@ -151,7 +142,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amage
 	// get reference resource
 	switch referenceType {
 	case request.TranscribeReferenceTypeCall:
-		tmpResource, tmpErr := h.callGet(ctx, a, referenceID)
+		tmpResource, tmpErr := h.callGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr
 			break
@@ -161,7 +152,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amage
 		resReferenceID = tmpResource.ID
 
 	case request.TranscribeReferenceTypeConference:
-		tmpResource, tmpErr := h.conferenceGet(ctx, a, referenceID)
+		tmpResource, tmpErr := h.conferenceGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr
 		}
@@ -170,7 +161,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *amage
 		resReferenceID = tmpResource.ConfbridgeID
 
 	case request.TranscribeReferenceTypeRecording:
-		tmpResource, tmpErr := h.recordingGet(ctx, a, referenceID)
+		tmpResource, tmpErr := h.recordingGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr
 		}
@@ -207,7 +198,7 @@ func (h *serviceHandler) TranscribeStop(ctx context.Context, a *amagent.Agent, t
 	})
 
 	// check the transcribe info
-	t, err := h.transcribeGet(ctx, a, transcribeID)
+	t, err := h.transcribeGet(ctx, transcribeID)
 	if err != nil {
 		log.Errorf("Could not get transcribe info. err: %v", err)
 		return nil, err
@@ -239,7 +230,7 @@ func (h *serviceHandler) TranscribeDelete(ctx context.Context, a *amagent.Agent,
 		"call_id":     transcribeID,
 	})
 
-	t, err := h.transcribeGet(ctx, a, transcribeID)
+	t, err := h.transcribeGet(ctx, transcribeID)
 	if err != nil {
 		log.Infof("Could not get transcribe info. err: %v", err)
 		return nil, err

@@ -16,11 +16,10 @@ import (
 )
 
 // chatmessageGet validates the chatmessage's ownership and returns the chat info.
-func (h *serviceHandler) chatmessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechat.Messagechat, error) {
+func (h *serviceHandler) chatmessageGet(ctx context.Context, id uuid.UUID) (*chatmessagechat.Messagechat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "chatmessageGet",
-		"customer_id": a.CustomerID,
-		"chat_id":     id,
+		"func":    "chatmessageGet",
+		"chat_id": id,
 	})
 
 	// send request
@@ -51,14 +50,33 @@ func (h *serviceHandler) ChatmessageCreate(
 	})
 	log.Debug("Creating a new messagechat.")
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ChatV1MessagechatCreate(
+	tmp, err := h.chatmessageCreate(ctx, a.CustomerID, chatID, source, messageType, text, medias)
+	if err != nil {
+		log.Errorf("Could not create a new messagechat. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+func (h *serviceHandler) chatmessageCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	chatID uuid.UUID,
+	source commonaddress.Address,
+	messageType chatmessagechat.Type,
+	text string,
+	medias []chatmedia.Media,
+) (*chatmessagechat.Messagechat, error) {
+	res, err := h.reqHandler.ChatV1MessagechatCreate(
 		ctx,
-		a.CustomerID,
+		customerID,
 		chatID,
 		source,
 		messageType,
@@ -66,11 +84,9 @@ func (h *serviceHandler) ChatmessageCreate(
 		medias,
 	)
 	if err != nil {
-		log.Errorf("Could not create a new messagechat. err: %v", err)
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -96,14 +112,14 @@ func (h *serviceHandler) ChatmessageGetsByChatID(ctx context.Context, a *amagent
 	}
 
 	// get chat info
-	tmp, err := h.chatGet(ctx, a, chatID)
+	tmp, err := h.chatGet(ctx, chatID)
 	if err != nil {
 		log.Errorf("Could not get chat info. err: %v", err)
 		return nil, err
 	}
 	log.WithField("chat", tmp).Debugf("Found chat info. chat_id: %s", tmp.ID)
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -141,13 +157,13 @@ func (h *serviceHandler) ChatmessageGet(ctx context.Context, a *amagent.Agent, i
 	log.Debug("Getting a ChatmessageGet.")
 
 	// get chatmessage
-	tmp, err := h.chatmessageGet(ctx, a, id)
+	tmp, err := h.chatmessageGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chat info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatmessage info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -167,7 +183,7 @@ func (h *serviceHandler) ChatmessageDelete(ctx context.Context, a *amagent.Agent
 	log.Debug("Deleting a chatmessage.")
 
 	// get chatmessage
-	cm, err := h.chatmessageGet(ctx, a, id)
+	cm, err := h.chatmessageGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chatmessage info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatmessage info. err: %v", err)

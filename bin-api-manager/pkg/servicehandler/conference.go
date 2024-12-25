@@ -18,10 +18,9 @@ import (
 )
 
 // conferenceGet vaildates the customer's ownership and returns the conference info.
-func (h *serviceHandler) conferenceGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconference.Conference, error) {
+func (h *serviceHandler) conferenceGet(ctx context.Context, id uuid.UUID) (*cfconference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "conferenceGet",
-		"customer_id":   a.CustomerID,
 		"conference_id": id,
 	})
 
@@ -48,13 +47,13 @@ func (h *serviceHandler) ConferenceGet(ctx context.Context, a *amagent.Agent, id
 	log.Debugf("Get conference. conference: %s", id)
 
 	// get conference
-	tmp, err := h.conferenceGet(ctx, a, id)
+	tmp, err := h.conferenceGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -78,7 +77,7 @@ func (h *serviceHandler) ConferenceGets(ctx context.Context, a *amagent.Agent, s
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -132,7 +131,7 @@ func (h *serviceHandler) ConferenceCreate(
 	})
 	log.Debugf("Creating a conference.")
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -157,7 +156,7 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *amagent.Agent,
 	log.Debug("Destroying conference.")
 
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, a, conferenceID)
+	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
@@ -198,7 +197,7 @@ func (h *serviceHandler) ConferenceUpdate(
 	})
 
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, a, cfID)
+	c, err := h.conferenceGet(ctx, cfID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
@@ -237,13 +236,13 @@ func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, a *amagen
 	})
 
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, a, confID)
+	c, err := h.conferenceGet(ctx, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -269,13 +268,13 @@ func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *amagent
 	})
 
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, a, confID)
+	c, err := h.conferenceGet(ctx, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -301,13 +300,13 @@ func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, a *amage
 	})
 
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, a, conferenceID)
+	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -332,13 +331,13 @@ func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *amagen
 	})
 
 	// get conference for ownership check
-	c, err := h.conferenceGet(ctx, a, conferenceID)
+	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionAll) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -364,14 +363,14 @@ func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *amag
 		"encapsulation": encapsulation,
 	})
 
-	c, err := h.conferenceGet(ctx, a, conferenceID)
+	c, err := h.conferenceGet(ctx, conferenceID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return fmt.Errorf("agent has no permission")
 	}

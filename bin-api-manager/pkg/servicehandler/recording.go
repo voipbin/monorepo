@@ -13,10 +13,9 @@ import (
 )
 
 // recordingGet validates the recording's ownership and returns the recording info.
-func (h *serviceHandler) recordingGet(ctx context.Context, a *amagent.Agent, recordingID uuid.UUID) (*cmrecording.Recording, error) {
+func (h *serviceHandler) recordingGet(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "recordingGet",
-		"customer_id":   a.CustomerID,
 		"transcribe_id": recordingID,
 	})
 
@@ -45,7 +44,7 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, a *amagent.Agent, id 
 	})
 
 	// get recording info from call-manager
-	rec, err := h.recordingGet(ctx, a, id)
+	rec, err := h.recordingGet(ctx, id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get recording info. err: %v", err)
@@ -114,7 +113,7 @@ func (h *serviceHandler) RecordingDelete(ctx context.Context, a *amagent.Agent, 
 		"recording_id": id,
 	})
 
-	r, err := h.recordingGet(ctx, a, id)
+	r, err := h.recordingGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
 		return nil, err

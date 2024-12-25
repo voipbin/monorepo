@@ -13,11 +13,10 @@ import (
 )
 
 // chatbotGet validates the chatbot's ownership and returns the chatbot info.
-func (h *serviceHandler) chatbotGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatbotchatbot.Chatbot, error) {
+func (h *serviceHandler) chatbotGet(ctx context.Context, id uuid.UUID) (*chatbotchatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "chatbotGet",
-		"customer_id": a.CustomerID,
-		"chatbot_id":  id,
+		"func":       "chatbotGet",
+		"chatbot_id": id,
 	})
 
 	// send request
@@ -124,7 +123,7 @@ func (h *serviceHandler) ChatbotGet(ctx context.Context, a *amagent.Agent, id uu
 	})
 
 	// get chatbot
-	tmp, err := h.chatbotGet(ctx, a, id)
+	tmp, err := h.chatbotGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chatbot info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
@@ -150,7 +149,7 @@ func (h *serviceHandler) ChatbotDelete(ctx context.Context, a *amagent.Agent, id
 	log.Debug("Deleting a chatbot.")
 
 	// get chat
-	c, err := h.chatbotGet(ctx, a, id)
+	c, err := h.chatbotGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chatbot info from the chatbot-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
@@ -192,7 +191,7 @@ func (h *serviceHandler) ChatbotUpdate(
 	})
 
 	// get chat
-	c, err := h.chatbotGet(ctx, a, id)
+	c, err := h.chatbotGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chatbot info from the chatbot-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)

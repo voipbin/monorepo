@@ -1,13 +1,17 @@
 package file
 
-import "github.com/gofrs/uuid"
+import (
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"github.com/gofrs/uuid"
+)
 
 // File defines
 type File struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	AccountID  uuid.UUID `json:"account_id"`
-	OwnerID    uuid.UUID `json:"owner_id"`
+	commonidentity.Identity
+	commonidentity.Owner
+
+	AccountID uuid.UUID `json:"account_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`

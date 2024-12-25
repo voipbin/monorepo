@@ -14,12 +14,9 @@ import (
 )
 
 // activeflowGet returns activeflow
-func (h *serviceHandler) activeflowGet(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error) {
+func (h *serviceHandler) activeflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "activeflowGet",
-		"customer_id":   a.CustomerID,
-		"agent_id":      a.CustomerID,
-		"username":      a.Username,
 		"activeflow_id": activeflowID,
 	})
 
@@ -115,7 +112,7 @@ func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *amagent.Agent, ac
 	})
 
 	// get activeflow
-	tmp, err := h.activeflowGet(ctx, a, activeflowID)
+	tmp, err := h.activeflowGet(ctx, activeflowID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get activeflow info. err: %v", err)
@@ -186,7 +183,7 @@ func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *amagent.Agent, a
 	})
 
 	// get activeflow
-	af, err := h.activeflowGet(ctx, a, activeflowID)
+	af, err := h.activeflowGet(ctx, activeflowID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get activeflow info. err: %v", err)
@@ -220,7 +217,7 @@ func (h *serviceHandler) ActiveflowDelete(ctx context.Context, a *amagent.Agent,
 		"activeflow_id": activeflowID,
 	})
 
-	af, err := h.activeflowGet(ctx, a, activeflowID)
+	af, err := h.activeflowGet(ctx, activeflowID)
 	if err != nil {
 		// no activeflow info found
 		log.Infof("Could not get activeflow info. err: %v", err)

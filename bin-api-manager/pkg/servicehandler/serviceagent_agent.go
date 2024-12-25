@@ -59,10 +59,15 @@ func (h *serviceHandler) ServiceAgentAgentGet(ctx context.Context, a *amagent.Ag
 		"chatroom_id": agentID,
 	})
 
-	tmp, err := h.agentGet(ctx, a, agentID)
+	tmp, err := h.agentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not get chatroom info. err: %v", err)
 		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
 	}
 
 	res := tmp.ConvertWebhookMessage()

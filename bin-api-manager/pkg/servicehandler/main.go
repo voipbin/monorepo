@@ -5,7 +5,7 @@ package servicehandler
 import (
 	"context"
 	"encoding/base64"
-	"mime/multipart"
+	multipart "mime/multipart"
 	"net/http"
 	"time"
 
@@ -393,7 +393,6 @@ type ServiceHandler interface {
 	ExtensionDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error)
-	ExtensionGetsByOwner(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 
 	// flow handlers
@@ -623,6 +622,16 @@ type ServiceHandler interface {
 	// service_agent customer
 	ServiceAgentCustomerGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 
+	// service_agent extension
+	ServiceAgentExtensionGet(ctx context.Context, a *amagent.Agent, extensionID uuid.UUID) (*rmextension.WebhookMessage, error)
+	ServiceAgentExtensionGets(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error)
+
+	// storage file handlers
+	ServiceAgentFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error)
+	ServiceAgentFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	ServiceAgentFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
+	ServiceAgentFileGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
+
 	// service_agent me
 	ServiceAgentMeGet(ctx context.Context, a *amagent.Agent) (*amagent.WebhookMessage, error)
 	ServiceAgentMeUpdate(ctx context.Context, a *amagent.Agent, name string, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
@@ -637,11 +646,11 @@ type ServiceHandler interface {
 	StorageAccountGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.WebhookMessage, error)
 	StorageAccountDelete(ctx context.Context, a *amagent.Agent, storageAccountID uuid.UUID) (*smaccount.WebhookMessage, error)
 
-	// storage file handlers
+	// storage file
 	StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, name string, detail string, filename string) (*smfile.WebhookMessage, error)
-	StorageFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 	StorageFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
-	StorageFileGetsByOnwerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
+	StorageFileGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error)
+	StorageFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error)
 
 	// tag handlers
 	TagCreate(ctx context.Context, a *amagent.Agent, name string, detail string) (*tmtag.WebhookMessage, error)

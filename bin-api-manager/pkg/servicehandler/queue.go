@@ -15,11 +15,10 @@ import (
 )
 
 // queueGet validates the queue's ownership and returns the queue info.
-func (h *serviceHandler) queueGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*qmqueue.Queue, error) {
+func (h *serviceHandler) queueGet(ctx context.Context, id uuid.UUID) (*qmqueue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "queueGet",
-		"customer_id": a.CustomerID,
-		"queue_id":    id,
+		"func":     "queueGet",
+		"queue_id": id,
 	})
 
 	// send request
@@ -43,7 +42,7 @@ func (h *serviceHandler) QueueGet(ctx context.Context, a *amagent.Agent, queueID
 		"queue_id":    queueID,
 	})
 
-	tmp, err := h.queueGet(ctx, a, queueID)
+	tmp, err := h.queueGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not validate the queue info. err: %v", err)
 		return nil, err
@@ -159,7 +158,7 @@ func (h *serviceHandler) QueueDelete(ctx context.Context, a *amagent.Agent, queu
 		"username":    a.Username,
 	})
 
-	q, err := h.queueGet(ctx, a, queueID)
+	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
 		return nil, err
@@ -209,7 +208,7 @@ func (h *serviceHandler) QueueUpdate(
 		"service_timeout": serviceTimeout,
 	})
 
-	q, err := h.queueGet(ctx, a, queueID)
+	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
 		return nil, err
@@ -242,7 +241,7 @@ func (h *serviceHandler) QueueUpdateTagIDs(ctx context.Context, a *amagent.Agent
 		"username":    a.Username,
 	})
 
-	q, err := h.queueGet(ctx, a, queueID)
+	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
 		return nil, err
@@ -275,7 +274,7 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *amagen
 		"username":    a.Username,
 	})
 
-	q, err := h.queueGet(ctx, a, queueID)
+	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
 		return nil, err
@@ -308,7 +307,7 @@ func (h *serviceHandler) QueueUpdateActions(ctx context.Context, a *amagent.Agen
 		"username":    a.Username,
 	})
 
-	q, err := h.queueGet(ctx, a, queueID)
+	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not get queue. err: %v", err)
 		return nil, err

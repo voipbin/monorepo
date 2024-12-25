@@ -14,10 +14,9 @@ import (
 )
 
 // conversationGet validates the conversation's ownership and returns the conversation info.
-func (h *serviceHandler) conversationGet(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID) (*cvconversation.Conversation, error) {
+func (h *serviceHandler) conversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationGet",
-		"customer_id":     a.CustomerID,
 		"conversation_id": conversationID,
 	})
 
@@ -48,7 +47,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -111,13 +110,13 @@ func (h *serviceHandler) ConversationGet(ctx context.Context, a *amagent.Agent, 
 	log.Debug("Getting an conversation.")
 
 	// get campaign
-	tmp, err := h.conversationGet(ctx, a, id)
+	tmp, err := h.conversationGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
@@ -138,13 +137,13 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *amagent.Agen
 	log.Debug("Updating the conversation.")
 
 	// get campaign
-	c, err := h.conversationGet(ctx, a, conversationID)
+	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
 		return nil, fmt.Errorf("agent has no permission")
 	}

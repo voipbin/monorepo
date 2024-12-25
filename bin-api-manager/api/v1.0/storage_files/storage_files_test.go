@@ -211,7 +211,7 @@ func Test_filesGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileGetsByOnwerID(req.Context(), &tt.agent, uint64(100), "").Return(tt.expectExt, nil)
+			mockSvc.EXPECT().StorageFileGets(req.Context(), &tt.agent, uint64(100), "").Return(tt.expectExt, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -334,7 +334,7 @@ func Test_filesIDDELETE(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileDelete(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().ServiceAgentFileDelete(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

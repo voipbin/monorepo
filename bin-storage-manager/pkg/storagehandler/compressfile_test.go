@@ -2,6 +2,7 @@ package storagehandler
 
 import (
 	"context"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	compressfile "monorepo/bin-storage-manager/models/compressfile"
@@ -46,14 +47,18 @@ func Test_CompressCreate(t *testing.T) {
 
 			responseFilesByFileIDs: []*file.File{
 				{
-					ID:       uuid.FromStringOrNil("4ada1a3e-1d6a-11ef-99c3-076e46349385"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4ada1a3e-1d6a-11ef-99c3-076e46349385"),
+					},
 					Filepath: "test/file/path/4ada1a3e-1d6a-11ef-99c3-076e46349385",
 				},
 			},
 			responseFilesByReferenceIDs: [][]*file.File{
 				{
 					{
-						ID:       uuid.FromStringOrNil("536b5c64-1d6d-11ef-bf65-1ffae2d556ab"),
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("536b5c64-1d6d-11ef-bf65-1ffae2d556ab"),
+						},
 						Filepath: "test/file/path/536b5c64-1d6d-11ef-bf65-1ffae2d556ab",
 					},
 				},
@@ -145,33 +150,49 @@ func Test_compressGetFilesByReferenceIDs(t *testing.T) {
 			responseFiles: [][]*file.File{
 				{
 					{
-						ID: uuid.FromStringOrNil("d61c666c-1d68-11ef-8744-17f98a45c5ef"),
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("d61c666c-1d68-11ef-8744-17f98a45c5ef"),
+						},
 					},
 					{
-						ID: uuid.FromStringOrNil("d646bbec-1d68-11ef-a64e-b321b4fb881e"),
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("d646bbec-1d68-11ef-a64e-b321b4fb881e"),
+						},
 					},
 				},
 				{
 					{
-						ID: uuid.FromStringOrNil("4d274c5e-1d69-11ef-b65d-076feda109fe"),
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("4d274c5e-1d69-11ef-b65d-076feda109fe"),
+						},
 					},
 					{
-						ID: uuid.FromStringOrNil("4d577500-1d69-11ef-bfa6-73b9e46b5a44"),
+						Identity: commonidentity.Identity{
+							ID: uuid.FromStringOrNil("4d577500-1d69-11ef-bfa6-73b9e46b5a44"),
+						},
 					},
 				},
 			},
 			expectRes: []*file.File{
 				{
-					ID: uuid.FromStringOrNil("d61c666c-1d68-11ef-8744-17f98a45c5ef"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d61c666c-1d68-11ef-8744-17f98a45c5ef"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("d646bbec-1d68-11ef-a64e-b321b4fb881e"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("d646bbec-1d68-11ef-a64e-b321b4fb881e"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("4d274c5e-1d69-11ef-b65d-076feda109fe"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4d274c5e-1d69-11ef-b65d-076feda109fe"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("4d577500-1d69-11ef-bfa6-73b9e46b5a44"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4d577500-1d69-11ef-bfa6-73b9e46b5a44"),
+					},
 				},
 			},
 		},
@@ -237,18 +258,26 @@ func Test_compressGetFilesByFileIDs(t *testing.T) {
 
 			responseFiles: []*file.File{
 				{
-					ID: uuid.FromStringOrNil("95c8ef3a-1d69-11ef-b139-9b94b9c069db"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("95c8ef3a-1d69-11ef-b139-9b94b9c069db"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("962e1d38-1d69-11ef-9014-e3361107ef8d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("962e1d38-1d69-11ef-9014-e3361107ef8d"),
+					},
 				},
 			},
 			expectRes: []*file.File{
 				{
-					ID: uuid.FromStringOrNil("95c8ef3a-1d69-11ef-b139-9b94b9c069db"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("95c8ef3a-1d69-11ef-b139-9b94b9c069db"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("962e1d38-1d69-11ef-9014-e3361107ef8d"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("962e1d38-1d69-11ef-9014-e3361107ef8d"),
+					},
 				},
 			},
 		},

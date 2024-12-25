@@ -24,7 +24,7 @@ func (h *serviceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *
 	log.Debug("Getting a chatroommessage.")
 
 	// get chat
-	tmp, err := h.chatroommessageGet(ctx, a, chatroomMessageID)
+	tmp, err := h.chatroommessageGet(ctx, chatroomMessageID)
 	if err != nil {
 		log.Errorf("Could not get chatroommessage info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
@@ -73,13 +73,21 @@ func (h *serviceHandler) ServiceAgentChatroommessageGets(ctx context.Context, a 
 		"deleted":     "false", // we don't need deleted items
 	}
 
-	res, err := h.chatroommessageGetsWithFilters(ctx, size, token, filters)
+	tmps, err := h.chatroommessageGetsWithFilters(ctx, size, token, filters)
 	if err != nil {
-		log.Errorf("Could not chatrooms info. err: %v", err)
+		log.Errorf("Could not get chatroom messages. err: %v", err)
 		return nil, err
 	}
 
+	// create result
+	res := []*chatmessagechatroom.WebhookMessage{}
+	for _, f := range tmps {
+		tmp := f.ConvertWebhookMessage()
+		res = append(res, tmp)
+	}
+
 	return res, nil
+
 }
 
 // ServiceAgentChatroommessageCreate creates the chatroom message of the given chatroom id.
@@ -112,7 +120,7 @@ func (h *serviceHandler) ServiceAgentChatroommessageCreate(ctx context.Context, 
 		Target:     a.ID.String(),
 		TargetName: a.Name,
 	}
-	cm, err := h.ChatmessageCreate(ctx, a, cr.ChatID, source, chatmessagechat.TypeNormal, message, medias)
+	cm, err := h.chatmessageCreate(ctx, a.CustomerID, cr.ChatID, source, chatmessagechat.TypeNormal, message, medias)
 	if err != nil {
 		log.Errorf("Could not create chatmessage. err: %v", err)
 		return nil, err
@@ -123,18 +131,18 @@ func (h *serviceHandler) ServiceAgentChatroommessageCreate(ctx context.Context, 
 		"chatroom_id":    cr.ID.String(),
 		"messagechat_id": cm.ID.String(),
 	}
-	crms, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
+	tmps, err := h.chatroommessageGetsWithFilters(ctx, 1, h.utilHandler.TimeGetCurTime(), filters)
 	if err != nil {
 		log.Errorf("Could not get message chatroom. err: %v", err)
 		return nil, err
 	}
 
-	if len(crms) < 1 {
+	if len(tmps) < 1 {
 		log.Errorf("Could not create message chatroom.")
 		return nil, fmt.Errorf("could not create chatroom message")
 	}
 
-	res := crms[0].ConvertWebhookMessage()
+	res := tmps[0].ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -149,7 +157,7 @@ func (h *serviceHandler) ServiceAgentChatroommessageDelete(ctx context.Context, 
 	log.Debug("Deleting a chatroommessage.")
 
 	// get chatroommessage
-	cr, err := h.chatroommessageGet(ctx, a, id)
+	cr, err := h.chatroommessageGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get chatroommessage info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroommessage info. err: %v", err)
@@ -160,7 +168,7 @@ func (h *serviceHandler) ServiceAgentChatroommessageDelete(ctx context.Context, 
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmp, err := h.reqHandler.ChatV1MessagechatroomDelete(ctx, id)
+	tmp, err := h.chatroommessageDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the chatroommessage. err: %v", err)
 		return nil, err

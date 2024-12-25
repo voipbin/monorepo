@@ -127,12 +127,14 @@ func Test_ServiceAgentAgentGet(t *testing.T) {
 
 			responseAgent: &amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("daf9bea2-3f9e-11ef-9fa2-3bf0ad5fa0ae"),
+					ID:         uuid.FromStringOrNil("daf9bea2-3f9e-11ef-9fa2-3bf0ad5fa0ae"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 			},
 			expectRes: &amagent.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("daf9bea2-3f9e-11ef-9fa2-3bf0ad5fa0ae"),
+					ID:         uuid.FromStringOrNil("daf9bea2-3f9e-11ef-9fa2-3bf0ad5fa0ae"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 			},
 		},

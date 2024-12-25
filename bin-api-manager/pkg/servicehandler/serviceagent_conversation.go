@@ -14,7 +14,7 @@ import (
 // It returns conversation if it succeed.
 func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error) {
 	// get
-	tmp, err := h.conversationGet(ctx, a, conversationID)
+	tmp, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get conversation.")
 	}
