@@ -27,6 +27,7 @@ import (
 	"monorepo/bin-api-manager/api/v1.0/files"
 	"monorepo/bin-api-manager/api/v1.0/flows"
 	"monorepo/bin-api-manager/api/v1.0/groupcalls"
+	"monorepo/bin-api-manager/api/v1.0/me"
 	"monorepo/bin-api-manager/api/v1.0/messages"
 	"monorepo/bin-api-manager/api/v1.0/numbers"
 	"monorepo/bin-api-manager/api/v1.0/outdials"
@@ -78,6 +79,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	files.ApplyRoutes(v1)
 	flows.ApplyRoutes(v1)
 	groupcalls.ApplyRoutes(v1)
+	me.ApplyRoutes(v1)
 	messages.ApplyRoutes(v1)
 	numbers.ApplyRoutes(v1)
 	outdials.ApplyRoutes(v1)

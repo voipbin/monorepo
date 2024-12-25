@@ -78,7 +78,6 @@ func Test_campaignsPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -93,7 +92,6 @@ func Test_campaignsPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			// create body
 			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
@@ -200,7 +198,6 @@ func Test_campaignsGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
