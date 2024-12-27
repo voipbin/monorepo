@@ -108,7 +108,7 @@ func (h *serviceHandler) CustomerCreate(
 	return res, nil
 }
 
-// UserGet returns customer info of given customerID.
+// CustomerGet returns customer info of given customerID.
 func (h *serviceHandler) CustomerGet(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerGet",

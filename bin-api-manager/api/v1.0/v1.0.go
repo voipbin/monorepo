@@ -22,6 +22,7 @@ import (
 	"monorepo/bin-api-manager/api/v1.0/conferences"
 	conversationaccounts "monorepo/bin-api-manager/api/v1.0/conversation_accounts"
 	"monorepo/bin-api-manager/api/v1.0/conversations"
+	"monorepo/bin-api-manager/api/v1.0/customer"
 	"monorepo/bin-api-manager/api/v1.0/customers"
 	"monorepo/bin-api-manager/api/v1.0/extensions"
 	"monorepo/bin-api-manager/api/v1.0/files"
@@ -74,6 +75,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conferencecalls.ApplyRoutes(v1)
 	conversations.ApplyRoutes(v1)
 	conversationaccounts.ApplyRoutes(v1)
+	customer.ApplyRoutes(v1)
 	customers.ApplyRoutes(v1)
 	extensions.ApplyRoutes(v1)
 	files.ApplyRoutes(v1)
