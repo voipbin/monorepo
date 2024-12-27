@@ -38,7 +38,7 @@ func customerGET(c *gin.Context) {
 	})
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerGet(c.Request.Context(), &a, a.ID)
+	res, err := serviceHandler.CustomerGet(c.Request.Context(), &a, a.CustomerID)
 	if err != nil {
 		log.Infof("Could not get the customer info. err: %v", err)
 		c.AbortWithStatus(400)

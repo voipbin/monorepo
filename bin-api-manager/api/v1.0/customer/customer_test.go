@@ -51,11 +51,11 @@ func Test_customerGET(t *testing.T) {
 			reqQuery: "/v1.0/customer",
 
 			responseCustomer: &cscustomer.WebhookMessage{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				ID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
 			},
 
 			expectedCustomerID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
-			expectedRes:        `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectedRes:        `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -76,7 +76,7 @@ func Test_customerGET(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.agent.ID).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.expectedCustomerID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
