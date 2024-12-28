@@ -32,10 +32,7 @@ func customerGET(c *gin.Context) {
 		return
 	}
 	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
+	log = log.WithField("agent", a)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerGet(c.Request.Context(), &a, a.CustomerID)
@@ -70,9 +67,7 @@ func customerPut(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req request.BodyCustomersIDPUT
 	if err := c.BindJSON(&req); err != nil {
@@ -113,9 +108,7 @@ func customerBillingAccountIDPut(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req request.BodyCustomerBillingAccountIDPUT
 	if err := c.BindJSON(&req); err != nil {
@@ -124,7 +117,6 @@ func customerBillingAccountIDPut(c *gin.Context) {
 		return
 	}
 
-	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), &a, a.CustomerID, req.BillingAccountID)
 	if err != nil {
