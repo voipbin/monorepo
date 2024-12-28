@@ -170,3 +170,80 @@ func Test_customerPut(t *testing.T) {
 		})
 	}
 }
+
+func Test_customerBillingAccountIDPut(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		agent  amagent.Agent
+		target string
+
+		req request.BodyCustomerBillingAccountIDPUT
+
+		responseCustomer *cscustomer.WebhookMessage
+
+		expectedCustomerID       uuid.UUID
+		expectedBillingAccountID uuid.UUID
+		expectedRes              string
+	}{
+		{
+			name: "normal",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("23ad14fa-c514-11ef-a03b-af3d499fdf18"),
+					CustomerID: uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			},
+			target: "/v1.0/customer/billing_account_id",
+
+			req: request.BodyCustomerBillingAccountIDPUT{
+				BillingAccountID: uuid.FromStringOrNil("245bc55e-c514-11ef-85d3-23d66dfc487a"),
+			},
+
+			responseCustomer: &cscustomer.WebhookMessage{
+				ID: uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
+			},
+
+			expectedCustomerID:       uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
+			expectedBillingAccountID: uuid.FromStringOrNil("245bc55e-c514-11ef-85d3-23d66dfc487a"),
+			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("agent", tt.agent)
+			})
+			setupServer(r)
+
+			body, err := json.Marshal(tt.req)
+			if err != nil {
+				t.Errorf("Wong match. expect: ok, got: %v", err)
+			}
+			req, _ := http.NewRequest(http.MethodPut, tt.target, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectedRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
+			}
+		})
+	}
+}

@@ -418,8 +418,11 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 
 		req request.BodyCustomersIDBillingAccountIDPUT
 
-		expectCustomerID       uuid.UUID
-		expectBillingAccountID uuid.UUID
+		responseCustomer *cscustomer.WebhookMessage
+
+		expectedCustomerID       uuid.UUID
+		expectedBillingAccountID uuid.UUID
+		expectedRes              string
 	}{
 		{
 			name: "normal",
@@ -435,14 +438,18 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 				BillingAccountID: uuid.FromStringOrNil("ccc776b6-1773-11ee-bea5-d78345c015af"),
 			},
 
-			expectCustomerID:       uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
-			expectBillingAccountID: uuid.FromStringOrNil("ccc776b6-1773-11ee-bea5-d78345c015af"),
+			responseCustomer: &cscustomer.WebhookMessage{
+				ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+			},
+
+			expectedCustomerID:       uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+			expectedBillingAccountID: uuid.FromStringOrNil("ccc776b6-1773-11ee-bea5-d78345c015af"),
+			expectedRes:              `{"id":"cc876058-1773-11ee-9694-136fe246dd34","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -457,7 +464,6 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			// create request
 			body, err := json.Marshal(tt.req)
 			if err != nil {
 				t.Errorf("Wong match. expect: ok, got: %v", err)
@@ -465,11 +471,15 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectBillingAccountID).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectedRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
 			}
 		})
 	}

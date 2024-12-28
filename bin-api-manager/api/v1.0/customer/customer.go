@@ -91,3 +91,47 @@ func customerPut(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// customerBillingAccountIDPut handles PUT /customer/billing_account_id request.
+// It updates a customer's billing account id.
+//
+//	@Summary		Update a customer's billing account id.
+//	@Description	Update a customer's billing account id.
+//	@Produce		json
+//	@Success		200	{object}	customer.Customer
+//	@Router			/v1.0/customer/billing_account_id [put]
+func customerBillingAccountIDPut(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customerBillingAccountIDPut",
+		"request_address": c.ClientIP,
+	})
+
+	tmpAgent, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	var req request.BodyCustomerBillingAccountIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// update a customer
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), &a, a.CustomerID, req.BillingAccountID)
+	if err != nil {
+		log.Errorf("Could not update the customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
