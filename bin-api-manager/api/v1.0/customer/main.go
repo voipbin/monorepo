@@ -9,4 +9,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	targets.GET("", customerGET)
 	targets.PUT("", customerPut)
+	targets.PUT("/billing_account_id", customerBillingAccountIDPut)
+
 }

@@ -32,10 +32,7 @@ func customerGET(c *gin.Context) {
 		return
 	}
 	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
+	log = log.WithField("agent", a)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerGet(c.Request.Context(), &a, a.CustomerID)
@@ -70,9 +67,7 @@ func customerPut(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req request.BodyCustomersIDPUT
 	if err := c.BindJSON(&req); err != nil {
@@ -83,6 +78,47 @@ func customerPut(c *gin.Context) {
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerUpdate(c.Request.Context(), &a, a.CustomerID, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, req.WebhookMethod, req.WebhookURI)
+	if err != nil {
+		log.Errorf("Could not update the customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// customerBillingAccountIDPut handles PUT /customer/billing_account_id request.
+// It updates a customer's billing account id.
+//
+//	@Summary		Update a customer's billing account id.
+//	@Description	Update a customer's billing account id.
+//	@Produce		json
+//	@Success		200	{object}	customer.Customer
+//	@Router			/v1.0/customer/billing_account_id [put]
+func customerBillingAccountIDPut(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customerBillingAccountIDPut",
+		"request_address": c.ClientIP,
+	})
+
+	tmpAgent, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmpAgent.(amagent.Agent)
+	log = log.WithField("agent", a)
+
+	var req request.BodyCustomerBillingAccountIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), &a, a.CustomerID, req.BillingAccountID)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)

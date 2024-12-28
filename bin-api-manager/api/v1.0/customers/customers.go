@@ -35,9 +35,7 @@ func customersPost(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req request.BodyCustomersPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -47,7 +45,6 @@ func customersPost(c *gin.Context) {
 	}
 	log.WithField("request", req).Debug("Creating a customer.")
 
-	// create a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerCreate(
 		c.Request.Context(),
@@ -94,9 +91,7 @@ func customersGet(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req request.ParamCustomersGET
 	if err := c.BindQuery(&req); err != nil {
@@ -105,7 +100,6 @@ func customersGet(c *gin.Context) {
 		return
 	}
 
-	// set max page size
 	pageSize := req.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 10
@@ -113,15 +107,11 @@ func customersGet(c *gin.Context) {
 	}
 	log.Debugf("customersGET. Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
 
-	// filters
 	filters := map[string]string{
 		"deleted": "false",
 	}
 
-	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-
-	// get customers
 	customers, err := serviceHandler.CustomerGets(c.Request.Context(), &a, pageSize, req.PageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get a customers list. err: %v", err)
@@ -165,11 +155,8 @@ func customersIDGet(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
-	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
 	log.Debug("Executing customersIDGET.")
@@ -207,11 +194,8 @@ func customersIDPut(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
-	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
 
@@ -222,7 +206,6 @@ func customersIDPut(c *gin.Context) {
 		return
 	}
 
-	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerUpdate(c.Request.Context(), &a, id, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, req.WebhookMethod, req.WebhookURI)
 	if err != nil {
@@ -255,16 +238,12 @@ func customersIDDelete(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
-	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
 	log.Debug("Executing customersIDDelete.")
 
-	// delete a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerDelete(c.Request.Context(), &a, id)
 	if err != nil {
@@ -297,11 +276,8 @@ func customersIDBillingAccountIDPut(c *gin.Context) {
 		return
 	}
 	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
-	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
 	log = log.WithField("target_id", id)
 
@@ -312,7 +288,6 @@ func customersIDBillingAccountIDPut(c *gin.Context) {
 		return
 	}
 
-	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), &a, id, req.BillingAccountID)
 	if err != nil {
