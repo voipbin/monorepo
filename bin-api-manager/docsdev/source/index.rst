@@ -13,6 +13,7 @@ Welcome to voipbin's documentation!
    quickstart
    common
    api
+   architecture
    accesskey
    flow
    activeflow
