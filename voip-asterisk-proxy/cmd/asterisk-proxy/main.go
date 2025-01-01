@@ -9,14 +9,15 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/rabbitmqhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/ivahaev/amigo"
 	"github.com/sirupsen/logrus"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/voip-asterisk-proxy/pkg/eventhandler"
 	"monorepo/voip-asterisk-proxy/pkg/listenhandler"
 )
@@ -56,8 +57,8 @@ func main() {
 
 	// connect to rabbitmq
 	log.Debugf("rabbitmq address: %s", rabbitMQAddress)
-	rabbitSock := rabbitmqhandler.NewRabbit(rabbitMQAddress)
-	rabbitSock.Connect()
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, rabbitMQAddress)
+	sockHandler.Connect()
 
 	// connect to ami
 	amiSock := connectAMI(amiHost, amiPort, amiUsername, amiPassword)
@@ -77,13 +78,13 @@ func main() {
 	rabbitQueueListenRequestsVolatile := fmt.Sprintf("asterisk.%s.request", asteriskID)
 	log.Debugf("Volatile listen queue name: %s", rabbitQueueListenRequestsVolatile)
 
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName)
 
 	// create event handler
 	evtHandler := eventhandler.NewEventHandler(
 		notifyHandler,
-		rabbitSock,
+		sockHandler,
 		string(commonoutline.QueueNameAsteriskEventAll),
 		ariAddr,
 		ariAccount,
@@ -102,7 +103,7 @@ func main() {
 
 	// create a listen handler
 	listenHandler := listenhandler.NewListenHandler(
-		rabbitSock,
+		sockHandler,
 		rabbitQueueListenRequestsPermanent,
 		rabbitQueueListenRequestsVolatile,
 		ariAddr,
