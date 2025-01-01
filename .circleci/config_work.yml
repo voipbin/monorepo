@@ -620,6 +620,15 @@ workflows:
     jobs:
       - voip-asterisk-proxy-build:
           <<: *context_production
+      - release-approval:
+          type: approval
+          requires:
+            - voip-asterisk-proxy-build
+      - voip-asterisk-proxy-release:
+          <<: *context_production
+          requires:
+            - voip-asterisk-proxy-build
+            - release-approval
 
 
 #########################################################################################################################################################################
@@ -1299,6 +1308,15 @@ jobs:
       - image: cimg/gcp:2024.03
     steps:
       - go-build:
+          namespace: voip
+          source-directory: voip-asterisk-proxy
+          image-name: asterisk-proxy
+
+  voip-asterisk-proxy-release:
+    docker:
+      - image: google/cloud-sdk:debian_component_based
+    steps:
+      - go-release:
           namespace: voip
           source-directory: voip-asterisk-proxy
           image-name: asterisk-proxy
