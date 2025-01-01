@@ -45,6 +45,9 @@ var (
 
 	redisAddr = ""
 	redisDB   = 0
+
+	prometheusEndpoint      = ""
+	prometheusListenAddress = ""
 )
 
 var chSigs = make(chan os.Signal, 1)
