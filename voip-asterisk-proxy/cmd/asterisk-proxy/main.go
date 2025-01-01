@@ -55,8 +55,6 @@ var chSigs = make(chan os.Signal, 1)
 func main() {
 	log := logrus.WithField("func", "main")
 
-	initProcess()
-
 	// connect to rabbitmq
 	log.Debugf("rabbitmq address: %s", rabbitAddr)
 	rabbitSock := rabbitmqhandler.NewRabbit(rabbitAddr)
