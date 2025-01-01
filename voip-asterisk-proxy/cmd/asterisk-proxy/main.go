@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	ariAddr         = ""
+	ariAddress      = ""
 	ariAccount      = ""
 	ariSubscribeAll = ""
 	ariApplication  = ""
@@ -86,7 +86,7 @@ func main() {
 		notifyHandler,
 		sockHandler,
 		string(commonoutline.QueueNameAsteriskEventAll),
-		ariAddr,
+		ariAddress,
 		ariAccount,
 		ariSubscribeAll,
 		ariApplication,
@@ -106,7 +106,7 @@ func main() {
 		sockHandler,
 		rabbitQueueListenRequestsPermanent,
 		rabbitQueueListenRequestsVolatile,
-		ariAddr,
+		ariAddress,
 		ariAccount,
 		amiSock,
 	)

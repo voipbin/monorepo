@@ -84,7 +84,7 @@ func initVariable() {
 		log.Errorf("Error binding env: %v", errEnv)
 		panic(errEnv)
 	}
-	ariAddr = viper.GetString("ari_address")
+	ariAddress = viper.GetString("ari_address")
 
 	// ari_account
 	if errFlag := viper.BindPFlag("ari_account", pflag.Lookup("ari_account")); errFlag != nil {

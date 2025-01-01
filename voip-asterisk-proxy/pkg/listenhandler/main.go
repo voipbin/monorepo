@@ -72,6 +72,7 @@ func (h *listenHandler) Run() error {
 
 // listenRun initiate and start to listening the request from the rabbitmq queue.
 func (h *listenHandler) listenRun() error {
+	log := logrus.WithField("func", "listenRun")
 
 	listenQueues := []string{}
 
@@ -92,7 +93,7 @@ func (h *listenHandler) listenRun() error {
 	for _, queue := range volQueues {
 
 		// declare queue
-		logrus.Debugf("Declaring permenant request queue. queue: %s", queue)
+		log.Debugf("Declaring permenant request queue. queue: %s", queue)
 
 		if err := h.sockHandler.QueueCreate(queue, "volatile"); err != nil {
 			return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
@@ -104,10 +105,10 @@ func (h *listenHandler) listenRun() error {
 
 	// listening the queue
 	for _, listenQueue := range listenQueues {
-		logrus.Infof("Running the request listener. queue: %s", listenQueue)
+		log.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
 			if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "", false, false, false, 10, h.listenHandler); errConsume != nil {
-				logrus.Errorf("Could not handle the request message correctly. err: %v", errConsume)
+				log.Errorf("Could not handle the request message correctly. err: %v", errConsume)
 			}
 		}(listenQueue)
 	}
