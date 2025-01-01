@@ -39,9 +39,8 @@ var (
 
 	interfaceName = ""
 
-	rabbitAddr         = ""
-	rabbitQueueListen  = ""
-	rabbitQueuePublish = ""
+	rabbitMQAddress     = ""
+	rabbitMQQueueListen = ""
 
 	redisAddr = ""
 	redisDB   = 0
@@ -56,8 +55,8 @@ func main() {
 	log := logrus.WithField("func", "main")
 
 	// connect to rabbitmq
-	log.Debugf("rabbitmq address: %s", rabbitAddr)
-	rabbitSock := rabbitmqhandler.NewRabbit(rabbitAddr)
+	log.Debugf("rabbitmq address: %s", rabbitMQAddress)
+	rabbitSock := rabbitmqhandler.NewRabbit(rabbitMQAddress)
 	rabbitSock.Connect()
 
 	// connect to ami
@@ -74,7 +73,7 @@ func main() {
 	}
 
 	// create rabbitmq listen requet queue names
-	rabbitQueueListenRequestsPermanent := rabbitQueueListen
+	rabbitQueueListenRequestsPermanent := rabbitMQQueueListen
 	rabbitQueueListenRequestsVolatile := fmt.Sprintf("asterisk.%s.request", asteriskID)
 	log.Debugf("Volatile listen queue name: %s", rabbitQueueListenRequestsVolatile)
 
@@ -85,7 +84,7 @@ func main() {
 	evtHandler := eventhandler.NewEventHandler(
 		notifyHandler,
 		rabbitSock,
-		rabbitQueuePublish,
+		string(commonoutline.QueueNameAsteriskEventAll),
 		ariAddr,
 		ariAccount,
 		ariSubscribeAll,
