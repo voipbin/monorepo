@@ -40,6 +40,7 @@ type AgentHandler interface {
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
+	EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer) error
 }
 
 type agentHandler struct {

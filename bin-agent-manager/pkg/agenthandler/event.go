@@ -131,3 +131,32 @@ func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.
 
 	return nil
 }
+
+// EventCustomerCreated handles the customer-manager's customer_created event
+func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "EventCustomerCreated",
+		"customer": cu,
+	})
+	log.Debugf("Creating basic customer admin agent for new customer. customer_id: %s", cu.ID)
+
+	a, err := h.Create(
+		ctx,
+		cu.ID,
+		cu.Email,
+		cu.Email,
+		"default admin",
+		"default agent account for admin permission",
+		agent.RingMethodRingAll,
+		agent.PermissionCustomerAdmin,
+		[]uuid.UUID{},
+		[]commonaddress.Address{},
+	)
+	if err != nil {
+		log.Errorf("Could not create basic customer admin agent. err: %v", err)
+		return errors.Wrap(err, "could not create basic customer admin agent")
+	}
+	log.WithField("agent", a).Debugf("Created basic admin agent for new customer. agent_id: %s", a.ID)
+
+	return nil
+}
