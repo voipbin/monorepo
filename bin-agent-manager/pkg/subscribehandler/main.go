@@ -140,6 +140,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cmcustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCMCustomerDeleted(ctx, m)
 
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cmcustomer.EventTypeCustomerCreated)):
+		err = h.processEventCMCustomerCreated(ctx, m)
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////

@@ -2,6 +2,7 @@ package agenthandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -214,6 +215,64 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			}
 
 			if err := h.EventCustomerDeleted(ctx, tt.customer); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EventCustomerCreated(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer *cmcustomer.Customer
+
+		responseUUID  uuid.UUID
+		responseAgent *agent.Agent
+	}{
+		{
+			name: "normal",
+
+			customer: &cmcustomer.Customer{
+				ID:    uuid.FromStringOrNil("9c0ea002-c8e4-11ef-bfbd-3316b71b50ac"),
+				Email: "test@voipbin.net",
+			},
+
+			responseUUID: uuid.FromStringOrNil("38979028-c8e5-11ef-ab04-9b5ea42ae2be"),
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.responseUUID).Return(tt.responseAgent, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)
+
+			if err := h.EventCustomerCreated(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
