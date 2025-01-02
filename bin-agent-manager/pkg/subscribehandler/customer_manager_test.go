@@ -57,3 +57,47 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 		})
 	}
 }
+
+func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		event *sock.Event
+
+		expectCustomer *cmcustomer.Customer
+	}{
+		{
+			name: "normal",
+
+			event: &sock.Event{
+				Publisher: "customer-manager",
+				Type:      cmcustomer.EventTypeCustomerCreated,
+				DataType:  "application/json",
+				Data:      []byte(`{"id":"063c6a4c-c8e8-11ef-b591-cf37812bd95a"}`),
+			},
+
+			expectCustomer: &cmcustomer.Customer{
+				ID: uuid.FromStringOrNil("063c6a4c-c8e8-11ef-b591-cf37812bd95a"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := subscribeHandler{
+				sockHandler:  mockSock,
+				agentHandler: mockAgent,
+			}
+
+			mockAgent.EXPECT().EventCustomerCreated(gomock.Any(), tt.expectCustomer).Return(nil)
+
+			h.processEvent(tt.event)
+		})
+	}
+}
