@@ -15,8 +15,6 @@ type ParamCustomersGET struct {
 // BodyCustomersPOST is rquest body define for
 // POST /v1.0/customers
 type BodyCustomersPOST struct {
-	Username      string                   `json:"username"`
-	Password      string                   `json:"password"`
 	Name          string                   `json:"name,omitempty"`
 	Detail        string                   `json:"detail,omitempty"`
 	Email         string                   `json:"email,omitempty"`

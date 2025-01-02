@@ -49,8 +49,6 @@ func customersPost(c *gin.Context) {
 	res, err := serviceHandler.CustomerCreate(
 		c.Request.Context(),
 		&a,
-		req.Username,
-		req.Password,
 		req.Name,
 		req.Detail,
 		req.Email,

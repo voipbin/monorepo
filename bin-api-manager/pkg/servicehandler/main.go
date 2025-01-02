@@ -361,8 +361,6 @@ type ServiceHandler interface {
 	CustomerCreate(
 		ctx context.Context,
 		a *amagent.Agent,
-		username string,
-		password string,
 		name string,
 		detail string,
 		email string,

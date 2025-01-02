@@ -34,8 +34,6 @@ func (h *serviceHandler) customerGet(ctx context.Context, customerID uuid.UUID) 
 func (h *serviceHandler) CustomerCreate(
 	ctx context.Context,
 	a *amagent.Agent,
-	username string,
-	password string,
 	name string,
 	detail string,
 	email string,
@@ -45,8 +43,8 @@ func (h *serviceHandler) CustomerCreate(
 	webhookURI string,
 ) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"Username": username,
-		"Name":     name,
+		"agent": a,
+		"email": email,
 	})
 	log.Debug("Creating a new customer.")
 
