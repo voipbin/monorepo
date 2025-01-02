@@ -25,8 +25,6 @@ func Test_CustomerCreate(t *testing.T) {
 		name string
 
 		agent         *amagent.Agent
-		username      string
-		password      string
 		customerName  string
 		detail        string
 		email         string
@@ -54,8 +52,6 @@ func Test_CustomerCreate(t *testing.T) {
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
-			username:      "test@test.com",
-			password:      "testpassword",
 			customerName:  "test",
 			detail:        "test detail",
 			email:         "test@test.com",
@@ -104,7 +100,7 @@ func Test_CustomerCreate(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerCreate(ctx, tt.agent, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			res, err := h.CustomerCreate(ctx, tt.agent, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

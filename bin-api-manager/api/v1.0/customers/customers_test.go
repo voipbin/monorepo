@@ -36,8 +36,6 @@ func Test_customersPOST(t *testing.T) {
 		target string
 
 		req           request.BodyCustomersPOST
-		username      string
-		password      string
 		customerName  string
 		detail        string
 		email         string
@@ -59,8 +57,6 @@ func Test_customersPOST(t *testing.T) {
 			"/v1.0/customers",
 
 			request.BodyCustomersPOST{
-				Username:      "test",
-				Password:      "test password",
 				Name:          "test name",
 				Detail:        "test detail",
 				Email:         "test@test.com",
@@ -69,8 +65,6 @@ func Test_customersPOST(t *testing.T) {
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
 			},
-			"test",
-			"test password",
 			"test name",
 			"test detail",
 			"test@test.com",
@@ -113,8 +107,6 @@ func Test_customersPOST(t *testing.T) {
 			mockSvc.EXPECT().CustomerCreate(
 				req.Context(),
 				&tt.agent,
-				tt.username,
-				tt.password,
 				tt.customerName,
 				tt.detail,
 				tt.email,
