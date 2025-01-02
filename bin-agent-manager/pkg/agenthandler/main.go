@@ -4,7 +4,6 @@ package agenthandler
 
 import (
 	"context"
-	"regexp"
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
@@ -16,10 +15,13 @@ import (
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
-	"golang.org/x/crypto/bcrypt"
 
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
+)
+
+const (
+	defaultPasswordHashCost = 10
 )
 
 // AgentHandler interface
@@ -58,26 +60,4 @@ func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandl
 		db:            dbHandler,
 		notifyHandler: notifyHandler,
 	}
-}
-
-// checkHash returns true if the given hashstring is correct
-func checkHash(password, hashString string) bool {
-	if err := bcrypt.CompareHashAndPassword([]byte(hashString), []byte(password)); err != nil {
-		return false
-	}
-
-	return true
-}
-
-// GenerateHash generates hash from auth
-func generateHash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
-	return string(bytes), err
-}
-
-// isEmailValid checks if the email provided is valid by regex.
-// get from https://stackoverflow.com/questions/66624011/how-to-validate-an-email-address-in-go
-func isEmailValid(e string) bool {
-	emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	return emailRegex.MatchString(e)
 }

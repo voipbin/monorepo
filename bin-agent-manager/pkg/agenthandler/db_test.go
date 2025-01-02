@@ -9,6 +9,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -98,18 +99,26 @@ func Test_dbLogin(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(tt.responseAgents, nil)
-			_, err := h.dbLogin(ctx, tt.username, tt.password)
+			mockUtil.EXPECT().HashCheckPassword(tt.password, tt.responseAgents.PasswordHash).Return(true)
+
+			res, err := h.dbLogin(ctx, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseAgents) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAgents, res)
 			}
 		})
 	}
@@ -182,6 +191,7 @@ func Test_dbUpdatePassword(t *testing.T) {
 		id       uuid.UUID
 		password string
 
+		responseHash  string
 		responseAgent *agent.Agent
 	}{
 		{
@@ -190,6 +200,7 @@ func Test_dbUpdatePassword(t *testing.T) {
 			id:       uuid.FromStringOrNil("901d2638-298f-11ee-a14a-639e3e00089b"),
 			password: "904ae97e-298f-11ee-8527-1bdc00790371",
 
+			responseHash: "hash_string",
 			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("901d2638-298f-11ee-a14a-639e3e00089b"),
@@ -206,15 +217,18 @@ func Test_dbUpdatePassword(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetPasswordHash(ctx, tt.id, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
+			mockDB.EXPECT().AgentSetPasswordHash(ctx, tt.id, tt.responseHash).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 

@@ -104,10 +104,14 @@ func Test_Delete(t *testing.T) {
 			},
 			responseFiles: []smfile.File{
 				{
-					ID: uuid.FromStringOrNil("24c0bcb0-1d5e-11ef-a361-a3671e0f4f3a"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("24c0bcb0-1d5e-11ef-a361-a3671e0f4f3a"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("2aeb1392-1d5e-11ef-b320-cfcb1378a1ad"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2aeb1392-1d5e-11ef-b320-cfcb1378a1ad"),
+					},
 				},
 			},
 			expectFilers: map[string]string{
@@ -186,10 +190,14 @@ func Test_deleteRecordingFiles(t *testing.T) {
 
 			responseFiles: []smfile.File{
 				{
-					ID: uuid.FromStringOrNil("1f076c2a-1d5d-11ef-a4dd-bbf538c3b5b4"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1f076c2a-1d5d-11ef-a4dd-bbf538c3b5b4"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("1f2f2954-1d5d-11ef-b10a-c3d4990f73b0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1f2f2954-1d5d-11ef-b10a-c3d4990f73b0"),
+					},
 				},
 			},
 			expectFilters: map[string]string{

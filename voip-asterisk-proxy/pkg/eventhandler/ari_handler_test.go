@@ -44,7 +44,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func TestEventARIRun(t *testing.T) {
+func Test_eventARIRun(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

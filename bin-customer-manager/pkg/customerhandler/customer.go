@@ -38,5 +38,48 @@ func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.C
 	}
 
 	return res, nil
+}
 
+func (h *customerHandler) validateCreate(ctx context.Context, email string) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "validateCreate",
+		"email": email,
+	})
+
+	if !h.utilHandler.EmailIsValid(email) {
+		log.Errorf("The email is invalid. email: %s", email)
+		return false
+	}
+
+	// check customer
+	filterCustomer := map[string]string{
+		"deleted": "false",
+		"email":   email,
+	}
+	tmps, err := h.Gets(ctx, 100, "", filterCustomer)
+	if err != nil {
+		log.Errorf("Could not get the customer info. err: %v", err)
+		return false
+	}
+	if len(tmps) > 0 {
+		log.Errorf("The email is already used. email: %s", email)
+		return false
+	}
+
+	// check agent
+	filterAgent := map[string]string{
+		"deleted":  "false",
+		"username": email,
+	}
+	tmpAgents, err := h.reqHandler.AgentV1AgentGets(ctx, "", 100, filterAgent)
+	if err != nil {
+		log.Errorf("Could not get the agent info. err: %v", err)
+		return false
+	}
+	if len(tmpAgents) > 0 {
+		log.Errorf("The email is already used. email: %s", email)
+		return false
+	}
+
+	return true
 }

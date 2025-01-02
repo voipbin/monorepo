@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
@@ -79,14 +80,16 @@ func Test_Create(t *testing.T) {
 		responseUUID uuid.UUID
 		responseHash string
 
-		expectCustomer *customer.Customer
+		expectedFilterCustomer map[string]string
+		expectedFilterAgent    map[string]string
+		expectedCustomer       *customer.Customer
 	}{
 		{
 			name: "normal",
 
 			userName:      "test1",
 			detail:        "detail1",
-			email:         "test@test.com",
+			email:         "test@voipbin.net",
 			phoneNumber:   "+821100000001",
 			address:       "somewhere",
 			webhookMethod: customer.WebhookMethodPost,
@@ -95,11 +98,19 @@ func Test_Create(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
 			responseHash: "$2a$12$KEqTmfExiTmQ0HBspD6x7.XBkG1mVVAKidWG6J.zUeTtdgb0NXppq",
 
-			expectCustomer: &customer.Customer{
+			expectedFilterCustomer: map[string]string{
+				"deleted": "false",
+				"email":   "test@voipbin.net",
+			},
+			expectedFilterAgent: map[string]string{
+				"deleted":  "false",
+				"username": "test@voipbin.net",
+			},
+			expectedCustomer: &customer.Customer{
 				ID:               uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
 				Name:             "test1",
 				Detail:           "detail1",
-				Email:            "test@test.com",
+				Email:            "test@voipbin.net",
 				PhoneNumber:      "+821100000001",
 				Address:          "somewhere",
 				WebhookMethod:    customer.WebhookMethodPost,
@@ -127,8 +138,12 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
+			mockDB.EXPECT().CustomerGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
+
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().CustomerCreate(ctx, tt.expectCustomer).Return(nil)
+			mockDB.EXPECT().CustomerCreate(ctx, tt.expectedCustomer).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 

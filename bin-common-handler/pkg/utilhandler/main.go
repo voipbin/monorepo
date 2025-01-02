@@ -11,6 +11,13 @@ import (
 
 // UtilHandler defines
 type UtilHandler interface {
+	// email
+	EmailIsValid(e string) bool
+
+	// hash
+	HashCheckPassword(password, hashString string) bool
+	HashGenerate(org string, cost int) (string, error)
+
 	// uuid helpers
 	UUIDCreate() uuid.UUID
 
