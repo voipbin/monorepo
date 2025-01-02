@@ -42,6 +42,49 @@ func (m *MockUtilHandler) EXPECT() *MockUtilHandlerMockRecorder {
 	return m.recorder
 }
 
+// EmailIsValid mocks base method.
+func (m *MockUtilHandler) EmailIsValid(e string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailIsValid", e)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// EmailIsValid indicates an expected call of EmailIsValid.
+func (mr *MockUtilHandlerMockRecorder) EmailIsValid(e any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailIsValid", reflect.TypeOf((*MockUtilHandler)(nil).EmailIsValid), e)
+}
+
+// HashCheckPassword mocks base method.
+func (m *MockUtilHandler) HashCheckPassword(password, hashString string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HashCheckPassword", password, hashString)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HashCheckPassword indicates an expected call of HashCheckPassword.
+func (mr *MockUtilHandlerMockRecorder) HashCheckPassword(password, hashString any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashCheckPassword", reflect.TypeOf((*MockUtilHandler)(nil).HashCheckPassword), password, hashString)
+}
+
+// HashGenerate mocks base method.
+func (m *MockUtilHandler) HashGenerate(org string, cost int) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HashGenerate", org, cost)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HashGenerate indicates an expected call of HashGenerate.
+func (mr *MockUtilHandlerMockRecorder) HashGenerate(org, cost any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashGenerate", reflect.TypeOf((*MockUtilHandler)(nil).HashGenerate), org, cost)
+}
+
 // StringGenerateRandom mocks base method.
 func (m *MockUtilHandler) StringGenerateRandom(size int) (string, error) {
 	m.ctrl.T.Helper()

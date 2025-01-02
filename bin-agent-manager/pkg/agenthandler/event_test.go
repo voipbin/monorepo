@@ -229,6 +229,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 		customer *cmcustomer.Customer
 
 		responseUUID  uuid.UUID
+		responseHash  string
 		responseAgent *agent.Agent
 	}{
 		{
@@ -240,6 +241,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 			},
 
 			responseUUID: uuid.FromStringOrNil("38979028-c8e5-11ef-ab04-9b5ea42ae2be"),
+			responseHash: "hash_string",
 			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
@@ -266,7 +268,9 @@ func Test_EventCustomerCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().EmailIsValid(tt.customer.Email).Return(true)
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().HashGenerate(tt.customer.Email, defaultPasswordHashCost).Return(tt.responseHash, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.responseUUID).Return(tt.responseAgent, nil)

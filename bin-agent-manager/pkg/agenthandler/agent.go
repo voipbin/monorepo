@@ -72,7 +72,7 @@ func (h *agentHandler) Get(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 }
 
 // Create creates a new agent.
-func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
+func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, username string, password string, name string, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,
@@ -82,7 +82,7 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 	log.Debug("Creating a new user.")
 
 	// validate username
-	if !isEmailValid(username) {
+	if !h.utilHandler.EmailIsValid(username) {
 		log.Infof("Wrong username type. The username must be email format. username: %s", username)
 		return nil, fmt.Errorf("wrong username format")
 	}

@@ -86,8 +86,11 @@ func Test_Create(t *testing.T) {
 		tags       []uuid.UUID
 		addresses  []commonaddress.Address
 
-		responseUUID uuid.UUID
-		expectRes    *agent.Agent
+		responseUUID  uuid.UUID
+		responseHash  string
+		responseAgent *agent.Agent
+		expectedAgent *agent.Agent
+		expectedRes   *agent.Agent
 	}{
 		{
 			name: "normal",
@@ -103,17 +106,31 @@ func Test_Create(t *testing.T) {
 			addresses:  []commonaddress.Address{},
 
 			responseUUID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-			expectRes: &agent.Agent{
+			responseHash: "hash_string",
+			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
+					ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+				},
+			},
+			expectedAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				},
-				Username:   "test1@voipbin.net",
-				Name:       "test1 name",
-				Detail:     "test1 detail",
-				Permission: agent.PermissionNone,
-				TagIDs:     []uuid.UUID{},
-				Addresses:  []commonaddress.Address{},
+				Username:     "test1@voipbin.net",
+				PasswordHash: "hash_string",
+				Name:         "test1 name",
+				Detail:       "test1 detail",
+				RingMethod:   agent.RingMethodRingAll,
+				Status:       agent.StatusOffline,
+				Permission:   agent.PermissionNone,
+				TagIDs:       []uuid.UUID{},
+				Addresses:    []commonaddress.Address{},
+			},
+			expectedRes: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+				},
 			},
 		},
 	}
@@ -136,19 +153,24 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().EmailIsValid(tt.username).Return(true)
+
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
+
+			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
+
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectRes.CustomerID, agent.EventTypeAgentCreated, tt.expectRes)
+			mockDB.EXPECT().AgentCreate(ctx, tt.expectedAgent).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.responseAgent, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)
 
 			res, err := h.Create(ctx, tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			if !reflect.DeepEqual(res, tt.expectedRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectedRes, res)
 			}
 		})
 	}

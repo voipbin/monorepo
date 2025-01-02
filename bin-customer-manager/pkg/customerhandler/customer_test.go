@@ -6,9 +6,12 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -58,6 +61,69 @@ func Test_Delete(t *testing.T) {
 			_, err := h.Delete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_validateCreate(t *testing.T) {
+	tests := []struct {
+		name string
+
+		email string
+
+		responseCustomer *customer.Customer
+		expectedRes      bool
+	}{
+		{
+			name: "normal1",
+
+			email: "test@voipbin.net",
+
+			responseCustomer: &customer.Customer{
+				ID:       uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+
+			expectedRes: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
+
+			filterCustomer := map[string]string{
+				"deleted": "false",
+				"email":   tt.email,
+			}
+			mockDB.EXPECT().CustomerGets(gomock.Any(), uint64(100), "", filterCustomer).Return([]*customer.Customer{}, nil)
+
+			filterAgent := map[string]string{
+				"deleted":  "false",
+				"username": tt.email,
+			}
+			mockReq.EXPECT().AgentV1AgentGets(gomock.Any(), "", uint64(100), filterAgent).Return([]amagent.Agent{}, nil)
+
+			res := h.validateCreate(ctx, tt.email)
+			if res != tt.expectedRes {
+				t.Errorf("Wrong match. expected: %v, got: %v", tt.expectedRes, res)
 			}
 		})
 	}

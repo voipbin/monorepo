@@ -158,6 +158,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type == cscustomer.EventTypeCustomerDeleted:
 		err = h.processEventCMCustomerDeleted(ctx, m)
 
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && m.Type == cscustomer.EventTypeCustomerCreated:
+		err = h.processEventCMCustomerCreated(ctx, m)
+
 	//// number-manager
 	// number
 	case m.Publisher == string(commonoutline.ServiceNameNumberManager) && m.Type == nmnumber.EventTypeNumberCreated:
