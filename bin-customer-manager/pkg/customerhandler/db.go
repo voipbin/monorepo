@@ -59,6 +59,12 @@ func (h *customerHandler) Create(
 	})
 	log.Debug("Creating a new customer.")
 
+	// check if the customer's email is already exist in the agent
+	if !h.validateCreate(ctx, email) {
+		log.Errorf("The email is already exist. email: %s", email)
+		return nil, fmt.Errorf("the email is already exist")
+	}
+
 	id := h.utilHandler.UUIDCreate()
 
 	// create customer

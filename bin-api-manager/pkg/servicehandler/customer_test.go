@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -103,12 +102,7 @@ func Test_CustomerCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return([]amagent.Agent{}, nil)
 			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
-			mockReq.EXPECT().AgentV1AgentCreate(ctx, 30000, tt.responseCustomer.ID, tt.username, tt.password, gomock.Any(), gomock.Any(), gomock.Any(), amagent.PermissionCustomerAdmin, []uuid.UUID{}, []commonaddress.Address{}).Return(tt.responseAgent, nil)
-			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.responseCustomer.ID, gomock.Any(), gomock.Any(), bmaccount.PaymentTypePrepaid, bmaccount.PaymentMethodNone).Return(tt.responseBillingAccount, nil)
-			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.responseCustomer.ID, tt.responseBillingAccount.ID).Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerCreate(ctx, tt.agent, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {

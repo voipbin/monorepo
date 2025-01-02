@@ -33,6 +33,7 @@ type AccountHandler interface {
 
 	IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error)
 
+	EventCUCustomerCreated(ctx context.Context, cu *cucustomer.Customer) error
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }
 

@@ -89,6 +89,20 @@ func (mr *MockAccountHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAccountHandler)(nil).Delete), ctx, id)
 }
 
+// EventCUCustomerCreated mocks base method.
+func (m *MockAccountHandler) EventCUCustomerCreated(ctx context.Context, cu *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCUCustomerCreated", ctx, cu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCUCustomerCreated indicates an expected call of EventCUCustomerCreated.
+func (mr *MockAccountHandlerMockRecorder) EventCUCustomerCreated(ctx, cu any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerCreated", reflect.TypeOf((*MockAccountHandler)(nil).EventCUCustomerCreated), ctx, cu)
+}
+
 // EventCUCustomerDeleted mocks base method.
 func (m *MockAccountHandler) EventCUCustomerDeleted(ctx context.Context, cu *customer.Customer) error {
 	m.ctrl.T.Helper()

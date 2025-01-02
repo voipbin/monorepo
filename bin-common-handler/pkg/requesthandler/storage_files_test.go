@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -63,7 +64,9 @@ func Test_StorageV1FileCreate(t *testing.T) {
 				Data:       []byte(`{"id":"e4784552-160e-11ef-b04c-73e4a6f7f798"}`),
 			},
 			expectResult: &smfile.File{
-				ID: uuid.FromStringOrNil("e4784552-160e-11ef-b04c-73e4a6f7f798"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e4784552-160e-11ef-b04c-73e4a6f7f798"),
+				},
 			},
 		},
 	}
@@ -143,7 +146,9 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 				Data:       []byte(`{"id":"790613d2-1d91-11ef-b443-1f88ddd0d95b"}`),
 			},
 			expectResult: &smfile.File{
-				ID: uuid.FromStringOrNil("790613d2-1d91-11ef-b443-1f88ddd0d95b"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("790613d2-1d91-11ef-b443-1f88ddd0d95b"),
+				},
 			},
 		},
 	}
@@ -209,10 +214,14 @@ func Test_StorageV1FileGets(t *testing.T) {
 			},
 			[]smfile.File{
 				{
-					ID: uuid.FromStringOrNil("308d1de0-1610-11ef-af26-cf10522110e0"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("308d1de0-1610-11ef-af26-cf10522110e0"),
+					},
 				},
 				{
-					ID: uuid.FromStringOrNil("30f09a46-1610-11ef-99a4-4b9fef0d8729"),
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("30f09a46-1610-11ef-99a4-4b9fef0d8729"),
+					},
 				},
 			},
 		},
@@ -276,7 +285,9 @@ func Test_StorageV1FileGet(t *testing.T) {
 				DataType: ContentTypeNone,
 			},
 			&smfile.File{
-				ID: uuid.FromStringOrNil("846be5e0-1610-11ef-9d6d-cfa226c15144"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("846be5e0-1610-11ef-9d6d-cfa226c15144"),
+				},
 			},
 		},
 	}
@@ -337,7 +348,9 @@ func Test_StorageV1FileDelete(t *testing.T) {
 				DataType: ContentTypeNone,
 			},
 			&smfile.File{
-				ID: uuid.FromStringOrNil("b0cf0e3c-1610-11ef-8e33-0b8cfeddd4f8"),
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b0cf0e3c-1610-11ef-8e33-0b8cfeddd4f8"),
+				},
 			},
 		},
 	}

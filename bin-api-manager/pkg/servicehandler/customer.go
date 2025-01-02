@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	bmaccount "monorepo/bin-billing-manager/models/account"
-	commonaddress "monorepo/bin-common-handler/models/address"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -58,51 +56,12 @@ func (h *serviceHandler) CustomerCreate(
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	// check agent existence
-	filters := map[string]string{
-		"deleted":  "false",
-		"username": username,
-	}
-	ags, err := h.AgentGets(ctx, a, 100, "", filters)
-	if err != nil {
-		log.Errorf("Could not get agent info. err: %v", err)
-		return nil, err
-	}
-	if len(ags) > 0 {
-		log.Errorf("The agent username is already exist. username: %s", username)
-		return nil, fmt.Errorf("the agent username is already exist")
-	}
-
 	// create customer
 	cu, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	if err != nil {
 		log.Errorf("Could not create a new customer. err: %v", err)
 		return nil, err
 	}
-
-	// create admin agent
-	ag, err := h.reqHandler.AgentV1AgentCreate(ctx, 30000, cu.ID, username, password, "default admin", "default agent account for admin permission", amagent.RingMethodRingAll, amagent.PermissionCustomerAdmin, []uuid.UUID{}, []commonaddress.Address{})
-	if err != nil {
-		log.Errorf("Could not create admin agent. err: %v", err)
-		return nil, err
-	}
-	log.WithField("agent", ag).Debugf("Created admin agent info. agent_id: %s", ag.ID)
-
-	// create billing account
-	ba, err := h.reqHandler.BillingV1AccountCreate(ctx, cu.ID, "basic billing account", "billing account for default use", bmaccount.PaymentTypePrepaid, bmaccount.PaymentMethodNone)
-	if err != nil {
-		log.Errorf("Could not create billing account. err: %v", err)
-		return nil, err
-	}
-	log.WithField("billing_account", ba).Debugf("Created billing account. billing_account_id: %s", ba.ID)
-
-	// set default billing account
-	cu, err = h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, cu.ID, ba.ID)
-	if err != nil {
-		log.Errorf("Could not update default billing account. err: %v", err)
-		return nil, err
-	}
-	log.WithField("customer", cu).Debugf("Updated customer info. customer_id: %s", cu.ID)
 
 	res := cu.ConvertWebhookMessage()
 	return res, nil

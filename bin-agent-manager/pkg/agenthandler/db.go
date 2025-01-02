@@ -63,7 +63,7 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 	}
 
 	// generate hash password
-	hashPassword, err := generateHash(password)
+	hashPassword, err := h.utilHandler.HashGenerate(password, defaultPasswordHashCost)
 	if err != nil {
 		log.Errorf("Could not generate hash. err: %v", err)
 		return nil, err
@@ -143,7 +143,7 @@ func (h *agentHandler) dbLogin(ctx context.Context, username string, password st
 		return nil, fmt.Errorf("no agent info")
 	}
 
-	if !checkHash(password, res.PasswordHash) {
+	if !h.utilHandler.HashCheckPassword(password, res.PasswordHash) {
 		return nil, fmt.Errorf("wrong password")
 	}
 
@@ -184,7 +184,7 @@ func (h *agentHandler) dbUpdatePassword(ctx context.Context, id uuid.UUID, passw
 	})
 	log.Debug("Updating the agent's password.")
 
-	passHash, err := generateHash(password)
+	passHash, err := h.utilHandler.HashGenerate(password, defaultPasswordHashCost)
 	if err != nil {
 		log.Errorf("Could not generate the password hash. err: %v", err)
 		return nil, err
