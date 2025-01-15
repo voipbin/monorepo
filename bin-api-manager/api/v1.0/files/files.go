@@ -19,9 +19,8 @@ import (
 //	@Summary		Make an outbound call
 //	@Description	dialing to destination
 //	@Produce		json
-//	@Param			call	body		request.BodyCallsPOST	true	"The call detail"
-//	@Success		200		{object}	call.Call
-//	@Router			/v1.0/calls [post]
+//	@Success		200		{object}	file.WebhookMessage
+//	@Router			/v1.0/files [post]
 func filesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "filesPOST",
