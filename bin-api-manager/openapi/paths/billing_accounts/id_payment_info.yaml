@@ -1,0 +1,29 @@
+put:
+  summary: Update billing account's payment info
+  description: Updates the payment info for the given billing account ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The ID of the billing account.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            payment_type:
+              $ref: '../../components/billing_manager/main.yaml#/components/schemas/AccountPaymentType'
+            payment_method:
+              $ref: '../../components/billing_manager/main.yaml#/components/schemas/AccountPaymentMethod'
+  responses:
+    200:
+      description: Successfully updated billing account payment info
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'

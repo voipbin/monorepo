@@ -1,0 +1,33 @@
+type: object
+properties:
+  id:
+    type: string
+  customer_id:
+    type: string
+  name:
+    type: string
+  detail:
+    type: string
+  domain_name:
+    type: string
+  auth_types:
+    type: array
+    items:
+      $ref: '#/components/schemas/AuthType'
+  username:
+    type: string
+  password:
+    type: string
+  allowed_ips:
+    type: array
+    items:
+      type: string
+  tm_create:
+    type: string
+    description: "Timestamp when the trunk was created"
+  tm_update:
+    type: string
+    description: "Timestamp when the trunk was last updated"
+  tm_delete:
+    type: string
+    description: "Timestamp when the trunk was deleted"

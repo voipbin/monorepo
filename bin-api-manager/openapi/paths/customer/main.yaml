@@ -1,0 +1,49 @@
+get:
+  summary: Get customer info
+  description: Retrieve the information of the customer.
+  responses:
+    '200':
+      description: The customer information.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+
+put:
+  summary: Update a customer
+  description: Update the information of a customer and retrieve the updated details.
+  requestBody:
+    description: Customer update payload
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The new name of the customer.
+            detail:
+              type: string
+              description: Additional details about the customer.
+            email:
+              type: string
+              description: The customer's email address.
+            phone_number:
+              type: string
+              description: The customer's phone number.
+            address:
+              type: string
+              description: The customer's address.
+            webhook_method:
+              $ref: '../../components/customer_manager/main.yaml#/components/schemas/CustomerWebhookMethod'
+            webhook_uri:
+              type: string
+              description: Webhook URI.
+  responses:
+    '200':
+      description: The updated customer information.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'

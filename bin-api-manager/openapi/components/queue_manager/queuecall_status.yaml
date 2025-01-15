@@ -1,0 +1,17 @@
+type: string
+enum:
+  - initiating
+  - waiting
+  - connecting
+  - kicking
+  - service
+  - done
+  - abandoned
+x-enum-varnames:
+  - QueuecallStatusInitiating
+  - QueuecallStatusWaiting
+  - QueuecallStatusConnecting
+  - QueuecallStatusKicking
+  - QueuecallStatusService
+  - QueuecallStatusDone
+  - QueuecallStatusAbandoned

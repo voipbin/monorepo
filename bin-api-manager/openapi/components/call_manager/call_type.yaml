@@ -1,0 +1,12 @@
+type: string
+description: Call type
+enum:
+  - ""
+  - flow
+  - conference
+  - sip-service
+x-enum-varnames:
+  - CallTypeNone
+  - CallTypeFlow
+  - CallTypeConference
+  - CallTypeSIPService

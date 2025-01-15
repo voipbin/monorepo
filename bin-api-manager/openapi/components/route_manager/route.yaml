@@ -1,0 +1,35 @@
+type: object
+properties:
+  id:
+    type: string
+    description: "The unique identifier for the route."
+  customer_id:
+    type: string
+    description: "The customer ID associated with the route."
+  name:
+    type: string
+    description: "The name of the route."
+  detail:
+    type: string
+    description: "The details about the route."
+  provider_id:
+    type: string
+    description: "The unique identifier of the provider associated with this route."
+  priority:
+    type: integer
+    description: "The priority of the route, used for routing decisions."
+  target:
+    type: string
+    description: "The target destination for the route (e.g., country code or 'all')."
+  tm_create:
+    type: string
+    format: date-time
+    description: "Timestamp when the route was created."
+  tm_update:
+    type: string
+    format: date-time
+    description: "Timestamp when the route was last updated."
+  tm_delete:
+    type: string
+    format: date-time
+    description: "Timestamp when the route was deleted."

@@ -1,0 +1,16 @@
+post:
+  summary: Hang up the call
+  description: Ends the call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the hangup action.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/call_manager/main.yaml#/components/schemas/Call'

@@ -1,0 +1,8 @@
+type: string
+description: The type of payment associated with the account.
+enum:
+  - ""
+  - prepaid
+x-enum-varnames:
+  - AccountPaymentTypeNone
+  - AccountPaymentTypePrepaid

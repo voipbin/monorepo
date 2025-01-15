@@ -1,0 +1,12 @@
+type: string
+description: Status of the conference call.
+enum:
+  - joining
+  - joined
+  - leaving
+  - leaved
+x-enum-varnames:
+  - ConferencecallStatusJoining
+  - ConferencecallStatusJoined
+  - ConferencecallStatusLeaving
+  - ConferencecallStatusLeaved

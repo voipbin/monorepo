@@ -1,0 +1,36 @@
+get:
+  summary: Get authenticated agent's details
+  description: Retrieves detailed information about the authenticated agent.
+  responses:
+    '200':
+      description: The authenticated agent's details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+
+put:
+  summary: Update authenticated agent's information
+  description: Updates the basic information of the authenticated agent and returns the updated details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The updated name of the agent.
+            detail:
+              type: string
+              description: Additional details about the agent.
+            ringMethod:
+              $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentRingMethod'
+  responses:
+    '200':
+      description: The updated agent's details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'

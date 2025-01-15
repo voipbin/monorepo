@@ -1,0 +1,72 @@
+get:
+  summary: Get conference details
+  description: Retrieve detailed information about a specific conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'
+
+put:
+  summary: Update conference details
+  description: Update the details of a specific conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            timeout:
+              type: integer
+            preActions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+            postActions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'
+
+delete:
+  summary: Delete a conference
+  description: Delete a specific conference. All participants will be removed.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  responses:
+    '200':
+      description: Conference deleted successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'

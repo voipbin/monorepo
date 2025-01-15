@@ -1,0 +1,11 @@
+type: string
+enum:
+  - unknown
+  - recording
+  - call
+  - confbridge
+x-enum-varnames:
+  - Transcribereference_typeUnknown
+  - Transcribereference_typeRecording
+  - Transcribereference_typeCall
+  - Transcribereference_typeConfbridge

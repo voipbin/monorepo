@@ -1,0 +1,19 @@
+get:
+  summary: Gets a list of conversations
+  description: Gets a list of conversations with pagination.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Conversation'

@@ -1,0 +1,49 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier of the outplan.
+  customer_id:
+    type: string
+    description: Identifier of the customer.
+  name:
+    type: string
+    description: Name of the outplan.
+  detail:
+    type: string
+    description: Detailed information about the outplan.
+  source:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  dial_timeout:
+    type: integer
+    description: Dial timeout in milliseconds.
+  try_interval:
+    type: integer
+    description: Interval between dialing attempts in milliseconds.
+  max_try_count_0:
+    type: integer
+    description: Maximum number of tries for level 0.
+  max_try_count_1:
+    type: integer
+    description: Maximum number of tries for level 1.
+  max_try_count_2:
+    type: integer
+    description: Maximum number of tries for level 2.
+  max_try_count_3:
+    type: integer
+    description: Maximum number of tries for level 3.
+  max_try_count_4:
+    type: integer
+    description: Maximum number of tries for level 4.
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the outplan was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the outplan was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the outplan was deleted.

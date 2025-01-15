@@ -1,0 +1,47 @@
+get:
+  summary: Retrieve an outdial target by its ID.
+  description: Gets the details of a specific outdial target using its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial.
+    - name: target_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial target.
+  responses:
+    '200':
+      description: The outdial target details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdialtarget'
+
+delete:
+  summary: Delete an outdial target.
+  description: Deletes a specific outdial target based on its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to delete the target from.
+    - name: target_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the target to delete.
+  responses:
+    '200':
+      description: The result of the delete operation.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdialtarget'

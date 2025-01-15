@@ -1,0 +1,8 @@
+type: object
+properties:
+  role:
+    type: string
+    description: Role of the entity in the conversation.
+  content:
+    type: string
+    description: Content of the message.

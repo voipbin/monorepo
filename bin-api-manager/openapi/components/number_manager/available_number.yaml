@@ -1,0 +1,19 @@
+type: object
+properties:
+  number:
+    type: string
+    description: The available phone number.
+  country:
+    type: string
+    description: The country where the number is available.
+  region:
+    type: string
+    description: The region within the country.
+  postal_code:
+    type: string
+    description: The postal code associated with the number.
+  features:
+    type: array
+    items:
+      $ref: '#/components/schemas/AvailableNumberFeature'
+    description: The list of features supported by the number.

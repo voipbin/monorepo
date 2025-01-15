@@ -1,0 +1,8 @@
+type: string
+description: Type of engine used by the chatbot.
+enum:
+  - chatGPT
+  - clova
+x-enum-varnames:
+  - ChatbotEngineTypeChatGPT
+  - ChatbotEngineTypeClova

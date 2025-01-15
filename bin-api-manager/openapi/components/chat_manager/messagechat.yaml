@@ -1,0 +1,32 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier (inherited from commonidentity.Identity).
+  chat_id:
+    type: string
+    description: Associated chat ID.
+  source:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  type:
+    $ref: '#/components/schemas/MessagechatType'
+  text:
+    type: string
+    description: Text content of the message.
+  medias:
+    type: array
+    items:
+      $ref: '#/components/schemas/Media'
+    description: List of associated media objects.
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the message chat was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the message chat was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the message chat was deleted.

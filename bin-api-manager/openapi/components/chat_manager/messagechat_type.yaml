@@ -1,0 +1,8 @@
+type: string
+description: Type of the message chat.
+enum:
+  - system
+  - normal
+x-enum-varnames:
+  - MessagechatTypeSystem
+  - MessagechatTypeNormal

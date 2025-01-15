@@ -1,0 +1,17 @@
+post:
+  summary: Kick a queue call from the queue
+  description: Removes the specified queue call from the queue.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the queue call.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully kicked the queue call.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queuecall'

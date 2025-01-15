@@ -1,0 +1,8 @@
+type: string
+description: Represents an agent resource.
+enum:
+  - ringall
+  - linear
+x-enum-varnames:
+  - AgentRingMethodRingAll
+  - AgentRingMethodLinear

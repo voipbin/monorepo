@@ -1,0 +1,41 @@
+get:
+  summary: Gets a list of files
+  description: Retrieves a paginated list of files.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of files.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'
+
+post:
+  summary: Upload file
+  description: Upload file.
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            file:
+              type: string
+              format: binary
+              description: The file to be uploaded.
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'

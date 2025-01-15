@@ -1,0 +1,17 @@
+type: object
+properties:
+  type:
+    $ref: '#/components/schemas/MediaType'
+  address:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: Valid only if the type is `address`.
+  agent:
+    $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+    description: Valid only if the type is `agent`.
+  file_id:
+    type: string
+    description: Valid only if the type is `file`.
+  link_url:
+    type: string
+    format: uri
+    description: Valid only if the type is `link`.

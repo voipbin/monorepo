@@ -1,0 +1,10 @@
+type: string
+description: The status of the outdial.
+enum:
+  - progressing
+  - done
+  - idle
+x-enum-varnames:
+  - StatusProgressing
+  - StatusDone
+  - StatusIdle

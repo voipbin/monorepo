@@ -1,0 +1,22 @@
+type: integer
+format: uint64
+description: Permission type
+example: 64
+enum:
+  - 0    # PermissionNone
+  - 65535 # PermissionAll
+  - 1    # PermissionProjectSuperAdmin
+  - 15   # PermissionProjectAll
+  - 16   # PermissionCustomerAgent
+  - 32   # PermissionCustomerAdmin
+  - 64   # PermissionCustomerManager
+  - 240  # PermissionCustomerAll
+x-enum-varnames:
+  - PermissionNone
+  - PermissionAll
+  - PermissionProjectSuperAdmin
+  - PermissionProjectAll
+  - PermissionCustomerAgent
+  - PermissionCustomerAdmin
+  - PermissionCustomerManager
+  - PermissionCustomerAll

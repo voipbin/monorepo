@@ -1,0 +1,65 @@
+get:
+  summary: Get details of a conversation account
+  description: Fetches details of the conversation account specified by ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation account.
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'
+
+put:
+  summary: Update a conversation account
+  description: Updates the details of the conversation account specified by ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation account.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            secret:
+              type: string
+            token:
+              type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'
+
+delete:
+  summary: Delete a conversation account
+  description: Deletes the conversation account specified by ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation account.
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'

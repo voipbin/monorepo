@@ -1,0 +1,8 @@
+type: string
+description: Execution action for the campaign.
+enum:
+  - run
+  - stop
+x-enum-varnames:
+  - CampaignExecuteRun
+  - CampaignExecuteStop

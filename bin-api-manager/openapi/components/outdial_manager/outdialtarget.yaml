@@ -1,0 +1,62 @@
+type: object
+properties:
+  id:
+    type: string
+    description: The unique identifier for the outdial.
+  outdial_id:
+    type: string
+    description: The outdial reference ID.
+  name:
+    type: string
+    description: The name of the outdial.
+  detail:
+    type: string
+    description: Additional details about the outdial.
+  data:
+    type: string
+    description: The data associated with the outdial.
+  status:
+    $ref: '#/components/schemas/OutdialtargetStatus'
+    description: The status of the outdial.
+  destination_0:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: The destination address 0.
+  destination_1:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: The destination address 1.
+  destination_2:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: The destination address 2.
+  destination_3:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: The destination address 3.
+  destination_4:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: The destination address 4.
+  try_count_0:
+    type: integer
+    description: The try count for destination 0.
+  try_count_1:
+    type: integer
+    description: The try count for destination 1.
+  try_count_2:
+    type: integer
+    description: The try count for destination 2.
+  try_count_3:
+    type: integer
+    description: The try count for destination 3.
+  try_count_4:
+    type: integer
+    description: The try count for destination 4.
+  tm_create:
+    type: string
+    format: date-time
+    description: The creation timestamp.
+  tm_update:
+    type: string
+    format: date-time
+    description: The update timestamp.
+  tm_delete:
+    type: string
+    format: date-time
+    description: The deletion timestamp.

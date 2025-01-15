@@ -1,0 +1,23 @@
+delete:
+  summary: Remove a participant from a chat.
+  description: Removes a participant ID from a chat.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chat.
+    - name: participant_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the participant to remove.
+  responses:
+    '200':
+      description: The participant was successfully removed from the chat.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chat'

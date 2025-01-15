@@ -1,0 +1,68 @@
+get:
+  summary: Get chatbot details.
+  description: Retrieves detailed information for a specific chatbot by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chatbot.
+  responses:
+    '200':
+      description: Details of the requested chatbot.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbot'
+
+delete:
+  summary: Delete a chatbot.
+  description: Deletes an existing chatbot by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chatbot.
+  responses:
+    '200':
+      description: Chatbot successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbot'
+
+put:
+  summary: Update a chatbot.
+  description: Updates an existing chatbot's details and returns the updated information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chatbot.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            engineType:
+              $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/ChatbotEngineType'
+            initPrompt:
+              type: string
+  responses:
+    '200':
+      description: Details of the updated chatbot.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbot'

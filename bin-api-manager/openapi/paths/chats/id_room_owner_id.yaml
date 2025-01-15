@@ -1,0 +1,28 @@
+put:
+  summary: Update the room owner of a chat.
+  description: Updates the room owner ID of a chat.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chat to update.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            roomOwnerID:
+              type: string
+          required:
+            - roomOwnerID
+  responses:
+    '200':
+      description: The updated chat details with new room owner ID.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chat'

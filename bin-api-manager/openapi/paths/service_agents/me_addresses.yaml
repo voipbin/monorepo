@@ -1,0 +1,22 @@
+put:
+  summary: Update authenticated agent's addresses
+  description: Updates the address details of the authenticated agent and returns the updated information.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            addresses:
+              type: array
+              items:
+                $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              description: The updated list of addresses.
+  responses:
+    '200':
+      description: The updated address information of the agent.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'

@@ -1,0 +1,10 @@
+type: string
+description: Type of reference associated with the message (e.g., call, campaign).
+enum:
+  - none
+  - call
+  - campaign
+x-enum-varnames:
+  - Messagereference_typeNone
+  - Messagereference_typeCall
+  - Messagereference_typeCampaign

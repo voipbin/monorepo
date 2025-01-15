@@ -1,0 +1,24 @@
+type: object
+properties:
+  id:
+    type: string
+  customer_id:
+    type: string
+  name:
+    type: string
+  detail:
+    type: string
+  token:
+    type: string
+  tm_expire:
+    type: string
+    format: date-time
+  tm_create:
+    type: string
+    format: date-time
+  tm_update:
+    type: string
+    format: date-time
+  tm_delete:
+    type: string
+    format: date-time

@@ -1,0 +1,10 @@
+type: string
+description: Method used for dialing
+enum:
+  - ""
+  - ring_all
+  - linear
+x-enum-varnames:
+  - GroupcallRingMethodNone
+  - GroupcallRingMethodRingAll
+  - GroupcallRingMethodLinear

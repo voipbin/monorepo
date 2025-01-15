@@ -1,0 +1,12 @@
+type: string
+description: The status of the recording.
+enum:
+  - initiating
+  - recording
+  - stopping
+  - ended
+x-enum-varnames:
+  - RecordingStatusInitiating
+  - RecordingStatusRecording
+  - RecordingStatusStopping
+  - RecordingStatusEnded

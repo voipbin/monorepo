@@ -1,0 +1,7 @@
+type: string
+enum:
+  - ""
+  - random
+x-enum-varnames:
+  - QueueRoutingMethodNone
+  - QueueRoutingMethodRandom

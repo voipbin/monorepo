@@ -1,0 +1,45 @@
+type: object
+description: Represents an agent resource.
+properties:
+  id:
+    type: string
+  customer_id:
+    type: string
+    description: Resource's customer ID.
+  username:
+    type: string
+    description: Agent's username.
+  name:
+    type: string
+    description: Agent's name.
+  detail:
+    type: string
+    description: Agent's detail.
+  ring_method:
+    $ref: '#/components/schemas/AgentRingMethod'
+  status:
+    $ref: '#/components/schemas/AgentStatus'
+  permission:
+    $ref: '#/components/schemas/AgentPermission'
+  tag_ids:
+    type: array
+    items:
+      type: string
+    description: Agent's tag IDs.
+  addresses:
+    type: array
+    items:
+      $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: Agent's endpoint addresses.
+  tm_create:
+    type: string
+    format: date-time
+    description: Created timestamp.
+  tm_update:
+    type: string
+    format: date-time
+    description: Updated timestamp.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Deleted timestamp.

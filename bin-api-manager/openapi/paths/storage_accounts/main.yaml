@@ -1,0 +1,39 @@
+get:
+  summary: Get a list of storage accounts
+  description: Retrieves a list of storage accounts with the provided pagination details.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of storage accounts with pagination information.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/storage_manager/main.yaml#/components/schemas/Account'
+
+post:
+  summary: Create a new storage account
+  description: Creates a new storage account with the provided information and returns the created account details.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            customer_id:
+              type: string
+  responses:
+    '200':
+      description: The created storage account details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/storage_manager/main.yaml#/components/schemas/Account'

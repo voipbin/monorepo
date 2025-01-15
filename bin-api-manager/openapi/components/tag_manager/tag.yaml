@@ -1,0 +1,23 @@
+type: object
+properties:
+  id:
+    type: string
+    description: "The unique identifier for the tag."
+  name:
+    type: string
+    description: "The name of the tag."
+  detail:
+    type: string
+    description: "The details about the tag."
+  tm_create:
+    type: string
+    format: date-time
+    description: "Timestamp when the tag was created."
+  tm_update:
+    type: string
+    format: date-time
+    description: "Timestamp when the tag was last updated."
+  tm_delete:
+    type: string
+    format: date-time
+    description: "Timestamp when the tag was deleted."

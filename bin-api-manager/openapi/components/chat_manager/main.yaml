@@ -1,0 +1,26 @@
+components:
+  schemas:
+    ChatType:
+      $ref: 'chat_type.yaml'
+    Chat:
+      $ref: 'chat.yaml'
+
+    ChatroomType:
+      $ref: 'chatroom_type.yaml'
+    Chatroom:
+      $ref: 'chatroom.yaml'
+
+    MediaType:
+      $ref: 'media_type.yaml'
+    Media:
+      $ref: 'media.yaml'
+
+    MessagechatType:
+      $ref: 'messagechat_type.yaml'
+    Messagechat:
+      $ref: 'messagechat.yaml'
+
+    MessagechatroomType:
+      $ref: 'messagechatroom_type.yaml'
+    Messagechatroom:
+      $ref: 'messagechatroom.yaml'

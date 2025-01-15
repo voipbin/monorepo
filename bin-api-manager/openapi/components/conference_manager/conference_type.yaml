@@ -1,0 +1,12 @@
+type: string
+description: Types of conferences.
+enum:
+  - ""
+  - conference
+  - connect
+  - queue
+x-enum-varnames:
+  - ConferenceTypeNone
+  - ConferenceTypeConference
+  - ConferenceTypeConnect
+  - ConferenceTypeQueue

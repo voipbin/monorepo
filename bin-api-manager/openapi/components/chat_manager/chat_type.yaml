@@ -1,0 +1,8 @@
+type: string
+description: Type of the chat.
+enum:
+  - normal
+  - group
+x-enum-varnames:
+  - ChatTypeNormal
+  - ChatTypeGroup

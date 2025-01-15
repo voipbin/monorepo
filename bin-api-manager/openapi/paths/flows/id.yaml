@@ -1,0 +1,71 @@
+get:
+  summary: Retrieve flow details
+  description: Retrieves the details of a specific flow by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the flow.
+  responses:
+    '200':
+      description: The flow details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'
+
+put:
+  summary: Update a flow
+  description: Updates the details of an existing flow and returns the updated information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the flow.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The updated name of the flow.
+            detail:
+              type: string
+              description: The updated details of the flow.
+            actions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+              description: Updated list of actions associated with the flow.
+  responses:
+    '200':
+      description: The updated flow details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'
+
+delete:
+  summary: Delete a flow
+  description: Deletes an existing flow by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the flow.
+  responses:
+    '200':
+      description: The flow was successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'

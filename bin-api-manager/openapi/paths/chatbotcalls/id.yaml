@@ -1,0 +1,35 @@
+get:
+  summary: Get details of a specific chatbot call
+  description: Retrieves detailed information about a chatbot call identified by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chatbot call.
+  responses:
+    '200':
+      description: Details of the specified chatbot call.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbotcall'
+
+delete:
+  summary: Delete a specific chatbot call
+  description: Deletes a chatbot call identified by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chatbot call.
+  responses:
+    '200':
+      description: The chatbot call was successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbotcall'

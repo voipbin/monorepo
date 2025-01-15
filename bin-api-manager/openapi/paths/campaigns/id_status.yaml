@@ -1,0 +1,27 @@
+put:
+  summary: Update campaign status
+  description: Updates the status of a specific campaign.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignStatus'
+          required:
+            - status
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'

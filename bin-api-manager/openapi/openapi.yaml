@@ -1,0 +1,332 @@
+openapi: 3.0.0
+info:
+  title: VoipBin API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/v1.0
+paths:
+  /accesskeys:
+    $ref: './paths/accesskeys/main.yaml'
+  /accesskeys/{id}:
+    $ref: './paths/accesskeys/id.yaml'
+
+  /activeflows:
+    $ref: './paths/activeflows/main.yaml'
+  /activeflows/{id}:
+    $ref: './paths/activeflows/id.yaml'
+  /activeflows/{id}/stop:
+    $ref: './paths/activeflows/id_stop.yaml'
+
+  /agents:
+    $ref: './paths/agents/main.yaml'
+  /agents/{id}:
+    $ref: './paths/agents/id.yaml'
+  /agents/{id}/addresses:
+    $ref: './paths/agents/id_addresses.yaml'
+  /agents/{id}/tag_ids:
+    $ref: './paths/agents/id_tag_ids.yaml'
+  /agents/{id}/permission:
+    $ref: './paths/agents/id_permission.yaml'
+  /agents/{id}/password:
+    $ref: './paths/agents/id_password.yaml'
+
+  /available_numbers:
+    $ref: './paths/available_numbers/main.yaml'
+
+  /billing_accounts:
+    $ref: './paths/billing_accounts/main.yaml'
+  /billing_accounts/{id}:
+    $ref: './paths/billing_accounts/id.yaml'
+  /billing_accounts/{id}/payment_info:
+    $ref: './paths/billing_accounts/id_payment_info.yaml'
+  /billing_accounts/{id}/balance_add_force:
+    $ref: './paths/billing_accounts/id_balance_add_force.yaml'
+  /billing_accounts/{id}/balance_subtract_force:
+    $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
+
+  /calls/{id}/hangup:
+    $ref: './paths/calls/id_hangup.yaml'
+  /calls/{id}/hold:
+    $ref: './paths/calls/id_hold.yaml'
+  /calls/{id}/media_stream:
+    $ref: './paths/calls/id_media_stream.yaml'
+  /calls/{id}/moh:
+    $ref: './paths/calls/id_moh.yaml'
+  /calls/{id}/mute:
+    $ref: './paths/calls/id_mute.yaml'
+  /calls/{id}/silence:
+    $ref: './paths/calls/id_silence.yaml'
+  /calls/{id}/talk:
+    $ref: './paths/calls/id_talk.yaml'
+  /calls/{id}:
+    $ref: './paths/calls/id.yaml'
+  /calls:
+    $ref: './paths/calls/main.yaml'
+
+  /campaigncalls/{id}:
+    $ref: './paths/campaigncalls/id.yaml'
+  /campaigncalls:
+    $ref: './paths/campaigncalls/main.yaml'
+
+  /campaigns/{id}/status:
+    $ref: './paths/campaigns/id_status.yaml'
+  /campaigns/{id}:
+    $ref: './paths/campaigns/id.yaml'
+  /campaigns:
+    $ref: './paths/campaigns/main.yaml'
+
+  /chatbotcalls/{id}:
+    $ref: './paths/chatbotcalls/id.yaml'
+  /chatbotcalls:
+    $ref: './paths/chatbotcalls/main.yaml'
+
+  /chatbots/{id}:
+    $ref: './paths/chatbots/id.yaml'
+  /chatbots:
+    $ref: './paths/chatbots/main.yaml'
+
+  /chatmessages/{id}:
+    $ref: './paths/chatmessages/id.yaml'
+  /chatmessages:
+    $ref: './paths/chatmessages/main.yaml'
+
+  /chatroommessages/{id}:
+    $ref: './paths/chatroommessages/id.yaml'
+  /chatroommessages:
+    $ref: './paths/chatroommessages/main.yaml'
+
+  /chatrooms/{id}:
+    $ref: './paths/chatrooms/id.yaml'
+  /chatrooms:
+    $ref: './paths/chatrooms/main.yaml'
+
+  /chats/{id}/participant_ids/{participant_id}:
+    $ref: './paths/chats/id_participant_ids_id.yaml'
+  /chats/{id}/participant_ids:
+    $ref: './paths/chats/id_participant_ids.yaml'
+  /chats/{id}:
+    $ref: './paths/chats/id.yaml'
+  /chats:
+    $ref: './paths/chats/main.yaml'
+
+  /conferencecalls/{id}:
+    $ref: './paths/conferencecalls/id.yaml'
+  /conferencecalls:
+    $ref: './paths/conferencecalls/main.yaml'
+
+  /conferences/{id}/media_stream:
+    $ref: './paths/conferences/id_media_stream.yaml'
+  /conferences/{id}/recording_start:
+    $ref: './paths/conferences/id_recording_start.yaml'
+  /conferences/{id}/recording_stop:
+    $ref: './paths/conferences/id_recording_stop.yaml'
+  /conferences/{id}/transcribe_start:
+    $ref: './paths/conferences/id_transcribe_start.yaml'
+  /conferences/{id}/transcribe_stop:
+    $ref: './paths/conferences/id_transcribe_stop.yaml'
+  /conferences/{id}:
+    $ref: './paths/conferences/id.yaml'
+  /conferences:
+    $ref: './paths/conferences/main.yaml'
+
+  /conversation_accounts/{id}:
+    $ref: './paths/conversation_accounts/id.yaml'
+  /conversation_accounts:
+    $ref: './paths/conversation_accounts/main.yaml'
+
+  /conversations/{id}/messages:
+    $ref: './paths/conversations/id_messages.yaml'
+  /conversations/{id}:
+    $ref: './paths/conversations/id.yaml'
+  /conversations:
+    $ref: './paths/conversations/main.yaml'
+
+  /customer/billing_account_id:
+    $ref: './paths/customer/billing_account_id.yaml'
+  /customer:
+    $ref: './paths/customer/main.yaml'
+
+  /customers/{id}/billing_account_id:
+    $ref: './paths/customers/id_billing_account_id.yaml'
+  /customers/{id}:
+    $ref: './paths/customers/id.yaml'
+  /customers:
+    $ref: './paths/customers/main.yaml'
+
+  /extensions/{id}:
+    $ref: './paths/extensions/id.yaml'
+  /extensions:
+    $ref: './paths/extensions/main.yaml'
+
+  /files/{id}:
+    $ref: './paths/files/id.yaml'
+  /files:
+    $ref: './paths/files/main.yaml'
+
+  /flows/{id}:
+    $ref: './paths/flows/id.yaml'
+  /flows:
+    $ref: './paths/flows/main.yaml'
+
+  /groupcalls/{id}:
+    $ref: './paths/groupcalls/id.yaml'
+  /groupcalls:
+    $ref: './paths/groupcalls/main.yaml'
+
+  /me:
+    $ref: './paths/me/main.yaml'
+
+  /messages/{id}:
+    $ref: './paths/messages/id.yaml'
+  /messages:
+    $ref: './paths/messages/main.yaml'
+
+  /numbers/{id}/flow_id:
+    $ref: './paths/numbers/id.yaml'
+  /numbers/{id}:
+    $ref: './paths/numbers/id.yaml'
+  /numbers:
+    $ref: './paths/numbers/main.yaml'
+  /numbers/renew:
+    $ref: './paths/numbers/renew.yaml'
+
+  /outdials/{id}/campaign_id:
+    $ref: './paths/outdials/id_campaign_id.yaml'
+  /outdials/{id}/data:
+    $ref: './paths/outdials/id_data.yaml'
+  /outdials/{id}/targets/{target_id}:
+    $ref: './paths/outdials/id_targets_id.yaml'
+  /outdials/{id}/targets:
+    $ref: './paths/outdials/id_targets.yaml'
+  /outdials/{id}:
+    $ref: './paths/outdials/id.yaml'
+  /outdials:
+    $ref: './paths/outdials/main.yaml'
+
+  /outplans/{id}:
+    $ref: './paths/outplans/id.yaml'
+  /outplans:
+    $ref: './paths/outplans/main.yaml'
+
+  /providers/{id}:
+    $ref: './paths/providers/id.yaml'
+  /providers:
+    $ref: './paths/providers/main.yaml'
+
+  /queuecalls/{id}/kick:
+    $ref: './paths/queuecalls/id_kick.yaml'
+  /queuecalls/{id}:
+    $ref: './paths/queuecalls/id.yaml'
+  /queuecalls:
+    $ref: './paths/queuecalls/main.yaml'
+  /queuecalls/reference_id/{id}/kick:
+    $ref: './paths/queuecalls/reference_id_id_kick.yaml'
+
+  /queues/{id}/actions:
+    $ref: './paths/queues/id_actions.yaml'
+  /queues/{id}/routing_method:
+    $ref: './paths/queues/id_routing_method.yaml'
+  /queues/{id}/tag_ids:
+    $ref: './paths/queues/id_tag_ids.yaml'
+  /queues/{id}:
+    $ref: './paths/queues/id.yaml'
+  /queues:
+    $ref: './paths/queues/main.yaml'
+
+  /recordingfiles/{id}:
+    $ref: './paths/recordingfiles/id.yaml'
+
+  /recordings/{id}:
+    $ref: './paths/recordings/id.yaml'
+  /recordings:
+    $ref: './paths/recordings/main.yaml'
+
+  /routes/{id}:
+    $ref: './paths/routes/id.yaml'
+  /routes:
+    $ref: './paths/routes/main.yaml'
+
+  /service_agents/agents/{id}:
+    $ref: './paths/service_agents/agents_id.yaml'
+  /service_agents/agents:
+    $ref: './paths/service_agents/agents.yaml'
+  /service_agents/calls/{id}:
+    $ref: './paths/service_agents/calls_id.yaml'
+  /service_agents/calls:
+    $ref: './paths/service_agents/calls.yaml'
+  /service_agents/chatroommessages/{id}:
+    $ref: './paths/service_agents/chatroommessages_id.yaml'
+  /service_agents/chatroommessages:
+    $ref: './paths/service_agents/chatroommessages.yaml'
+  /service_agents/chatrooms/{id}:
+    $ref: './paths/service_agents/chatrooms_id.yaml'
+  /service_agents/chatrooms:
+    $ref: './paths/service_agents/chatrooms.yaml'
+
+  /service_agents/conversations/{id}/messages:
+    $ref: './paths/service_agents/conversations_id_messages.yaml'
+  /service_agents/conversations/{id}:
+    $ref: './paths/service_agents/conversations_id.yaml'
+  /service_agents/conversations:
+    $ref: './paths/service_agents/conversations.yaml'
+
+  /service_agents/customer:
+    $ref: './paths/service_agents/customer.yaml'
+
+  /service_agents/extensions/{id}:
+    $ref: './paths/service_agents/extensions_id.yaml'
+  /service_agents/extensions:
+    $ref: './paths/service_agents/extensions.yaml'
+
+  /service_agents/files/{id}:
+    $ref: './paths/service_agents/files_id.yaml'
+  /service_agents/files:
+    $ref: './paths/service_agents/files.yaml'
+
+  /service_agents/me/addresses:
+    $ref: './paths/service_agents/me_addresses.yaml'
+  /service_agents/me/password:
+    $ref: './paths/service_agents/me_password.yaml'
+  /service_agents/me/status:
+    $ref: './paths/service_agents/me_status.yaml'
+  /service_agents/me:
+    $ref: './paths/service_agents/me.yaml'
+
+  /service_agents/ws:
+    $ref: './paths/service_agents/ws.yaml'
+
+  /storage_accounts/{id}:
+    $ref: './paths/storage_accounts/id.yaml'
+  /storage_accounts:
+    $ref: './paths/storage_accounts/main.yaml'
+
+  /storage_files/{id}:
+    $ref: './paths/storage_files/id.yaml'
+  /storage_files:
+    $ref: './paths/storage_files/main.yaml'
+
+  /tags/{id}:
+    $ref: './paths/tags/id.yaml'
+  /tags:
+    $ref: './paths/tags/main.yaml'
+
+  /transcribes/{id}/stop:
+    $ref: './paths/transcribes/id_stop.yaml'
+  /transcribes/{id}:
+    $ref: './paths/transcribes/id.yaml'
+  /transcribes:
+    $ref: './paths/transcribes/main.yaml'
+
+  /transcripts:
+    $ref: './paths/transcripts/main.yaml'
+
+  /transfers:
+    $ref: './paths/transfers/main.yaml'
+
+  /trunks/{id}:
+    $ref: './paths/trunks/id.yaml'
+  /trunks:
+    $ref: './paths/trunks/main.yaml'
+
+  /ws:
+    $ref: './paths/ws/main.yaml'

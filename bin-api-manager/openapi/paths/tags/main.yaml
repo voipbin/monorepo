@@ -1,0 +1,41 @@
+post:
+  summary: Create a new tag.
+  description: Creates a new tag with the specified information.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+  responses:
+    '200':
+      description: The created tag details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+
+get:
+  summary: List tags
+  description: Retrieves a list of tags for the customer.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of tags.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'

@@ -1,0 +1,40 @@
+/v1.0/outdials/{id}/targets:
+post:
+  summary: Create a new target for an outdial.
+  description: Creates a new target for the specified outdial and returns the created target information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to associate with the target.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            data:
+              type: string
+            destination0:
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+            destination1:
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+            destination2:
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+            destination3:
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+            destination4:
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  responses:
+    '200':
+      description: The created outdial target details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdialtarget'

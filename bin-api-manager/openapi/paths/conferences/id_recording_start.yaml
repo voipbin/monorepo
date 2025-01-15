@@ -1,0 +1,13 @@
+post:
+  summary: Start conference recording
+  description: Initiate recording for the specified conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  responses:
+    '200':
+      description: Recording started successfully.

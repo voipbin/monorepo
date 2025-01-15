@@ -1,0 +1,22 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the media.
+  customer_id:
+    type: string
+    description: Unique identifier of the associated customer.
+  type:
+    $ref: '#/components/schemas/MediaType'
+  filename:
+    type: string
+    description: Filename of the media.
+  tm_create:
+    type: string
+    description: Timestamp when the media was created.
+  tm_update:
+    type: string
+    description: Timestamp when the media was last updated.
+  tm_delete:
+    type: string
+    description: Timestamp when the media was deleted.

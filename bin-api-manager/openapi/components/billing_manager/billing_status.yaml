@@ -1,0 +1,12 @@
+type: string
+description: Status of the billing.
+enum:
+  - progressing
+  - end
+  - pending
+  - finished
+x-enum-varnames:
+  - BillingStatusProgressing
+  - BillingStatusEnd
+  - BillingStatusPending
+  - BillingStatusFinished

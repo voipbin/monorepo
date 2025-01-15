@@ -1,0 +1,17 @@
+post:
+  summary: Kick a queue call by reference ID
+  description: Removes the queue call associated with the given reference ID from the queue.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The reference ID of the queue call.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully kicked the queue call by reference ID.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queuecall'

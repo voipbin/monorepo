@@ -1,0 +1,50 @@
+get:
+  summary: Get a list of extensions
+  description: Retrieves a list of extensions.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of extensions.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+
+post:
+  summary: Create a new extension
+  description: Creates a new extension and returns its details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            extension:
+              type: string
+            password:
+              type: string
+            name:
+              type: string
+            detail:
+              type: string
+          required:
+            - extension
+            - password
+            - name
+  responses:
+    '200':
+      description: The created extension.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'

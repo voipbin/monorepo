@@ -1,0 +1,26 @@
+put:
+  summary: Update the queue's tag IDs
+  description: Updates the tag IDs of the specified queue.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            tag_ids:
+              type: array
+              items:
+                type: string
+  responses:
+    '200':
+      description: The updated queue details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'

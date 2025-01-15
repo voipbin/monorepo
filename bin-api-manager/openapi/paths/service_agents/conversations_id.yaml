@@ -1,0 +1,17 @@
+get:
+  summary: Get detailed conversation info
+  description: Retrieves detailed information about a specific conversation by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conversation.
+  responses:
+    '200':
+      description: The details of the conversation.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Conversation'

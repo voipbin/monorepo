@@ -1,0 +1,48 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the chatbot call.
+  customer_id:
+    type: string
+    description: Unique identifier of the associated customer.
+  chatbot_id:
+    type: string
+    description: Unique identifier of the associated chatbot.
+  activeflow_id:
+    type: string
+    description: Unique identifier for the active flow.
+  reference_type:
+    $ref: '#/components/schemas/Chatbotcallreference_type'
+  reference_id:
+    type: string
+    description: Unique identifier for the reference.
+  confbridge_id:
+    type: string
+    description: Unique identifier for the conference bridge.
+  transcribe_id:
+    type: string
+    description: Unique identifier for the transcription service.
+  status:
+    $ref: '#/components/schemas/ChatbotcallStatus'
+  gender:
+    $ref: '#/components/schemas/ChatbotcallGender'
+  language:
+    type: string
+    description: Language used during the chatbot call.
+  tm_end:
+    type: string
+    format: date-time
+    description: Timestamp when the chatbot call ended.
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the chatbot call was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the chatbot call was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the chatbot call was deleted.

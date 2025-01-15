@@ -1,0 +1,28 @@
+post:
+  summary: Subtract balance from billing account
+  description: Subtracts the given balance from the billing account.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The ID of the billing account.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            balance:
+              type: number
+              format: float
+  responses:
+    200:
+      description: Successfully subtracted balance from the billing account
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'

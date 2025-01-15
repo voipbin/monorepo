@@ -1,0 +1,70 @@
+get:
+  summary: Get campaign details
+  description: Retrieves detailed information about a specific campaign by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+
+put:
+  summary: Update a campaign
+  description: Updates the details of an existing campaign and returns the updated campaign.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Updated name of the campaign
+            detail:
+              type: string
+              description: Updated details of the campaign
+            type:
+              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignType'
+            serviceLevel:
+              type: number
+              description: Updated service level of the campaign
+            endHandle:
+              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignEndHandle'
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+
+delete:
+  summary: Delete a campaign
+  description: Deletes a campaign by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of the campaign
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'

@@ -1,0 +1,14 @@
+components:
+  schemas:
+    ActionType:
+      $ref: 'action_type.yaml'
+    Action:
+      $ref: 'action.yaml'
+
+    Activeflow:
+      $ref: 'activeflow.yaml'
+
+    FlowType:
+      $ref: 'flow_type.yaml'
+    Flow:
+      $ref: 'flow.yaml'

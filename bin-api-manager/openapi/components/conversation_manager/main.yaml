@@ -1,0 +1,25 @@
+components:
+  schemas:
+    AccountType:
+      $ref: 'account_type.yaml'
+    Account:
+      $ref: 'account.yaml'
+
+    Conversationreference_type:
+      $ref: 'conversation_reference_type.yaml'
+    Conversation:
+      $ref: 'conversation.yaml'
+
+    MediaType:
+      $ref: 'media_type.yaml'
+    Media:
+      $ref: 'media.yaml'
+
+    MessageDirection:
+      $ref: 'message_direction.yaml'
+    Messagereference_type:
+      $ref: 'message_reference_type.yaml'
+    MessageStatus:
+      $ref: 'message_status.yaml'
+    Message:
+      $ref: 'message.yaml'

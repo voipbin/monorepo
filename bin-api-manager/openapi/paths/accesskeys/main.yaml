@@ -1,0 +1,46 @@
+get:
+  summary: Get list of accesskeys
+  description: Get accesskeys of the customer
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/customer_manager/main.yaml#/components/schemas/Accesskey'
+
+post:
+  summary: Create a new accesskey.
+  description: Create a new accesskey.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            expire:
+              type: string
+              format: date-time
+  responses:
+    '201':
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Accesskey'
+

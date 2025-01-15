@@ -1,0 +1,22 @@
+components:
+  parameters:
+    PageSize:
+      name: page_size
+      in: query
+      description: The size of results.
+      required: false
+      schema:
+        type: integer
+    PageToken:
+      name: page_token
+      in: query
+      description: The token. tm_create
+      required: false
+      schema:
+        type: string
+
+  schemas:
+    Address:
+      $ref: 'address.yaml'
+    Pagination:
+      $ref: 'pagination.yaml'

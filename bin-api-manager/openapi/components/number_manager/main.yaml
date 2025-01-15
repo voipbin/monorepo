@@ -1,0 +1,13 @@
+components:
+  schemas:
+    AvailableNumber:
+      $ref: 'available_number.yaml'
+    AvailableNumberFeature:
+      $ref: 'available_number_feature.yaml'
+
+    NumberProviderName:
+      $ref: 'number_provider_name.yaml'
+    NumberStatus:
+      $ref: 'number_status.yaml'
+    Number:
+      $ref: 'number.yaml'

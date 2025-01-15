@@ -1,0 +1,10 @@
+type: string
+description: Gender associated with the chatbot call.
+enum:
+  - male
+  - female
+  - neutral
+x-enum-varnames:
+  - ChatbotcallGenderMale
+  - ChatbotcallGenderFemale
+  - ChatbotcallGenderNeutral

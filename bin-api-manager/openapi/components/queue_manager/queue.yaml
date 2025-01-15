@@ -1,0 +1,49 @@
+type: object
+properties:
+  id:
+    type: string
+  customer_id:
+    type: string
+  name:
+    type: string
+  detail:
+    type: string
+  routing_method:
+    $ref: '#/components/schemas/QueueRoutingMethod'
+  tag_ids:
+    type: array
+    items:
+      type: string
+  wait_actions:
+    type: array
+    items:
+      $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  wait_timeout:
+    type: integer
+    description: "Wait queue timeout in milliseconds."
+  service_timeout:
+    type: integer
+    description: "Service queue timeout in milliseconds."
+  wait_queuecall_ids:
+    type: array
+    items:
+      type: string
+  service_queuecall_ids:
+    type: array
+    items:
+      type: string
+  total_incoming_count:
+    type: integer
+    description: "Total incoming call count."
+  total_serviced_count:
+    type: integer
+    description: "Total serviced call count."
+  total_abandoned_count:
+    type: integer
+    description: "Total abandoned call count."
+  tm_create:
+    type: string
+  tm_update:
+    type: string
+  tm_delete:
+    type: string

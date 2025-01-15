@@ -1,0 +1,28 @@
+type: object
+properties:
+  id:
+    type: string
+    description: "The unique identifier for the account."
+  customer_id:
+    type: string
+    description: "The customer ID associated with the account."
+  total_file_count:
+    type: integer
+    format: int64
+    description: "The total number of files in the account."
+  total_file_size:
+    type: integer
+    format: int64
+    description: "The total file size in bytes."
+  tm_create:
+    type: string
+    format: date-time
+    description: "Timestamp when the account was created."
+  tm_update:
+    type: string
+    format: date-time
+    description: "Timestamp when the account was last updated."
+  tm_delete:
+    type: string
+    format: date-time
+    description: "Timestamp when the account was deleted."

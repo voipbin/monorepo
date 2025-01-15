@@ -1,0 +1,12 @@
+type: string
+description: Type of the media content.
+enum:
+  - address
+  - agent
+  - file
+  - link
+x-enum-varnames:
+  - MediaTypeAddress
+  - MediaTypeAgent
+  - MediaTypeFile
+  - MediaTypeLink

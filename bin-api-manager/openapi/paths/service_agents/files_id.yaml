@@ -1,0 +1,35 @@
+get:
+  summary: Get file details
+  description: Retrieves detailed information about a specific file by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the file.
+  responses:
+    '200':
+      description: The details of the file.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'
+
+delete:
+  summary: Delete a file
+  description: Deletes a specific file by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the file.
+  responses:
+    '200':
+      description: File successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'

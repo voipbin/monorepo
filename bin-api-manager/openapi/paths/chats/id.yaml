@@ -1,0 +1,66 @@
+get:
+  summary: Get details of a specific chat.
+  description: Retrieves detailed information of a chat by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chat.
+  responses:
+    '200':
+      description: The details of the specified chat.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chat'
+
+delete:
+  summary: Delete a chat.
+  description: Deletes a chat by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chat to delete.
+  responses:
+    '200':
+      description: The chat was successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chat'
+
+put:
+  summary: Update a chat.
+  description: Updates the details of an existing chat by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chat to update.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+          required:
+            - name
+  responses:
+    '200':
+      description: The updated chat details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chat'

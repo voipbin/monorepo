@@ -1,0 +1,48 @@
+type: object
+properties:
+  id:
+    type: string
+    description: "The unique identifier for the file."
+  customer_id:
+    type: string
+    description: "The customer ID associated with the file."
+  owner_id:
+    type: string
+    description: "The owner ID of the file."
+  reference_type:
+    $ref: '#/components/schemas/Filereference_type'
+  reference_id:
+    type: string
+    description: "The reference ID associated with the file."
+  name:
+    type: string
+    description: "The name of the file."
+  detail:
+    type: string
+    description: "The details of the file."
+  filename:
+    type: string
+    description: "The filename of the file."
+  filesize:
+    type: integer
+    format: int64
+    description: "The size of the file in bytes."
+  uri_download:
+    type: string
+    description: "The URI for downloading the file."
+  tm_download_expire:
+    type: string
+    format: date-time
+    description: "The timestamp when the download link expires."
+  tm_create:
+    type: string
+    format: date-time
+    description: "Timestamp when the file was created."
+  tm_update:
+    type: string
+    format: date-time
+    description: "Timestamp when the file was last updated."
+  tm_delete:
+    type: string
+    format: date-time
+    description: "Timestamp when the file was deleted."

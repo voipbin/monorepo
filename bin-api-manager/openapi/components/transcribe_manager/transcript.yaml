@@ -1,0 +1,19 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Transcript ID
+  transcribe_id:
+    type: string
+    description: Transcribe ID
+  direction:
+    $ref: '#/components/schemas/TranscriptDirection'
+  message:
+    type: string
+    description: Transcript message
+  tm_transcript:
+    type: string
+    description: Timestamp for the transcript
+  tm_create:
+    type: string
+    description: Timestamp when created

@@ -1,0 +1,23 @@
+post:
+  summary: Start conference transcription
+  description: Begin transcription for the specified conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            language:
+              type: string
+              description: The language for transcription.
+  responses:
+    '200':
+      description: Transcription started successfully.

@@ -1,0 +1,80 @@
+type: object
+description: Call or group call information
+properties:
+  id:
+    type: string
+    description: Resource identifier
+  customer_id:
+    type: string
+    description: Resource's customer ID
+  owner_type:
+    type: string
+    description: Resource's owner type
+  owner_id:
+    type: string
+    description: Resource's owner ID
+  status:
+    $ref: '#/components/schemas/GroupcallStatus'
+  flow_id:
+    type: string
+    description: ID of the associated flow
+  source:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    nullable: true
+    description: Source address
+  destinations:
+    type: array
+    items:
+      $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: List of destination addresses
+  master_call_id:
+    type: string
+    nullable: true
+    description: ID of the master call, if applicable
+  master_groupcall_id:
+    type: string
+    nullable: true
+    description: ID of the master group call, if applicable
+  ring_method:
+    $ref: '#/components/schemas/GroupcallRingMethod'
+  answer_method:
+    $ref: '#/components/schemas/GroupcallAnswerMethod'
+  answer_call_id:
+    type: string
+    description: ID of the answered call
+  call_ids:
+    type: array
+    items:
+      type: string
+    description: List of associated call IDs
+  answer_groupcall_id:
+    type: string
+    description: ID of the answered group call
+  groupcall_ids:
+    type: array
+    items:
+      type: string
+    description: List of associated group call IDs
+  call_count:
+    type: integer
+    description: Number of remaining calls in the current dial
+  groupcall_count:
+    type: integer
+    description: Number of remaining group calls in the current dial
+  dial_index:
+    type: integer
+    nullable: true
+    description: Current dial index, valid only when the ring method is "ring_all"
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the call was created
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the call was last updated
+  tm_delete:
+    type: string
+    format: date-time
+    nullable: true
+    description: Timestamp when the call was deleted

@@ -1,0 +1,16 @@
+type: string
+description: Agent's status
+enum:
+  - ""
+  - available
+  - away
+  - busy
+  - offline
+  - ringing
+x-enum-varnames:
+  - AgentStatusNone
+  - AgentStatusAvailable
+  - AgentStatusAway
+  - AgentStatusBusy
+  - AgentStatusOffline
+  - AgentStatusRinging

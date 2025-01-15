@@ -1,0 +1,10 @@
+type: string
+description: Type of the chat room.
+enum:
+  - unknown
+  - normal
+  - group
+x-enum-varnames:
+  - ChatroomTypeUnknown
+  - ChatroomTypeNormal
+  - ChatroomTypeGroup

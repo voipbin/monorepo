@@ -1,0 +1,53 @@
+get:
+  summary: Get detailed information of a groupcall
+  description: Returns the details of the groupcall with the specified ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the groupcall.
+  responses:
+    '200':
+      description: The groupcall details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+
+delete:
+  summary: Delete a groupcall
+  description: Deletes the groupcall with the specified ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the groupcall.
+  responses:
+    '200':
+      description: The deleted groupcall information.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+
+post:
+  summary: Hangup the groupcall
+  description: Ends the groupcall with the specified ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the groupcall.
+  responses:
+    '200':
+      description: The updated groupcall details after hangup.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'

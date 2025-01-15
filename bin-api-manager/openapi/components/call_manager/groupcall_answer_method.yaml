@@ -1,0 +1,8 @@
+type: string
+description: Method to handle answered calls
+enum:
+  - ""
+  - hangup_others
+x-enum-varnames:
+  - GroupcallAnswerMethodNone
+  - GroupcallAnswerMethodHangupOthers

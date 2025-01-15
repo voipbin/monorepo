@@ -1,0 +1,13 @@
+get:
+  summary: Start media streaming for a conference
+  description: Start the in/out media streaming of the specified conference.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conference
+  responses:
+    '200':
+      description: Media streaming started successfully.

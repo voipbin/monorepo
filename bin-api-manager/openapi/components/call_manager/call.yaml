@@ -1,0 +1,81 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Resource identifier
+  customer_id:
+    type: string
+    description: Resource's customer ID
+  owner_type:
+    type: string
+    description: Resource's owner type
+  owner_id:
+    type: string
+    description: Resource's owner ID
+  flow_id:
+    type: string
+    description: Flow ID
+  activeflow_id:
+    type: string
+    description: Active flow ID
+  type:
+    $ref: '#/components/schemas/CallType'
+  master_call_id:
+    type: string
+    description: Master call ID
+  chained_call_ids:
+    type: array
+    items:
+      type: string
+    description: Chained call IDs
+  recording_id:
+    type: string
+    description: Current recording ID
+  recording_ids:
+    type: array
+    items:
+      type: string
+    description: Recording IDs
+  groupcall_id:
+    type: string
+    description: Group call ID, indicates if this call is part of a group call
+  source:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  destination:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  status:
+    $ref: '#/components/schemas/CallStatus'
+  action:
+    $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  direction:
+    $ref: '#/components/schemas/CallDirection'
+  mute_direction:
+    $ref: '#/components/schemas/CallMuteDirection'
+  hangup_by:
+    $ref: '#/components/schemas/CallHangupBy'
+  hangup_reason:
+    $ref: '#/components/schemas/CallHangupReason'
+  tm_progressing:
+    type: string
+    format: date-time
+    description: Timestamp for call progressing
+  tm_ringing:
+    type: string
+    format: date-time
+    description: Timestamp for call ringing
+  tm_hangup:
+    type: string
+    format: date-time
+    description: Timestamp for call hangup
+  tm_create:
+    type: string
+    format: date-time
+    description: Creation timestamp
+  tm_update:
+    type: string
+    format: date-time
+    description: Update timestamp
+  tm_delete:
+    type: string
+    format: date-time
+    description: Deletion timestamp

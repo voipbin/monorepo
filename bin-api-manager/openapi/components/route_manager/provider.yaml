@@ -1,0 +1,39 @@
+type: object
+properties:
+  id:
+    type: string
+    description: "The unique identifier for the provider."
+  type:
+    $ref: '#/components/schemas/ProviderType'
+  hostname:
+    type: string
+    description: "The destination hostname for the provider."
+  tech_prefix:
+    type: string
+    description: "The tech prefix, valid only for SIP type providers."
+  tech_postfix:
+    type: string
+    description: "The tech postfix, valid only for SIP type providers."
+  tech_headers:
+    type: object
+    additionalProperties:
+      type: string
+    description: "The tech headers, valid only for SIP type providers."
+  name:
+    type: string
+    description: "The name of the provider."
+  detail:
+    type: string
+    description: "The details about the provider."
+  tm_create:
+    type: string
+    format: date-time
+    description: "Timestamp when the provider was created."
+  tm_update:
+    type: string
+    format: date-time
+    description: "Timestamp when the provider was last updated."
+  tm_delete:
+    type: string
+    format: date-time
+    description: "Timestamp when the provider was deleted."

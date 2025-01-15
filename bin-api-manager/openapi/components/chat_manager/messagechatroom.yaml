@@ -1,0 +1,43 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Resource identifier.
+  customer_id:
+    type: string
+    description: Resource's customer ID.
+  owner_type:
+    type: string
+  owner_id:
+    type: string
+    description: Resource's owner ID.
+  chatroom_id:
+    type: string
+    description: Associated chat room ID.
+  messagechat_id:
+    type: string
+    description: Associated message chat ID.
+  source:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  type:
+    $ref: '#/components/schemas/MessagechatroomType'
+  text:
+    type: string
+    description: Text content of the message.
+  medias:
+    type: array
+    items:
+      $ref: '#/components/schemas/Media'
+    description: List of associated media objects.
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the message chat room was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the message chat room was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the message chat room was deleted.

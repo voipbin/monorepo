@@ -1,0 +1,25 @@
+put:
+  summary: Update an outdial's data.
+  description: Updates the data of the specified outdial and returns the updated outdial details.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to update.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            data:
+              type: string
+  responses:
+    '200':
+      description: The updated outdial details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'

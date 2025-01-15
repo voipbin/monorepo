@@ -1,0 +1,10 @@
+type: string
+description: Indicates who hung up the call
+enum:
+  - ""
+  - remote
+  - local
+x-enum-varnames:
+  - CallHangupByNone
+  - CallHangupByRemote
+  - CallHangupByLocal

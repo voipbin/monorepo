@@ -1,0 +1,14 @@
+type: string
+description: The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+enum:
+  - ""
+  - POST
+  - GET
+  - PUT
+  - DELETE
+x-enum-varnames:
+  - CustomerWebhookMethodNone
+  - CustomerWebhookMethodPost
+  - CustomerWebhookMethodGet
+  - CustomerWebhookMethodPut
+  - CustomerWebhookMethodDelete

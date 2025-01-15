@@ -1,0 +1,9 @@
+components:
+  schemas:
+    Account:
+      $ref: 'account.yaml'
+
+    Filereference_type:
+      $ref: 'file_reference_type.yaml'
+    File:
+      $ref: 'file.yaml'

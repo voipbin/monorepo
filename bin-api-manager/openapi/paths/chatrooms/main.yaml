@@ -1,0 +1,55 @@
+get:
+  summary: Gets a list of chatrooms.
+  description: Retrieves a paginated list of chatrooms owned by a specified owner.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - name: owner_id
+      in: query
+      description: The ID of the chatroom owner.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: A list of chatrooms.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'
+
+post:
+  summary: Create a new chatroom.
+  description: Creates a new chatroom and returns the details of the created chatroom.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            participant_id:
+              type: string
+              description: The ID of the participant.
+            name:
+              type: string
+              description: The name of the chatroom.
+            detail:
+              type: string
+              description: Additional details of the chatroom.
+          required:
+            - participant_id
+  responses:
+    '200':
+      description: The created chatroom details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'

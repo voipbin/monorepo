@@ -1,0 +1,46 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Resource identifier
+  customer_id:
+    type: string
+    description: Resource's customer ID
+  owner_type:
+    type: string
+    description: Resource's owner type
+  owner_id:
+    type: string
+    description: Resource's owner ID
+  reference_type:
+    description: The type of reference, either a "call" or a "confbridge".
+    $ref: '#/components/schemas/RecordingReferenceType'
+  reference_id:
+    type: string
+    description: The UUID of the reference.
+  status:
+    $ref: '#/components/schemas/RecordingStatus'
+    description: The status of the recording.
+  format:
+    $ref: '#/components/schemas/RecordingFormat'
+    description: The format of the recording file (e.g., WAV).
+  tm_start:
+    type: string
+    format: date-time
+    description: The start timestamp of the recording.
+  tm_end:
+    type: string
+    format: date-time
+    description: The end timestamp of the recording.
+  tm_create:
+    type: string
+    format: date-time
+    description: The creation timestamp of the recording.
+  tm_update:
+    type: string
+    format: date-time
+    description: The last update timestamp of the recording.
+  tm_delete:
+    type: string
+    format: date-time
+    description: The timestamp when the recording was deleted.

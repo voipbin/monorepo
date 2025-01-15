@@ -1,0 +1,24 @@
+put:
+  summary: Update the queue's routing method
+  description: Updates the routing method of the specified queue.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            routing_method:
+              $ref: '../../components/queue_manager/main.yaml#/components/schemas/QueueRoutingMethod'
+  responses:
+    '200':
+      description: The updated queue details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'

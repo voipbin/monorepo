@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the flow.
+  customer_id:
+    type: string
+    description: Unique identifier for the customer.
+  type:
+    description: The type of the flow.
+    $ref: '#/components/schemas/FlowType'
+  name:
+    type: string
+    description: Name of the flow.
+  detail:
+    type: string
+    description: Detailed description of the flow.
+  actions:
+    type: array
+    description: List of actions associated with the flow.
+    items:
+      $ref: '#/components/schemas/Action'
+  tm_create:
+    type: string
+    description: Timestamp when the flow was created.
+  tm_update:
+    type: string
+    description: Timestamp when the flow was last updated.
+  tm_delete:
+    type: string
+    description: Timestamp when the flow was deleted.

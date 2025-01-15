@@ -1,0 +1,20 @@
+get:
+  summary: Get list of conference calls
+  description: Retrieve a paginated list of conference calls for the authenticated customer.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of conference calls.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conferencecall'

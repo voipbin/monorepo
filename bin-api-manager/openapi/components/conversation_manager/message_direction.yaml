@@ -1,0 +1,8 @@
+type: string
+description: Direction of the message (incoming or outgoing).
+enum:
+  - outgoing
+  - incoming
+x-enum-varnames:
+  - MessageDirectionOutgoing
+  - MessageDirectionIncoming

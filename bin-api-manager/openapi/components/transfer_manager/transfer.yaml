@@ -1,0 +1,36 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Transfer ID
+  customer_id:
+    type: string
+    description: Customer ID
+  type:
+    $ref: '#/components/schemas/TransferType'
+  transferer_call_id:
+    type: string
+    description: Transferer Call ID
+  transferee_addresses:
+    type: array
+    description: List of transferee addresses
+    items:
+      $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  transferee_call_id:
+    type: string
+    description: Transferee Call ID
+  groupcall_id:
+    type: string
+    description: Created Groupcall ID
+  confbridge_id:
+    type: string
+    description: Conference Bridge ID
+  tm_create:
+    type: string
+    description: Timestamp when created
+  tm_update:
+    type: string
+    description: Timestamp when updated
+  tm_delete:
+    type: string
+    description: Timestamp when deleted

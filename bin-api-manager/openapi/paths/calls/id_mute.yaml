@@ -1,0 +1,25 @@
+post:
+  summary: Mute the call
+  description: Mutes the specified call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the mute action.
+
+delete:
+  summary: Unmute the call
+  description: Unmutes the specified call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the unmute action.

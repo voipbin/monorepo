@@ -1,0 +1,47 @@
+type: object
+properties:
+  id:
+    type: string
+    description: The unique identifier for the number.
+  customer_id:
+    type: string
+    description: The customer ID associated with the number.
+  number:
+    type: string
+    description: The phone number.
+  call_flow_id:
+    type: string
+    description: The ID of the associated call flow.
+  message_flow_id:
+    type: string
+    description: The ID of the associated message flow.
+  name:
+    type: string
+    description: The name of the number.
+  detail:
+    type: string
+    description: Additional details about the number.
+  status:
+    $ref: '#/components/schemas/NumberStatus'
+    description: The status of the number.
+  t38_enabled:
+    type: boolean
+    description: Whether T38 is enabled for the number.
+  emergency_enabled:
+    type: boolean
+    description: Whether emergency services are enabled for the number.
+  tm_purchase:
+    type: string
+    description: The timestamp of when the number was purchased.
+  tm_renew:
+    type: string
+    description: The timestamp of when the number was renewed.
+  tm_create:
+    type: string
+    description: The timestamp of when the number was created.
+  tm_update:
+    type: string
+    description: The timestamp of when the number was last updated.
+  tm_delete:
+    type: string
+    description: The timestamp of when the number was deleted.

@@ -1,0 +1,7 @@
+type: string
+enum:
+  - attended
+  - blind
+x-enum-varnames:
+  - TransferTypeAttended
+  - TransferTypeBlind

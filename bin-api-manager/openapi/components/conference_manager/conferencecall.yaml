@@ -1,0 +1,27 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the conference call.
+  customer_id:
+    type: string
+    description: Unique identifier of the associated customer.
+  conference_id:
+    type: string
+    description: Unique identifier of the associated conference.
+  reference_type:
+    $ref: '#/components/schemas/Conferencecallreference_type'
+  reference_id:
+    type: string
+    description: Unique identifier of the reference (e.g., call ID).
+  status:
+    $ref: '#/components/schemas/ConferencecallStatus'
+  tm_create:
+    type: string
+    description: Timestamp when the conference call was created.
+  tm_update:
+    type: string
+    description: Timestamp when the conference call was last updated.
+  tm_delete:
+    type: string
+    description: Timestamp when the conference call was deleted.

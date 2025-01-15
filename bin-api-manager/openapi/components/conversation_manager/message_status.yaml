@@ -1,0 +1,12 @@
+type: string
+description: Status of the message.
+enum:
+  - sending
+  - sent
+  - failed
+  - received
+x-enum-varnames:
+  - MessageStatusSending
+  - MessageStatusSent
+  - MessageStatusFailed
+  - MessageStatusReceived

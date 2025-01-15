@@ -1,0 +1,8 @@
+type: string
+description: The method of payment used for the account.
+enum:
+  - ""
+  - credit card
+x-enum-varnames:
+  - AccountPaymentMethodNone
+  - AccountPaymentMethodCreditCard

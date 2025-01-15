@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the account.
+  customer_id:
+    type: string
+    description: Unique identifier of the associated customer.
+  type:
+    $ref: '#/components/schemas/AccountType'
+  name:
+    type: string
+    description: Name of the account.
+  detail:
+    type: string
+    description: Detailed information about the account.
+  secret:
+    type: string
+    description: Secret associated with the account.
+  token:
+    type: string
+    description: Token, usually an API token, associated with the account.
+  tm_create:
+    type: string
+    description: Timestamp when the account was created.
+  tm_update:
+    type: string
+    description: Timestamp when the account was last updated.
+  tm_delete:
+    type: string
+    description: Timestamp when the account was deleted.

@@ -1,0 +1,34 @@
+get:
+  summary: Get conference call details
+  description: Retrieve detailed information about a specific conference call using its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conferencecall.
+  responses:
+    '200':
+      description: Detailed information about a conference call.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conferencecall'
+
+delete:
+  summary: Remove a conference call
+  description: Remove a specific conference call from the system by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the conferencecall to delete.
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conferencecall'

@@ -1,0 +1,8 @@
+type: string
+description: Call direction
+enum:
+  - incoming
+  - outgoing
+x-enum-varnames:
+  - CallDirectionIncoming
+  - CallDirectionOutgoing

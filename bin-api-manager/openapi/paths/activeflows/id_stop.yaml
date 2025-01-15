@@ -1,0 +1,21 @@
+post:
+  summary: Stop an active flow
+  description: Endpoint to stop an active flow by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        description: The ID of the active flow to stop.
+  responses:
+    '200':
+      description: Active flow stopped successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Activeflow'
+    '404':
+      description: Flow not found.
+    '400':
+      description: Unable to stop the flow.

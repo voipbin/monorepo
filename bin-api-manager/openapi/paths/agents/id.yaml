@@ -1,0 +1,64 @@
+get:
+  summary: Get the agent
+  description: Get the agent of the given ID.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the agent.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+
+delete:
+  summary: Delete the agent
+  description: Delete the agent of the given ID.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the agent.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+
+put:
+  summary: Update an agent
+  description: Update an agent and return updated details.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the agent.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          Name:
+            type: string
+          Detail:
+            type: string
+          RingMethod:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentRingMethod'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'

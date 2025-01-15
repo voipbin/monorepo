@@ -1,0 +1,64 @@
+get:
+  summary: Retrieve an outdial by its ID.
+  description: Returns detailed information of a specific outdial based on the provided ID.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to retrieve.
+  responses:
+    '200':
+      description: The outdial details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+
+delete:
+  summary: Delete an existing outdial.
+  description: Deletes an outdial specified by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to delete.
+  responses:
+    '200':
+      description: The result of the delete operation.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+
+put:
+  summary: Update an outdial.
+  description: Updates the specified outdial and returns the updated information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the outdial to update.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+  responses:
+    '200':
+      description: The updated outdial details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'

@@ -1,0 +1,58 @@
+get:
+  summary: Get the tag
+  description: Retrieves the tag details by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the tag.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The tag details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+
+delete:
+  summary: Delete the tag
+  description: Deletes the tag identified by the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the tag to be deleted.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the deletion.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+
+put:
+  summary: Update the tag info
+  description: Updates the tag's name and detail information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the tag.
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+          detail:
+            type: string
+  responses:
+    '200':
+      description: The updated tag details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'

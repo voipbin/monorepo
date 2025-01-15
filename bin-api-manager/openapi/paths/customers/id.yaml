@@ -1,0 +1,68 @@
+get:
+  summary: Retrieve customer details.
+  description: Fetches detailed information about a specific customer by their ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+
+put:
+  summary: Update a customer.
+  description: Updates the details of an existing customer and returns the updated information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            email:
+              type: string
+            phoneNumber:
+              type: string
+            address:
+              type: string
+            webhookMethod:
+              $ref: '../../components/customer_manager/main.yaml#/components/schemas/CustomerWebhookMethod'
+            webhookURI:
+              type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+
+delete:
+  summary: Delete a customer.
+  description: Removes a customer by their ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'

@@ -1,0 +1,45 @@
+type: object
+properties:
+  id:
+    type: string
+    format: uuid
+  customer_id:
+    type: string
+    format: uuid
+  type:
+    $ref: '#/components/schemas/CampaignType'
+  name:
+    type: string
+  detail:
+    type: string
+  status:
+    $ref: '#/components/schemas/CampaignStatus'
+  service_level:
+    type: integer
+  end_handle:
+    $ref: '#/components/schemas/CampaignEndHandle'
+  actions:
+    type: array
+    items:
+      $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  outplan_id:
+    type: string
+    format: uuid
+  outdial_id:
+    type: string
+    format: uuid
+  queue_id:
+    type: string
+    format: uuid
+  next_campaign_id:
+    type: string
+    format: uuid
+  tm_create:
+    type: string
+    format: date-time
+  tm_update:
+    type: string
+    format: date-time
+  tm_delete:
+    type: string
+    format: date-time

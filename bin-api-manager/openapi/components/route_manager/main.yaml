@@ -1,0 +1,9 @@
+components:
+  schemas:
+    ProviderType:
+      $ref: 'provider_type.yaml'
+    Provider:
+      $ref: 'provider.yaml'
+
+    Route:
+      $ref: 'route.yaml'

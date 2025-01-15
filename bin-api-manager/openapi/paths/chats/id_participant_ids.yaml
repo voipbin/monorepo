@@ -1,0 +1,28 @@
+post:
+  summary: Add a participant to a chat.
+  description: Adds a new participant ID to a chat and returns the updated chat details.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the chat.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            participantID:
+              type: string
+          required:
+            - participantID
+  responses:
+    '200':
+      description: The updated chat details with the new participant.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chat'

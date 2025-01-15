@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oapi-codegen/oapi-codegen/HEAD/configuration-schema.json
+package: chatbot_manager
+generate:
+  models: true
+output-options:
+  skip-prune: true
+import-mapping:
+  ../../components/common/main.yaml: "monorepo/bin-api-manager/gens/models/common"
+  ../../components/agent_manager/main.yaml: "monorepo/bin-api-manager/gens/models/agent_manager"

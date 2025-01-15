@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier of the chatbot.
+  customer_id:
+    type: string
+    description: Unique identifier of the associated customer.
+  name:
+    type: string
+    description: Name of the chatbot.
+  detail:
+    type: string
+    description: Detailed information about the chatbot.
+  engine_type:
+    $ref: '#/components/schemas/ChatbotEngineType'
+  init_prompt:
+    type: string
+    description: Initial prompt to configure the chatbot's behavior.
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the chatbot was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the chatbot was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the chatbot was deleted.

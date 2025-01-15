@@ -1,0 +1,58 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the activeflow.
+  customer_id:
+    type: string
+    description: ID of the customer associated with the flow.
+  flow_id:
+    type: string
+    description: ID of the flow definition.
+  status:
+    type: string
+    enum:
+      - ""
+      - running
+      - ended
+    x-enum-varnames:
+      - ActiveflowStatusNone
+      - ActiveflowStatusRunning
+      - ActiveflowStatusEnded
+    description: Status of the activeflow.
+  reference_type:
+    type: string
+    enum:
+      - ""
+      - call
+      - message
+    x-enum-varnames:
+      - ActiveflowTypeNone
+      - ActiveflowTypeCall
+      - ActiveflowTypeMessage
+    description: Reference type of activeflow.
+  reference_id:
+    type: string
+    description: ID of the reference object.
+  current_action:
+    $ref: '#/components/schemas/Action'
+  forward_action_id:
+    type: string
+    description: ID of the next action to be executed.
+  executed_actions:
+    type: array
+    description: List of actions that have been executed.
+    items:
+      $ref: '#/components/schemas/Action'
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the flow was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the flow was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the flow was deleted.

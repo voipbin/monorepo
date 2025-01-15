@@ -1,0 +1,12 @@
+type: string
+description: Possible mute directions for the call
+enum:
+  - ""
+  - both
+  - out
+  - in
+x-enum-varnames:
+  - CallMuteDirectionNone
+  - CallMuteDirectionBoth
+  - CallMuteDirectionOut
+  - CallMuteDirectionIn

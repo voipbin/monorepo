@@ -1,0 +1,16 @@
+type: string
+description: Call status
+enum:
+  - dialing
+  - ringing
+  - progressing
+  - terminating
+  - canceling
+  - hangup
+x-enum-varnames:
+  - CallStatusDialing
+  - CallStatusRinging
+  - CallStatusProgressing
+  - CallStatusTerminating
+  - CallStatusCanceling
+  - CallStatusHangup

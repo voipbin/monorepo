@@ -1,0 +1,30 @@
+put:
+  summary: Update the queue's action handle
+  description: Updates the action handle of the specified queue.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            wait_actions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+            timeout_wait:
+              type: integer
+            timeout_service:
+              type: integer
+  responses:
+    '200':
+      description: The updated queue details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'

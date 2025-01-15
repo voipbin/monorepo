@@ -1,0 +1,76 @@
+get:
+  summary: Get the queue by ID
+  description: Retrieves the details of a specific queue by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The queue details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+
+delete:
+  summary: Delete a queue by ID
+  description: Deletes the queue specified by the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Queue deleted successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+
+put:
+  summary: Update the queue details
+  description: Updates the details of the queue identified by the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            routing_method:
+              $ref: '../../components/queue_manager/main.yaml#/components/schemas/QueueRoutingMethod'
+            tag_ids:
+              type: array
+              items:
+                type: string
+            wait_actions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+            wait_timeout:
+              type: integer
+            service_timeout:
+              type: integer
+
+  responses:
+    '200':
+      description: The updated queue details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'

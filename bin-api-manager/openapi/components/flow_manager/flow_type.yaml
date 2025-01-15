@@ -1,0 +1,14 @@
+type: string
+description: Type of the flow.
+enum:
+  - flow
+  - conference
+  - queue
+  - campaign
+  - transfer
+x-enum-varnames:
+  - FlowTypeFlow
+  - FlowTypeConference
+  - FlowTypeQueue
+  - FlowTypeCampaign
+  - FlowTypeTransfer

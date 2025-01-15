@@ -1,0 +1,12 @@
+post:
+  summary: Talk to the call
+  description: Initiates a talking action to the call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The result of the talk action.

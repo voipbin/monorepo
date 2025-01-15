@@ -1,0 +1,29 @@
+type: object
+properties:
+  id:
+    type: string
+  customer_id:
+    type: string
+  name:
+    type: string
+  detail:
+    type: string
+  extension:
+    type: string
+  domain_name:
+    type: string
+    description: "Domain name, same as the customer_id, used by Kamailio's INVITE validation"
+  username:
+    type: string
+    description: "Username, same as the Extension, used by Kamailio's INVITE validation"
+  password:
+    type: string
+  tm_create:
+    type: string
+    description: "Timestamp when the extension was created"
+  tm_update:
+    type: string
+    description: "Timestamp when the extension was last updated"
+  tm_delete:
+    type: string
+    description: "Timestamp when the extension was deleted"

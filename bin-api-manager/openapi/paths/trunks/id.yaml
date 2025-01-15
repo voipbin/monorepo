@@ -1,0 +1,73 @@
+get:
+  summary: Retrieve trunk details.
+  description: Retrieves the details of a specific trunk by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The trunk details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Trunk'
+
+put:
+  summary: Update a trunk.
+  description: Updates the details of an existing trunk and returns the updated trunk's information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            authTypes:
+              type: array
+              items:
+                $ref: '../../components/registrar_manager/main.yaml#/components/schemas/AuthType'
+            username:
+              type: string
+            password:
+              type: string
+            allowedIPs:
+              type: array
+              items:
+                type: string
+  responses:
+    '200':
+      description: The updated trunk details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Trunk'
+
+delete:
+  summary: Delete a trunk.
+  description: Deletes an existing trunk by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Trunk deleted successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Trunk'

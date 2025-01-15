@@ -1,0 +1,18 @@
+type: string
+description: The status of the message for the target.
+enum:
+  - received
+  - queued
+  - gw_timeout
+  - sent
+  - dlr_timeout
+  - failed
+  - delivered
+x-enum-varnames:
+  - TargetStatusReceived
+  - TargetStatusQueued
+  - TargetStatusGWTimeout
+  - TargetStatusSent
+  - TargetStatusDLRTimeout
+  - TargetStatusFailed
+  - TargetStatusDelivered

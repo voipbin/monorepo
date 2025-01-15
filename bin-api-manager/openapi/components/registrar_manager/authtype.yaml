@@ -1,0 +1,8 @@
+type: string
+description: "Defines the authentication type. Can be 'basic' or 'ip'."
+enum:
+  - basic
+  - ip
+x-enum-varnames:
+  - AuthTypeBasic
+  - AuthTypeIP

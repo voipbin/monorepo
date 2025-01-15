@@ -1,0 +1,35 @@
+get:
+  summary: Get a message by ID
+  description: Retrieves the message of the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the message.
+  responses:
+    '200':
+      description: The message details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/message_manager/main.yaml#/components/schemas/Message'
+
+delete:
+  summary: Delete a message by ID
+  description: Deletes the message with the given ID and returns the deleted message.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the message to delete.
+  responses:
+    '200':
+      description: The deleted message details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/message_manager/main.yaml#/components/schemas/Message'

@@ -1,0 +1,13 @@
+get:
+  summary: Get media stream for the call
+  description: Retrieve the media stream information for a specific call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the call
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Media stream information retrieved successfully

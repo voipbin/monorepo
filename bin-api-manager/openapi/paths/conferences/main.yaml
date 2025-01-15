@@ -1,0 +1,54 @@
+get:
+  summary: Get list of conferences
+  description: Retrieve a paginated list of conferences for the customer.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of conferences.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'
+post:
+  summary: Create a new conference
+  description: Create a new conference with the provided details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            type:
+              $ref: '../../components/conference_manager/main.yaml#/components/schemas/ConferenceType'
+            name:
+              type: string
+            detail:
+              type: string
+            timeout:
+              type: integer
+            data:
+              type: object
+            preActions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+            postActions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'

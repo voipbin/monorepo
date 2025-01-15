@@ -1,0 +1,60 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier of the campaign call.
+  customer_id:
+    type: string
+    description: Identifier of the customer.
+  campaign_id:
+    type: string
+    description: Identifier of the campaign.
+  outplan_id:
+    type: string
+    description: Identifier of the outbound plan.
+  outdial_id:
+    type: string
+    description: Identifier of the outbound dial.
+  outdial_target_id:
+    type: string
+    description: Identifier of the outbound dial target.
+  queue_id:
+    type: string
+    description: Identifier of the queue.
+  activeflow_id:
+    type: string
+    description: Identifier of the active flow.
+  flow_id:
+    type: string
+    description: Identifier of the flow.
+  reference_type:
+    $ref: '#/components/schemas/Campaigncallreference_type'
+  reference_id:
+    type: string
+    description: Identifier of the reference.
+  status:
+    $ref: '#/components/schemas/CampaigncallStatus'
+  result:
+    $ref: '#/components/schemas/CampaigncallResult'
+  source:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  destination:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  destination_index:
+    type: integer
+    description: Index of the destination.
+  try_count:
+    type: integer
+    description: Number of dialing attempts.
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the campaign call was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the campaign call was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the campaign call was deleted.

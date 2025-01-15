@@ -1,0 +1,73 @@
+post:
+  summary: Create a new agent
+  description: Endpoint to create a new agent.
+  requestBody:
+    description: Request body to create a new agent.
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            Username:
+              type: string
+            Password:
+              type: string
+            Name:
+              type: string
+            Detail:
+              type: string
+            RingMethod:
+              $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentRingMethod'
+            Permission:
+              $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentPermission'
+            TagIDs:
+              type: array
+              items:
+                type: string
+            Addresses:
+              type: array
+              items:
+                $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  responses:
+    '201':
+      description: Agent created successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+    '400':
+      description: Invalid input.
+
+get:
+  summary: List agents
+  description: Get agents of the user.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - name: tag_ids
+      in: query
+      description: Comma separated tag ids.
+      required: false
+      schema:
+        type: string
+    - name: status
+      in: query
+      description: Agent status.
+      required: false
+      schema:
+        $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentStatus'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'

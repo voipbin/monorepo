@@ -1,0 +1,55 @@
+get:
+  summary: Get details of an accesskey
+  parameters:
+    - name: id
+      in: path
+      description: ID of the accesskey
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Accesskey details
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Accesskey'
+
+delete:
+  summary: Delete an accesskey
+  parameters:
+    - name: id
+      in: path
+      description: ID of the accesskey
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Accesskey deleted successfully
+
+put:
+  summary: Update an accesskey
+  parameters:
+    - name: id
+      in: path
+      description: ID of the accesskey
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          name:
+            type: string
+          detail:
+            type: string
+  responses:
+    '200':
+      description: Accesskey updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Accesskey'

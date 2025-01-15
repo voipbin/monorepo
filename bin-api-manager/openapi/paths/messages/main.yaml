@@ -1,0 +1,49 @@
+get:
+  summary: List all messages
+  description: Retrieves a list of messages for the given customer.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/message_manager/main.yaml#/components/schemas/Message'
+
+post:
+  summary: Send a message and return the sent message
+  description: Sends a message with the provided information and returns the sent message details.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            source:
+              description: The source of the message.
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+            destinations:
+              type: array
+              items:
+                type: string
+                $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              description: List of destinations for the message.
+            text:
+              type: string
+              description: The content of the message.
+  responses:
+    '200':
+      description: The sent message details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/message_manager/main.yaml#/components/schemas/Message'

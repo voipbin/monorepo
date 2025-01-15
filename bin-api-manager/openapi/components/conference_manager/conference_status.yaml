@@ -1,0 +1,12 @@
+type: string
+description: Status of the conference.
+enum:
+  - starting
+  - progressing
+  - terminating
+  - terminated
+x-enum-varnames:
+  - ConferenceStatusStarting
+  - ConferenceStatusProgressing
+  - ConferenceStatusTerminating
+  - ConferenceStatusTerminated

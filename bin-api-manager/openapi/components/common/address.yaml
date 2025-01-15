@@ -1,0 +1,34 @@
+type: object
+description: Contains source or destination detail info.
+properties:
+  type:
+    type: string
+    description: Type of address.
+    enum:
+      - ""
+      - agent
+      - conference
+      - extension
+      - line
+      - sip
+      - tel
+    x-enum-varnames:
+      - AddressTypeNone
+      - AddressTypeAgent
+      - AddressTypeConference
+      - AddressTypeExtension
+      - AddressTypeLine
+      - AddressTypeSIP
+      - AddressTypeTel
+  target:
+    type: string
+    description: Address endpoint.
+  target_name:
+    type: string
+    description: Address's name.
+  name:
+    type: string
+    description: Name.
+  detail:
+    type: string
+    description: Detail description.

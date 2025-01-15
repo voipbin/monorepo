@@ -1,0 +1,10 @@
+type: string
+description: Status of the chatbot call.
+enum:
+  - initiating
+  - progressing
+  - end
+x-enum-varnames:
+  - ChatbotcallStatusInitiating
+  - ChatbotcallStatusProgressing
+  - ChatbotcallStatusEnd

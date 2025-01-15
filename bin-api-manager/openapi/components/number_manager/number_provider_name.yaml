@@ -1,0 +1,10 @@
+type: string
+description: The provider name for the number.
+enum:
+  - telnyx
+  - twilio
+  - messagebird
+x-enum-varnames:
+  - ProviderNameTelnyx
+  - ProviderNameTwilio
+  - ProviderNameMessagebird

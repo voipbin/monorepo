@@ -1,0 +1,14 @@
+type: string
+description: A feature supported by the phone number.
+enum:
+  - emergency
+  - fax
+  - mms
+  - sms
+  - voice
+x-enum-varnames:
+  - AvailableNumberFeatureEmergency
+  - AvailableNumberFeatureFax
+  - AvailableNumberFeatureMMS
+  - AvailableNumberFeatureSMS
+  - AvailableNumberFeatureVoice

@@ -1,0 +1,8 @@
+type: string
+description: Type of the account.
+enum:
+  - line
+  - sms
+x-enum-varnames:
+  - AccountTypeLine
+  - AccountTypeSMS

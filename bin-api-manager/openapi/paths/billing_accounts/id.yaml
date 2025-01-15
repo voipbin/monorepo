@@ -1,0 +1,67 @@
+get:
+  summary: Get detailed billing account info
+  description: Returns detailed billing account info for the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The ID of the billing account.
+  responses:
+    200:
+      description: Successfully retrieved billing account info
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+
+delete:
+  summary: Delete billing account
+  description: Deletes the billing account associated with the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The ID of the billing account.
+  responses:
+    200:
+      description: Successfully deleted billing account
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+
+put:
+  summary: Update billing account
+  description: Updates the billing account information for the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The ID of the billing account.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+  responses:
+    200:
+      description: Successfully updated billing account
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'

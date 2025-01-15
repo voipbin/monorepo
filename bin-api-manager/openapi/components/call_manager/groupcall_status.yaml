@@ -1,0 +1,10 @@
+type: string
+description: Current status of the call or group call
+enum:
+  - progressing
+  - hangingup
+  - hangup
+x-enum-varnames:
+  - GroupcallStatusProgressing
+  - GroupcallStatusHangingup
+  - GroupcallStatusHangup

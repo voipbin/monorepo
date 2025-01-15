@@ -1,0 +1,53 @@
+post:
+  summary: Create a new activeflow
+  description: Endpoint to create a new activeflow.
+  requestBody:
+    description: Request body to create a new activeflow.
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID of the activeflow.
+            flow_id:
+              type: string
+              description: Flow id of.
+            actions:
+              type: array
+              items:
+                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  responses:
+    '201':
+      description: activeflow created successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Activeflow'
+    '400':
+      description: Invalid input. One of `flow_id` or `actions` is required.
+
+get:
+  summary: List all activeflows
+  description: Retrieve a list of all activeflows.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/flow_manager/main.yaml#/components/schemas/Activeflow'
+    '500':
+      description: Server error.

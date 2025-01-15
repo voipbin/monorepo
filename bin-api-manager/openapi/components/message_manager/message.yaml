@@ -1,0 +1,34 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the message.
+  customer_id:
+    type: string
+    description: Unique identifier for the customer.
+  type:
+    $ref: '#/components/schemas/MessageType'
+    description: The type of the message.
+  source:
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+    description: The source address of the message.
+  targets:
+    type: array
+    items:
+      $ref: '#/components/schemas/Target'
+    description: List of target addresses to which the message is sent.
+  text:
+    type: string
+    description: The text delivered in the body of the message.
+  direction:
+    $ref: '#/components/schemas/MessageDirection'
+    description: The direction of the message (outbound/inbound).
+  tm_create:
+    type: string
+    description: Timestamp when the message was created.
+  tm_update:
+    type: string
+    description: Timestamp when the message was last updated.
+  tm_delete:
+    type: string
+    description: Timestamp when the message was deleted.

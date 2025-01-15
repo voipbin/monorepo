@@ -1,0 +1,8 @@
+type: string
+description: Type of campaign.
+enum:
+  - call
+  - flow
+x-enum-varnames:
+  - CampaignTypeCall
+  - CampaignTypeFlow

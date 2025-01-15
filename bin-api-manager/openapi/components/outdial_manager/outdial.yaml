@@ -1,0 +1,29 @@
+type: object
+properties:
+  id:
+    type: string
+    description: The unique identifier for the outdial.
+  customer_id:
+    type: string
+    description: The unique identifier for the customer associated with the outdial.
+  campaign_id:
+    type: string
+    description: The unique identifier for the campaign associated with the outdial.
+  name:
+    type: string
+    description: The name of the outdial.
+  detail:
+    type: string
+    description: The detailed description of the outdial.
+  data:
+    type: string
+    description: The data associated with the outdial.
+  tm_create:
+    type: string
+    description: Timestamp when the outdial was created.
+  tm_update:
+    type: string
+    description: Timestamp when the outdial was last updated.
+  tm_delete:
+    type: string
+    description: Timestamp when the outdial was deleted.

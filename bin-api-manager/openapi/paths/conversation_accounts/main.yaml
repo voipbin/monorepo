@@ -1,0 +1,47 @@
+get:
+  summary: Gets a list of conversation accounts
+  description: Fetches a paginated list of conversation accounts.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of conversation accounts.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'
+
+post:
+  summary: Create a new conversation account
+  description: Creates a new conversation account and returns its details.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            type:
+              $ref: '../../components/conversation_manager/main.yaml#/components/schemas/AccountType'
+            name:
+              type: string
+            detail:
+              type: string
+            secret:
+              type: string
+            token:
+              type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'

@@ -1,0 +1,22 @@
+type: string
+description: Reason for call hangup
+enum:
+  - ""
+  - normal
+  - failed
+  - busy
+  - cancel
+  - timeout
+  - noanswer
+  - dialout
+  - amd
+x-enum-varnames:
+  - CallHangupReasonNone
+  - CallHangupReasonNormal
+  - CallHangupReasonFailed
+  - CallHangupReasonBusy
+  - CallHangupReasonCancel
+  - CallHangupReasonTimeout
+  - CallHangupReasonNoanswer
+  - CallHangupReasonDialout
+  - CallHangupReasonAMD

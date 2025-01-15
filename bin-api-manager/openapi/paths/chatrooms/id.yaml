@@ -1,0 +1,68 @@
+get:
+  summary: Get chatroom details.
+  description: Retrieves the details of a specific chatroom by its ID.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the chatroom.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The chatroom details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'
+
+delete:
+  summary: Delete a chatroom.
+  description: Deletes a specific chatroom by its ID and returns the deleted chatroom details.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the chatroom.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The deleted chatroom details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'
+
+put:
+  summary: Update a chatroom.
+  description: Updates a specific chatroom's basic information and returns the updated details.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the chatroom.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The new name of the chatroom.
+            detail:
+              type: string
+              description: The new details of the chatroom.
+          required:
+            - name
+  responses:
+    '200':
+      description: The updated chatroom details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'

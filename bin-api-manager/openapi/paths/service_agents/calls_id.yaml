@@ -1,0 +1,17 @@
+get:
+  summary: Retrieve detailed information of a specific call
+  description: Fetches detailed information about a specific call by its ID.
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the call.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The details of the requested call.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/call_manager/main.yaml#/components/schemas/Call'

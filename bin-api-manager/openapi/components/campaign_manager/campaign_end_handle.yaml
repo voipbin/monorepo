@@ -1,0 +1,8 @@
+type: string
+description: Behavior of the campaign after outdial has no more targets.
+enum:
+  - stop
+  - continue
+x-enum-varnames:
+  - CampaignEndHandleStop
+  - CampaignEndHandleContinue

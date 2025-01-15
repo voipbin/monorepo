@@ -1,0 +1,36 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Resource identifier.
+  customer_id:
+    type: string
+    description: Resource's customer ID.
+  type:
+    $ref: '#/components/schemas/ChatType'
+  room_owner_id:
+    type: string
+    description: Owned agent's ID.
+  participant_ids:
+    type: array
+    description: List of participant IDs (agent IDs).
+    items:
+      type: string
+  name:
+    type: string
+    description: Name of the chat.
+  detail:
+    type: string
+    description: Detailed information about the chat.
+  tm_create:
+    type: string
+    format: date-time
+    description: Timestamp when the chat was created.
+  tm_update:
+    type: string
+    format: date-time
+    description: Timestamp when the chat was last updated.
+  tm_delete:
+    type: string
+    format: date-time
+    description: Timestamp when the chat was deleted.

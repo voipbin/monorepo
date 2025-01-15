@@ -1,0 +1,84 @@
+get:
+  summary: Retrieve outplan details by ID.
+  description: Retrieves the details of the specified outplan based on the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of the outplan.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The requested outplan details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'
+
+delete:
+  summary: Delete an existing outplan.
+  description: Deletes the outplan specified by the given ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the outplan to delete.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully deleted the outplan.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'
+
+put:
+  summary: Update dial information of an existing outplan.
+  description: Updates the dial information for the outplan specified by the given ID and returns the updated outplan.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the outplan to update.
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            source:
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              description: The new source address.
+            dial_timeout:
+              type: integer
+              description: The new dial timeout in seconds.
+            try_interval:
+              type: integer
+              description: The new interval between retry attempts.
+            max_try_count_0:
+              type: integer
+              description: The new maximum retry count for destination 0.
+            max_try_count_1:
+              type: integer
+              description: The new maximum retry count for destination 1.
+            max_try_count_2:
+              type: integer
+              description: The new maximum retry count for destination 2.
+            max_try_count_3:
+              type: integer
+              description: The new maximum retry count for destination 3.
+            max_try_count_4:
+              type: integer
+              description: The new maximum retry count for destination 4.
+  responses:
+    '200':
+      description: The updated outplan with new dial information.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'

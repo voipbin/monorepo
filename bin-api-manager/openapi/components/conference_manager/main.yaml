@@ -1,0 +1,15 @@
+components:
+  schemas:
+    ConferenceStatus:
+      $ref: 'conference_status.yaml'
+    ConferenceType:
+      $ref: 'conference_type.yaml'
+    Conference:
+      $ref: 'conference.yaml'
+
+    Conferencecallreference_type:
+      $ref: 'conferencecall_reference_type.yaml'
+    ConferencecallStatus:
+      $ref: 'conferencecall_status.yaml'
+    Conferencecall:
+      $ref: 'conferencecall.yaml'

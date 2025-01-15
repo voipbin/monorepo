@@ -1,0 +1,17 @@
+components:
+  schemas:
+    ChatbotEngineType:
+      $ref: 'chatbot_engine_type.yaml'
+    Chatbot:
+      $ref: 'chatbot.yaml'
+    
+    ChatbotcallGender:
+      $ref: 'chatbotcall_gender.yaml'
+    ChatbotcallMessage:
+      $ref: 'chatbotcall_message.yaml'
+    Chatbotcallreference_type:
+      $ref: 'chatbotcall_reference_type.yaml'
+    ChatbotcallStatus:
+      $ref: 'chatbotcall_status.yaml'
+    Chatbotcall:
+      $ref: 'chatbotcall.yaml'

@@ -1,0 +1,69 @@
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the conference.
+  customer_id:
+    type: string
+    description: Unique identifier of the associated customer.
+  type:
+    $ref: '#/components/schemas/ConferenceType'
+  status:
+    $ref: '#/components/schemas/ConferenceStatus'
+  name:
+    type: string
+    description: Name of the conference.
+  detail:
+    type: string
+    description: Detailed information about the conference.
+  data:
+    type: object
+    description: Custom data associated with the conference.
+    additionalProperties: true
+  timeout:
+    type: integer
+    description: Timeout for the conference in seconds.
+    format: int32
+  pre_actions:
+    type: array
+    description: Pre-actions to execute before the conference starts.
+    items:
+      $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  post_actions:
+    type: array
+    description: Post-actions to execute after the conference ends.
+    items:
+      $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+  conferencecall_ids:
+    type: array
+    description: List of associated conference call IDs.
+    items:
+      type: string
+  recording_id:
+    type: string
+    description: ID of the main recording associated with the conference.
+  recording_ids:
+    type: array
+    description: List of associated recording IDs.
+    items:
+      type: string
+  transcribe_id:
+    type: string
+    description: ID of the main transcription associated with the conference.
+  transcribe_ids:
+    type: array
+    description: List of associated transcription IDs.
+    items:
+      type: string
+  tm_end:
+    type: string
+    description: Timestamp when the conference ended.
+  tm_create:
+    type: string
+    description: Timestamp when the conference was created.
+  tm_update:
+    type: string
+    description: Timestamp when the conference was last updated.
+  tm_delete:
+    type: string
+    description: Timestamp when the conference was deleted.

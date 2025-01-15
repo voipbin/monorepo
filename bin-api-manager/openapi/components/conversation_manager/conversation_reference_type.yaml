@@ -1,0 +1,10 @@
+type: string
+description: Type of the reference for the conversation.
+enum:
+  - ""
+  - message
+  - line
+x-enum-varnames:
+  - Conversationreference_typeNone
+  - Conversationreference_typeMessage
+  - Conversationreference_typeLine

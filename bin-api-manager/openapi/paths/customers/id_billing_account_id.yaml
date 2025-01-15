@@ -1,0 +1,24 @@
+put:
+  summary: Update a customer's billing account ID.
+  description: Updates the billing account ID for a specific customer.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            billingAccountID:
+              type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'

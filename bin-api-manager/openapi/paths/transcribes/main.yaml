@@ -1,0 +1,49 @@
+get:
+  summary: Get list of transcribes
+  description: Retrieves a paginated list of transcriptions for the authenticated customer.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of transcriptions.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/transcribe_manager/main.yaml#/components/schemas/Transcribe'
+
+post:
+  summary: Create a transcribe
+  description: Creates a transcription of a recording and returns the result.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            reference_type:
+              $ref: '../../components/transcribe_manager/main.yaml#/components/schemas/TranscribeReferenceType'
+            reference_id:
+              type: string
+              description: The ID of the reference for the transcription.
+            language:
+              type: string
+              description: The language of the transcription.
+            direction:
+              $$ref: '../../components/transcribe_manager/main.yaml#/components/schemas/TranscribeDirection'
+  responses:
+    '200':
+      description: The created transcribe details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/transcribe_manager/main.yaml#/components/schemas/Transcribe'
+

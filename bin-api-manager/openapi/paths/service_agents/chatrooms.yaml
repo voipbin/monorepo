@@ -1,0 +1,45 @@
+get:
+  summary: Get list of chatrooms
+  description: Returns a list of chatrooms for the given customer.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of chatrooms for the customer.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'
+
+post:
+  summary: Create a new chatroom and return the created chatroom's details
+  description: Creates a new chatroom for the given customer and returns the created chatroom's details.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            participant_ids:
+              type: array
+              items:
+                type: string
+            name:
+              type: string
+            detail:
+              type: string
+  responses:
+    '200':
+      description: The created chatroom's details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'

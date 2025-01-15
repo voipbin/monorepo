@@ -1,0 +1,35 @@
+delete:
+  summary: Delete an active flow
+  description: Endpoint to delete an active flow by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        description: The ID of the active flow to delete.
+  responses:
+    '204':
+      description: Active flow deleted successfully.
+    '404':
+      description: Flow not found.
+
+get:
+  summary: Get an active flow by ID
+  description: Retrieve details of a specific active flow.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        description: The ID of the active flow.
+  responses:
+    '200':
+      description: Active flow details retrieved successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Activeflow'
+    '404':
+      description: Flow not found.

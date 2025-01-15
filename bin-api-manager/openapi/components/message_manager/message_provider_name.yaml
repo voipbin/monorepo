@@ -1,0 +1,10 @@
+type: string
+description: Name of the message provider.
+enum:
+  - telnyx
+  - twilio
+  - messagebird
+x-enum-varnames:
+  - MessageProviderNameTelnyx
+  - MessageProviderNameTwilio
+  - MessageProviderNameMessagebird

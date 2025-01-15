@@ -1,0 +1,10 @@
+type: string
+description: Type of the message in the chat room.
+enum:
+  - ""
+  - system
+  - normal
+x-enum-varnames:
+  - MessagechatroomTypeUnknown
+  - MessagechatroomTypeSystem
+  - MessagechatroomTypeNormal

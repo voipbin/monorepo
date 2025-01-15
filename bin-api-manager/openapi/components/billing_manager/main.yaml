@@ -1,0 +1,15 @@
+components:
+  schemas:
+    AccountPaymentMethod:
+      $ref: 'account_payment_method.yaml'
+    AccountPaymentType:
+      $ref: 'account_payment_type.yaml'
+    Account:
+      $ref: 'account.yaml'
+
+    Billingreference_type:
+      $ref: 'billing_reference_type.yaml'
+    BillingStatus:
+      $ref: 'billing_status.yaml'
+    Billing:
+      $ref: 'billing.yaml'

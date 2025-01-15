@@ -1,0 +1,50 @@
+/chatmessages:
+get:
+  summary: Retrieve a list of chat messages
+  description: Fetches a paginated list of chat messages.
+  parameters:
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of chat messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '../../components/chat_manager/main.yaml#/components/schemas/Messagechat'
+
+post:
+  summary: Create a new chat message
+  description: Creates a new chat message and returns the details of the created message.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            chatID:
+              type: string
+            source:
+              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+            type:
+              $ref: '../../components/chat_manager/main.yaml#/components/schemas/MessagechatType'
+            text:
+              type: string
+            medias:
+              type: array
+              items:
+                $ref: '../../components/chat_manager/main.yaml#/components/schemas/Media'
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Messagechat'

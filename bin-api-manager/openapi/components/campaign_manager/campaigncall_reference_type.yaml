@@ -1,0 +1,9 @@
+type: string
+enum:
+  - none
+  - call
+  - flow
+x-enum-varnames:
+  - Campaigncallreference_typeNone
+  - Campaigncallreference_typeCall
+  - Campaigncallreference_typeFlow

@@ -1,0 +1,35 @@
+get:
+  summary: Get campaign call details
+  description: Retrieve detailed information for a specific campaign call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the campaign call
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Detailed information for the specified campaign call
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaigncall'
+
+delete:
+  summary: Delete a campaign call
+  description: Deletes an existing campaign call.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the campaign call to delete
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Campaign call deleted successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaigncall'

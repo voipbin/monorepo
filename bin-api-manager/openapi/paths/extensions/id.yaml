@@ -1,0 +1,65 @@
+get:
+  summary: Get extension details
+  description: Retrieves details of a specific extension by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the extension.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The extension details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+
+put:
+  summary: Update an extension
+  description: Updates an existing extension and returns the updated details.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the extension.
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            password:
+              type: string
+  responses:
+    '200':
+      description: The updated extension.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+
+delete:
+  summary: Delete an extension
+  description: Deletes an existing extension by its ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The ID of the extension.
+      schema:
+        type: string
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'

@@ -1,0 +1,13 @@
+components:
+  schemas:
+    QueueRoutingMethod:
+      $ref: 'queue_routing_method.yaml'
+    Queue:
+      $ref: 'queue.yaml'
+
+    Queuecallreference_type:
+      $ref: 'queuecall_reference_type.yaml'
+    QueuecallStatus:
+      $ref: 'queuecall_status.yaml'
+    Queuecall:
+      $ref: 'queuecall.yaml'

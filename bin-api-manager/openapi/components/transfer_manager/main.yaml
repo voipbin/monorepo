@@ -1,0 +1,6 @@
+components:
+  schemas:
+    TransferType:
+      $ref: 'transfer_type.yaml'
+    Transfer:
+      $ref: 'transfer.yaml'

@@ -1,0 +1,19 @@
+put:
+  summary: Update authenticated agent's status
+  description: Updates the status of the authenticated agent and returns the updated information.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentStatus'
+  responses:
+    '200':
+      description: The updated status information of the agent.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'

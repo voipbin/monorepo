@@ -1,0 +1,22 @@
+type: string
+description: Type of the media.
+enum:
+  - image
+  - video
+  - audio
+  - file
+  - location
+  - sticker
+  - template
+  - imagemap
+  - flex
+x-enum-varnames:
+  - MediaTypeImage
+  - MediaTypeVideo
+  - MediaTypeAudio
+  - MediaTypeFile
+  - MediaTypeLocation
+  - MediaTypeSticker
+  - MediaTypeTemplate
+  - MediaTypeImagemap
+  - MediaTypeFlex

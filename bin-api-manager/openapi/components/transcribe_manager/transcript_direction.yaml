@@ -1,0 +1,9 @@
+type: string
+enum:
+  - both
+  - in
+  - out
+x-enum-varnames:
+  - TranscriptDirectionBoth
+  - TranscriptDirectionIn
+  - TranscriptDirectionOut

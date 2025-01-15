@@ -1,0 +1,15 @@
+components:
+  schemas:
+    MessageDirection:
+      $ref: 'message_direction.yaml'
+    MessageProviderName:
+      $ref: 'message_provider_name.yaml'
+    MessageType:
+      $ref: 'message_type.yaml'
+    Message:
+      $ref: 'message.yaml'
+    
+    TargetStatus:
+      $ref: 'target_status.yaml'
+    Target:
+      $ref: 'target.yaml'

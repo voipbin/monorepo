@@ -1,0 +1,74 @@
+get:
+  summary: Get provider by ID
+  description: Retrieves the provider details for the specified ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the provider
+  responses:
+    '200':
+      description: The details of the provider with the specified ID.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+
+delete:
+  summary: Delete provider by ID
+  description: Deletes the provider with the specified ID.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the provider to delete.
+  responses:
+    '200':
+      description: A confirmation of the deletion.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+
+put:
+  summary: Update provider information
+  description: Updates the provider details for the given ID with the provided information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the provider to update.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            type:
+              $ref: '../../components/route_manager/main.yaml#/components/schemas/ProviderType'
+            hostname:
+              type: string
+            techPrefix:
+              type: string
+            techPostfix:
+              type: string
+            techHeaders:
+              type: object
+            name:
+              type: string
+            detail:
+              type: string
+  responses:
+    '200':
+      description: The updated provider details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+

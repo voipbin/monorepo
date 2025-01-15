@@ -1,0 +1,41 @@
+get:
+  summary: Get recording details
+  description: Retrieves detailed information about a specific recording.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The recording's ID.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The recording details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/call_manager/main.yaml#/components/schemas/Recording'
+    '400':
+      description: Bad request. Could not find agent information or recording.
+    '404':
+      description: Recording not found.
+
+delete:
+  summary: Delete recording
+  description: Deletes the specified recording and returns the deleted recording information.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The recording's ID.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The deleted recording details.
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/call_manager/main.yaml#/components/schemas/Recording'
+    '400':
+      description: Bad request. Could not find agent information or recording to delete.

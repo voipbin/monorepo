@@ -1,0 +1,14 @@
+type: object
+properties:
+  destination:
+    description: The destination address for the message.
+    $ref: '../../components/common/main.yaml#/components/schemas/Address'
+  status:
+    description: The current status of the message for the target.
+    $ref: '#/components/schemas/TargetStatus'
+  parts:
+    type: integer
+    description: The number of message parts (if the message is split).
+  tm_update:
+    type: string
+    description: Timestamp when the target message was last updated.

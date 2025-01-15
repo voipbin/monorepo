@@ -1,0 +1,33 @@
+type: object
+properties:
+  id:
+    type: string
+  customer_id:
+    type: string
+  reference_type:
+    $ref: '#/components/schemas/Queuecallreference_type'
+  reference_id:
+    type: string
+  status:
+    $ref: '#/components/schemas/QueuecallStatus'
+  service_agent_id:
+    type: string
+    description: "The ID of the service agent handling the queue call"
+  duration_waiting:
+    type: integer
+    description: "Duration for waiting in milliseconds"
+  duration_service:
+    type: integer
+    description: "Duration for service in milliseconds"
+  tm_create:
+    type: string
+    description: "Timestamp when the queue call was created"
+  tm_service:
+    type: string
+    description: "Timestamp when the queue call started service"
+  tm_update:
+    type: string
+    description: "Timestamp when the queue call was last updated"
+  tm_delete:
+    type: string
+    description: "Timestamp when the queue call was deleted"

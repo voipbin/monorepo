@@ -1,0 +1,10 @@
+type: string
+description: Status of the campaign.
+enum:
+  - stop
+  - stopping
+  - run
+x-enum-varnames:
+  - CampaignStatusStop
+  - CampaignStatusStopping
+  - CampaignStatusRun

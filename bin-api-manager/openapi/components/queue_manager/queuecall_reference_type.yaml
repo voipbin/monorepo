@@ -1,0 +1,5 @@
+type: string
+enum:
+  - call
+x-enum-varnames:
+  - Queuecallreference_typeCall
