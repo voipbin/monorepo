@@ -22,13 +22,10 @@ properties:
     $ref: '#/components/schemas/AccountPaymentMethod'
   tm_create:
     type: string
-    format: date-time
-    description: The timestamp when the account was created.
+    description: Created timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: The timestamp when the account was last updated.
+    description: Updated timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: The timestamp when the account was deleted, if applicable.
+    description: Deleted timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

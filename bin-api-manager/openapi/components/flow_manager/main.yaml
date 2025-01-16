@@ -5,6 +5,10 @@ components:
     Action:
       $ref: 'action.yaml'
 
+    ActiveflowReferenceType:
+      $ref: 'activeflow_reference_type.yaml'
+    ActiveflowStatus:
+      $ref: 'activeflow_status.yaml'
     Activeflow:
       $ref: 'activeflow.yaml'
 

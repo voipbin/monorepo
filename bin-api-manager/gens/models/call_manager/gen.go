@@ -4,8 +4,6 @@
 package call_manager
 
 import (
-	"time"
-
 	externalRef0 "monorepo/bin-api-manager/gens/models/common"
 	externalRef1 "monorepo/bin-api-manager/gens/models/flow_manager"
 )
@@ -159,23 +157,23 @@ type Call struct {
 	// Status Call status
 	Status *CallStatus `json:"status,omitempty"`
 
-	// TmCreate Creation timestamp
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Creation timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Deletion timestamp
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Deletion timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmHangup Timestamp for call hangup
-	TmHangup *time.Time `json:"tm_hangup,omitempty"`
+	// TmHangup Timestamp for call hangup. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmHangup *string `json:"tm_hangup,omitempty"`
 
-	// TmProgressing Timestamp for call progressing
-	TmProgressing *time.Time `json:"tm_progressing,omitempty"`
+	// TmProgressing Timestamp for call progressing. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmProgressing *string `json:"tm_progressing,omitempty"`
 
-	// TmRinging Timestamp for call ringing
-	TmRinging *time.Time `json:"tm_ringing,omitempty"`
+	// TmRinging Timestamp for call ringing. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmRinging *string `json:"tm_ringing,omitempty"`
 
-	// TmUpdate Update timestamp
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Update timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Call type
 	Type *CallType `json:"type,omitempty"`
@@ -258,14 +256,14 @@ type Groupcall struct {
 	// Status Current status of the call or group call
 	Status *GroupcallStatus `json:"status,omitempty"`
 
-	// TmCreate Timestamp when the call was created
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Timestamp when the call was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the call was deleted
-	TmDelete *time.Time `json:"tm_delete"`
+	// TmDelete Timestamp when the call was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete"`
 
-	// TmUpdate Timestamp when the call was last updated
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Timestamp when the call was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // GroupcallAnswerMethod Method to handle answered calls
@@ -303,20 +301,20 @@ type Recording struct {
 	// Status The status of the recording.
 	Status *RecordingStatus `json:"status,omitempty"`
 
-	// TmCreate The creation timestamp of the recording.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate The creation timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete The timestamp when the recording was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete The timestamp when the recording was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmEnd The end timestamp of the recording.
-	TmEnd *time.Time `json:"tm_end,omitempty"`
+	// TmEnd The end timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmEnd *string `json:"tm_end,omitempty"`
 
-	// TmStart The start timestamp of the recording.
-	TmStart *time.Time `json:"tm_start,omitempty"`
+	// TmStart The start timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmStart *string `json:"tm_start,omitempty"`
 
-	// TmUpdate The last update timestamp of the recording.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate The last update timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
 // RecordingFormat The format of the recording.

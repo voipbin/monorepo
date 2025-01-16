@@ -1,0 +1,10 @@
+type: string
+description: Status of the activeflow.
+enum:
+  - ""
+  - running
+  - ended
+x-enum-varnames:
+  - ActiveflowStatusNone
+  - ActiveflowStatusRunning
+  - ActiveflowStatusEnded

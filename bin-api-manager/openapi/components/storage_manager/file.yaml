@@ -32,17 +32,13 @@ properties:
     description: "The URI for downloading the file."
   tm_download_expire:
     type: string
-    format: date-time
-    description: "The timestamp when the download link expires."
+    description: The timestamp when the download link expires. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_create:
     type: string
-    format: date-time
-    description: "Timestamp when the file was created."
+    description: Timestamp when the file was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: "Timestamp when the file was last updated."
+    description: Timestamp when the file was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: "Timestamp when the file was deleted."
+    description: Timestamp when the file was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

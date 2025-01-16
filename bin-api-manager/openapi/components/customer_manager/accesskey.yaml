@@ -12,13 +12,13 @@ properties:
     type: string
   tm_expire:
     type: string
-    format: date-time
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_create:
     type: string
-    format: date-time
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

@@ -4,8 +4,6 @@
 package campaign_manager
 
 import (
-	"time"
-
 	externalRef0 "monorepo/bin-api-manager/gens/models/common"
 	externalRef1 "monorepo/bin-api-manager/gens/models/flow_manager"
 
@@ -75,10 +73,16 @@ type Campaign struct {
 	ServiceLevel   *int                `json:"service_level,omitempty"`
 
 	// Status Status of the campaign.
-	Status   *CampaignStatus `json:"status,omitempty"`
-	TmCreate *time.Time      `json:"tm_create,omitempty"`
-	TmDelete *time.Time      `json:"tm_delete,omitempty"`
-	TmUpdate *time.Time      `json:"tm_update,omitempty"`
+	Status *CampaignStatus `json:"status,omitempty"`
+
+	// TmCreate Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of campaign.
 	Type *CampaignType `json:"type,omitempty"`
@@ -140,14 +144,14 @@ type Campaigncall struct {
 	Source *externalRef0.Address `json:"source,omitempty"`
 	Status *CampaigncallStatus   `json:"status,omitempty"`
 
-	// TmCreate Timestamp when the campaign call was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Timestamp when the campaign call was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the campaign call was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Timestamp when the campaign call was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the campaign call was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Timestamp when the campaign call was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TryCount Number of dialing attempts.
 	TryCount *int `json:"try_count,omitempty"`
@@ -197,14 +201,14 @@ type Outplan struct {
 	// Source Contains source or destination detail info.
 	Source *externalRef0.Address `json:"source,omitempty"`
 
-	// TmCreate Timestamp when the outplan was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Timestamp when the outplan was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the outplan was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Timestamp when the outplan was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the outplan was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Timestamp when the outplan was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TryInterval Interval between dialing attempts in milliseconds.
 	TryInterval *int `json:"try_interval,omitempty"`

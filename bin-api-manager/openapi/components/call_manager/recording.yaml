@@ -26,21 +26,16 @@ properties:
     description: The format of the recording file (e.g., WAV).
   tm_start:
     type: string
-    format: date-time
-    description: The start timestamp of the recording.
+    description: The start timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_end:
     type: string
-    format: date-time
-    description: The end timestamp of the recording.
+    description: The end timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_create:
     type: string
-    format: date-time
-    description: The creation timestamp of the recording.
+    description: The creation timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: The last update timestamp of the recording.
+    description: The last update timestamp of the recording. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: The timestamp when the recording was deleted.
+    description: The timestamp when the recording was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

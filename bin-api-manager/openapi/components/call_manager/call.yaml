@@ -57,25 +57,19 @@ properties:
     $ref: '#/components/schemas/CallHangupReason'
   tm_progressing:
     type: string
-    format: date-time
-    description: Timestamp for call progressing
+    description: Timestamp for call progressing. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_ringing:
     type: string
-    format: date-time
-    description: Timestamp for call ringing
+    description: Timestamp for call ringing. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_hangup:
     type: string
-    format: date-time
-    description: Timestamp for call hangup
+    description: Timestamp for call hangup. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_create:
     type: string
-    format: date-time
-    description: Creation timestamp
+    description: Creation timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: Update timestamp
+    description: Update timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: Deletion timestamp
+    description: Deletion timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

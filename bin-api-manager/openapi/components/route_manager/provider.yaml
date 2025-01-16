@@ -27,13 +27,10 @@ properties:
     description: "The details about the provider."
   tm_create:
     type: string
-    format: date-time
-    description: "Timestamp when the provider was created."
+    description: Timestamp when the provider was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: "Timestamp when the provider was last updated."
+    description: Timestamp when the provider was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: "Timestamp when the provider was deleted."
+    description: Timestamp when the provider was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

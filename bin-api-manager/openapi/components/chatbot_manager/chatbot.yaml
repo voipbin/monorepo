@@ -19,13 +19,10 @@ properties:
     description: Initial prompt to configure the chatbot's behavior.
   tm_create:
     type: string
-    format: date-time
-    description: Timestamp when the chatbot was created.
+    description: Timestamp when the chatbot was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: Timestamp when the chatbot was last updated.
+    description: Timestamp when the chatbot was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: Timestamp when the chatbot was deleted.
+    description: Timestamp when the chatbot was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

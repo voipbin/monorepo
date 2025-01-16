@@ -4,8 +4,6 @@
 package outdial_manager
 
 import (
-	"time"
-
 	externalRef0 "monorepo/bin-api-manager/gens/models/common"
 )
 
@@ -81,14 +79,14 @@ type Outdialtarget struct {
 	// Status The status of the outdial.
 	Status *OutdialtargetStatus `json:"status,omitempty"`
 
-	// TmCreate The creation timestamp.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate The creation timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete The deletion timestamp.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete The deletion timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate The update timestamp.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate The update timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// TryCount0 The try count for destination 0.
 	TryCount0 *int `json:"try_count_0,omitempty"`

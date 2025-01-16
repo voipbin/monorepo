@@ -32,17 +32,13 @@ properties:
     description: Language used during the chatbot call.
   tm_end:
     type: string
-    format: date-time
-    description: Timestamp when the chatbot call ended.
+    description: Timestamp when the chatbot call ended. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_create:
     type: string
-    format: date-time
-    description: Timestamp when the chatbot call was created.
+    description: Timestamp when the chatbot call was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: Timestamp when the chatbot call was last updated.
+    description: Timestamp when the chatbot call was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: Timestamp when the chatbot call was deleted.
+    description: Timestamp when the chatbot call was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

@@ -31,13 +31,10 @@ properties:
     description: List of associated media objects.
   tm_create:
     type: string
-    format: date-time
-    description: Timestamp when the message chat room was created.
+    description: Timestamp when the message chat room was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: Timestamp when the message chat room was last updated.
+    description: Timestamp when the message chat room was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: Timestamp when the message chat room was deleted.
+    description: Timestamp when the message chat room was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

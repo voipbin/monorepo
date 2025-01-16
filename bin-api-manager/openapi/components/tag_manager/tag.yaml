@@ -11,13 +11,10 @@ properties:
     description: "The details about the tag."
   tm_create:
     type: string
-    format: date-time
-    description: "Timestamp when the tag was created."
+    description: Timestamp when the tag was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: "Timestamp when the tag was last updated."
+    description: Timestamp when the tag was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: "Timestamp when the tag was deleted."
+    description: Timestamp when the tag was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

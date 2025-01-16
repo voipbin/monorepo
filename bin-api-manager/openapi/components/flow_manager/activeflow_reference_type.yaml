@@ -1,0 +1,10 @@
+type: string
+description: Reference type of activeflow.
+enum:
+  - ""
+  - call
+  - message
+x-enum-varnames:
+  - ActiveflowTypeNone
+  - ActiveflowTypeCall
+  - ActiveflowTypeMessage

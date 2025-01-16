@@ -6,53 +6,43 @@ properties:
   customer_id:
     type: string
     description: ID of the customer associated with the flow.
+    nullable: true
   flow_id:
     type: string
     description: ID of the flow definition.
+    nullable: true
   status:
-    type: string
-    enum:
-      - ""
-      - running
-      - ended
-    x-enum-varnames:
-      - ActiveflowStatusNone
-      - ActiveflowStatusRunning
-      - ActiveflowStatusEnded
-    description: Status of the activeflow.
+    $ref: '#/components/schemas/ActiveflowStatus'
+    nullable: true
   reference_type:
-    type: string
-    enum:
-      - ""
-      - call
-      - message
-    x-enum-varnames:
-      - ActiveflowTypeNone
-      - ActiveflowTypeCall
-      - ActiveflowTypeMessage
-    description: Reference type of activeflow.
+    $ref: '#/components/schemas/ActiveflowReferenceType'
+    nullable: true
   reference_id:
     type: string
     description: ID of the reference object.
+    nullable: true
   current_action:
     $ref: '#/components/schemas/Action'
+    nullable: true
   forward_action_id:
     type: string
     description: ID of the next action to be executed.
+    nullable: true
   executed_actions:
     type: array
     description: List of actions that have been executed.
     items:
       $ref: '#/components/schemas/Action'
+    nullable: true
   tm_create:
     type: string
-    format: date-time
-    description: Timestamp when the flow was created.
+    description: Timestamp when the flow was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+    nullable: true
   tm_update:
     type: string
-    format: date-time
-    description: Timestamp when the flow was last updated.
+    description: Timestamp when the flow was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+    nullable: true
   tm_delete:
     type: string
-    format: date-time
-    description: Timestamp when the flow was deleted.
+    description: Timestamp when the flow was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+    nullable: true

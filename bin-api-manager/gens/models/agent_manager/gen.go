@@ -4,8 +4,6 @@
 package agent_manager
 
 import (
-	"time"
-
 	externalRef0 "monorepo/bin-api-manager/gens/models/common"
 )
 
@@ -64,14 +62,14 @@ type Agent struct {
 	// TagIds Agent's tag IDs.
 	TagIds *[]string `json:"tag_ids,omitempty"`
 
-	// TmCreate Created timestamp.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Created timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Deleted timestamp.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Deleted timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Updated timestamp.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Updated timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Username Agent's username.
 	Username *string `json:"username,omitempty"`

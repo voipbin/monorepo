@@ -50,13 +50,10 @@ properties:
     description: The try count for destination 4.
   tm_create:
     type: string
-    format: date-time
-    description: The creation timestamp.
+    description: The creation timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: The update timestamp.
+    description: The update timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: The deletion timestamp.
+    description: The deletion timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

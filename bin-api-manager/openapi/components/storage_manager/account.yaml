@@ -16,13 +16,10 @@ properties:
     description: "The total file size in bytes."
   tm_create:
     type: string
-    format: date-time
-    description: "Timestamp when the account was created."
+    description: Timestamp when the account was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: "Timestamp when the account was last updated."
+    description: Timestamp when the account was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: "Timestamp when the account was deleted."
+    description: Timestamp when the account was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

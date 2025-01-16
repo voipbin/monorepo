@@ -33,13 +33,10 @@ properties:
     description: Agent's endpoint addresses.
   tm_create:
     type: string
-    format: date-time
-    description: Created timestamp.
+    description: Created timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: Updated timestamp.
+    description: Updated timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: Deleted timestamp.
+    description: Deleted timestamp. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

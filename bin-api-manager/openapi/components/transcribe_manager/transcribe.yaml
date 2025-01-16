@@ -20,13 +20,10 @@ properties:
     $ref: '#/components/schemas/TranscribeDirection'
   tm_create:
     type: string
-    format: date-time
-    description: Timestamp when created
-  tm_update:
+    description: Timestamp when created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+=  tm_update:
     type: string
-    format: date-time
-    description: Timestamp when updated
-  tm_delete:
+    description: Timestamp when updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+=  tm_delete:
     type: string
-    format: date-time
-    description: Timestamp when deleted
+    description: Timestamp when deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

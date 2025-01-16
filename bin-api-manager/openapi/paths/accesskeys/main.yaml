@@ -34,8 +34,7 @@ post:
             detail:
               type: string
             expire:
-              type: string
-              format: date-time
+              type: integer
   responses:
     '201':
       description: Successful response

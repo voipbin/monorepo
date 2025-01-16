@@ -30,21 +30,16 @@ properties:
     description: The total count of billing units.
   tm_billing_start:
     type: string
-    format: date-time
-    description: The start timestamp of the billing period.
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_billing_end:
     type: string
-    format: date-time
-    description: The end timestamp of the billing period.
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_create:
     type: string
-    format: date-time
-    description: The creation timestamp.
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: The last update timestamp.
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: The deletion timestamp, if applicable.
+    description: Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

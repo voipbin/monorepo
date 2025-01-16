@@ -4,8 +4,6 @@
 package chat_manager
 
 import (
-	"time"
-
 	externalRef0 "monorepo/bin-api-manager/gens/models/agent_manager"
 	externalRef1 "monorepo/bin-api-manager/gens/models/common"
 )
@@ -64,14 +62,14 @@ type Chat struct {
 	// RoomOwnerId Owned agent's ID.
 	RoomOwnerId *string `json:"room_owner_id,omitempty"`
 
-	// TmCreate Timestamp when the chat was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Timestamp when the chat was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the chat was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Timestamp when the chat was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the chat was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Timestamp when the chat was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the chat.
 	Type *ChatType `json:"type,omitempty"`
@@ -107,14 +105,14 @@ type Chatroom struct {
 	// RoomOwnerId Chat room's owner agent ID.
 	RoomOwnerId *string `json:"room_owner_id,omitempty"`
 
-	// TmCreate Timestamp when the chat room was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Timestamp when the chat room was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the chat room was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Timestamp when the chat room was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the chat room was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Timestamp when the chat room was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the chat room.
 	Type *ChatroomType `json:"type,omitempty"`
@@ -161,14 +159,14 @@ type Messagechat struct {
 	// Text Text content of the message.
 	Text *string `json:"text,omitempty"`
 
-	// TmCreate Timestamp when the message chat was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Timestamp when the message chat was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the message chat was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Timestamp when the message chat was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the message chat was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Timestamp when the message chat was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the message chat.
 	Type *MessagechatType `json:"type,omitempty"`
@@ -204,14 +202,14 @@ type Messagechatroom struct {
 	// Text Text content of the message.
 	Text *string `json:"text,omitempty"`
 
-	// TmCreate Timestamp when the message chat room was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	// TmCreate Timestamp when the message chat room was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the message chat room was deleted.
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
+	// TmDelete Timestamp when the message chat room was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmDelete *string `json:"tm_delete,omitempty"`
 
-	// TmUpdate Timestamp when the message chat room was last updated.
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
+	// TmUpdate Timestamp when the message chat room was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
+	TmUpdate *string `json:"tm_update,omitempty"`
 
 	// Type Type of the message in the chat room.
 	Type *MessagechatroomType `json:"type,omitempty"`

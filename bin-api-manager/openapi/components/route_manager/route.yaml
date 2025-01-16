@@ -23,13 +23,10 @@ properties:
     description: "The target destination for the route (e.g., country code or 'all')."
   tm_create:
     type: string
-    format: date-time
-    description: "Timestamp when the route was created."
+    description: Timestamp when the route was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: "Timestamp when the route was last updated."
+    description: Timestamp when the route was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: "Timestamp when the route was deleted."
+    description: Timestamp when the route was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)

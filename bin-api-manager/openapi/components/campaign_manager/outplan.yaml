@@ -37,13 +37,10 @@ properties:
     description: Maximum number of tries for level 4.
   tm_create:
     type: string
-    format: date-time
-    description: Timestamp when the outplan was created.
+    description: Timestamp when the outplan was created. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_update:
     type: string
-    format: date-time
-    description: Timestamp when the outplan was last updated.
+    description: Timestamp when the outplan was last updated. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
   tm_delete:
     type: string
-    format: date-time
-    description: Timestamp when the outplan was deleted.
+    description: Timestamp when the outplan was deleted. Custom date-time format(YYYY-MM-DD HH:mm:ss.ssssss)
