@@ -62,24 +62,3 @@ func GenerateListResponse[T any](tmps []*T, nextTokenValue string) struct {
 		},
 	}
 }
-
-// func CreateResponse[T any](tmps []*T) struct {
-// 	Result []*T `json:"result"`
-// 	common.Pagination
-// } {
-// 	nextToken := ""
-// 	if len(tmps) > 0 {
-// 		// Assuming T has a field TMCreate of type string
-// 		nextToken = tmps[len(tmps)-1].TMCreate
-// 	}
-
-// 	return struct {
-// 		Result []*T `json:"result"`
-// 		common.Pagination
-// 	}{
-// 		Result: tmps,
-// 		Pagination: common.Pagination{
-// 			NextPageToken: &nextToken,
-// 		},
-// 	}
-// }
