@@ -1,6 +1,8 @@
 post:
   summary: Create a new activeflow
   description: Endpoint to create a new activeflow.
+  tags:
+    - Activeflow Management
   requestBody:
     description: Request body to create a new activeflow.
     required: true
@@ -32,6 +34,8 @@ post:
 get:
   summary: List all activeflows
   description: Retrieve a list of all activeflows.
+  tags:
+    - Activeflow Management
   parameters:
     - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
     - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'

@@ -1,6 +1,8 @@
 delete:
   summary: Delete an active flow
   description: Endpoint to delete an active flow by its ID.
+  tags:
+    - Activeflow Management
   parameters:
     - name: id
       in: path
@@ -17,6 +19,8 @@ delete:
 get:
   summary: Get an active flow by ID
   description: Retrieve details of a specific active flow.
+  tags:
+    - Activeflow Management
   parameters:
     - name: id
       in: path

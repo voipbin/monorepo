@@ -1,8 +1,6 @@
 get:
   summary: Get list of accesskeys
   description: Get accesskeys of the customer
-  tags:
-    - Accesskey Management
   parameters:
     - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
     - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
@@ -24,8 +22,6 @@ get:
 post:
   summary: Create a new accesskey.
   description: Create a new accesskey.
-  tags:
-    - Accesskey Management
   requestBody:
     required: true
     content:

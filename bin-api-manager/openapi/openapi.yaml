@@ -4,6 +4,19 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:8080/v1.0
+
+tags:
+  - name: Accesskey Management
+    description: Operations related to accesskey management
+  - name: Activeflow Management
+    description: Operations related to activeflow management
+
+x-tagGroups:
+  - name: Customer Admin menus
+    tags:
+      - Accesskey Management
+      - Activeflow Management
+
 paths:
   /accesskeys/{id}:
     $ref: './paths/accesskeys/id.yaml'

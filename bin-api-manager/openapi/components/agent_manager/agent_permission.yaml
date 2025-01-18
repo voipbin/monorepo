@@ -12,11 +12,11 @@ enum:
   - 64   # PermissionCustomerManager
   - 240  # PermissionCustomerAll
 x-enum-varnames:
-  - PermissionNone
-  - PermissionAll
-  - PermissionProjectSuperAdmin
-  - PermissionProjectAll
-  - PermissionCustomerAgent
-  - PermissionCustomerAdmin
-  - PermissionCustomerManager
-  - PermissionCustomerAll
+  - AgentPermissionNone
+  - AgentPermissionAll
+  - AgentPermissionProjectSuperAdmin
+  - AgentPermissionProjectAll
+  - AgentPermissionCustomerAgent
+  - AgentPermissionCustomerAdmin
+  - AgentPermissionCustomerManager
+  - AgentPermissionCustomerAll

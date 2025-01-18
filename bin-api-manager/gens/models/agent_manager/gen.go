@@ -9,14 +9,14 @@ import (
 
 // Defines values for AgentPermission.
 const (
-	PermissionAll               AgentPermission = 65535
-	PermissionCustomerAdmin     AgentPermission = 32
-	PermissionCustomerAgent     AgentPermission = 16
-	PermissionCustomerAll       AgentPermission = 240
-	PermissionCustomerManager   AgentPermission = 64
-	PermissionNone              AgentPermission = 0
-	PermissionProjectAll        AgentPermission = 15
-	PermissionProjectSuperAdmin AgentPermission = 1
+	AgentPermissionAll               AgentPermission = 65535
+	AgentPermissionCustomerAdmin     AgentPermission = 32
+	AgentPermissionCustomerAgent     AgentPermission = 16
+	AgentPermissionCustomerAll       AgentPermission = 240
+	AgentPermissionCustomerManager   AgentPermission = 64
+	AgentPermissionNone              AgentPermission = 0
+	AgentPermissionProjectAll        AgentPermission = 15
+	AgentPermissionProjectSuperAdmin AgentPermission = 1
 )
 
 // Defines values for AgentRingMethod.
