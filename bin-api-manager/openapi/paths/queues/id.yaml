@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+            $ref: '#/components/schemas/QueueManagerQueue'
 
 delete:
   summary: Delete a queue by ID
@@ -30,7 +30,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+            $ref: '#/components/schemas/QueueManagerQueue'
 
 put:
   summary: Update the queue details
@@ -53,7 +53,7 @@ put:
             detail:
               type: string
             routing_method:
-              $ref: '../../components/queue_manager/main.yaml#/components/schemas/QueueRoutingMethod'
+              $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
             tag_ids:
               type: array
               items:
@@ -61,7 +61,7 @@ put:
             wait_actions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
             wait_timeout:
               type: integer
             service_timeout:
@@ -73,4 +73,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+            $ref: '#/components/schemas/QueueManagerQueue'

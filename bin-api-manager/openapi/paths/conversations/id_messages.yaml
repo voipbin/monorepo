@@ -2,8 +2,8 @@ get:
   summary: Gets a list of conversation messages
   description: Gets a paginated list of messages for a specific conversation.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
     - name: id
       in: path
       required: true
@@ -16,13 +16,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Message'
+                      $ref: '#/components/schemas/ConversationManagerMessage'
 
 post:
   summary: Send a message
@@ -47,10 +47,10 @@ post:
             media:
               type: array
               items:
-                $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Media'
+                $ref: '#/components/schemas/ConversationManagerMedia'
   responses:
     '200':
       content:
         application/json:
           schema:
-            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Message'
+            $ref: '#/components/schemas/ConversationManagerMessage'

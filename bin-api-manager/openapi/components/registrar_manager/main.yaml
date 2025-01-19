@@ -1,8 +1,0 @@
-components:
-  schemas:
-    AuthType:
-      $ref: 'authtype.yaml'
-    Extension:
-      $ref: 'extension.yaml'
-    Trunk:
-      $ref: 'trunk.yaml'

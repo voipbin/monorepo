@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conferencecall'
+            $ref: '#/components/schemas/ConferenceManagerConferencecall'
 
 delete:
   summary: Remove a conference call
@@ -31,4 +31,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conferencecall'
+            $ref: '#/components/schemas/ConferenceManagerConferencecall'

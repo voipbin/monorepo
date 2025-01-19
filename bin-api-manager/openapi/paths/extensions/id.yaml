@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+            $ref: '#/components/schemas/RegistrarManagerExtension'
 
 put:
   summary: Update an extension
@@ -45,7 +45,7 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+            $ref: '#/components/schemas/RegistrarManagerExtension'
 
 delete:
   summary: Delete an extension
@@ -62,4 +62,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+            $ref: '#/components/schemas/RegistrarManagerExtension'

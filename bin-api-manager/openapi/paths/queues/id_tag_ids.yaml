@@ -23,4 +23,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+            $ref: '#/components/schemas/QueueManagerQueue'

@@ -22,19 +22,19 @@ post:
             data:
               type: string
             destination0:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
             destination1:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
             destination2:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
             destination3:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
             destination4:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
   responses:
     '200':
       description: The created outdial target details.
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdialtarget'
+            $ref: '#/components/schemas/OutdialManagerOutdialtarget'

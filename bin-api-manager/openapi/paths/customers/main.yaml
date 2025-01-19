@@ -2,8 +2,8 @@ get:
   summary: Gets a list of customers.
   description: Retrieves a paginated list of customers.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of customers.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+                      $ref: '#/components/schemas/CustomerManagerCustomer'
 
 post:
   summary: Create a new customer.
@@ -40,7 +40,7 @@ post:
             address:
               type: string
             webhookMethod:
-              $ref: '../../components/customer_manager/main.yaml#/components/schemas/CustomerWebhookMethod'
+              $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
             webhookURI:
               type: string
   responses:
@@ -48,4 +48,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerManagerCustomer'

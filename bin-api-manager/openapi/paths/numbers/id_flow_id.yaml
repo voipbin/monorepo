@@ -26,4 +26,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/number_manager/main.yaml#/components/schemas/Number'
+            $ref: '#/components/schemas/NumberManagerNumber'

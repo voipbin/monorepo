@@ -1,9 +1,0 @@
-components:
-  schemas:
-    Outdial:
-      $ref: 'outdial.yaml'
-
-    OutdialtargetStatus:
-      $ref: 'outdialtarget_status.yaml'
-    Outdialtarget:
-      $ref: 'outdialtarget.yaml'

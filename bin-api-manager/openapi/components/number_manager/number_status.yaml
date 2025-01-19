@@ -1,8 +1,0 @@
-type: string
-description: The status of the number.
-enum:
-  - active
-  - deleted
-x-enum-varnames:
-  - StatusActive
-  - StatusDeleted

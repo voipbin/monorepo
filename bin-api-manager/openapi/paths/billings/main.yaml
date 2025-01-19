@@ -2,8 +2,8 @@ get:
   summary: Get list of billings
   description: Retrieve a list of the customer's billings.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of billings.
@@ -11,10 +11,10 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/billing_manager/main.yaml#/components/schemas/Billing'
+                      $ref: '#/components/schemas/BillingManagerBilling'

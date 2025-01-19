@@ -13,4 +13,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Call'
+            $ref: '#/components/schemas/CallManagerCall'

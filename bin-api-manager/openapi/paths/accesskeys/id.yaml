@@ -1,7 +1,5 @@
 get:
   summary: Get details of an accesskey
-  tags:
-    - Accesskey Management
   parameters:
     - name: id
       in: path
@@ -15,12 +13,10 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Accesskey'
+            $ref: '#/components/schemas/CustomerManagerAccesskey'
 
 delete:
   summary: Delete an accesskey
-  tags:
-    - Accesskey Management
   parameters:
     - name: id
       in: path
@@ -34,8 +30,6 @@ delete:
 
 put:
   summary: Update an accesskey
-  tags:
-    - Accesskey Management
   parameters:
     - name: id
       in: path
@@ -60,4 +54,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Accesskey'
+            $ref: '#/components/schemas/CustomerManagerAccesskey'

@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/storage_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/StorageManagerAccount'
 
 delete:
   summary: Delete a specific storage account
@@ -32,4 +32,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/storage_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/StorageManagerAccount'

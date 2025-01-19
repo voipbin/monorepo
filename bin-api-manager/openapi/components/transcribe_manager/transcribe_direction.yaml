@@ -1,9 +1,0 @@
-type: string
-enum:
-  - both
-  - in
-  - out
-x-enum-varnames:
-  - TranscribeDirectionBoth
-  - TranscribeDirectionIn
-  - TranscribeDirectionOut

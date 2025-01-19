@@ -9,14 +9,14 @@ post:
           type: object
           properties:
             transferType:
-              $ref: '../../components/transfer_manager/main.yaml#/components/schemas/TransferType'
+              $ref: '#/components/schemas/TransferManagerTransferType'
             transfererCallID:
               type: string
               description: Call ID of the transfer initiator.
             transfereeAddresses:
               type: array
               items:
-                $ref: '../../components/common/main.yaml#/components/schemas/Address'
+                $ref: '#/components/schemas/CommonAddress'
               description: Addresses of the transfer recipients.
           required:
             - transferType
@@ -28,4 +28,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/transfer_manager/main.yaml#/components/schemas/Transfer'
+            $ref: '#/components/schemas/TransferManagerTransfer'

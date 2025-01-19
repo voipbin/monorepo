@@ -14,11 +14,11 @@ put:
           type: object
           properties:
             routing_method:
-              $ref: '../../components/queue_manager/main.yaml#/components/schemas/QueueRoutingMethod'
+              $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
   responses:
     '200':
       description: The updated queue details.
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+            $ref: '#/components/schemas/QueueManagerQueue'

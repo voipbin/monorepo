@@ -20,4 +20,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chat'
+            $ref: '#/components/schemas/ChatManagerChat'

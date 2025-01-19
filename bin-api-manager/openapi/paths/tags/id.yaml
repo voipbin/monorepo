@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+            $ref: '#/components/schemas/TagManagerTag'
 
 delete:
   summary: Delete the tag
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+            $ref: '#/components/schemas/TagManagerTag'
 
 put:
   summary: Update the tag info
@@ -55,4 +55,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+            $ref: '#/components/schemas/TagManagerTag'

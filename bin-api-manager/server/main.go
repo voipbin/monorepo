@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"monorepo/bin-api-manager/gens/models/common"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 )
@@ -45,7 +44,7 @@ func intPtr(s int) *int {
 
 func GenerateListResponse[T any](tmps []*T, nextTokenValue string) struct {
 	Result []*T `json:"result"`
-	common.Pagination
+	openapi_server.CommonPagination
 } {
 	nextToken := ""
 	if len(tmps) > 0 {
@@ -54,10 +53,10 @@ func GenerateListResponse[T any](tmps []*T, nextTokenValue string) struct {
 
 	return struct {
 		Result []*T `json:"result"`
-		common.Pagination
+		openapi_server.CommonPagination
 	}{
 		Result: tmps,
-		Pagination: common.Pagination{
+		CommonPagination: openapi_server.CommonPagination{
 			NextPageToken: &nextToken,
 		},
 	}

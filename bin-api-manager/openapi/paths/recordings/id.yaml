@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Recording'
+            $ref: '#/components/schemas/CallManagerRecording'
     '400':
       description: Bad request. Could not find agent information or recording.
     '404':
@@ -36,6 +36,6 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Recording'
+            $ref: '#/components/schemas/CallManagerRecording'
     '400':
       description: Bad request. Could not find agent information or recording to delete.

@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'
+            $ref: '#/components/schemas/FlowManagerFlow'
 
 put:
   summary: Update a flow
@@ -42,7 +42,7 @@ put:
             actions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
               description: Updated list of actions associated with the flow.
   responses:
     '200':
@@ -50,7 +50,7 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'
+            $ref: '#/components/schemas/FlowManagerFlow'
 
 delete:
   summary: Delete a flow
@@ -68,4 +68,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'
+            $ref: '#/components/schemas/FlowManagerFlow'

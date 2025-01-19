@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Messagechat'
+            $ref: '#/components/schemas/ChatManagerMessagechat'
 
 delete:
   summary: Delete a chat message
@@ -30,4 +30,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Messagechat'
+            $ref: '#/components/schemas/ChatManagerMessagechat'

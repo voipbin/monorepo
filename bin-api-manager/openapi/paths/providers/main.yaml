@@ -2,8 +2,8 @@ get:
   summary: List providers of the given customer
   description: Returns a list of providers for the authenticated customer.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of providers for the given customer.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+                      $ref: '#/components/schemas/RouteManagerProvider'
 
 post:
   summary: Create a new provider
@@ -29,7 +29,7 @@ post:
           type: object
           properties:
             type:
-              $ref: '../../components/route_manager/main.yaml#/components/schemas/ProviderType'
+              $ref: '#/components/schemas/RouteManagerProviderType'
             hostname:
               type: string
             techPrefix:
@@ -48,4 +48,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+            $ref: '#/components/schemas/RouteManagerProvider'

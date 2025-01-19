@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+            $ref: '#/components/schemas/RouteManagerProvider'
 
 delete:
   summary: Delete provider by ID
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+            $ref: '#/components/schemas/RouteManagerProvider'
 
 put:
   summary: Update provider information
@@ -51,7 +51,7 @@ put:
           type: object
           properties:
             type:
-              $ref: '../../components/route_manager/main.yaml#/components/schemas/ProviderType'
+              $ref: '#/components/schemas/RouteManagerProviderType'
             hostname:
               type: string
             techPrefix:
@@ -70,5 +70,5 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/route_manager/main.yaml#/components/schemas/Provider'
+            $ref: '#/components/schemas/RouteManagerProvider'
 

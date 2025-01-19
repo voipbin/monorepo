@@ -1,6 +1,0 @@
-type: string
-description: Type of reference associated with the chatbot call.
-enum:
-  - call
-x-enum-varnames:
-  - Chatbotcallreference_typeCall

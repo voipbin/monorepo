@@ -14,4 +14,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+            $ref: '#/components/schemas/RegistrarManagerExtension'

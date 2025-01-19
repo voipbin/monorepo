@@ -16,7 +16,7 @@ put:
           type: object
           properties:
             status:
-              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignStatus'
+              $ref: '#/components/schemas/CampaignManagerCampaignStatus'
           required:
             - status
   responses:
@@ -24,4 +24,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+            $ref: '#/components/schemas/CampaignManagerCampaign'

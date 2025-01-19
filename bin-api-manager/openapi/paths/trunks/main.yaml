@@ -2,8 +2,8 @@ get:
   summary: Retrieve a list of trunks.
   description: Retrieves a paginated list of trunks.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of trunks.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Trunk'
+                      $ref: '#/components/schemas/RegistrarManagerTrunk'
 
 post:
   summary: Create a new trunk.
@@ -38,7 +38,7 @@ post:
             authTypes:
               type: array
               items:
-                $ref: '../../components/registrar_manager/main.yaml#/components/schemas/AuthType'
+                $ref: '#/components/schemas/RegistrarManagerAuthType'
             username:
               type: string
             password:
@@ -53,5 +53,5 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Trunk'
+            $ref: '#/components/schemas/RegistrarManagerTrunk'
 

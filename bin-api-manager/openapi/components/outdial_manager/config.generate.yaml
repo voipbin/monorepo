@@ -1,8 +1,0 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/oapi-codegen/oapi-codegen/HEAD/configuration-schema.json
-package: outdial_manager
-generate:
-  models: true
-output-options:
-  skip-prune: true
-import-mapping:
-  ../../components/common/main.yaml: "monorepo/bin-api-manager/gens/models/common"

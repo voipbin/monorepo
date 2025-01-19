@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Conversation'
+            $ref: '#/components/schemas/ConversationManagerConversation'
 
 put:
   summary: Update conversation info
@@ -41,4 +41,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Conversation'
+            $ref: '#/components/schemas/ConversationManagerConversation'

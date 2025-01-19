@@ -8,23 +8,2413 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	externalRef6 "monorepo/bin-api-manager/gens/models/common"
-	externalRef9 "monorepo/bin-api-manager/gens/models/customer_manager"
-	externalRef10 "monorepo/bin-api-manager/gens/models/flow_manager"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/oapi-codegen/runtime"
 	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
+
+// Defines values for AgentManagerAgentPermission.
+const (
+	AgentManagerPermissionAll               AgentManagerAgentPermission = 65535
+	AgentManagerPermissionCustomerAdmin     AgentManagerAgentPermission = 32
+	AgentManagerPermissionCustomerAgent     AgentManagerAgentPermission = 16
+	AgentManagerPermissionCustomerAll       AgentManagerAgentPermission = 240
+	AgentManagerPermissionCustomerManager   AgentManagerAgentPermission = 64
+	AgentManagerPermissionNone              AgentManagerAgentPermission = 0
+	AgentManagerPermissionProjectAll        AgentManagerAgentPermission = 15
+	AgentManagerPermissionProjectSuperAdmin AgentManagerAgentPermission = 1
+)
+
+// Defines values for AgentManagerAgentRingMethod.
+const (
+	AgentManagerAgentRingMethodLinear  AgentManagerAgentRingMethod = "linear"
+	AgentManagerAgentRingMethodRingAll AgentManagerAgentRingMethod = "ringall"
+)
+
+// Defines values for AgentManagerAgentStatus.
+const (
+	AgentManagerAgentStatusAvailable AgentManagerAgentStatus = "available"
+	AgentManagerAgentStatusAway      AgentManagerAgentStatus = "away"
+	AgentManagerAgentStatusBusy      AgentManagerAgentStatus = "busy"
+	AgentManagerAgentStatusNone      AgentManagerAgentStatus = ""
+	AgentManagerAgentStatusOffline   AgentManagerAgentStatus = "offline"
+	AgentManagerAgentStatusRinging   AgentManagerAgentStatus = "ringing"
+)
+
+// Defines values for BillingManagerAccountPaymentMethod.
+const (
+	BillingManagerAccountPaymentMethodCreditCard BillingManagerAccountPaymentMethod = "credit card"
+	BillingManagerAccountPaymentMethodNone       BillingManagerAccountPaymentMethod = ""
+)
+
+// Defines values for BillingManagerAccountPaymentType.
+const (
+	BillingManagerAccountPaymentTypeNone    BillingManagerAccountPaymentType = ""
+	BillingManagerAccountPaymentTypePrepaid BillingManagerAccountPaymentType = "prepaid"
+)
+
+// Defines values for BillingManagerBillingStatus.
+const (
+	BillingManagerBillingStatusEnd         BillingManagerBillingStatus = "end"
+	BillingManagerBillingStatusFinished    BillingManagerBillingStatus = "finished"
+	BillingManagerBillingStatusPending     BillingManagerBillingStatus = "pending"
+	BillingManagerBillingStatusProgressing BillingManagerBillingStatus = "progressing"
+)
+
+// Defines values for BillingManagerBillingreferenceType.
+const (
+	BillingManagerBillingreferenceTypeCall        BillingManagerBillingreferenceType = "call"
+	BillingManagerBillingreferenceTypeNone        BillingManagerBillingreferenceType = ""
+	BillingManagerBillingreferenceTypeNumber      BillingManagerBillingreferenceType = "number"
+	BillingManagerBillingreferenceTypeNumberRenew BillingManagerBillingreferenceType = "number_renew"
+	BillingManagerBillingreferenceTypeSMS         BillingManagerBillingreferenceType = "sms"
+)
+
+// Defines values for CallManagerCallDirection.
+const (
+	CallManagerCallDirectionIncoming CallManagerCallDirection = "incoming"
+	CallManagerCallDirectionOutgoing CallManagerCallDirection = "outgoing"
+)
+
+// Defines values for CallManagerCallHangupBy.
+const (
+	CallManagerCallHangupByLocal  CallManagerCallHangupBy = "local"
+	CallManagerCallHangupByNone   CallManagerCallHangupBy = ""
+	CallManagerCallHangupByRemote CallManagerCallHangupBy = "remote"
+)
+
+// Defines values for CallManagerCallHangupReason.
+const (
+	CallManagerCallHangupReasonAMD      CallManagerCallHangupReason = "amd"
+	CallManagerCallHangupReasonBusy     CallManagerCallHangupReason = "busy"
+	CallManagerCallHangupReasonCancel   CallManagerCallHangupReason = "cancel"
+	CallManagerCallHangupReasonDialout  CallManagerCallHangupReason = "dialout"
+	CallManagerCallHangupReasonFailed   CallManagerCallHangupReason = "failed"
+	CallManagerCallHangupReasonNoanswer CallManagerCallHangupReason = "noanswer"
+	CallManagerCallHangupReasonNone     CallManagerCallHangupReason = ""
+	CallManagerCallHangupReasonNormal   CallManagerCallHangupReason = "normal"
+	CallManagerCallHangupReasonTimeout  CallManagerCallHangupReason = "timeout"
+)
+
+// Defines values for CallManagerCallMuteDirection.
+const (
+	CallManagerCallMuteDirectionBoth CallManagerCallMuteDirection = "both"
+	CallManagerCallMuteDirectionIn   CallManagerCallMuteDirection = "in"
+	CallManagerCallMuteDirectionNone CallManagerCallMuteDirection = ""
+	CallManagerCallMuteDirectionOut  CallManagerCallMuteDirection = "out"
+)
+
+// Defines values for CallManagerCallStatus.
+const (
+	CallManagerCallStatusCanceling   CallManagerCallStatus = "canceling"
+	CallManagerCallStatusDialing     CallManagerCallStatus = "dialing"
+	CallManagerCallStatusHangup      CallManagerCallStatus = "hangup"
+	CallManagerCallStatusProgressing CallManagerCallStatus = "progressing"
+	CallManagerCallStatusRinging     CallManagerCallStatus = "ringing"
+	CallManagerCallStatusTerminating CallManagerCallStatus = "terminating"
+)
+
+// Defines values for CallManagerCallType.
+const (
+	CallManagerCallTypeConference CallManagerCallType = "conference"
+	CallManagerCallTypeFlow       CallManagerCallType = "flow"
+	CallManagerCallTypeNone       CallManagerCallType = ""
+	CallManagerCallTypeSIPService CallManagerCallType = "sip-service"
+)
+
+// Defines values for CallManagerGroupcallAnswerMethod.
+const (
+	CallManagerGroupcallAnswerMethodHangupOthers CallManagerGroupcallAnswerMethod = "hangup_others"
+	CallManagerGroupcallAnswerMethodNone         CallManagerGroupcallAnswerMethod = ""
+)
+
+// Defines values for CallManagerGroupcallRingMethod.
+const (
+	CallManagerGroupcallRingMethodLinear  CallManagerGroupcallRingMethod = "linear"
+	CallManagerGroupcallRingMethodNone    CallManagerGroupcallRingMethod = ""
+	CallManagerGroupcallRingMethodRingAll CallManagerGroupcallRingMethod = "ring_all"
+)
+
+// Defines values for CallManagerGroupcallStatus.
+const (
+	CallManagerGroupcallStatusHangingup   CallManagerGroupcallStatus = "hangingup"
+	CallManagerGroupcallStatusHangup      CallManagerGroupcallStatus = "hangup"
+	CallManagerGroupcallStatusProgressing CallManagerGroupcallStatus = "progressing"
+)
+
+// Defines values for CallManagerRecordingFormat.
+const (
+	Wav CallManagerRecordingFormat = "wav"
+)
+
+// Defines values for CallManagerRecordingReferenceType.
+const (
+	CallManagerRecordingReferenceTypeCall       CallManagerRecordingReferenceType = "call"
+	CallManagerRecordingReferenceTypeConfbridge CallManagerRecordingReferenceType = "confbridge"
+)
+
+// Defines values for CallManagerRecordingStatus.
+const (
+	CallManagerRecordingStatusEnded      CallManagerRecordingStatus = "ended"
+	CallManagerRecordingStatusInitiating CallManagerRecordingStatus = "initiating"
+	CallManagerRecordingStatusRecording  CallManagerRecordingStatus = "recording"
+	CallManagerRecordingStatusStopping   CallManagerRecordingStatus = "stopping"
+)
+
+// Defines values for CampaignManagerCampaignEndHandle.
+const (
+	CampaignManagerCampaignEndHandleContinue CampaignManagerCampaignEndHandle = "continue"
+	CampaignManagerCampaignEndHandleStop     CampaignManagerCampaignEndHandle = "stop"
+)
+
+// Defines values for CampaignManagerCampaignExecute.
+const (
+	CampaignManagerCampaignExecuteRun  CampaignManagerCampaignExecute = "run"
+	CampaignManagerCampaignExecuteStop CampaignManagerCampaignExecute = "stop"
+)
+
+// Defines values for CampaignManagerCampaignStatus.
+const (
+	CampaignManagerCampaignStatusRun      CampaignManagerCampaignStatus = "run"
+	CampaignManagerCampaignStatusStop     CampaignManagerCampaignStatus = "stop"
+	CampaignManagerCampaignStatusStopping CampaignManagerCampaignStatus = "stopping"
+)
+
+// Defines values for CampaignManagerCampaignType.
+const (
+	CampaignManagerCampaignTypeCall CampaignManagerCampaignType = "call"
+	CampaignManagerCampaignTypeFlow CampaignManagerCampaignType = "flow"
+)
+
+// Defines values for CampaignManagerCampaigncallReferenceType.
+const (
+	CampaignManagerCampaigncallReferenceTypeCall CampaignManagerCampaigncallReferenceType = "call"
+	CampaignManagerCampaigncallReferenceTypeFlow CampaignManagerCampaigncallReferenceType = "flow"
+	CampaignManagerCampaigncallReferenceTypeNone CampaignManagerCampaigncallReferenceType = "none"
+)
+
+// Defines values for CampaignManagerCampaigncallResult.
+const (
+	CampaignManagerCampaigncallResultFail    CampaignManagerCampaigncallResult = "fail"
+	CampaignManagerCampaigncallResultNone    CampaignManagerCampaigncallResult = ""
+	CampaignManagerCampaigncallResultSuccess CampaignManagerCampaigncallResult = "success"
+)
+
+// Defines values for CampaignManagerCampaigncallStatus.
+const (
+	CampaignManagerCampaigncallStatusDialing     CampaignManagerCampaigncallStatus = "dialing"
+	CampaignManagerCampaigncallStatusDone        CampaignManagerCampaigncallStatus = "done"
+	CampaignManagerCampaigncallStatusProgressing CampaignManagerCampaigncallStatus = "progressing"
+)
+
+// Defines values for ChatManagerChatType.
+const (
+	ChatManagerChatTypeGroup  ChatManagerChatType = "group"
+	ChatManagerChatTypeNormal ChatManagerChatType = "normal"
+)
+
+// Defines values for ChatManagerChatroomType.
+const (
+	ChatManagerChatroomTypeGroup   ChatManagerChatroomType = "group"
+	ChatManagerChatroomTypeNormal  ChatManagerChatroomType = "normal"
+	ChatManagerChatroomTypeUnknown ChatManagerChatroomType = "unknown"
+)
+
+// Defines values for ChatManagerMediaType.
+const (
+	ChatManagerMediaTypeAddress ChatManagerMediaType = "address"
+	ChatManagerMediaTypeAgent   ChatManagerMediaType = "agent"
+	ChatManagerMediaTypeFile    ChatManagerMediaType = "file"
+	ChatManagerMediaTypeLink    ChatManagerMediaType = "link"
+)
+
+// Defines values for ChatManagerMessagechatType.
+const (
+	ChatManagerMessagechatTypeNormal ChatManagerMessagechatType = "normal"
+	ChatManagerMessagechatTypeSystem ChatManagerMessagechatType = "system"
+)
+
+// Defines values for ChatManagerMessagechatroomType.
+const (
+	ChatManagerMessagechatroomTypeNormal  ChatManagerMessagechatroomType = "normal"
+	ChatManagerMessagechatroomTypeSystem  ChatManagerMessagechatroomType = "system"
+	ChatManagerMessagechatroomTypeUnknown ChatManagerMessagechatroomType = ""
+)
+
+// Defines values for ChatbotManagerChatbotEngineType.
+const (
+	ChatbotManagerChatbotEngineTypeChatGPT ChatbotManagerChatbotEngineType = "chatGPT"
+	ChatbotManagerChatbotEngineTypeClova   ChatbotManagerChatbotEngineType = "clova"
+)
+
+// Defines values for ChatbotManagerChatbotcallGender.
+const (
+	ChatbotManagerChatbotcallGenderFemale  ChatbotManagerChatbotcallGender = "female"
+	ChatbotManagerChatbotcallGenderMale    ChatbotManagerChatbotcallGender = "male"
+	ChatbotManagerChatbotcallGenderNeutral ChatbotManagerChatbotcallGender = "neutral"
+)
+
+// Defines values for ChatbotManagerChatbotcallStatus.
+const (
+	ChatbotManagerChatbotcallStatusEnd         ChatbotManagerChatbotcallStatus = "end"
+	ChatbotManagerChatbotcallStatusInitiating  ChatbotManagerChatbotcallStatus = "initiating"
+	ChatbotManagerChatbotcallStatusProgressing ChatbotManagerChatbotcallStatus = "progressing"
+)
+
+// Defines values for ChatbotManagerChatbotcallreferenceType.
+const (
+	ChatbotManagerChatbotcallreferenceTypeCall ChatbotManagerChatbotcallreferenceType = "call"
+)
+
+// Defines values for CommonAddressType.
+const (
+	CommonAddressTypeAgent      CommonAddressType = "agent"
+	CommonAddressTypeConference CommonAddressType = "conference"
+	CommonAddressTypeExtension  CommonAddressType = "extension"
+	CommonAddressTypeLine       CommonAddressType = "line"
+	CommonAddressTypeNone       CommonAddressType = ""
+	CommonAddressTypeSIP        CommonAddressType = "sip"
+	CommonAddressTypeTel        CommonAddressType = "tel"
+)
+
+// Defines values for ConferenceManagerConferenceStatus.
+const (
+	ConferenceManagerConferenceStatusProgressing ConferenceManagerConferenceStatus = "progressing"
+	ConferenceManagerConferenceStatusStarting    ConferenceManagerConferenceStatus = "starting"
+	ConferenceManagerConferenceStatusTerminated  ConferenceManagerConferenceStatus = "terminated"
+	ConferenceManagerConferenceStatusTerminating ConferenceManagerConferenceStatus = "terminating"
+)
+
+// Defines values for ConferenceManagerConferenceType.
+const (
+	ConferenceManagerConferenceTypeConference ConferenceManagerConferenceType = "conference"
+	ConferenceManagerConferenceTypeConnect    ConferenceManagerConferenceType = "connect"
+	ConferenceManagerConferenceTypeNone       ConferenceManagerConferenceType = ""
+	ConferenceManagerConferenceTypeQueue      ConferenceManagerConferenceType = "queue"
+)
+
+// Defines values for ConferenceManagerConferencecallReferenceType.
+const (
+	ConferenceManagerConferencecallReferenceTypeCall ConferenceManagerConferencecallReferenceType = "call"
+)
+
+// Defines values for ConferenceManagerConferencecallStatus.
+const (
+	ConferenceManagerConferencecallStatusJoined  ConferenceManagerConferencecallStatus = "joined"
+	ConferenceManagerConferencecallStatusJoining ConferenceManagerConferencecallStatus = "joining"
+	ConferenceManagerConferencecallStatusLeaved  ConferenceManagerConferencecallStatus = "leaved"
+	ConferenceManagerConferencecallStatusLeaving ConferenceManagerConferencecallStatus = "leaving"
+)
+
+// Defines values for ConversationManagerAccountType.
+const (
+	ConversationManagerAccountTypeLine ConversationManagerAccountType = "line"
+	ConversationManagerAccountTypeSMS  ConversationManagerAccountType = "sms"
+)
+
+// Defines values for ConversationManagerConversationReferenceType.
+const (
+	ConversationManagerConversationReferenceTypeLine    ConversationManagerConversationReferenceType = "line"
+	ConversationManagerConversationReferenceTypeMessage ConversationManagerConversationReferenceType = "message"
+	ConversationManagerConversationReferenceTypeNone    ConversationManagerConversationReferenceType = ""
+)
+
+// Defines values for ConversationManagerMediaType.
+const (
+	ConversationManagerMediaTypeAudio    ConversationManagerMediaType = "audio"
+	ConversationManagerMediaTypeFile     ConversationManagerMediaType = "file"
+	ConversationManagerMediaTypeFlex     ConversationManagerMediaType = "flex"
+	ConversationManagerMediaTypeImage    ConversationManagerMediaType = "image"
+	ConversationManagerMediaTypeImagemap ConversationManagerMediaType = "imagemap"
+	ConversationManagerMediaTypeLocation ConversationManagerMediaType = "location"
+	ConversationManagerMediaTypeSticker  ConversationManagerMediaType = "sticker"
+	ConversationManagerMediaTypeTemplate ConversationManagerMediaType = "template"
+	ConversationManagerMediaTypeVideo    ConversationManagerMediaType = "video"
+)
+
+// Defines values for ConversationManagerMessageDirection.
+const (
+	ConversationManagerMessageDirectionIncoming ConversationManagerMessageDirection = "incoming"
+	ConversationManagerMessageDirectionOutgoing ConversationManagerMessageDirection = "outgoing"
+)
+
+// Defines values for ConversationManagerMessageReferenceType.
+const (
+	ConversationManagerMessageReferenceTypeCall     ConversationManagerMessageReferenceType = "call"
+	ConversationManagerMessageReferenceTypeCampaign ConversationManagerMessageReferenceType = "campaign"
+	ConversationManagerMessageReferenceTypeNone     ConversationManagerMessageReferenceType = "none"
+)
+
+// Defines values for ConversationManagerMessageStatus.
+const (
+	ConversationManagerMessageStatusFailed   ConversationManagerMessageStatus = "failed"
+	ConversationManagerMessageStatusReceived ConversationManagerMessageStatus = "received"
+	ConversationManagerMessageStatusSending  ConversationManagerMessageStatus = "sending"
+	ConversationManagerMessageStatusSent     ConversationManagerMessageStatus = "sent"
+)
+
+// Defines values for CustomerManagerCustomerWebhookMethod.
+const (
+	CustomerManagerCustomerWebhookMethodDelete CustomerManagerCustomerWebhookMethod = "DELETE"
+	CustomerManagerCustomerWebhookMethodGet    CustomerManagerCustomerWebhookMethod = "GET"
+	CustomerManagerCustomerWebhookMethodNone   CustomerManagerCustomerWebhookMethod = ""
+	CustomerManagerCustomerWebhookMethodPost   CustomerManagerCustomerWebhookMethod = "POST"
+	CustomerManagerCustomerWebhookMethodPut    CustomerManagerCustomerWebhookMethod = "PUT"
+)
+
+// Defines values for FlowManagerActionType.
+const (
+	FlowManagerActionTypeAMD                 FlowManagerActionType = "amd"
+	FlowManagerActionTypeAnswer              FlowManagerActionType = "answer"
+	FlowManagerActionTypeBeep                FlowManagerActionType = "beep"
+	FlowManagerActionTypeBranch              FlowManagerActionType = "branch"
+	FlowManagerActionTypeCall                FlowManagerActionType = "call"
+	FlowManagerActionTypeChatbotTalk         FlowManagerActionType = "chatbot_talk"
+	FlowManagerActionTypeConditionCallDigits FlowManagerActionType = "condition_call_digits"
+	FlowManagerActionTypeConditionCallStatus FlowManagerActionType = "condition_call_status"
+	FlowManagerActionTypeConditionDatetime   FlowManagerActionType = "condition_datetime"
+	FlowManagerActionTypeConditionVariable   FlowManagerActionType = "condition_variable"
+	FlowManagerActionTypeConfbridgeJoin      FlowManagerActionType = "confbridge_join"
+	FlowManagerActionTypeConferenceJoin      FlowManagerActionType = "conference_join"
+	FlowManagerActionTypeConnect             FlowManagerActionType = "connect"
+	FlowManagerActionTypeConversationSend    FlowManagerActionType = "conversation_send"
+	FlowManagerActionTypeDigitsReceive       FlowManagerActionType = "digits_receive"
+	FlowManagerActionTypeDigitsSend          FlowManagerActionType = "digits_send"
+	FlowManagerActionTypeEcho                FlowManagerActionType = "echo"
+	FlowManagerActionTypeExternalMediaStart  FlowManagerActionType = "external_media_start"
+	FlowManagerActionTypeExternalMediaStop   FlowManagerActionType = "external_media_stop"
+	FlowManagerActionTypeFetch               FlowManagerActionType = "fetch"
+	FlowManagerActionTypeFetchFlow           FlowManagerActionType = "fetch_flow"
+	FlowManagerActionTypeGoto                FlowManagerActionType = "goto"
+	FlowManagerActionTypeHangup              FlowManagerActionType = "hangup"
+	FlowManagerActionTypeMessageSend         FlowManagerActionType = "message_send"
+	FlowManagerActionTypeMute                FlowManagerActionType = "mute"
+	FlowManagerActionTypePlay                FlowManagerActionType = "play"
+	FlowManagerActionTypeQueueJoin           FlowManagerActionType = "queue_join"
+	FlowManagerActionTypeRecordingStart      FlowManagerActionType = "recording_start"
+	FlowManagerActionTypeRecordingStop       FlowManagerActionType = "recording_stop"
+	FlowManagerActionTypeSleep               FlowManagerActionType = "sleep"
+	FlowManagerActionTypeStop                FlowManagerActionType = "stop"
+	FlowManagerActionTypeStreamEcho          FlowManagerActionType = "stream_echo"
+	FlowManagerActionTypeTalk                FlowManagerActionType = "talk"
+	FlowManagerActionTypeTranscribeRecording FlowManagerActionType = "transcribe_recording"
+	FlowManagerActionTypeTranscribeStart     FlowManagerActionType = "transcribe_start"
+	FlowManagerActionTypeTranscribeStop      FlowManagerActionType = "transcribe_stop"
+	FlowManagerActionTypeVariableSet         FlowManagerActionType = "variable_set"
+	FlowManagerActionTypeWebhookSend         FlowManagerActionType = "webhook_send"
+)
+
+// Defines values for FlowManagerActiveflowStatus.
+const (
+	FlowManagerActiveflowStatusEnded   FlowManagerActiveflowStatus = "ended"
+	FlowManagerActiveflowStatusNone    FlowManagerActiveflowStatus = ""
+	FlowManagerActiveflowStatusRunning FlowManagerActiveflowStatus = "running"
+)
+
+// Defines values for FlowManagerFlowType.
+const (
+	FlowManagerFlowTypeCampaign   FlowManagerFlowType = "campaign"
+	FlowManagerFlowTypeConference FlowManagerFlowType = "conference"
+	FlowManagerFlowTypeFlow       FlowManagerFlowType = "flow"
+	FlowManagerFlowTypeQueue      FlowManagerFlowType = "queue"
+	FlowManagerFlowTypeTransfer   FlowManagerFlowType = "transfer"
+)
+
+// Defines values for FlowManagerReferenceType.
+const (
+	FlowManagerReferenceTypeCall    FlowManagerReferenceType = "call"
+	FlowManagerReferenceTypeMessage FlowManagerReferenceType = "message"
+	FlowManagerReferenceTypeNone    FlowManagerReferenceType = ""
+)
+
+// Defines values for MessageManagerMessageDirection.
+const (
+	MessageManagerMessageDirectionInbound  MessageManagerMessageDirection = "inbound"
+	MessageManagerMessageDirectionOutbound MessageManagerMessageDirection = "outbound"
+)
+
+// Defines values for MessageManagerMessageProviderName.
+const (
+	MessageManagerMessageProviderNameMessagebird MessageManagerMessageProviderName = "messagebird"
+	MessageManagerMessageProviderNameTelnyx      MessageManagerMessageProviderName = "telnyx"
+	MessageManagerMessageProviderNameTwilio      MessageManagerMessageProviderName = "twilio"
+)
+
+// Defines values for MessageManagerMessageType.
+const (
+	MessageManagerMessageTypeSMS MessageManagerMessageType = "sms"
+)
+
+// Defines values for MessageManagerTargetStatus.
+const (
+	MessageManagerTargetStatusDLRTimeout MessageManagerTargetStatus = "dlr_timeout"
+	MessageManagerTargetStatusDelivered  MessageManagerTargetStatus = "delivered"
+	MessageManagerTargetStatusFailed     MessageManagerTargetStatus = "failed"
+	MessageManagerTargetStatusGWTimeout  MessageManagerTargetStatus = "gw_timeout"
+	MessageManagerTargetStatusQueued     MessageManagerTargetStatus = "queued"
+	MessageManagerTargetStatusReceived   MessageManagerTargetStatus = "received"
+	MessageManagerTargetStatusSent       MessageManagerTargetStatus = "sent"
+)
+
+// Defines values for NumberManagerAvailableNumber.
+const (
+	NumberManagerAvailableNumberFeatureEmergency NumberManagerAvailableNumber = "emergency"
+	NumberManagerAvailableNumberFeatureFax       NumberManagerAvailableNumber = "fax"
+	NumberManagerAvailableNumberFeatureMMS       NumberManagerAvailableNumber = "mms"
+	NumberManagerAvailableNumberFeatureSMS       NumberManagerAvailableNumber = "sms"
+	NumberManagerAvailableNumberFeatureVoice     NumberManagerAvailableNumber = "voice"
+)
+
+// Defines values for NumberManagerNumberProviderName.
+const (
+	NumberManagerProviderNameMessagebird NumberManagerNumberProviderName = "messagebird"
+	NumberManagerProviderNameTelnyx      NumberManagerNumberProviderName = "telnyx"
+	NumberManagerProviderNameTwilio      NumberManagerNumberProviderName = "twilio"
+)
+
+// Defines values for NumberManagerNumberStatus.
+const (
+	NumberManagerStatusActive  NumberManagerNumberStatus = "active"
+	NumberManagerStatusDeleted NumberManagerNumberStatus = "deleted"
+)
+
+// Defines values for OutdialManagerOutdialtargetStatus.
+const (
+	OutdialManagerOutdialtargetStatusDone        OutdialManagerOutdialtargetStatus = "done"
+	OutdialManagerOutdialtargetStatusIdle        OutdialManagerOutdialtargetStatus = "idle"
+	OutdialManagerOutdialtargetStatusProgressing OutdialManagerOutdialtargetStatus = "progressing"
+)
+
+// Defines values for QueueManagerQueueRoutingMethod.
+const (
+	QueueManagerQueueRoutingMethodNone   QueueManagerQueueRoutingMethod = ""
+	QueueManagerQueueRoutingMethodRandom QueueManagerQueueRoutingMethod = "random"
+)
+
+// Defines values for QueueManagerQueuecallReferenceType.
+const (
+	QueueManagerQueuecallReferenceTypeCall QueueManagerQueuecallReferenceType = "call"
+)
+
+// Defines values for QueueManagerQueuecallStatus.
+const (
+	QueueManagerQueuecallStatusAbandoned  QueueManagerQueuecallStatus = "abandoned"
+	QueueManagerQueuecallStatusConnecting QueueManagerQueuecallStatus = "connecting"
+	QueueManagerQueuecallStatusDone       QueueManagerQueuecallStatus = "done"
+	QueueManagerQueuecallStatusInitiating QueueManagerQueuecallStatus = "initiating"
+	QueueManagerQueuecallStatusKicking    QueueManagerQueuecallStatus = "kicking"
+	QueueManagerQueuecallStatusService    QueueManagerQueuecallStatus = "service"
+	QueueManagerQueuecallStatusWaiting    QueueManagerQueuecallStatus = "waiting"
+)
+
+// Defines values for RegistrarManagerAuthType.
+const (
+	RegistrarManagerAuthTypeBasic RegistrarManagerAuthType = "basic"
+	RegistrarManagerAuthTypeIP    RegistrarManagerAuthType = "ip"
+)
+
+// Defines values for RouteManagerProviderType.
+const (
+	RouteManagerProviderTypeSIP RouteManagerProviderType = "sip"
+)
+
+// Defines values for StorageManagerFileReferenceType.
+const (
+	StorageManagerFileReferenceTypeNone      StorageManagerFileReferenceType = ""
+	StorageManagerFileReferenceTypeNormal    StorageManagerFileReferenceType = "normal"
+	StorageManagerFileReferenceTypeRecording StorageManagerFileReferenceType = "recording"
+)
+
+// Defines values for TranscribeManagerTranscribeDirection.
+const (
+	TranscribeManagerTranscribeDirectionBoth TranscribeManagerTranscribeDirection = "both"
+	TranscribeManagerTranscribeDirectionIn   TranscribeManagerTranscribeDirection = "in"
+	TranscribeManagerTranscribeDirectionOut  TranscribeManagerTranscribeDirection = "out"
+)
+
+// Defines values for TranscribeManagerTranscribeReferenceType.
+const (
+	TranscribeManagerTranscribeReferenceTypeCall       TranscribeManagerTranscribeReferenceType = "call"
+	TranscribeManagerTranscribeReferenceTypeConfbridge TranscribeManagerTranscribeReferenceType = "confbridge"
+	TranscribeManagerTranscribeReferenceTypeRecording  TranscribeManagerTranscribeReferenceType = "recording"
+	TranscribeManagerTranscribeReferenceTypeUnknown    TranscribeManagerTranscribeReferenceType = "unknown"
+)
+
+// Defines values for TranscribeManagerTranscribeStatus.
+const (
+	TranscribeManagerTranscribeStatusDone        TranscribeManagerTranscribeStatus = "done"
+	TranscribeManagerTranscribeStatusProgressing TranscribeManagerTranscribeStatus = "progressing"
+)
+
+// Defines values for TranscribeManagerTranscriptDirection.
+const (
+	TranscribeManagerTranscriptDirectionBoth TranscribeManagerTranscriptDirection = "both"
+	TranscribeManagerTranscriptDirectionIn   TranscribeManagerTranscriptDirection = "in"
+	TranscribeManagerTranscriptDirectionOut  TranscribeManagerTranscriptDirection = "out"
+)
+
+// Defines values for TransferManagerTransferType.
+const (
+	TransferManagerTransferTypeAttended TransferManagerTransferType = "attended"
+	TransferManagerTransferTypeBlind    TransferManagerTransferType = "blind"
+)
+
+// AgentManagerAgent Represents an agent resource.
+type AgentManagerAgent struct {
+	// Addresses Agent's endpoint addresses.
+	Addresses *[]CommonAddress `json:"addresses,omitempty"`
+
+	// CustomerId Resource's customer ID.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Agent's detail.
+	Detail *string `json:"detail,omitempty"`
+	Id     *string `json:"id,omitempty"`
+
+	// Name Agent's name.
+	Name *string `json:"name,omitempty"`
+
+	// Permission Permission type
+	Permission *AgentManagerAgentPermission `json:"permission,omitempty"`
+
+	// RingMethod Represents an agent resource.
+	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
+
+	// Status Agent's status
+	Status *AgentManagerAgentStatus `json:"status,omitempty"`
+
+	// TagIds Agent's tag IDs.
+	TagIds *[]string `json:"tag_ids,omitempty"`
+
+	// TmCreate Created timestamp.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Deleted timestamp.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Updated timestamp.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Username Agent's username.
+	Username *string `json:"username,omitempty"`
+}
+
+// AgentManagerAgentPermission Permission type
+type AgentManagerAgentPermission uint64
+
+// AgentManagerAgentRingMethod Represents an agent resource.
+type AgentManagerAgentRingMethod string
+
+// AgentManagerAgentStatus Agent's status
+type AgentManagerAgentStatus string
+
+// BillingManagerAccount defines model for BillingManagerAccount.
+type BillingManagerAccount struct {
+	// Balance The balance of the account in USD.
+	Balance *float32 `json:"balance,omitempty"`
+
+	// CustomerId The unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Additional details about the account.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the account.
+	Id *string `json:"id,omitempty"`
+
+	// Name The name of the account.
+	Name *string `json:"name,omitempty"`
+
+	// PaymentMethod The method of payment used for the account.
+	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
+
+	// PaymentType The type of payment associated with the account.
+	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
+
+	// TmCreate The timestamp when the account was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete The timestamp when the account was deleted, if applicable.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate The timestamp when the account was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// BillingManagerAccountPaymentMethod The method of payment used for the account.
+type BillingManagerAccountPaymentMethod string
+
+// BillingManagerAccountPaymentType The type of payment associated with the account.
+type BillingManagerAccountPaymentType string
+
+// BillingManagerBilling defines model for BillingManagerBilling.
+type BillingManagerBilling struct {
+	// AccountId The billing account ID.
+	AccountId *string `json:"account_id,omitempty"`
+
+	// BillingUnitCount The total count of billing units.
+	BillingUnitCount *float32 `json:"billing_unit_count,omitempty"`
+
+	// CostPerUnit The cost per billing unit.
+	CostPerUnit *float32 `json:"cost_per_unit,omitempty"`
+
+	// CostTotal The total cost of this billing.
+	CostTotal *float32 `json:"cost_total,omitempty"`
+
+	// CustomerId The customer's unique identifier.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id The unique identifier of the billing.
+	Id *string `json:"id,omitempty"`
+
+	// ReferenceId The ID of the reference related to this billing.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType The type of reference associated with this billing.
+	ReferenceType *BillingManagerBillingreferenceType `json:"reference_type,omitempty"`
+
+	// Status Status of the billing.
+	Status *BillingManagerBillingStatus `json:"status,omitempty"`
+
+	// TmBillingEnd The end timestamp of the billing period.
+	TmBillingEnd *time.Time `json:"tm_billing_end,omitempty"`
+
+	// TmBillingStart The start timestamp of the billing period.
+	TmBillingStart *time.Time `json:"tm_billing_start,omitempty"`
+
+	// TmCreate The creation timestamp.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete The deletion timestamp, if applicable.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate The last update timestamp.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// BillingManagerBillingStatus Status of the billing.
+type BillingManagerBillingStatus string
+
+// BillingManagerBillingreferenceType The type of reference associated with this billing.
+type BillingManagerBillingreferenceType string
+
+// CallManagerCall defines model for CallManagerCall.
+type CallManagerCall struct {
+	Action *FlowManagerAction `json:"action,omitempty"`
+
+	// ActiveflowId Active flow ID
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// ChainedCallIds Chained call IDs
+	ChainedCallIds *[]string `json:"chained_call_ids,omitempty"`
+
+	// CustomerId Resource's customer ID
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Destination Contains source or destination detail info.
+	Destination *CommonAddress `json:"destination,omitempty"`
+
+	// Direction Call direction
+	Direction *CallManagerCallDirection `json:"direction,omitempty"`
+
+	// FlowId Flow ID
+	FlowId *string `json:"flow_id,omitempty"`
+
+	// GroupcallId Group call ID, indicates if this call is part of a group call
+	GroupcallId *string `json:"groupcall_id,omitempty"`
+
+	// HangupBy Indicates who hung up the call
+	HangupBy *CallManagerCallHangupBy `json:"hangup_by,omitempty"`
+
+	// HangupReason Reason for call hangup
+	HangupReason *CallManagerCallHangupReason `json:"hangup_reason,omitempty"`
+
+	// Id Resource identifier
+	Id *string `json:"id,omitempty"`
+
+	// MasterCallId Master call ID
+	MasterCallId *string `json:"master_call_id,omitempty"`
+
+	// MuteDirection Possible mute directions for the call
+	MuteDirection *CallManagerCallMuteDirection `json:"mute_direction,omitempty"`
+
+	// OwnerId Resource's owner ID
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// OwnerType Resource's owner type
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// RecordingId Current recording ID
+	RecordingId *string `json:"recording_id,omitempty"`
+
+	// RecordingIds Recording IDs
+	RecordingIds *[]string `json:"recording_ids,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Status Call status
+	Status *CallManagerCallStatus `json:"status,omitempty"`
+
+	// TmCreate Creation timestamp
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Deletion timestamp
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmHangup Timestamp for call hangup
+	TmHangup *time.Time `json:"tm_hangup,omitempty"`
+
+	// TmProgressing Timestamp for call progressing
+	TmProgressing *time.Time `json:"tm_progressing,omitempty"`
+
+	// TmRinging Timestamp for call ringing
+	TmRinging *time.Time `json:"tm_ringing,omitempty"`
+
+	// TmUpdate Update timestamp
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type Call type
+	Type *CallManagerCallType `json:"type,omitempty"`
+}
+
+// CallManagerCallDirection Call direction
+type CallManagerCallDirection string
+
+// CallManagerCallHangupBy Indicates who hung up the call
+type CallManagerCallHangupBy string
+
+// CallManagerCallHangupReason Reason for call hangup
+type CallManagerCallHangupReason string
+
+// CallManagerCallMuteDirection Possible mute directions for the call
+type CallManagerCallMuteDirection string
+
+// CallManagerCallStatus Call status
+type CallManagerCallStatus string
+
+// CallManagerCallType Call type
+type CallManagerCallType string
+
+// CallManagerGroupcall Call or group call information
+type CallManagerGroupcall struct {
+	// AnswerCallId ID of the answered call
+	AnswerCallId *string `json:"answer_call_id,omitempty"`
+
+	// AnswerGroupcallId ID of the answered group call
+	AnswerGroupcallId *string `json:"answer_groupcall_id,omitempty"`
+
+	// AnswerMethod Method to handle answered calls
+	AnswerMethod *CallManagerGroupcallAnswerMethod `json:"answer_method,omitempty"`
+
+	// CallCount Number of remaining calls in the current dial
+	CallCount *int `json:"call_count,omitempty"`
+
+	// CallIds List of associated call IDs
+	CallIds *[]string `json:"call_ids,omitempty"`
+
+	// CustomerId Resource's customer ID
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Destinations List of destination addresses
+	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// DialIndex Current dial index, valid only when the ring method is "ring_all"
+	DialIndex *int `json:"dial_index"`
+
+	// FlowId ID of the associated flow
+	FlowId *string `json:"flow_id,omitempty"`
+
+	// GroupcallCount Number of remaining group calls in the current dial
+	GroupcallCount *int `json:"groupcall_count,omitempty"`
+
+	// GroupcallIds List of associated group call IDs
+	GroupcallIds *[]string `json:"groupcall_ids,omitempty"`
+
+	// Id Resource identifier
+	Id *string `json:"id,omitempty"`
+
+	// MasterCallId ID of the master call, if applicable
+	MasterCallId *string `json:"master_call_id"`
+
+	// MasterGroupcallId ID of the master group call, if applicable
+	MasterGroupcallId *string `json:"master_groupcall_id"`
+
+	// OwnerId Resource's owner ID
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// OwnerType Resource's owner type
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// RingMethod Method used for dialing
+	RingMethod *CallManagerGroupcallRingMethod `json:"ring_method,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Status Current status of the call or group call
+	Status *CallManagerGroupcallStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the call was created
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the call was deleted
+	TmDelete *time.Time `json:"tm_delete"`
+
+	// TmUpdate Timestamp when the call was last updated
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// CallManagerGroupcallAnswerMethod Method to handle answered calls
+type CallManagerGroupcallAnswerMethod string
+
+// CallManagerGroupcallRingMethod Method used for dialing
+type CallManagerGroupcallRingMethod string
+
+// CallManagerGroupcallStatus Current status of the call or group call
+type CallManagerGroupcallStatus string
+
+// CallManagerRecording defines model for CallManagerRecording.
+type CallManagerRecording struct {
+	// CustomerId Resource's customer ID
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Format The format of the recording.
+	Format *CallManagerRecordingFormat `json:"format,omitempty"`
+
+	// Id Resource identifier
+	Id *string `json:"id,omitempty"`
+
+	// OwnerId Resource's owner ID
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// OwnerType Resource's owner type
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// ReferenceId The UUID of the reference.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of reference for the recording.
+	ReferenceType *CallManagerRecordingReferenceType `json:"reference_type,omitempty"`
+
+	// Status The status of the recording.
+	Status *CallManagerRecordingStatus `json:"status,omitempty"`
+
+	// TmCreate The creation timestamp of the recording.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete The timestamp when the recording was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmEnd The end timestamp of the recording.
+	TmEnd *time.Time `json:"tm_end,omitempty"`
+
+	// TmStart The start timestamp of the recording.
+	TmStart *time.Time `json:"tm_start,omitempty"`
+
+	// TmUpdate The last update timestamp of the recording.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// CallManagerRecordingFormat The format of the recording.
+type CallManagerRecordingFormat string
+
+// CallManagerRecordingReferenceType Type of reference for the recording.
+type CallManagerRecordingReferenceType string
+
+// CallManagerRecordingStatus The status of the recording.
+type CallManagerRecordingStatus string
+
+// CampaignManagerCampaign defines model for CampaignManagerCampaign.
+type CampaignManagerCampaign struct {
+	Actions    *[]FlowManagerAction `json:"actions,omitempty"`
+	CustomerId *openapi_types.UUID  `json:"customer_id,omitempty"`
+	Detail     *string              `json:"detail,omitempty"`
+
+	// EndHandle Behavior of the campaign after outdial has no more targets.
+	EndHandle      *CampaignManagerCampaignEndHandle `json:"end_handle,omitempty"`
+	Id             *openapi_types.UUID               `json:"id,omitempty"`
+	Name           *string                           `json:"name,omitempty"`
+	NextCampaignId *openapi_types.UUID               `json:"next_campaign_id,omitempty"`
+	OutdialId      *openapi_types.UUID               `json:"outdial_id,omitempty"`
+	OutplanId      *openapi_types.UUID               `json:"outplan_id,omitempty"`
+	QueueId        *openapi_types.UUID               `json:"queue_id,omitempty"`
+	ServiceLevel   *int                              `json:"service_level,omitempty"`
+
+	// Status Status of the campaign.
+	Status   *CampaignManagerCampaignStatus `json:"status,omitempty"`
+	TmCreate *time.Time                     `json:"tm_create,omitempty"`
+	TmDelete *time.Time                     `json:"tm_delete,omitempty"`
+	TmUpdate *time.Time                     `json:"tm_update,omitempty"`
+
+	// Type Type of campaign.
+	Type *CampaignManagerCampaignType `json:"type,omitempty"`
+}
+
+// CampaignManagerCampaignEndHandle Behavior of the campaign after outdial has no more targets.
+type CampaignManagerCampaignEndHandle string
+
+// CampaignManagerCampaignExecute Execution action for the campaign.
+type CampaignManagerCampaignExecute string
+
+// CampaignManagerCampaignStatus Status of the campaign.
+type CampaignManagerCampaignStatus string
+
+// CampaignManagerCampaignType Type of campaign.
+type CampaignManagerCampaignType string
+
+// CampaignManagerCampaigncall defines model for CampaignManagerCampaigncall.
+type CampaignManagerCampaigncall struct {
+	// ActiveflowId Identifier of the active flow.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// CampaignId Identifier of the campaign.
+	CampaignId *string `json:"campaign_id,omitempty"`
+
+	// CustomerId Identifier of the customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Destination Contains source or destination detail info.
+	Destination *CommonAddress `json:"destination,omitempty"`
+
+	// DestinationIndex Index of the destination.
+	DestinationIndex *int `json:"destination_index,omitempty"`
+
+	// FlowId Identifier of the flow.
+	FlowId *string `json:"flow_id,omitempty"`
+
+	// Id Unique identifier of the campaign call.
+	Id *string `json:"id,omitempty"`
+
+	// OutdialId Identifier of the outbound dial.
+	OutdialId *string `json:"outdial_id,omitempty"`
+
+	// OutdialTargetId Identifier of the outbound dial target.
+	OutdialTargetId *string `json:"outdial_target_id,omitempty"`
+
+	// OutplanId Identifier of the outbound plan.
+	OutplanId *string `json:"outplan_id,omitempty"`
+
+	// QueueId Identifier of the queue.
+	QueueId *string `json:"queue_id,omitempty"`
+
+	// ReferenceId Identifier of the reference.
+	ReferenceId   *string                                   `json:"reference_id,omitempty"`
+	ReferenceType *CampaignManagerCampaigncallReferenceType `json:"reference_type,omitempty"`
+	Result        *CampaignManagerCampaigncallResult        `json:"result,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress                     `json:"source,omitempty"`
+	Status *CampaignManagerCampaigncallStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the campaign call was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the campaign call was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the campaign call was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// TryCount Number of dialing attempts.
+	TryCount *int `json:"try_count,omitempty"`
+}
+
+// CampaignManagerCampaigncallReferenceType defines model for CampaignManagerCampaigncallReferenceType.
+type CampaignManagerCampaigncallReferenceType string
+
+// CampaignManagerCampaigncallResult defines model for CampaignManagerCampaigncallResult.
+type CampaignManagerCampaigncallResult string
+
+// CampaignManagerCampaigncallStatus defines model for CampaignManagerCampaigncallStatus.
+type CampaignManagerCampaigncallStatus string
+
+// CampaignManagerOutplan defines model for CampaignManagerOutplan.
+type CampaignManagerOutplan struct {
+	// CustomerId Identifier of the customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed information about the outplan.
+	Detail *string `json:"detail,omitempty"`
+
+	// DialTimeout Dial timeout in milliseconds.
+	DialTimeout *int `json:"dial_timeout,omitempty"`
+
+	// Id Unique identifier of the outplan.
+	Id *string `json:"id,omitempty"`
+
+	// MaxTryCount0 Maximum number of tries for level 0.
+	MaxTryCount0 *int `json:"max_try_count_0,omitempty"`
+
+	// MaxTryCount1 Maximum number of tries for level 1.
+	MaxTryCount1 *int `json:"max_try_count_1,omitempty"`
+
+	// MaxTryCount2 Maximum number of tries for level 2.
+	MaxTryCount2 *int `json:"max_try_count_2,omitempty"`
+
+	// MaxTryCount3 Maximum number of tries for level 3.
+	MaxTryCount3 *int `json:"max_try_count_3,omitempty"`
+
+	// MaxTryCount4 Maximum number of tries for level 4.
+	MaxTryCount4 *int `json:"max_try_count_4,omitempty"`
+
+	// Name Name of the outplan.
+	Name *string `json:"name,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// TmCreate Timestamp when the outplan was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the outplan was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the outplan was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// TryInterval Interval between dialing attempts in milliseconds.
+	TryInterval *int `json:"try_interval,omitempty"`
+}
+
+// ChatManagerChat defines model for ChatManagerChat.
+type ChatManagerChat struct {
+	// CustomerId Resource's customer ID.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed information about the chat.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id Resource identifier.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the chat.
+	Name *string `json:"name,omitempty"`
+
+	// ParticipantIds List of participant IDs (agent IDs).
+	ParticipantIds *[]string `json:"participant_ids,omitempty"`
+
+	// RoomOwnerId Owned agent's ID.
+	RoomOwnerId *string `json:"room_owner_id,omitempty"`
+
+	// TmCreate Timestamp when the chat was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the chat was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the chat was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type Type of the chat.
+	Type *ChatManagerChatType `json:"type,omitempty"`
+}
+
+// ChatManagerChatType Type of the chat.
+type ChatManagerChatType string
+
+// ChatManagerChatroom defines model for ChatManagerChatroom.
+type ChatManagerChatroom struct {
+	// ChatId Associated chat ID.
+	ChatId *string `json:"chat_id,omitempty"`
+
+	// CustomerId Resource's customer ID.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed information about the chat room.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id Resource identifier.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the chat room.
+	Name *string `json:"name,omitempty"`
+
+	// OwnerId Resource's owner ID.
+	OwnerId   *string `json:"owner_id,omitempty"`
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// ParticipantIds List of participant agent IDs.
+	ParticipantIds *[]string `json:"participant_ids,omitempty"`
+
+	// RoomOwnerId Chat room's owner agent ID.
+	RoomOwnerId *string `json:"room_owner_id,omitempty"`
+
+	// TmCreate Timestamp when the chat room was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the chat room was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the chat room was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type Type of the chat room.
+	Type *ChatManagerChatroomType `json:"type,omitempty"`
+}
+
+// ChatManagerChatroomType Type of the chat room.
+type ChatManagerChatroomType string
+
+// ChatManagerMedia defines model for ChatManagerMedia.
+type ChatManagerMedia struct {
+	// Address Contains source or destination detail info.
+	Address *CommonAddress `json:"address,omitempty"`
+
+	// Agent Represents an agent resource.
+	Agent *AgentManagerAgent `json:"agent,omitempty"`
+
+	// FileId Valid only if the type is `file`.
+	FileId *string `json:"file_id,omitempty"`
+
+	// LinkUrl Valid only if the type is `link`.
+	LinkUrl *string `json:"link_url,omitempty"`
+
+	// Type Type of the media content.
+	Type *ChatManagerMediaType `json:"type,omitempty"`
+}
+
+// ChatManagerMediaType Type of the media content.
+type ChatManagerMediaType string
+
+// ChatManagerMessagechat defines model for ChatManagerMessagechat.
+type ChatManagerMessagechat struct {
+	// ChatId Associated chat ID.
+	ChatId *string `json:"chat_id,omitempty"`
+
+	// Id Unique identifier (inherited from commonidentity.Identity).
+	Id *string `json:"id,omitempty"`
+
+	// Medias List of associated media objects.
+	Medias *[]ChatManagerMedia `json:"medias,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Text Text content of the message.
+	Text *string `json:"text,omitempty"`
+
+	// TmCreate Timestamp when the message chat was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message chat was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the message chat was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type Type of the message chat.
+	Type *ChatManagerMessagechatType `json:"type,omitempty"`
+}
+
+// ChatManagerMessagechatType Type of the message chat.
+type ChatManagerMessagechatType string
+
+// ChatManagerMessagechatroom defines model for ChatManagerMessagechatroom.
+type ChatManagerMessagechatroom struct {
+	// ChatroomId Associated chat room ID.
+	ChatroomId *string `json:"chatroom_id,omitempty"`
+
+	// CustomerId Resource's customer ID.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id Resource identifier.
+	Id *string `json:"id,omitempty"`
+
+	// Medias List of associated media objects.
+	Medias *[]ChatManagerMedia `json:"medias,omitempty"`
+
+	// MessagechatId Associated message chat ID.
+	MessagechatId *string `json:"messagechat_id,omitempty"`
+
+	// OwnerId Resource's owner ID.
+	OwnerId   *string `json:"owner_id,omitempty"`
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Text Text content of the message.
+	Text *string `json:"text,omitempty"`
+
+	// TmCreate Timestamp when the message chat room was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message chat room was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the message chat room was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type Type of the message in the chat room.
+	Type *ChatManagerMessagechatroomType `json:"type,omitempty"`
+}
+
+// ChatManagerMessagechatroomType Type of the message in the chat room.
+type ChatManagerMessagechatroomType string
+
+// ChatbotManagerChatbot defines model for ChatbotManagerChatbot.
+type ChatbotManagerChatbot struct {
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed information about the chatbot.
+	Detail *string `json:"detail,omitempty"`
+
+	// EngineType Type of engine used by the chatbot.
+	EngineType *ChatbotManagerChatbotEngineType `json:"engine_type,omitempty"`
+
+	// Id Unique identifier of the chatbot.
+	Id *string `json:"id,omitempty"`
+
+	// InitPrompt Initial prompt to configure the chatbot's behavior.
+	InitPrompt *string `json:"init_prompt,omitempty"`
+
+	// Name Name of the chatbot.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the chatbot was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the chatbot was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the chatbot was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// ChatbotManagerChatbotEngineType Type of engine used by the chatbot.
+type ChatbotManagerChatbotEngineType string
+
+// ChatbotManagerChatbotcall defines model for ChatbotManagerChatbotcall.
+type ChatbotManagerChatbotcall struct {
+	// ActiveflowId Unique identifier for the active flow.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// ChatbotId Unique identifier of the associated chatbot.
+	ChatbotId *string `json:"chatbot_id,omitempty"`
+
+	// ConfbridgeId Unique identifier for the conference bridge.
+	ConfbridgeId *string `json:"confbridge_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Gender Gender associated with the chatbot call.
+	Gender *ChatbotManagerChatbotcallGender `json:"gender,omitempty"`
+
+	// Id Unique identifier for the chatbot call.
+	Id *string `json:"id,omitempty"`
+
+	// Language Language used during the chatbot call.
+	Language *string `json:"language,omitempty"`
+
+	// ReferenceId Unique identifier for the reference.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of reference associated with the chatbot call.
+	ReferenceType *ChatbotManagerChatbotcallreferenceType `json:"reference_type,omitempty"`
+
+	// Status Status of the chatbot call.
+	Status *ChatbotManagerChatbotcallStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the chatbot call was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the chatbot call was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmEnd Timestamp when the chatbot call ended.
+	TmEnd *time.Time `json:"tm_end,omitempty"`
+
+	// TmUpdate Timestamp when the chatbot call was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// TranscribeId Unique identifier for the transcription service.
+	TranscribeId *string `json:"transcribe_id,omitempty"`
+}
+
+// ChatbotManagerChatbotcallGender Gender associated with the chatbot call.
+type ChatbotManagerChatbotcallGender string
+
+// ChatbotManagerChatbotcallMessage defines model for ChatbotManagerChatbotcallMessage.
+type ChatbotManagerChatbotcallMessage struct {
+	// Content Content of the message.
+	Content *string `json:"content,omitempty"`
+
+	// Role Role of the entity in the conversation.
+	Role *string `json:"role,omitempty"`
+}
+
+// ChatbotManagerChatbotcallStatus Status of the chatbot call.
+type ChatbotManagerChatbotcallStatus string
+
+// ChatbotManagerChatbotcallreferenceType Type of reference associated with the chatbot call.
+type ChatbotManagerChatbotcallreferenceType string
+
+// CommonAddress Contains source or destination detail info.
+type CommonAddress struct {
+	// Detail Detail description.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Name.
+	Name *string `json:"name,omitempty"`
+
+	// Target Address endpoint.
+	Target *string `json:"target,omitempty"`
+
+	// TargetName Address's name.
+	TargetName *string `json:"target_name,omitempty"`
+
+	// Type Type of address.
+	Type *CommonAddressType `json:"type,omitempty"`
+}
+
+// CommonAddressType Type of address.
+type CommonAddressType string
+
+// CommonPagination defines model for CommonPagination.
+type CommonPagination struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ConferenceManagerConference defines model for ConferenceManagerConference.
+type ConferenceManagerConference struct {
+	// ConferencecallIds List of associated conference call IDs.
+	ConferencecallIds *[]string `json:"conferencecall_ids,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Data Custom data associated with the conference.
+	Data *map[string]interface{} `json:"data,omitempty"`
+
+	// Detail Detailed information about the conference.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id Unique identifier for the conference.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the conference.
+	Name *string `json:"name,omitempty"`
+
+	// PostActions Post-actions to execute after the conference ends.
+	PostActions *[]FlowManagerAction `json:"post_actions,omitempty"`
+
+	// PreActions Pre-actions to execute before the conference starts.
+	PreActions *[]FlowManagerAction `json:"pre_actions,omitempty"`
+
+	// RecordingId ID of the main recording associated with the conference.
+	RecordingId *string `json:"recording_id,omitempty"`
+
+	// RecordingIds List of associated recording IDs.
+	RecordingIds *[]string `json:"recording_ids,omitempty"`
+
+	// Status Status of the conference.
+	Status *ConferenceManagerConferenceStatus `json:"status,omitempty"`
+
+	// Timeout Timeout for the conference in seconds.
+	Timeout *int32 `json:"timeout,omitempty"`
+
+	// TmCreate Timestamp when the conference was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the conference was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmEnd Timestamp when the conference ended.
+	TmEnd *string `json:"tm_end,omitempty"`
+
+	// TmUpdate Timestamp when the conference was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// TranscribeId ID of the main transcription associated with the conference.
+	TranscribeId *string `json:"transcribe_id,omitempty"`
+
+	// TranscribeIds List of associated transcription IDs.
+	TranscribeIds *[]string `json:"transcribe_ids,omitempty"`
+
+	// Type Types of conferences.
+	Type *ConferenceManagerConferenceType `json:"type,omitempty"`
+}
+
+// ConferenceManagerConferenceStatus Status of the conference.
+type ConferenceManagerConferenceStatus string
+
+// ConferenceManagerConferenceType Types of conferences.
+type ConferenceManagerConferenceType string
+
+// ConferenceManagerConferencecall defines model for ConferenceManagerConferencecall.
+type ConferenceManagerConferencecall struct {
+	// ConferenceId Unique identifier of the associated conference.
+	ConferenceId *string `json:"conference_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the conference call.
+	Id *string `json:"id,omitempty"`
+
+	// ReferenceId Unique identifier of the reference (e.g., call ID).
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of the reference associated with the conference call.
+	ReferenceType *ConferenceManagerConferencecallReferenceType `json:"reference_type,omitempty"`
+
+	// Status Status of the conference call.
+	Status *ConferenceManagerConferencecallStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the conference call was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the conference call was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the conference call was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// ConferenceManagerConferencecallReferenceType Type of the reference associated with the conference call.
+type ConferenceManagerConferencecallReferenceType string
+
+// ConferenceManagerConferencecallStatus Status of the conference call.
+type ConferenceManagerConferencecallStatus string
+
+// ConversationManagerAccount defines model for ConversationManagerAccount.
+type ConversationManagerAccount struct {
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed information about the account.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id Unique identifier for the account.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the account.
+	Name *string `json:"name,omitempty"`
+
+	// Secret Secret associated with the account.
+	Secret *string `json:"secret,omitempty"`
+
+	// TmCreate Timestamp when the account was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the account was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the account was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Token Token, usually an API token, associated with the account.
+	Token *string `json:"token,omitempty"`
+
+	// Type Type of the account.
+	Type *ConversationManagerAccountType `json:"type,omitempty"`
+}
+
+// ConversationManagerAccountType Type of the account.
+type ConversationManagerAccountType string
+
+// ConversationManagerConversation defines model for ConversationManagerConversation.
+type ConversationManagerConversation struct {
+	// AccountId Unique identifier of the associated account.
+	AccountId *string `json:"account_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed information about the conversation.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id Unique identifier for the conversation.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the conversation.
+	Name *string `json:"name,omitempty"`
+
+	// Participants List of participants in the conversation.
+	Participants *[]CommonAddress `json:"participants,omitempty"`
+
+	// ReferenceId Unique identifier for the reference (e.g., message ID, line ID).
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of the reference for the conversation.
+	ReferenceType *ConversationManagerConversationReferenceType `json:"reference_type,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// TmCreate Timestamp when the conversation was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the conversation was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the conversation was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// ConversationManagerConversationReferenceType Type of the reference for the conversation.
+type ConversationManagerConversationReferenceType string
+
+// ConversationManagerMedia defines model for ConversationManagerMedia.
+type ConversationManagerMedia struct {
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Filename Filename of the media.
+	Filename *string `json:"filename,omitempty"`
+
+	// Id Unique identifier for the media.
+	Id *string `json:"id,omitempty"`
+
+	// TmCreate Timestamp when the media was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the media was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the media was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type Type of the media.
+	Type *ConversationManagerMediaType `json:"type,omitempty"`
+}
+
+// ConversationManagerMediaType Type of the media.
+type ConversationManagerMediaType string
+
+// ConversationManagerMessage defines model for ConversationManagerMessage.
+type ConversationManagerMessage struct {
+	// ConversationId Unique identifier of the conversation.
+	ConversationId *string `json:"conversation_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Direction Direction of the message (incoming or outgoing).
+	Direction *ConversationManagerMessageDirection `json:"direction,omitempty"`
+
+	// Id Unique identifier for the message.
+	Id *string `json:"id,omitempty"`
+
+	// Medias List of media associated with the message.
+	Medias *[]ConversationManagerMedia `json:"medias,omitempty"`
+
+	// ReferenceId The reference ID for the message (e.g., related call ID).
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Type of reference associated with the message (e.g., call, campaign).
+	ReferenceType *ConversationManagerMessageReferenceType `json:"reference_type,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Status Status of the message.
+	Status *ConversationManagerMessageStatus `json:"status,omitempty"`
+
+	// Text The message content.
+	Text *string `json:"text,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the message was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// ConversationManagerMessageDirection Direction of the message (incoming or outgoing).
+type ConversationManagerMessageDirection string
+
+// ConversationManagerMessageReferenceType Type of reference associated with the message (e.g., call, campaign).
+type ConversationManagerMessageReferenceType string
+
+// ConversationManagerMessageStatus Status of the message.
+type ConversationManagerMessageStatus string
+
+// CustomerManagerAccesskey defines model for CustomerManagerAccesskey.
+type CustomerManagerAccesskey struct {
+	CustomerId *string    `json:"customer_id,omitempty"`
+	Detail     *string    `json:"detail,omitempty"`
+	Id         *string    `json:"id,omitempty"`
+	Name       *string    `json:"name,omitempty"`
+	TmCreate   *time.Time `json:"tm_create,omitempty"`
+	TmDelete   *time.Time `json:"tm_delete,omitempty"`
+	TmExpire   *time.Time `json:"tm_expire,omitempty"`
+	TmUpdate   *time.Time `json:"tm_update,omitempty"`
+	Token      *string    `json:"token,omitempty"`
+}
+
+// CustomerManagerCustomer defines model for CustomerManagerCustomer.
+type CustomerManagerCustomer struct {
+	// Address Address of the customer.
+	Address *string `json:"address,omitempty"`
+
+	// BillingAccountId The ID of the customer's default billing account.
+	BillingAccountId *string `json:"billing_account_id,omitempty"`
+
+	// Detail Details about the customer.
+	Detail *string `json:"detail,omitempty"`
+
+	// Email Email address of the customer.
+	Email *string `json:"email,omitempty"`
+
+	// Id Unique identifier for the customer.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the customer.
+	Name *string `json:"name,omitempty"`
+
+	// PhoneNumber Phone number of the customer.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// TmCreate Timestamp when the customer was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the customer was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the customer was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+	WebhookMethod *CustomerManagerCustomerWebhookMethod `json:"webhook_method,omitempty"`
+
+	// WebhookUri URI for the customer's webhook.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
+}
+
+// CustomerManagerCustomerWebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+type CustomerManagerCustomerWebhookMethod string
+
+// FlowManagerAction defines model for FlowManagerAction.
+type FlowManagerAction struct {
+	// Id The unique identifier
+	Id string `json:"id"`
+
+	// NextId The identifier of the next item
+	NextId *string `json:"next_id,omitempty"`
+
+	// Option Additional options
+	Option *map[string]interface{} `json:"option,omitempty"`
+
+	// TmExecute Timestamp or time to execute
+	TmExecute *string `json:"tm_execute,omitempty"`
+
+	// Type Type of the action.
+	Type FlowManagerActionType `json:"type"`
+}
+
+// FlowManagerActionType Type of the action.
+type FlowManagerActionType string
+
+// FlowManagerActiveflow defines model for FlowManagerActiveflow.
+type FlowManagerActiveflow struct {
+	CurrentAction *FlowManagerAction `json:"current_action,omitempty"`
+
+	// CustomerId ID of the customer associated with the flow.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// ExecutedActions List of actions that have been executed.
+	ExecutedActions *[]FlowManagerAction `json:"executed_actions,omitempty"`
+
+	// FlowId ID of the flow definition.
+	FlowId *string `json:"flow_id,omitempty"`
+
+	// ForwardActionId ID of the next action to be executed.
+	ForwardActionId *string `json:"forward_action_id,omitempty"`
+
+	// Id Unique identifier for the activeflow.
+	Id *string `json:"id,omitempty"`
+
+	// ReferenceId ID of the reference object.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType Reference type of activeflow.
+	ReferenceType *FlowManagerReferenceType `json:"reference_type,omitempty"`
+
+	// Status Status of the activeflow.
+	Status *FlowManagerActiveflowStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the flow was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the flow was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the flow was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// FlowManagerActiveflowStatus Status of the activeflow.
+type FlowManagerActiveflowStatus string
+
+// FlowManagerFlow defines model for FlowManagerFlow.
+type FlowManagerFlow struct {
+	// Actions List of actions associated with the flow.
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
+
+	// CustomerId Unique identifier for the customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed description of the flow.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id Unique identifier for the flow.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the flow.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the flow was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the flow was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the flow was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type Type of the flow.
+	Type *FlowManagerFlowType `json:"type,omitempty"`
+}
+
+// FlowManagerFlowType Type of the flow.
+type FlowManagerFlowType string
+
+// FlowManagerReferenceType Reference type of activeflow.
+type FlowManagerReferenceType string
+
+// MessageManagerMessage defines model for MessageManagerMessage.
+type MessageManagerMessage struct {
+	// CustomerId Unique identifier for the customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Direction Direction of the message.
+	Direction *MessageManagerMessageDirection `json:"direction,omitempty"`
+
+	// Id Unique identifier for the message.
+	Id *string `json:"id,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// Targets List of target addresses to which the message is sent.
+	Targets *[]MessageManagerTarget `json:"targets,omitempty"`
+
+	// Text The text delivered in the body of the message.
+	Text *string `json:"text,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the message was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type Type of the message.
+	Type *MessageManagerMessageType `json:"type,omitempty"`
+}
+
+// MessageManagerMessageDirection Direction of the message.
+type MessageManagerMessageDirection string
+
+// MessageManagerMessageProviderName Name of the message provider.
+type MessageManagerMessageProviderName string
+
+// MessageManagerMessageType Type of the message.
+type MessageManagerMessageType string
+
+// MessageManagerTarget defines model for MessageManagerTarget.
+type MessageManagerTarget struct {
+	// Destination Contains source or destination detail info.
+	Destination *CommonAddress `json:"destination,omitempty"`
+
+	// Parts The number of message parts (if the message is split).
+	Parts *int `json:"parts,omitempty"`
+
+	// Status The status of the message for the target.
+	Status *MessageManagerTargetStatus `json:"status,omitempty"`
+
+	// TmUpdate Timestamp when the target message was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// MessageManagerTargetStatus The status of the message for the target.
+type MessageManagerTargetStatus string
+
+// NumberManagerAvailableNumber A feature supported by the phone number.
+type NumberManagerAvailableNumber string
+
+// NumberManagerAvailableNumberFeature defines model for NumberManagerAvailableNumberFeature.
+type NumberManagerAvailableNumberFeature struct {
+	// Country The country where the number is available.
+	Country *string `json:"country,omitempty"`
+
+	// Features The list of features supported by the number.
+	Features *[]NumberManagerAvailableNumberFeature `json:"features,omitempty"`
+
+	// Number The available phone number.
+	Number *string `json:"number,omitempty"`
+
+	// PostalCode The postal code associated with the number.
+	PostalCode *string `json:"postal_code,omitempty"`
+
+	// Region The region within the country.
+	Region *string `json:"region,omitempty"`
+}
+
+// NumberManagerNumber defines model for NumberManagerNumber.
+type NumberManagerNumber struct {
+	// CallFlowId The ID of the associated call flow.
+	CallFlowId *string `json:"call_flow_id,omitempty"`
+
+	// CustomerId The customer ID associated with the number.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Additional details about the number.
+	Detail *string `json:"detail,omitempty"`
+
+	// EmergencyEnabled Whether emergency services are enabled for the number.
+	EmergencyEnabled *bool `json:"emergency_enabled,omitempty"`
+
+	// Id The unique identifier for the number.
+	Id *string `json:"id,omitempty"`
+
+	// MessageFlowId The ID of the associated message flow.
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
+
+	// Name The name of the number.
+	Name *string `json:"name,omitempty"`
+
+	// Number The phone number.
+	Number *string `json:"number,omitempty"`
+
+	// Status The status of the number.
+	Status *NumberManagerNumberStatus `json:"status,omitempty"`
+
+	// T38Enabled Whether T38 is enabled for the number.
+	T38Enabled *bool `json:"t38_enabled,omitempty"`
+
+	// TmCreate The timestamp of when the number was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete The timestamp of when the number was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmPurchase The timestamp of when the number was purchased.
+	TmPurchase *string `json:"tm_purchase,omitempty"`
+
+	// TmRenew The timestamp of when the number was renewed.
+	TmRenew *string `json:"tm_renew,omitempty"`
+
+	// TmUpdate The timestamp of when the number was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// NumberManagerNumberProviderName The provider name for the number.
+type NumberManagerNumberProviderName string
+
+// NumberManagerNumberStatus The status of the number.
+type NumberManagerNumberStatus string
+
+// OutdialManagerOutdial defines model for OutdialManagerOutdial.
+type OutdialManagerOutdial struct {
+	// CampaignId The unique identifier for the campaign associated with the outdial.
+	CampaignId *string `json:"campaign_id,omitempty"`
+
+	// CustomerId The unique identifier for the customer associated with the outdial.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Data The data associated with the outdial.
+	Data *string `json:"data,omitempty"`
+
+	// Detail The detailed description of the outdial.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier for the outdial.
+	Id *string `json:"id,omitempty"`
+
+	// Name The name of the outdial.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the outdial was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the outdial was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the outdial was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// OutdialManagerOutdialtarget defines model for OutdialManagerOutdialtarget.
+type OutdialManagerOutdialtarget struct {
+	// Data The data associated with the outdial.
+	Data *string `json:"data,omitempty"`
+
+	// Destination0 Contains source or destination detail info.
+	Destination0 *CommonAddress `json:"destination_0,omitempty"`
+
+	// Destination1 Contains source or destination detail info.
+	Destination1 *CommonAddress `json:"destination_1,omitempty"`
+
+	// Destination2 Contains source or destination detail info.
+	Destination2 *CommonAddress `json:"destination_2,omitempty"`
+
+	// Destination3 Contains source or destination detail info.
+	Destination3 *CommonAddress `json:"destination_3,omitempty"`
+
+	// Destination4 Contains source or destination detail info.
+	Destination4 *CommonAddress `json:"destination_4,omitempty"`
+
+	// Detail Additional details about the outdial.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier for the outdial.
+	Id *string `json:"id,omitempty"`
+
+	// Name The name of the outdial.
+	Name *string `json:"name,omitempty"`
+
+	// OutdialId The outdial reference ID.
+	OutdialId *string `json:"outdial_id,omitempty"`
+
+	// Status The status of the outdial.
+	Status *OutdialManagerOutdialtargetStatus `json:"status,omitempty"`
+
+	// TmCreate The creation timestamp.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete The deletion timestamp.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate The update timestamp.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// TryCount0 The try count for destination 0.
+	TryCount0 *int `json:"try_count_0,omitempty"`
+
+	// TryCount1 The try count for destination 1.
+	TryCount1 *int `json:"try_count_1,omitempty"`
+
+	// TryCount2 The try count for destination 2.
+	TryCount2 *int `json:"try_count_2,omitempty"`
+
+	// TryCount3 The try count for destination 3.
+	TryCount3 *int `json:"try_count_3,omitempty"`
+
+	// TryCount4 The try count for destination 4.
+	TryCount4 *int `json:"try_count_4,omitempty"`
+}
+
+// OutdialManagerOutdialtargetStatus The status of the outdial.
+type OutdialManagerOutdialtargetStatus string
+
+// QueueManagerQueue defines model for QueueManagerQueue.
+type QueueManagerQueue struct {
+	CustomerId          *string                         `json:"customer_id,omitempty"`
+	Detail              *string                         `json:"detail,omitempty"`
+	Id                  *string                         `json:"id,omitempty"`
+	Name                *string                         `json:"name,omitempty"`
+	RoutingMethod       *QueueManagerQueueRoutingMethod `json:"routing_method,omitempty"`
+	ServiceQueuecallIds *[]string                       `json:"service_queuecall_ids,omitempty"`
+
+	// ServiceTimeout Service queue timeout in milliseconds.
+	ServiceTimeout *int      `json:"service_timeout,omitempty"`
+	TagIds         *[]string `json:"tag_ids,omitempty"`
+	TmCreate       *string   `json:"tm_create,omitempty"`
+	TmDelete       *string   `json:"tm_delete,omitempty"`
+	TmUpdate       *string   `json:"tm_update,omitempty"`
+
+	// TotalAbandonedCount Total abandoned call count.
+	TotalAbandonedCount *int `json:"total_abandoned_count,omitempty"`
+
+	// TotalIncomingCount Total incoming call count.
+	TotalIncomingCount *int `json:"total_incoming_count,omitempty"`
+
+	// TotalServicedCount Total serviced call count.
+	TotalServicedCount *int                 `json:"total_serviced_count,omitempty"`
+	WaitActions        *[]FlowManagerAction `json:"wait_actions,omitempty"`
+	WaitQueuecallIds   *[]string            `json:"wait_queuecall_ids,omitempty"`
+
+	// WaitTimeout Wait queue timeout in milliseconds.
+	WaitTimeout *int `json:"wait_timeout,omitempty"`
+}
+
+// QueueManagerQueueRoutingMethod defines model for QueueManagerQueueRoutingMethod.
+type QueueManagerQueueRoutingMethod string
+
+// QueueManagerQueuecall defines model for QueueManagerQueuecall.
+type QueueManagerQueuecall struct {
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// DurationService Duration for service in milliseconds
+	DurationService *int `json:"duration_service,omitempty"`
+
+	// DurationWaiting Duration for waiting in milliseconds
+	DurationWaiting *int                                `json:"duration_waiting,omitempty"`
+	Id              *string                             `json:"id,omitempty"`
+	ReferenceId     *string                             `json:"reference_id,omitempty"`
+	ReferenceType   *QueueManagerQueuecallReferenceType `json:"reference_type,omitempty"`
+
+	// ServiceAgentId The ID of the service agent handling the queue call
+	ServiceAgentId *string                      `json:"service_agent_id,omitempty"`
+	Status         *QueueManagerQueuecallStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the queue call was created
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the queue call was deleted
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmService Timestamp when the queue call started service
+	TmService *string `json:"tm_service,omitempty"`
+
+	// TmUpdate Timestamp when the queue call was last updated
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// QueueManagerQueuecallReferenceType defines model for QueueManagerQueuecallReferenceType.
+type QueueManagerQueuecallReferenceType string
+
+// QueueManagerQueuecallStatus defines model for QueueManagerQueuecallStatus.
+type QueueManagerQueuecallStatus string
+
+// RegistrarManagerAuthType Defines the authentication type. Can be 'basic' or 'ip'.
+type RegistrarManagerAuthType string
+
+// RegistrarManagerExtension defines model for RegistrarManagerExtension.
+type RegistrarManagerExtension struct {
+	CustomerId *string `json:"customer_id,omitempty"`
+	Detail     *string `json:"detail,omitempty"`
+
+	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
+	DomainName *string `json:"domain_name,omitempty"`
+	Extension  *string `json:"extension,omitempty"`
+	Id         *string `json:"id,omitempty"`
+	Name       *string `json:"name,omitempty"`
+	Password   *string `json:"password,omitempty"`
+
+	// TmCreate Timestamp when the extension was created
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the extension was deleted
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the extension was last updated
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Username Username, same as the Extension, used by Kamailio's INVITE validation
+	Username *string `json:"username,omitempty"`
+}
+
+// RegistrarManagerTrunk defines model for RegistrarManagerTrunk.
+type RegistrarManagerTrunk struct {
+	AllowedIps *[]string                   `json:"allowed_ips,omitempty"`
+	AuthTypes  *[]RegistrarManagerAuthType `json:"auth_types,omitempty"`
+	CustomerId *string                     `json:"customer_id,omitempty"`
+	Detail     *string                     `json:"detail,omitempty"`
+	DomainName *string                     `json:"domain_name,omitempty"`
+	Id         *string                     `json:"id,omitempty"`
+	Name       *string                     `json:"name,omitempty"`
+	Password   *string                     `json:"password,omitempty"`
+
+	// TmCreate Timestamp when the trunk was created
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the trunk was deleted
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the trunk was last updated
+	TmUpdate *string `json:"tm_update,omitempty"`
+	Username *string `json:"username,omitempty"`
+}
+
+// RouteManagerProvider defines model for RouteManagerProvider.
+type RouteManagerProvider struct {
+	// Detail The details about the provider.
+	Detail *string `json:"detail,omitempty"`
+
+	// Hostname The destination hostname for the provider.
+	Hostname *string `json:"hostname,omitempty"`
+
+	// Id The unique identifier for the provider.
+	Id *string `json:"id,omitempty"`
+
+	// Name The name of the provider.
+	Name *string `json:"name,omitempty"`
+
+	// TechHeaders The tech headers, valid only for SIP type providers.
+	TechHeaders *map[string]string `json:"tech_headers,omitempty"`
+
+	// TechPostfix The tech postfix, valid only for SIP type providers.
+	TechPostfix *string `json:"tech_postfix,omitempty"`
+
+	// TechPrefix The tech prefix, valid only for SIP type providers.
+	TechPrefix *string `json:"tech_prefix,omitempty"`
+
+	// TmCreate Timestamp when the provider was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the provider was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the provider was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
+	Type *RouteManagerProviderType `json:"type,omitempty"`
+}
+
+// RouteManagerProviderType Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
+type RouteManagerProviderType string
+
+// RouteManagerRoute defines model for RouteManagerRoute.
+type RouteManagerRoute struct {
+	// CustomerId The customer ID associated with the route.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail The details about the route.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier for the route.
+	Id *string `json:"id,omitempty"`
+
+	// Name The name of the route.
+	Name *string `json:"name,omitempty"`
+
+	// Priority The priority of the route, used for routing decisions.
+	Priority *int `json:"priority,omitempty"`
+
+	// ProviderId The unique identifier of the provider associated with this route.
+	ProviderId *string `json:"provider_id,omitempty"`
+
+	// Target The target destination for the route (e.g., country code or 'all').
+	Target *string `json:"target,omitempty"`
+
+	// TmCreate Timestamp when the route was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the route was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the route was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// StorageManagerAccount defines model for StorageManagerAccount.
+type StorageManagerAccount struct {
+	// CustomerId The customer ID associated with the account.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id The unique identifier for the account.
+	Id *string `json:"id,omitempty"`
+
+	// TmCreate Timestamp when the account was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the account was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the account was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// TotalFileCount The total number of files in the account.
+	TotalFileCount *int64 `json:"total_file_count,omitempty"`
+
+	// TotalFileSize The total file size in bytes.
+	TotalFileSize *int64 `json:"total_file_size,omitempty"`
+}
+
+// StorageManagerFile defines model for StorageManagerFile.
+type StorageManagerFile struct {
+	// CustomerId The customer ID associated with the file.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail The details of the file.
+	Detail *string `json:"detail,omitempty"`
+
+	// Filename The filename of the file.
+	Filename *string `json:"filename,omitempty"`
+
+	// Filesize The size of the file in bytes.
+	Filesize *int64 `json:"filesize,omitempty"`
+
+	// Id The unique identifier for the file.
+	Id *string `json:"id,omitempty"`
+
+	// Name The name of the file.
+	Name *string `json:"name,omitempty"`
+
+	// OwnerId The owner ID of the file.
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// ReferenceId The reference ID associated with the file.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// ReferenceType The reference type of the file.
+	ReferenceType *StorageManagerFileReferenceType `json:"reference_type,omitempty"`
+
+	// TmCreate Timestamp when the file was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the file was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmDownloadExpire The timestamp when the download link expires.
+	TmDownloadExpire *time.Time `json:"tm_download_expire,omitempty"`
+
+	// TmUpdate Timestamp when the file was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+
+	// UriDownload The URI for downloading the file.
+	UriDownload *string `json:"uri_download,omitempty"`
+}
+
+// StorageManagerFileReferenceType The reference type of the file.
+type StorageManagerFileReferenceType string
+
+// TagManagerTag defines model for TagManagerTag.
+type TagManagerTag struct {
+	// Detail The details about the tag.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier for the tag.
+	Id *string `json:"id,omitempty"`
+
+	// Name The name of the tag.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the tag was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the tag was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the tag was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
+type TranscribeManagerTranscribe struct {
+	// CustomerId Customer ID
+	CustomerId *string                               `json:"customer_id,omitempty"`
+	Direction  *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
+
+	// Id Transcribe id
+	Id *string `json:"id,omitempty"`
+
+	// Language BCP47 type's language code.
+	Language *string `json:"language,omitempty"`
+
+	// ReferenceId Call/Conference/Recording's ID
+	ReferenceId   *string                                   `json:"reference_id,omitempty"`
+	ReferenceType *TranscribeManagerTranscribeReferenceType `json:"reference_type,omitempty"`
+	Status        *TranscribeManagerTranscribeStatus        `json:"status,omitempty"`
+
+	// TmCreate Timestamp when created
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when deleted
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when updated
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// TranscribeManagerTranscribeDirection defines model for TranscribeManagerTranscribeDirection.
+type TranscribeManagerTranscribeDirection string
+
+// TranscribeManagerTranscribeReferenceType defines model for TranscribeManagerTranscribeReferenceType.
+type TranscribeManagerTranscribeReferenceType string
+
+// TranscribeManagerTranscribeStatus defines model for TranscribeManagerTranscribeStatus.
+type TranscribeManagerTranscribeStatus string
+
+// TranscribeManagerTranscript defines model for TranscribeManagerTranscript.
+type TranscribeManagerTranscript struct {
+	Direction *TranscribeManagerTranscriptDirection `json:"direction,omitempty"`
+
+	// Id Transcript ID
+	Id *string `json:"id,omitempty"`
+
+	// Message Transcript message
+	Message *string `json:"message,omitempty"`
+
+	// TmCreate Timestamp when created
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmTranscript Timestamp for the transcript
+	TmTranscript *string `json:"tm_transcript,omitempty"`
+
+	// TranscribeId Transcribe ID
+	TranscribeId *string `json:"transcribe_id,omitempty"`
+}
+
+// TranscribeManagerTranscriptDirection defines model for TranscribeManagerTranscriptDirection.
+type TranscribeManagerTranscriptDirection string
+
+// TransferManagerTransfer defines model for TransferManagerTransfer.
+type TransferManagerTransfer struct {
+	// ConfbridgeId Conference Bridge ID
+	ConfbridgeId *string `json:"confbridge_id,omitempty"`
+
+	// CustomerId Customer ID
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// GroupcallId Created Groupcall ID
+	GroupcallId *string `json:"groupcall_id,omitempty"`
+
+	// Id Transfer ID
+	Id *string `json:"id,omitempty"`
+
+	// TmCreate Timestamp when created
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when deleted
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when updated
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// TransfereeAddresses List of transferee addresses
+	TransfereeAddresses *[]CommonAddress `json:"transferee_addresses,omitempty"`
+
+	// TransfereeCallId Transferee Call ID
+	TransfereeCallId *string `json:"transferee_call_id,omitempty"`
+
+	// TransfererCallId Transferer Call ID
+	TransfererCallId *string                      `json:"transferer_call_id,omitempty"`
+	Type             *TransferManagerTransferType `json:"type,omitempty"`
+}
+
+// TransferManagerTransferType defines model for TransferManagerTransferType.
+type TransferManagerTransferType string
+
+// PageSize defines model for PageSize.
+type PageSize = int
+
+// PageToken defines model for PageToken.
+type PageToken = string
 
 // GetAccesskeysParams defines parameters for GetAccesskeys.
 type GetAccesskeysParams struct {
 	// PageSize The size of results.
-	PageSize *externalRef6.PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
 	// PageToken The token. tm_create
-	PageToken *externalRef6.PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // PostAccesskeysJSONBody defines parameters for PostAccesskeys.
@@ -43,15 +2433,15 @@ type PutAccesskeysIdJSONBody struct {
 // GetActiveflowsParams defines parameters for GetActiveflows.
 type GetActiveflowsParams struct {
 	// PageSize The size of results.
-	PageSize *externalRef6.PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
 	// PageToken The token. tm_create
-	PageToken *externalRef6.PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // PostActiveflowsJSONBody defines parameters for PostActiveflows.
 type PostActiveflowsJSONBody struct {
-	Actions *[]externalRef10.Action `json:"actions,omitempty"`
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
 
 	// FlowId Flow id of.
 	FlowId *string `json:"flow_id,omitempty"`
@@ -399,8 +2789,8 @@ type GetAccesskeysResponseObject interface {
 
 type GetAccesskeys200JSONResponse struct {
 	// NextPageToken The token for next pagination.
-	NextPageToken *string                   `json:"next_page_token,omitempty"`
-	Result        *[]externalRef9.Accesskey `json:"result,omitempty"`
+	NextPageToken *string                     `json:"next_page_token,omitempty"`
+	Result        *[]CustomerManagerAccesskey `json:"result,omitempty"`
 }
 
 func (response GetAccesskeys200JSONResponse) VisitGetAccesskeysResponse(w http.ResponseWriter) error {
@@ -418,7 +2808,7 @@ type PostAccesskeysResponseObject interface {
 	VisitPostAccesskeysResponse(w http.ResponseWriter) error
 }
 
-type PostAccesskeys201JSONResponse externalRef9.Accesskey
+type PostAccesskeys201JSONResponse CustomerManagerAccesskey
 
 func (response PostAccesskeys201JSONResponse) VisitPostAccesskeysResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -451,7 +2841,7 @@ type GetAccesskeysIdResponseObject interface {
 	VisitGetAccesskeysIdResponse(w http.ResponseWriter) error
 }
 
-type GetAccesskeysId200JSONResponse externalRef9.Accesskey
+type GetAccesskeysId200JSONResponse CustomerManagerAccesskey
 
 func (response GetAccesskeysId200JSONResponse) VisitGetAccesskeysIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -469,7 +2859,7 @@ type PutAccesskeysIdResponseObject interface {
 	VisitPutAccesskeysIdResponse(w http.ResponseWriter) error
 }
 
-type PutAccesskeysId200JSONResponse externalRef9.Accesskey
+type PutAccesskeysId200JSONResponse CustomerManagerAccesskey
 
 func (response PutAccesskeysId200JSONResponse) VisitPutAccesskeysIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -488,8 +2878,8 @@ type GetActiveflowsResponseObject interface {
 
 type GetActiveflows200JSONResponse struct {
 	// NextPageToken The token for next pagination.
-	NextPageToken *string                     `json:"next_page_token,omitempty"`
-	Result        *[]externalRef10.Activeflow `json:"result,omitempty"`
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]FlowManagerActiveflow `json:"result,omitempty"`
 }
 
 func (response GetActiveflows200JSONResponse) VisitGetActiveflowsResponse(w http.ResponseWriter) error {
@@ -515,7 +2905,7 @@ type PostActiveflowsResponseObject interface {
 	VisitPostActiveflowsResponse(w http.ResponseWriter) error
 }
 
-type PostActiveflows201JSONResponse externalRef10.Activeflow
+type PostActiveflows201JSONResponse FlowManagerActiveflow
 
 func (response PostActiveflows201JSONResponse) VisitPostActiveflowsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -564,7 +2954,7 @@ type GetActiveflowsIdResponseObject interface {
 	VisitGetActiveflowsIdResponse(w http.ResponseWriter) error
 }
 
-type GetActiveflowsId200JSONResponse externalRef10.Activeflow
+type GetActiveflowsId200JSONResponse FlowManagerActiveflow
 
 func (response GetActiveflowsId200JSONResponse) VisitGetActiveflowsIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -589,7 +2979,7 @@ type PostActiveflowsIdStopResponseObject interface {
 	VisitPostActiveflowsIdStopResponse(w http.ResponseWriter) error
 }
 
-type PostActiveflowsIdStop200JSONResponse externalRef10.Activeflow
+type PostActiveflowsIdStop200JSONResponse FlowManagerActiveflow
 
 func (response PostActiveflowsIdStop200JSONResponse) VisitPostActiveflowsIdStopResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")

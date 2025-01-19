@@ -1,8 +1,6 @@
 post:
   summary: Stop an active flow
   description: Endpoint to stop an active flow by its ID.
-  tags:
-    - Activeflow Management
   parameters:
     - name: id
       in: path
@@ -16,7 +14,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Activeflow'
+            $ref: '#/components/schemas/FlowManagerActiveflow'
     '404':
       description: Flow not found.
     '400':

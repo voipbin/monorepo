@@ -2,8 +2,8 @@ get:
   summary: List queues of the customer
   description: Retrieves a list of queues associated with the customer.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of queues.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+                      $ref: '#/components/schemas/QueueManagerQueue'
 
 post:
   summary: Create a new queue
@@ -33,7 +33,7 @@ post:
             detail:
               type: string
             routing_method:
-              $ref: '../../components/queue_manager/main.yaml#/components/schemas/QueueRoutingMethod'
+              $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
             tag_ids:
               type: array
               items:
@@ -41,7 +41,7 @@ post:
             wait_actions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
             wait_timeout:
               type: integer
             service_timeout:
@@ -52,4 +52,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+            $ref: '#/components/schemas/QueueManagerQueue'

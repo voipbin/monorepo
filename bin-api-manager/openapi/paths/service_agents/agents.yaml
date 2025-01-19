@@ -2,8 +2,8 @@ get:
   summary: Retrieve a list of service agents
   description: Fetches a list of service agents with pagination support.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of service agents.
@@ -11,10 +11,10 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+                      $ref: '#/components/schemas/AgentManagerAgent'

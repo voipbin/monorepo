@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+            $ref: '#/components/schemas/CampaignManagerCampaign'
 
 put:
   summary: Update a campaign
@@ -39,18 +39,18 @@ put:
               type: string
               description: Updated details of the campaign
             type:
-              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignType'
+              $ref: '#/components/schemas/CampaignManagerCampaignType'
             serviceLevel:
               type: number
               description: Updated service level of the campaign
             endHandle:
-              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignEndHandle'
+              $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
   responses:
     '200':
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+            $ref: '#/components/schemas/CampaignManagerCampaign'
 
 delete:
   summary: Delete a campaign
@@ -67,4 +67,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+            $ref: '#/components/schemas/CampaignManagerCampaign'

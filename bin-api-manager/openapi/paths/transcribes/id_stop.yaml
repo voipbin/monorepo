@@ -13,4 +13,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/transcribe_manager/main.yaml#/components/schemas/Transcribe'
+            $ref: '#/components/schemas/TranscribeManagerTranscribe'

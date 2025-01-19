@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'
+            $ref: '#/components/schemas/CampaignManagerOutplan'
 
 delete:
   summary: Delete an existing outplan.
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'
+            $ref: '#/components/schemas/CampaignManagerOutplan'
 
 put:
   summary: Update dial information of an existing outplan.
@@ -52,7 +52,7 @@ put:
           type: object
           properties:
             source:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
               description: The new source address.
             dial_timeout:
               type: integer
@@ -81,4 +81,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'
+            $ref: '#/components/schemas/CampaignManagerOutplan'

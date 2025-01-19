@@ -2,7 +2,7 @@ get:
   summary: Retrieve an outdial by its ID.
   description: Returns detailed information of a specific outdial based on the provided ID.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageSize'
     - name: id
       in: path
       required: true
@@ -15,7 +15,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+            $ref: '#/components/schemas/OutdialManagerOutdial'
 
 delete:
   summary: Delete an existing outdial.
@@ -33,7 +33,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+            $ref: '#/components/schemas/OutdialManagerOutdial'
 
 put:
   summary: Update an outdial.
@@ -61,4 +61,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+            $ref: '#/components/schemas/OutdialManagerOutdial'

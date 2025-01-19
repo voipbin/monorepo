@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queuecall'
+            $ref: '#/components/schemas/QueueManagerQueuecall'
 
 delete:
   summary: Delete a queue call
@@ -32,4 +32,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queuecall'
+            $ref: '#/components/schemas/QueueManagerQueuecall'

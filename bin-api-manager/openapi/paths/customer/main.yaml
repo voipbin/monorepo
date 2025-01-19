@@ -7,7 +7,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerManagerCustomer'
 
 put:
   summary: Update a customer
@@ -36,7 +36,7 @@ put:
               type: string
               description: The customer's address.
             webhook_method:
-              $ref: '../../components/customer_manager/main.yaml#/components/schemas/CustomerWebhookMethod'
+              $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
             webhook_uri:
               type: string
               description: Webhook URI.
@@ -46,4 +46,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerManagerCustomer'

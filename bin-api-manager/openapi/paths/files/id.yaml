@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'
+            $ref: '#/components/schemas/StorageManagerFile'
 
 delete:
   summary: Delete a file
@@ -30,5 +30,5 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'
+            $ref: '#/components/schemas/StorageManagerFile'
 

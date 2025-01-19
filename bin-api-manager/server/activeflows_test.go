@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/gens/models/flow_manager"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -162,7 +161,7 @@ func Test_PostActiveflows(t *testing.T) {
 
 			reqQuery: "/v1.0/activeflows",
 			reqBody: openapi_server.PostActiveflowsJSONBody{
-				Actions: &[]flow_manager.Action{
+				Actions: &[]openapi_server.FlowManagerAction{
 					{
 						Id: "692de0d6-d3ab-11ef-a2cd-07af60d8bb91",
 					},

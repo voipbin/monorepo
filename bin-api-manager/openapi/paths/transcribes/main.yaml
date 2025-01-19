@@ -2,8 +2,8 @@ get:
   summary: Get list of transcribes
   description: Retrieves a paginated list of transcriptions for the authenticated customer.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of transcriptions.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/transcribe_manager/main.yaml#/components/schemas/Transcribe'
+                      $ref: '#/components/schemas/TranscribeManagerTranscribe'
 
 post:
   summary: Create a transcribe
@@ -30,7 +30,7 @@ post:
           type: object
           properties:
             reference_type:
-              $ref: '../../components/transcribe_manager/main.yaml#/components/schemas/TranscribeReferenceType'
+              $ref: '#/components/schemas/TranscribeManagerTranscribeReferenceType'
             reference_id:
               type: string
               description: The ID of the reference for the transcription.
@@ -38,12 +38,12 @@ post:
               type: string
               description: The language of the transcription.
             direction:
-              $$ref: '../../components/transcribe_manager/main.yaml#/components/schemas/TranscribeDirection'
+              $$ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
   responses:
     '200':
       description: The created transcribe details.
       content:
         application/json:
           schema:
-            $ref: '../../components/transcribe_manager/main.yaml#/components/schemas/Transcribe'
+            $ref: '#/components/schemas/TranscribeManagerTranscribe'
 

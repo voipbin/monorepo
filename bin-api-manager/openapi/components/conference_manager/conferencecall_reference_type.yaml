@@ -1,6 +1,0 @@
-type: string
-description: Type of the reference associated with the conference call.
-enum:
-  - call
-x-enum-varnames:
-  - reference_typeCall

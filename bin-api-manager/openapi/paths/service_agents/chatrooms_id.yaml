@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'
+            $ref: '#/components/schemas/ChatManagerChatroom'
 
 delete:
   summary: Delete a chatroom and return the deleted chatroom's details
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'
+            $ref: '#/components/schemas/ChatManagerChatroom'
 
 put:
   summary: Update the chatroom and return the updated information
@@ -60,4 +60,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Chatroom'
+            $ref: '#/components/schemas/ChatManagerChatroom'

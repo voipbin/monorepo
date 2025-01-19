@@ -1,6 +1,0 @@
-type: string
-description: The format of the recording.
-enum:
-  - wav
-x-enum-varnames:
-  -RecordingFormatWAV

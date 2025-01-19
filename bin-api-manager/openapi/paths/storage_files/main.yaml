@@ -2,8 +2,8 @@ get:
   summary: Get a list of files
   description: Retrieves a paginated list of files.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of files.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'
+                      $ref: '#/components/schemas/StorageManagerFile'
 
 post:
   summary: Upload a file and create a call with it
@@ -37,5 +37,5 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/storage_manager/main.yaml#/components/schemas/File'
+            $ref: '#/components/schemas/StorageManagerFile'
 

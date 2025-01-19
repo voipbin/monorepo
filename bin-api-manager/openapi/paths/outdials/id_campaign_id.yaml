@@ -22,4 +22,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+            $ref: '#/components/schemas/OutdialManagerOutdial'

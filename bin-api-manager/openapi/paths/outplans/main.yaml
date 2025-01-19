@@ -2,8 +2,8 @@ get:
   summary: Retrieve a list of outplans.
   description: Retrieves a paginated list of outplans based on the provided parameters.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of outplans.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'
+                      $ref: '#/components/schemas/CampaignManagerOutplan'
 
 post:
   summary: Create a new outplan.
@@ -36,7 +36,7 @@ post:
               type: string
               description: Additional details about the outplan.
             source:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
               description: The source address for the outplan.
             dial_timeout:
               type: integer
@@ -65,4 +65,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Outplan'
+            $ref: '#/components/schemas/CampaignManagerOutplan'

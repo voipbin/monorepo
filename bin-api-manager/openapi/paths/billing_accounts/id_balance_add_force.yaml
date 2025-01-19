@@ -25,4 +25,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/BillingManagerAccount'

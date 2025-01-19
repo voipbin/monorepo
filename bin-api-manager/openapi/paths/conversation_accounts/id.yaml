@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/ConversationManagerAccount'
 
 put:
   summary: Update a conversation account
@@ -45,7 +45,7 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/ConversationManagerAccount'
 
 delete:
   summary: Delete a conversation account
@@ -62,4 +62,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/conversation_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/ConversationManagerAccount'

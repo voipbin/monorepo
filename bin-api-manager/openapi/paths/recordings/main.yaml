@@ -2,8 +2,8 @@ get:
   summary: List recordings
   description: Retrieves a list of recordings for the given customer.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of recordings.
@@ -11,10 +11,10 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/call_manager/main.yaml#/components/schemas/Recording'
+                      $ref: '#/components/schemas/CallManagerRecording'

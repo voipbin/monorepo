@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Call'
+            $ref: '#/components/schemas/CallManagerCall'
 
 delete:
   summary: Delete up the call
@@ -30,4 +30,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Call'
+            $ref: '#/components/schemas/CallManagerCall'

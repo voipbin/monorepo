@@ -1,8 +1,0 @@
-type: string
-description: Type of reference for the recording.
-enum:
-  - call
-  - confbridge
-x-enum-varnames:
-  - RecordingReferenceTypeCall
-  - RecordingReferenceTypeConfbridge

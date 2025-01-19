@@ -17,13 +17,13 @@ put:
           type: object
           properties:
             payment_type:
-              $ref: '../../components/billing_manager/main.yaml#/components/schemas/AccountPaymentType'
+              $ref: '#/components/schemas/BillingManagerAccountPaymentType'
             payment_method:
-              $ref: '../../components/billing_manager/main.yaml#/components/schemas/AccountPaymentMethod'
+              $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
   responses:
     200:
       description: Successfully updated billing account payment info
       content:
         application/json:
           schema:
-            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/BillingManagerAccount'

@@ -1,4 +1,0 @@
-components:
-  schemas:
-    Tag:
-      $ref: 'tag.yaml'

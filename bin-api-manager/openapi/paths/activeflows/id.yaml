@@ -1,8 +1,6 @@
 delete:
   summary: Delete an active flow
   description: Endpoint to delete an active flow by its ID.
-  tags:
-    - Activeflow Management
   parameters:
     - name: id
       in: path
@@ -19,8 +17,6 @@ delete:
 get:
   summary: Get an active flow by ID
   description: Retrieve details of a specific active flow.
-  tags:
-    - Activeflow Management
   parameters:
     - name: id
       in: path
@@ -34,6 +30,6 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Activeflow'
+            $ref: '#/components/schemas/FlowManagerActiveflow'
     '404':
       description: Flow not found.

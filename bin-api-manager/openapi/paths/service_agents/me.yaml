@@ -7,7 +7,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+            $ref: '#/components/schemas/AgentManagerAgent'
 
 put:
   summary: Update authenticated agent's information
@@ -26,11 +26,11 @@ put:
               type: string
               description: Additional details about the agent.
             ringMethod:
-              $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentRingMethod'
+              $ref: '#/components/schemas/AgentManagerAgentRingMethod'
   responses:
     '200':
       description: The updated agent's details.
       content:
         application/json:
           schema:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+            $ref: '#/components/schemas/AgentManagerAgent'

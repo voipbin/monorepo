@@ -13,7 +13,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'
+            $ref: '#/components/schemas/ConferenceManagerConference'
 
 put:
   summary: Update conference details
@@ -41,17 +41,17 @@ put:
             preActions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
             postActions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
   responses:
     '200':
       content:
         application/json:
           schema:
-            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'
+            $ref: '#/components/schemas/ConferenceManagerConference'
 
 delete:
   summary: Delete a conference
@@ -69,4 +69,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/conference_manager/main.yaml#/components/schemas/Conference'
+            $ref: '#/components/schemas/ConferenceManagerConference'

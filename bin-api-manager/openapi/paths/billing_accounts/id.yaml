@@ -15,7 +15,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/BillingManagerAccount'
 
 delete:
   summary: Delete billing account
@@ -34,7 +34,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/BillingManagerAccount'
 
 put:
   summary: Update billing account
@@ -64,4 +64,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/BillingManagerAccount'

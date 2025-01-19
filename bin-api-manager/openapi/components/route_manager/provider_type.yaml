@@ -1,6 +1,0 @@
-type: string
-description: "Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers."
-enum:
-  - sip
-x-enum-varnames:
-  - ProviderTypeSIP

@@ -1,6 +1,0 @@
-type: string
-description: Type of the message.
-enum:
-  - sms
-x-enum-varnames:
-  - MessageTypeSMS

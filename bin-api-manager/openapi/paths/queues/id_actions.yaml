@@ -16,7 +16,7 @@ put:
             wait_actions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
             timeout_wait:
               type: integer
             timeout_service:
@@ -27,4 +27,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/queue_manager/main.yaml#/components/schemas/Queue'
+            $ref: '#/components/schemas/QueueManagerQueue'

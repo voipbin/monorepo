@@ -14,4 +14,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+            $ref: '#/components/schemas/AgentManagerAgent'

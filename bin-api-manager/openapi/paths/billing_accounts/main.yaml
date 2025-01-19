@@ -13,23 +13,23 @@ post:
             detail:
               type: string
             payment_type:
-              $ref: '../../components/billing_manager/main.yaml#/components/schemas/AccountPaymentType'
+              $ref: '#/components/schemas/BillingManagerAccountPaymentType'
             payment_method:
-              $ref: '../../components/billing_manager/main.yaml#/components/schemas/AccountPaymentMethod'
+              $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
   responses:
     200:
       description: Successfully created billing account
       content:
         application/json:
           schema:
-            $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+            $ref: '#/components/schemas/BillingManagerAccount'
 
 get:
   summary: Get list of billing accounts
   description: Retrieves the list of billing accounts associated with the customer.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     200:
       description: Successfully retrieved list of billing accounts
@@ -37,10 +37,10 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/billing_manager/main.yaml#/components/schemas/Account'
+                      $ref: '#/components/schemas/BillingManagerAccount'

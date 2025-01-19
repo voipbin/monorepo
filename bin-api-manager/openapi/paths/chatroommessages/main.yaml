@@ -2,8 +2,8 @@ get:
   summary: Retrieve a list of chatroom messages
   description: Fetches a paginated list of chatroom messages for a specified chatroom.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
     - name: chatroom_id
       in: query
       required: true
@@ -17,13 +17,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/chat_manager/main.yaml#/components/schemas/Messagechatroom'
+                      $ref: '#/components/schemas/ChatManagerMessagechatroom'
 
 post:
   summary: Create a new chatroom message
@@ -45,7 +45,7 @@ post:
               type: array
               description: List of media URLs.
               items:
-                $ref: '../../components/chat_manager/main.yaml#/components/schemas/Media'
+                $ref: '#/components/schemas/ChatManagerMedia'
           required:
             - chatroom_id
   responses:
@@ -53,4 +53,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/chat_manager/main.yaml#/components/schemas/Messagechatroom'
+            $ref: '#/components/schemas/ChatManagerMessagechatroom'

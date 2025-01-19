@@ -20,7 +20,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdialtarget'
+            $ref: '#/components/schemas/OutdialManagerOutdialtarget'
 
 delete:
   summary: Delete an outdial target.
@@ -44,4 +44,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdialtarget'
+            $ref: '#/components/schemas/OutdialManagerOutdialtarget'

@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+            $ref: '#/components/schemas/CallManagerGroupcall'
 
 delete:
   summary: Delete a groupcall
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+            $ref: '#/components/schemas/CallManagerGroupcall'
 
 post:
   summary: Hangup the groupcall
@@ -50,4 +50,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+            $ref: '#/components/schemas/CallManagerGroupcall'

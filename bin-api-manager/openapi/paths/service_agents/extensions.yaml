@@ -2,8 +2,8 @@ get:
   summary: Get list of extensions
   description: Retrieves a paginated list of extensions associated with the authenticated agent.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of extensions.
@@ -11,10 +11,10 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/registrar_manager/main.yaml#/components/schemas/Extension'
+                      $ref: '#/components/schemas/RegistrarManagerExtension'

@@ -5,23 +5,2856 @@ info:
 servers:
   - url: http://localhost:8080/v1.0
 
-tags:
-  - name: Accesskey Management
-    description: Operations related to accesskey management
-  - name: Activeflow Management
-    description: Operations related to activeflow management
+components:
 
-x-tagGroups:
-  - name: Customer Admin menus
-    tags:
-      - Accesskey Management
-      - Activeflow Management
+  parameters:
+    PageSize:
+      name: page_size
+      in: query
+      description: The size of results.
+      required: false
+      schema:
+        type: integer
+    PageToken:
+      name: page_token
+      in: query
+      description: The token. tm_create
+      required: false
+      schema:
+        type: string
 
+
+  schemas:
+
+#########################################
+# Agent Manager
+#########################################
+    AgentManagerAgentPermission:
+      type: integer
+      format: uint64
+      description: Permission type
+      example: 64
+      enum:
+        - 0    # PermissionNone
+        - 65535 # PermissionAll
+        - 1    # PermissionProjectSuperAdmin
+        - 15   # PermissionProjectAll
+        - 16   # PermissionCustomerAgent
+        - 32   # PermissionCustomerAdmin
+        - 64   # PermissionCustomerManager
+        - 240  # PermissionCustomerAll
+      x-enum-varnames:
+        - AgentManagerPermissionNone
+        - AgentManagerPermissionAll
+        - AgentManagerPermissionProjectSuperAdmin
+        - AgentManagerPermissionProjectAll
+        - AgentManagerPermissionCustomerAgent
+        - AgentManagerPermissionCustomerAdmin
+        - AgentManagerPermissionCustomerManager
+        - AgentManagerPermissionCustomerAll
+
+    AgentManagerAgentRingMethod:
+      type: string
+      description: Represents an agent resource.
+      enum:
+        - ringall
+        - linear
+      x-enum-varnames:
+        - AgentManagerAgentRingMethodRingAll
+        - AgentManagerAgentRingMethodLinear
+
+    AgentManagerAgentStatus:
+      type: string
+      description: Agent's status
+      enum:
+        - ""
+        - available
+        - away
+        - busy
+        - offline
+        - ringing
+      x-enum-varnames:
+        - AgentManagerAgentStatusNone
+        - AgentManagerAgentStatusAvailable
+        - AgentManagerAgentStatusAway
+        - AgentManagerAgentStatusBusy
+        - AgentManagerAgentStatusOffline
+        - AgentManagerAgentStatusRinging
+
+    AgentManagerAgent:
+      type: object
+      description: Represents an agent resource.
+      properties:
+        id:
+          type: string
+        customer_id:
+          type: string
+          description: Resource's customer ID.
+        username:
+          type: string
+          description: Agent's username.
+        name:
+          type: string
+          description: Agent's name.
+        detail:
+          type: string
+          description: Agent's detail.
+        ring_method:
+          $ref: '#/components/schemas/AgentManagerAgentRingMethod'
+        status:
+          $ref: '#/components/schemas/AgentManagerAgentStatus'
+        permission:
+          $ref: '#/components/schemas/AgentManagerAgentPermission'
+        tag_ids:
+          type: array
+          items:
+            type: string
+          description: Agent's tag IDs.
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+          description: Agent's endpoint addresses.
+        tm_create:
+          type: string
+          format: date-time
+          description: Created timestamp.
+        tm_update:
+          type: string
+          format: date-time
+          description: Updated timestamp.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Deleted timestamp.
+
+
+#########################################
+# Billing Manager
+#########################################
+    BillingManagerAccountPaymentMethod:
+      type: string
+      description: The method of payment used for the account.
+      enum:
+        - ""
+        - credit card
+      x-enum-varnames:
+        - BillingManagerAccountPaymentMethodNone
+        - BillingManagerAccountPaymentMethodCreditCard
+
+    BillingManagerAccountPaymentType:
+      type: string
+      description: The type of payment associated with the account.
+      enum:
+        - ""
+        - prepaid
+      x-enum-varnames:
+        - BillingManagerAccountPaymentTypeNone
+        - BillingManagerAccountPaymentTypePrepaid
+
+    BillingManagerAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the account.
+        customer_id:
+          type: string
+          description: The unique identifier of the associated customer.
+        name:
+          type: string
+          description: The name of the account.
+        detail:
+          type: string
+          description: Additional details about the account.
+        balance:
+          type: number
+          format: float
+          description: The balance of the account in USD.
+        payment_type:
+          $ref: '#/components/schemas/BillingManagerAccountPaymentType'
+        payment_method:
+          $ref: '#/components/schemas/BillingManagerAccountPaymentMethod'
+        tm_create:
+          type: string
+          format: date-time
+          description: The timestamp when the account was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: The timestamp when the account was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: The timestamp when the account was deleted, if applicable.
+
+    BillingManagerBillingreferenceType:
+      type: string
+      description: The type of reference associated with this billing.
+      enum:
+        - ""
+        - call
+        - sms
+        - number
+        - number_renew
+      x-enum-varnames:
+        - BillingManagerBillingreferenceTypeNone
+        - BillingManagerBillingreferenceTypeCall
+        - BillingManagerBillingreferenceTypeSMS
+        - BillingManagerBillingreferenceTypeNumber
+        - BillingManagerBillingreferenceTypeNumberRenew
+    BillingManagerBillingStatus:
+      type: string
+      description: Status of the billing.
+      enum:
+        - progressing
+        - end
+        - pending
+        - finished
+      x-enum-varnames:
+        - BillingManagerBillingStatusProgressing
+        - BillingManagerBillingStatusEnd
+        - BillingManagerBillingStatusPending
+        - BillingManagerBillingStatusFinished
+
+    BillingManagerBilling:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the billing.
+        customer_id:
+          type: string
+          description: The customer's unique identifier.
+        account_id:
+          type: string
+          description: The billing account ID.
+        status:
+          $ref: '#/components/schemas/BillingManagerBillingStatus'
+        reference_type:
+          $ref: '#/components/schemas/BillingManagerBillingreferenceType'
+        reference_id:
+          type: string
+          description: The ID of the reference related to this billing.
+        cost_per_unit:
+          type: number
+          format: float
+          description: The cost per billing unit.
+        cost_total:
+          type: number
+          format: float
+          description: The total cost of this billing.
+        billing_unit_count:
+          type: number
+          format: float
+          description: The total count of billing units.
+        tm_billing_start:
+          type: string
+          format: date-time
+          description: The start timestamp of the billing period.
+        tm_billing_end:
+          type: string
+          format: date-time
+          description: The end timestamp of the billing period.
+        tm_create:
+          type: string
+          format: date-time
+          description: The creation timestamp.
+        tm_update:
+          type: string
+          format: date-time
+          description: The last update timestamp.
+        tm_delete:
+          type: string
+          format: date-time
+          description: The deletion timestamp, if applicable.
+
+
+#########################################
+# Call Manager
+#########################################
+    CallManagerCallDirection:
+      type: string
+      description: Call direction
+      enum:
+        - incoming
+        - outgoing
+      x-enum-varnames:
+        - CallManagerCallDirectionIncoming
+        - CallManagerCallDirectionOutgoing
+    CallManagerCallHangupBy:
+      type: string
+      description: Indicates who hung up the call
+      enum:
+        - ""
+        - remote
+        - local
+      x-enum-varnames:
+        - CallManagerCallHangupByNone
+        - CallManagerCallHangupByRemote
+        - CallManagerCallHangupByLocal
+    CallManagerCallHangupReason:
+      type: string
+      description: Reason for call hangup
+      enum:
+        - ""
+        - normal
+        - failed
+        - busy
+        - cancel
+        - timeout
+        - noanswer
+        - dialout
+        - amd
+      x-enum-varnames:
+        - CallManagerCallHangupReasonNone
+        - CallManagerCallHangupReasonNormal
+        - CallManagerCallHangupReasonFailed
+        - CallManagerCallHangupReasonBusy
+        - CallManagerCallHangupReasonCancel
+        - CallManagerCallHangupReasonTimeout
+        - CallManagerCallHangupReasonNoanswer
+        - CallManagerCallHangupReasonDialout
+        - CallManagerCallHangupReasonAMD
+    CallManagerCallMuteDirection:
+      type: string
+      description: Possible mute directions for the call
+      enum:
+        - ""
+        - both
+        - out
+        - in
+      x-enum-varnames:
+        - CallManagerCallMuteDirectionNone
+        - CallManagerCallMuteDirectionBoth
+        - CallManagerCallMuteDirectionOut
+        - CallManagerCallMuteDirectionIn
+    CallManagerCallStatus:
+      type: string
+      description: Call status
+      enum:
+        - dialing
+        - ringing
+        - progressing
+        - terminating
+        - canceling
+        - hangup
+      x-enum-varnames:
+        - CallManagerCallStatusDialing
+        - CallManagerCallStatusRinging
+        - CallManagerCallStatusProgressing
+        - CallManagerCallStatusTerminating
+        - CallManagerCallStatusCanceling
+        - CallManagerCallStatusHangup
+    CallManagerCallType:
+      type: string
+      description: Call type
+      enum:
+        - ""
+        - flow
+        - conference
+        - sip-service
+      x-enum-varnames:
+        - CallManagerCallTypeNone
+        - CallManagerCallTypeFlow
+        - CallManagerCallTypeConference
+        - CallManagerCallTypeSIPService
+    CallManagerCall:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier
+        customer_id:
+          type: string
+          description: Resource's customer ID
+        owner_type:
+          type: string
+          description: Resource's owner type
+        owner_id:
+          type: string
+          description: Resource's owner ID
+        flow_id:
+          type: string
+          description: Flow ID
+        activeflow_id:
+          type: string
+          description: Active flow ID
+        type:
+          $ref: '#/components/schemas/CallManagerCallType'
+        master_call_id:
+          type: string
+          description: Master call ID
+        chained_call_ids:
+          type: array
+          items:
+            type: string
+          description: Chained call IDs
+        recording_id:
+          type: string
+          description: Current recording ID
+        recording_ids:
+          type: array
+          items:
+            type: string
+          description: Recording IDs
+        groupcall_id:
+          type: string
+          description: Group call ID, indicates if this call is part of a group call
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        destination:
+          $ref: '#/components/schemas/CommonAddress'
+        status:
+          $ref: '#/components/schemas/CallManagerCallStatus'
+        action:
+          $ref: '#/components/schemas/FlowManagerAction'
+        direction:
+          $ref: '#/components/schemas/CallManagerCallDirection'
+        mute_direction:
+          $ref: '#/components/schemas/CallManagerCallMuteDirection'
+        hangup_by:
+          $ref: '#/components/schemas/CallManagerCallHangupBy'
+        hangup_reason:
+          $ref: '#/components/schemas/CallManagerCallHangupReason'
+        tm_progressing:
+          type: string
+          format: date-time
+          description: Timestamp for call progressing
+        tm_ringing:
+          type: string
+          format: date-time
+          description: Timestamp for call ringing
+        tm_hangup:
+          type: string
+          format: date-time
+          description: Timestamp for call hangup
+        tm_create:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        tm_update:
+          type: string
+          format: date-time
+          description: Update timestamp
+        tm_delete:
+          type: string
+          format: date-time
+          description: Deletion timestamp
+
+    CallManagerGroupcallAnswerMethod:
+      type: string
+      description: Method to handle answered calls
+      enum:
+        - ""
+        - hangup_others
+      x-enum-varnames:
+        - CallManagerGroupcallAnswerMethodNone
+        - CallManagerGroupcallAnswerMethodHangupOthers
+    CallManagerGroupcallRingMethod:
+      type: string
+      description: Method used for dialing
+      enum:
+        - ""
+        - ring_all
+        - linear
+      x-enum-varnames:
+        - CallManagerGroupcallRingMethodNone
+        - CallManagerGroupcallRingMethodRingAll
+        - CallManagerGroupcallRingMethodLinear
+    CallManagerGroupcallStatus:
+      type: string
+      description: Current status of the call or group call
+      enum:
+        - progressing
+        - hangingup
+        - hangup
+      x-enum-varnames:
+        - CallManagerGroupcallStatusProgressing
+        - CallManagerGroupcallStatusHangingup
+        - CallManagerGroupcallStatusHangup
+    CallManagerGroupcall:
+      type: object
+      description: Call or group call information
+      properties:
+        id:
+          type: string
+          description: Resource identifier
+        customer_id:
+          type: string
+          description: Resource's customer ID
+        owner_type:
+          type: string
+          description: Resource's owner type
+        owner_id:
+          type: string
+          description: Resource's owner ID
+        status:
+          $ref: '#/components/schemas/CallManagerGroupcallStatus'
+        flow_id:
+          type: string
+          description: ID of the associated flow
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+          nullable: true
+          description: Source address
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+          description: List of destination addresses
+        master_call_id:
+          type: string
+          nullable: true
+          description: ID of the master call, if applicable
+        master_groupcall_id:
+          type: string
+          nullable: true
+          description: ID of the master group call, if applicable
+        ring_method:
+          $ref: '#/components/schemas/CallManagerGroupcallRingMethod'
+        answer_method:
+          $ref: '#/components/schemas/CallManagerGroupcallAnswerMethod'
+        answer_call_id:
+          type: string
+          description: ID of the answered call
+        call_ids:
+          type: array
+          items:
+            type: string
+          description: List of associated call IDs
+        answer_groupcall_id:
+          type: string
+          description: ID of the answered group call
+        groupcall_ids:
+          type: array
+          items:
+            type: string
+          description: List of associated group call IDs
+        call_count:
+          type: integer
+          description: Number of remaining calls in the current dial
+        groupcall_count:
+          type: integer
+          description: Number of remaining group calls in the current dial
+        dial_index:
+          type: integer
+          nullable: true
+          description: Current dial index, valid only when the ring method is "ring_all"
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the call was created
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the call was last updated
+        tm_delete:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the call was deleted
+
+    CallManagerRecordingFormat:
+      type: string
+      description: The format of the recording.
+      enum:
+        - wav
+      x-enum-varnames:
+        -CallManagerRecordingFormatWAV
+    CallManagerRecordingReferenceType:
+      type: string
+      description: Type of reference for the recording.
+      enum:
+        - call
+        - confbridge
+      x-enum-varnames:
+        - CallManagerRecordingReferenceTypeCall
+        - CallManagerRecordingReferenceTypeConfbridge
+    CallManagerRecordingStatus:
+      type: string
+      description: The status of the recording.
+      enum:
+        - initiating
+        - recording
+        - stopping
+        - ended
+      x-enum-varnames:
+        - CallManagerRecordingStatusInitiating
+        - CallManagerRecordingStatusRecording
+        - CallManagerRecordingStatusStopping
+        - CallManagerRecordingStatusEnded
+    CallManagerRecording:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier
+        customer_id:
+          type: string
+          description: Resource's customer ID
+        owner_type:
+          type: string
+          description: Resource's owner type
+        owner_id:
+          type: string
+          description: Resource's owner ID
+        reference_type:
+          description: The type of reference, either a "call" or a "confbridge".
+          $ref: '#/components/schemas/CallManagerRecordingReferenceType'
+        reference_id:
+          type: string
+          description: The UUID of the reference.
+        status:
+          $ref: '#/components/schemas/CallManagerRecordingStatus'
+          description: The status of the recording.
+        format:
+          $ref: '#/components/schemas/CallManagerRecordingFormat'
+          description: The format of the recording file (e.g., WAV).
+        tm_start:
+          type: string
+          format: date-time
+          description: The start timestamp of the recording.
+        tm_end:
+          type: string
+          format: date-time
+          description: The end timestamp of the recording.
+        tm_create:
+          type: string
+          format: date-time
+          description: The creation timestamp of the recording.
+        tm_update:
+          type: string
+          format: date-time
+          description: The last update timestamp of the recording.
+        tm_delete:
+          type: string
+          format: date-time
+          description: The timestamp when the recording was deleted.
+
+
+#########################################
+# Campaign Manager
+#########################################
+    CampaignManagerCampaignEndHandle:
+      type: string
+      description: Behavior of the campaign after outdial has no more targets.
+      enum:
+        - stop
+        - continue
+      x-enum-varnames:
+        - CampaignManagerCampaignEndHandleStop
+        - CampaignManagerCampaignEndHandleContinue
+    CampaignManagerCampaignExecute:
+      type: string
+      description: Execution action for the campaign.
+      enum:
+        - run
+        - stop
+      x-enum-varnames:
+        - CampaignManagerCampaignExecuteRun
+        - CampaignManagerCampaignExecuteStop
+    CampaignManagerCampaignStatus:
+      type: string
+      description: Status of the campaign.
+      enum:
+        - stop
+        - stopping
+        - run
+      x-enum-varnames:
+        - CampaignManagerCampaignStatusStop
+        - CampaignManagerCampaignStatusStopping
+        - CampaignManagerCampaignStatusRun
+    CampaignManagerCampaignType:
+      type: string
+      description: Type of campaign.
+      enum:
+        - call
+        - flow
+      x-enum-varnames:
+        - CampaignManagerCampaignTypeCall
+        - CampaignManagerCampaignTypeFlow
+    CampaignManagerCampaign:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/CampaignManagerCampaignType'
+        name:
+          type: string
+        detail:
+          type: string
+        status:
+          $ref: '#/components/schemas/CampaignManagerCampaignStatus'
+        service_level:
+          type: integer
+        end_handle:
+          $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowManagerAction'
+        outplan_id:
+          type: string
+          format: uuid
+        outdial_id:
+          type: string
+          format: uuid
+        queue_id:
+          type: string
+          format: uuid
+        next_campaign_id:
+          type: string
+          format: uuid
+        tm_create:
+          type: string
+          format: date-time
+        tm_update:
+          type: string
+          format: date-time
+        tm_delete:
+          type: string
+          format: date-time
+
+    CampaignManagerCampaigncallReferenceType:
+      type: string
+      enum:
+        - none
+        - call
+        - flow
+      x-enum-varnames:
+        - CampaignManagerCampaigncallReferenceTypeNone
+        - CampaignManagerCampaigncallReferenceTypeCall
+        - CampaignManagerCampaigncallReferenceTypeFlow
+    CampaignManagerCampaigncallResult:
+      type: string
+      enum:
+        - ""
+        - success
+        - fail
+      x-enum-varnames:
+        - CampaignManagerCampaigncallResultNone
+        - CampaignManagerCampaigncallResultSuccess
+        - CampaignManagerCampaigncallResultFail
+    CampaignManagerCampaigncallStatus:
+      type: string
+      enum:
+        - dialing
+        - progressing
+        - done
+      x-enum-varnames:
+        - CampaignManagerCampaigncallStatusDialing
+        - CampaignManagerCampaigncallStatusProgressing
+        - CampaignManagerCampaigncallStatusDone
+    CampaignManagerCampaigncall:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the campaign call.
+        customer_id:
+          type: string
+          description: Identifier of the customer.
+        campaign_id:
+          type: string
+          description: Identifier of the campaign.
+        outplan_id:
+          type: string
+          description: Identifier of the outbound plan.
+        outdial_id:
+          type: string
+          description: Identifier of the outbound dial.
+        outdial_target_id:
+          type: string
+          description: Identifier of the outbound dial target.
+        queue_id:
+          type: string
+          description: Identifier of the queue.
+        activeflow_id:
+          type: string
+          description: Identifier of the active flow.
+        flow_id:
+          type: string
+          description: Identifier of the flow.
+        reference_type:
+          $ref: '#/components/schemas/CampaignManagerCampaigncallReferenceType'
+        reference_id:
+          type: string
+          description: Identifier of the reference.
+        status:
+          $ref: '#/components/schemas/CampaignManagerCampaigncallStatus'
+        result:
+          $ref: '#/components/schemas/CampaignManagerCampaigncallResult'
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        destination:
+          $ref: '#/components/schemas/CommonAddress'
+        destination_index:
+          type: integer
+          description: Index of the destination.
+        try_count:
+          type: integer
+          description: Number of dialing attempts.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the campaign call was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the campaign call was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the campaign call was deleted.
+
+    CampaignManagerOutplan:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the outplan.
+        customer_id:
+          type: string
+          description: Identifier of the customer.
+        name:
+          type: string
+          description: Name of the outplan.
+        detail:
+          type: string
+          description: Detailed information about the outplan.
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        dial_timeout:
+          type: integer
+          description: Dial timeout in milliseconds.
+        try_interval:
+          type: integer
+          description: Interval between dialing attempts in milliseconds.
+        max_try_count_0:
+          type: integer
+          description: Maximum number of tries for level 0.
+        max_try_count_1:
+          type: integer
+          description: Maximum number of tries for level 1.
+        max_try_count_2:
+          type: integer
+          description: Maximum number of tries for level 2.
+        max_try_count_3:
+          type: integer
+          description: Maximum number of tries for level 3.
+        max_try_count_4:
+          type: integer
+          description: Maximum number of tries for level 4.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the outplan was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the outplan was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the outplan was deleted.
+
+
+#########################################
+# Chat Manager
+#########################################
+    ChatManagerChatType:
+      type: string
+      description: Type of the chat.
+      enum:
+        - normal
+        - group
+      x-enum-varnames:
+        - ChatManagerChatTypeNormal
+        - ChatManagerChatTypeGroup
+    ChatManagerChat:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier.
+        customer_id:
+          type: string
+          description: Resource's customer ID.
+        type:
+          $ref: '#/components/schemas/ChatManagerChatType'
+        room_owner_id:
+          type: string
+          description: Owned agent's ID.
+        participant_ids:
+          type: array
+          description: List of participant IDs (agent IDs).
+          items:
+            type: string
+        name:
+          type: string
+          description: Name of the chat.
+        detail:
+          type: string
+          description: Detailed information about the chat.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the chat was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the chat was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the chat was deleted.
+
+    ChatManagerChatroomType:
+      type: string
+      description: Type of the chat room.
+      enum:
+        - unknown
+        - normal
+        - group
+      x-enum-varnames:
+        - ChatManagerChatroomTypeUnknown
+        - ChatManagerChatroomTypeNormal
+        - ChatManagerChatroomTypeGroup
+    ChatManagerChatroom:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier.
+        customer_id:
+          type: string
+          description: Resource's customer ID.
+        owner_type:
+          type: string
+        owner_id:
+          type: string
+          description: Resource's owner ID.
+        type:
+          $ref: '#/components/schemas/ChatManagerChatroomType'
+        chat_id:
+          type: string
+          description: Associated chat ID.
+        room_owner_id:
+          type: string
+          description: Chat room's owner agent ID.
+        participant_ids:
+          type: array
+          items:
+            type: string
+          description: List of participant agent IDs.
+        name:
+          type: string
+          description: Name of the chat room.
+        detail:
+          type: string
+          description: Detailed information about the chat room.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the chat room was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the chat room was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the chat room was deleted.
+
+
+    ChatManagerMediaType:
+      type: string
+      description: Type of the media content.
+      enum:
+        - address
+        - agent
+        - file
+        - link
+      x-enum-varnames:
+        - ChatManagerMediaTypeAddress
+        - ChatManagerMediaTypeAgent
+        - ChatManagerMediaTypeFile
+        - ChatManagerMediaTypeLink
+    ChatManagerMedia:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ChatManagerMediaType'
+        address:
+          $ref: '#/components/schemas/CommonAddress'
+          description: Valid only if the type is `address`.
+        agent:
+          $ref: '#/components/schemas/AgentManagerAgent'
+          description: Valid only if the type is `agent`.
+        file_id:
+          type: string
+          description: Valid only if the type is `file`.
+        link_url:
+          type: string
+          format: uri
+          description: Valid only if the type is `link`.
+
+    ChatManagerMessagechatType:
+      type: string
+      description: Type of the message chat.
+      enum:
+        - system
+        - normal
+      x-enum-varnames:
+        - ChatManagerMessagechatTypeSystem
+        - ChatManagerMessagechatTypeNormal
+    ChatManagerMessagechat:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier (inherited from commonidentity.Identity).
+        chat_id:
+          type: string
+          description: Associated chat ID.
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        type:
+          $ref: '#/components/schemas/ChatManagerMessagechatType'
+        text:
+          type: string
+          description: Text content of the message.
+        medias:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatManagerMedia'
+          description: List of associated media objects.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the message chat was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the message chat was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the message chat was deleted.
+
+    ChatManagerMessagechatroomType:
+      type: string
+      description: Type of the message in the chat room.
+      enum:
+        - ""
+        - system
+        - normal
+      x-enum-varnames:
+        - ChatManagerMessagechatroomTypeUnknown
+        - ChatManagerMessagechatroomTypeSystem
+        - ChatManagerMessagechatroomTypeNormal
+
+    ChatManagerMessagechatroom:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier.
+        customer_id:
+          type: string
+          description: Resource's customer ID.
+        owner_type:
+          type: string
+        owner_id:
+          type: string
+          description: Resource's owner ID.
+        chatroom_id:
+          type: string
+          description: Associated chat room ID.
+        messagechat_id:
+          type: string
+          description: Associated message chat ID.
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        type:
+          $ref: '#/components/schemas/ChatManagerMessagechatroomType'
+        text:
+          type: string
+          description: Text content of the message.
+        medias:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatManagerMedia'
+          description: List of associated media objects.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the message chat room was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the message chat room was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the message chat room was deleted.
+
+
+#########################################
+# Chatbot Manager
+#########################################
+    ChatbotManagerChatbotEngineType:
+      type: string
+      description: Type of engine used by the chatbot.
+      enum:
+        - chatGPT
+        - clova
+      x-enum-varnames:
+        - ChatbotManagerChatbotEngineTypeChatGPT
+        - ChatbotManagerChatbotEngineTypeClova
+    ChatbotManagerChatbot:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the chatbot.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        name:
+          type: string
+          description: Name of the chatbot.
+        detail:
+          type: string
+          description: Detailed information about the chatbot.
+        engine_type:
+          $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
+        init_prompt:
+          type: string
+          description: Initial prompt to configure the chatbot's behavior.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the chatbot was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the chatbot was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the chatbot was deleted.
+
+    ChatbotManagerChatbotcallGender:
+      type: string
+      description: Gender associated with the chatbot call.
+      enum:
+        - male
+        - female
+        - neutral
+      x-enum-varnames:
+        - ChatbotManagerChatbotcallGenderMale
+        - ChatbotManagerChatbotcallGenderFemale
+        - ChatbotManagerChatbotcallGenderNeutral
+    ChatbotManagerChatbotcallMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          description: Role of the entity in the conversation.
+        content:
+          type: string
+          description: Content of the message.
+    ChatbotManagerChatbotcallreferenceType:
+      type: string
+      description: Type of reference associated with the chatbot call.
+      enum:
+        - call
+      x-enum-varnames:
+        - ChatbotManagerChatbotcallreferenceTypeCall
+    ChatbotManagerChatbotcallStatus:
+      type: string
+      description: Status of the chatbot call.
+      enum:
+        - initiating
+        - progressing
+        - end
+      x-enum-varnames:
+        - ChatbotManagerChatbotcallStatusInitiating
+        - ChatbotManagerChatbotcallStatusProgressing
+        - ChatbotManagerChatbotcallStatusEnd
+    ChatbotManagerChatbotcall:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the chatbot call.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        chatbot_id:
+          type: string
+          description: Unique identifier of the associated chatbot.
+        activeflow_id:
+          type: string
+          description: Unique identifier for the active flow.
+        reference_type:
+          $ref: '#/components/schemas/ChatbotManagerChatbotcallreferenceType'
+        reference_id:
+          type: string
+          description: Unique identifier for the reference.
+        confbridge_id:
+          type: string
+          description: Unique identifier for the conference bridge.
+        transcribe_id:
+          type: string
+          description: Unique identifier for the transcription service.
+        status:
+          $ref: '#/components/schemas/ChatbotManagerChatbotcallStatus'
+        gender:
+          $ref: '#/components/schemas/ChatbotManagerChatbotcallGender'
+        language:
+          type: string
+          description: Language used during the chatbot call.
+        tm_end:
+          type: string
+          format: date-time
+          description: Timestamp when the chatbot call ended.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the chatbot call was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the chatbot call was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the chatbot call was deleted.
+
+
+#########################################
+# Common
+#########################################
+    CommonAddress:
+      type: object
+      description: Contains source or destination detail info.
+      properties:
+        type:
+          type: string
+          description: Type of address.
+          enum:
+            - ""
+            - agent
+            - conference
+            - extension
+            - line
+            - sip
+            - tel
+          x-enum-varnames:
+            - CommonAddressTypeNone
+            - CommonAddressTypeAgent
+            - CommonAddressTypeConference
+            - CommonAddressTypeExtension
+            - CommonAddressTypeLine
+            - CommonAddressTypeSIP
+            - CommonAddressTypeTel
+        target:
+          type: string
+          description: Address endpoint.
+        target_name:
+          type: string
+          description: Address's name.
+        name:
+          type: string
+          description: Name.
+        detail:
+          type: string
+          description: Detail description.
+
+    CommonPagination:
+      type: object
+      properties:
+        next_page_token:
+          type: string
+          description: The token for next pagination.
+
+
+#########################################
+# Conference Manager
+#########################################
+    ConferenceManagerConferenceStatus:
+      type: string
+      description: Status of the conference.
+      enum:
+        - starting
+        - progressing
+        - terminating
+        - terminated
+      x-enum-varnames:
+        - ConferenceManagerConferenceStatusStarting
+        - ConferenceManagerConferenceStatusProgressing
+        - ConferenceManagerConferenceStatusTerminating
+        - ConferenceManagerConferenceStatusTerminated
+    ConferenceManagerConferenceType:
+      type: string
+      description: Types of conferences.
+      enum:
+        - ""
+        - conference
+        - connect
+        - queue
+      x-enum-varnames:
+        - ConferenceManagerConferenceTypeNone
+        - ConferenceManagerConferenceTypeConference
+        - ConferenceManagerConferenceTypeConnect
+        - ConferenceManagerConferenceTypeQueue
+    ConferenceManagerConference:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the conference.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        type:
+          $ref: '#/components/schemas/ConferenceManagerConferenceType'
+        status:
+          $ref: '#/components/schemas/ConferenceManagerConferenceStatus'
+        name:
+          type: string
+          description: Name of the conference.
+        detail:
+          type: string
+          description: Detailed information about the conference.
+        data:
+          type: object
+          description: Custom data associated with the conference.
+          additionalProperties: true
+        timeout:
+          type: integer
+          description: Timeout for the conference in seconds.
+          format: int32
+        pre_actions:
+          type: array
+          description: Pre-actions to execute before the conference starts.
+          items:
+            $ref: '#/components/schemas/FlowManagerAction'
+        post_actions:
+          type: array
+          description: Post-actions to execute after the conference ends.
+          items:
+            $ref: '#/components/schemas/FlowManagerAction'
+        conferencecall_ids:
+          type: array
+          description: List of associated conference call IDs.
+          items:
+            type: string
+        recording_id:
+          type: string
+          description: ID of the main recording associated with the conference.
+        recording_ids:
+          type: array
+          description: List of associated recording IDs.
+          items:
+            type: string
+        transcribe_id:
+          type: string
+          description: ID of the main transcription associated with the conference.
+        transcribe_ids:
+          type: array
+          description: List of associated transcription IDs.
+          items:
+            type: string
+        tm_end:
+          type: string
+          description: Timestamp when the conference ended.
+        tm_create:
+          type: string
+          description: Timestamp when the conference was created.
+        tm_update:
+          type: string
+          description: Timestamp when the conference was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the conference was deleted.
+
+    ConferenceManagerConferencecallReferenceType:
+      type: string
+      description: Type of the reference associated with the conference call.
+      enum:
+        - call
+      x-enum-varnames:
+        - ConferenceManagerConferencecallReferenceTypeCall
+    ConferenceManagerConferencecallStatus:
+      type: string
+      description: Status of the conference call.
+      enum:
+        - joining
+        - joined
+        - leaving
+        - leaved
+      x-enum-varnames:
+        - ConferenceManagerConferencecallStatusJoining
+        - ConferenceManagerConferencecallStatusJoined
+        - ConferenceManagerConferencecallStatusLeaving
+        - ConferenceManagerConferencecallStatusLeaved
+    ConferenceManagerConferencecall:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the conference call.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        conference_id:
+          type: string
+          description: Unique identifier of the associated conference.
+        reference_type:
+          $ref: '#/components/schemas/ConferenceManagerConferencecallReferenceType'
+        reference_id:
+          type: string
+          description: Unique identifier of the reference (e.g., call ID).
+        status:
+          $ref: '#/components/schemas/ConferenceManagerConferencecallStatus'
+        tm_create:
+          type: string
+          description: Timestamp when the conference call was created.
+        tm_update:
+          type: string
+          description: Timestamp when the conference call was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the conference call was deleted.
+
+
+#########################################
+# Conversation Manager
+#########################################
+    ConversationManagerAccountType:
+      type: string
+      description: Type of the account.
+      enum:
+        - line
+        - sms
+      x-enum-varnames:
+        - ConversationManagerAccountTypeLine
+        - ConversationManagerAccountTypeSMS
+    ConversationManagerAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the account.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        type:
+          $ref: '#/components/schemas/ConversationManagerAccountType'
+        name:
+          type: string
+          description: Name of the account.
+        detail:
+          type: string
+          description: Detailed information about the account.
+        secret:
+          type: string
+          description: Secret associated with the account.
+        token:
+          type: string
+          description: Token, usually an API token, associated with the account.
+        tm_create:
+          type: string
+          description: Timestamp when the account was created.
+        tm_update:
+          type: string
+          description: Timestamp when the account was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the account was deleted.
+
+    ConversationManagerConversationReferenceType:
+      type: string
+      description: Type of the reference for the conversation.
+      enum:
+        - ""
+        - message
+        - line
+      x-enum-varnames:
+        - ConversationManagerConversationReferenceTypeNone
+        - ConversationManagerConversationReferenceTypeMessage
+        - ConversationManagerConversationReferenceTypeLine
+    ConversationManagerConversation:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the conversation.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        account_id:
+          type: string
+          description: Unique identifier of the associated account.
+        name:
+          type: string
+          description: Name of the conversation.
+        detail:
+          type: string
+          description: Detailed information about the conversation.
+        reference_type:
+          $ref: '#/components/schemas/ConversationManagerConversationReferenceType'
+        reference_id:
+          type: string
+          description: Unique identifier for the reference (e.g., message ID, line ID).
+        source:
+          description: The source address for the conversation.
+          $ref: '#/components/schemas/CommonAddress'
+        participants:
+          type: array
+          description: List of participants in the conversation.
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+        tm_create:
+          type: string
+          description: Timestamp when the conversation was created.
+        tm_update:
+          type: string
+          description: Timestamp when the conversation was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the conversation was deleted.
+
+    ConversationManagerMediaType:
+      type: string
+      description: Type of the media.
+      enum:
+        - image
+        - video
+        - audio
+        - file
+        - location
+        - sticker
+        - template
+        - imagemap
+        - flex
+      x-enum-varnames:
+        - ConversationManagerMediaTypeImage
+        - ConversationManagerMediaTypeVideo
+        - ConversationManagerMediaTypeAudio
+        - ConversationManagerMediaTypeFile
+        - ConversationManagerMediaTypeLocation
+        - ConversationManagerMediaTypeSticker
+        - ConversationManagerMediaTypeTemplate
+        - ConversationManagerMediaTypeImagemap
+        - ConversationManagerMediaTypeFlex
+    ConversationManagerMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the media.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        type:
+          $ref: '#/components/schemas/ConversationManagerMediaType'
+        filename:
+          type: string
+          description: Filename of the media.
+        tm_create:
+          type: string
+          description: Timestamp when the media was created.
+        tm_update:
+          type: string
+          description: Timestamp when the media was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the media was deleted.
+
+    ConversationManagerMessageDirection:
+      type: string
+      description: Direction of the message (incoming or outgoing).
+      enum:
+        - outgoing
+        - incoming
+      x-enum-varnames:
+        - ConversationManagerMessageDirectionOutgoing
+        - ConversationManagerMessageDirectionIncoming
+    ConversationManagerMessageReferenceType:
+      type: string
+      description: Type of reference associated with the message (e.g., call, campaign).
+      enum:
+        - none
+        - call
+        - campaign
+      x-enum-varnames:
+        - ConversationManagerMessageReferenceTypeNone
+        - ConversationManagerMessageReferenceTypeCall
+        - ConversationManagerMessageReferenceTypeCampaign
+    ConversationManagerMessageStatus:
+      type: string
+      description: Status of the message.
+      enum:
+        - sending
+        - sent
+        - failed
+        - received
+      x-enum-varnames:
+        - ConversationManagerMessageStatusSending
+        - ConversationManagerMessageStatusSent
+        - ConversationManagerMessageStatusFailed
+        - ConversationManagerMessageStatusReceived
+    ConversationManagerMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the message.
+        customer_id:
+          type: string
+          description: Unique identifier of the associated customer.
+        conversation_id:
+          type: string
+          description: Unique identifier of the conversation.
+        direction:
+          $ref: '#/components/schemas/ConversationManagerMessageDirection'
+        status:
+          $ref: '#/components/schemas/ConversationManagerMessageStatus'
+        reference_type:
+          $ref: '#/components/schemas/ConversationManagerMessageReferenceType'
+        reference_id:
+          type: string
+          description: The reference ID for the message (e.g., related call ID).
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        text:
+          type: string
+          description: The message content.
+        medias:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationManagerMedia'
+          description: List of media associated with the message.
+        tm_create:
+          type: string
+          description: Timestamp when the message was created.
+        tm_update:
+          type: string
+          description: Timestamp when the message was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the message was deleted.
+
+
+#########################################
+# Customer Manager
+#########################################
+    CustomerManagerAccesskey:
+      type: object
+      properties:
+        id:
+          type: string
+        customer_id:
+          type: string
+        name:
+          type: string
+        detail:
+          type: string
+        token:
+          type: string
+        tm_expire:
+          type: string
+          format: date-time
+        tm_create:
+          type: string
+          format: date-time
+        tm_update:
+          type: string
+          format: date-time
+        tm_delete:
+          type: string
+          format: date-time
+
+    CustomerManagerCustomerWebhookMethod:
+      type: string
+      description: The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
+      enum:
+        - ""
+        - POST
+        - GET
+        - PUT
+        - DELETE
+      x-enum-varnames:
+        - CustomerManagerCustomerWebhookMethodNone
+        - CustomerManagerCustomerWebhookMethodPost
+        - CustomerManagerCustomerWebhookMethodGet
+        - CustomerManagerCustomerWebhookMethodPut
+        - CustomerManagerCustomerWebhookMethodDelete
+    CustomerManagerCustomer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the customer.
+        name:
+          type: string
+          description: Name of the customer.
+        detail:
+          type: string
+          description: Details about the customer.
+        email:
+          type: string
+          description: Email address of the customer.
+        phone_number:
+          type: string
+          description: Phone number of the customer.
+        address:
+          type: string
+          description: Address of the customer.
+        webhook_method:
+          $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
+          description: Webhook method used by the customer.
+        webhook_uri:
+          type: string
+          description: URI for the customer's webhook.
+        billing_account_id:
+          type: string
+          description: The ID of the customer's default billing account.
+        tm_create:
+          type: string
+          description: Timestamp when the customer was created.
+        tm_update:
+          type: string
+          description: Timestamp when the customer was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the customer was deleted.
+
+
+#########################################
+# Flow Manager
+#########################################
+    FlowManagerActionType:
+      type: string
+      description: Type of the action.
+      enum:
+        - amd
+        - answer
+        - beep
+        - branch
+        - call
+        - chatbot_talk
+        - condition_call_digits
+        - condition_call_status
+        - condition_datetime
+        - condition_variable
+        - confbridge_join
+        - conference_join
+        - connect
+        - conversation_send
+        - digits_receive
+        - digits_send
+        - echo
+        - external_media_start
+        - external_media_stop
+        - fetch
+        - fetch_flow
+        - goto
+        - hangup
+        - message_send
+        - mute
+        - play
+        - queue_join
+        - recording_start
+        - recording_stop
+        - sleep
+        - stop
+        - stream_echo
+        - talk
+        - transcribe_start
+        - transcribe_stop
+        - transcribe_recording
+        - variable_set
+        - webhook_send
+      x-enum-varnames:
+        - FlowManagerActionTypeAMD
+        - FlowManagerActionTypeAnswer
+        - FlowManagerActionTypeBeep
+        - FlowManagerActionTypeBranch
+        - FlowManagerActionTypeCall
+        - FlowManagerActionTypeChatbotTalk
+        - FlowManagerActionTypeConditionCallDigits
+        - FlowManagerActionTypeConditionCallStatus
+        - FlowManagerActionTypeConditionDatetime
+        - FlowManagerActionTypeConditionVariable
+        - FlowManagerActionTypeConfbridgeJoin
+        - FlowManagerActionTypeConferenceJoin
+        - FlowManagerActionTypeConnect
+        - FlowManagerActionTypeConversationSend
+        - FlowManagerActionTypeDigitsReceive
+        - FlowManagerActionTypeDigitsSend
+        - FlowManagerActionTypeEcho
+        - FlowManagerActionTypeExternalMediaStart
+        - FlowManagerActionTypeExternalMediaStop
+        - FlowManagerActionTypeFetch
+        - FlowManagerActionTypeFetchFlow
+        - FlowManagerActionTypeGoto
+        - FlowManagerActionTypeHangup
+        - FlowManagerActionTypeMessageSend
+        - FlowManagerActionTypeMute
+        - FlowManagerActionTypePlay
+        - FlowManagerActionTypeQueueJoin
+        - FlowManagerActionTypeRecordingStart
+        - FlowManagerActionTypeRecordingStop
+        - FlowManagerActionTypeSleep
+        - FlowManagerActionTypeStop
+        - FlowManagerActionTypeStreamEcho
+        - FlowManagerActionTypeTalk
+        - FlowManagerActionTypeTranscribeStart
+        - FlowManagerActionTypeTranscribeStop
+        - FlowManagerActionTypeTranscribeRecording
+        - FlowManagerActionTypeVariableSet
+        - FlowManagerActionTypeWebhookSend
+
+    FlowManagerAction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier
+        next_id:
+          type: string
+          description: The identifier of the next item
+        type:
+          description: The type of the object
+          $ref: '#/components/schemas/FlowManagerActionType'
+        option:
+          type: object
+          description: Additional options
+          additionalProperties: true
+        tm_execute:
+          type: string
+          description: Timestamp or time to execute
+      required:
+        - id
+        - type
+
+    FlowManagerActiveflowStatus:
+      type: string
+      description: Status of the activeflow.
+      enum:
+        - ""
+        - running
+        - ended
+      x-enum-varnames:
+        - FlowManagerActiveflowStatusNone
+        - FlowManagerActiveflowStatusRunning
+        - FlowManagerActiveflowStatusEnded
+
+    FlowManagerReferenceType:
+      type: string
+      description: Reference type of activeflow.
+      enum:
+        - ""
+        - call
+        - message
+      x-enum-varnames:
+        - FlowManagerReferenceTypeNone
+        - FlowManagerReferenceTypeCall
+        - FlowManagerReferenceTypeMessage
+
+    FlowManagerActiveflow:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the activeflow.
+        customer_id:
+          type: string
+          description: ID of the customer associated with the flow.
+        flow_id:
+          type: string
+          description: ID of the flow definition.
+        status:
+          $ref: '#/components/schemas/FlowManagerActiveflowStatus'
+        reference_type:
+          $ref: '#/components/schemas/FlowManagerReferenceType'
+        reference_id:
+          type: string
+          description: ID of the reference object.
+        current_action:
+          $ref: '#/components/schemas/FlowManagerAction'
+        forward_action_id:
+          type: string
+          description: ID of the next action to be executed.
+        executed_actions:
+          type: array
+          description: List of actions that have been executed.
+          items:
+            $ref: '#/components/schemas/FlowManagerAction'
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the flow was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the flow was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the flow was deleted.
+
+    FlowManagerFlowType:
+      type: string
+      description: Type of the flow.
+      enum:
+        - flow
+        - conference
+        - queue
+        - campaign
+        - transfer
+      x-enum-varnames:
+        - FlowManagerFlowTypeFlow
+        - FlowManagerFlowTypeConference
+        - FlowManagerFlowTypeQueue
+        - FlowManagerFlowTypeCampaign
+        - FlowManagerFlowTypeTransfer
+
+    FlowManagerFlow:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the flow.
+        customer_id:
+          type: string
+          description: Unique identifier for the customer.
+        type:
+          description: The type of the flow.
+          $ref: '#/components/schemas/FlowManagerFlowType'
+        name:
+          type: string
+          description: Name of the flow.
+        detail:
+          type: string
+          description: Detailed description of the flow.
+        actions:
+          type: array
+          description: List of actions associated with the flow.
+          items:
+            $ref: '#/components/schemas/FlowManagerAction'
+        tm_create:
+          type: string
+          description: Timestamp when the flow was created.
+        tm_update:
+          type: string
+          description: Timestamp when the flow was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the flow was deleted.
+
+
+#########################################
+# Message Manager
+#########################################
+    MessageManagerMessageDirection:
+      type: string
+      description: Direction of the message.
+      enum:
+        - outbound
+        - inbound
+      x-enum-varnames:
+        - MessageManagerMessageDirectionOutbound
+        - MessageManagerMessageDirectionInbound
+    MessageManagerMessageProviderName:
+      type: string
+      description: Name of the message provider.
+      enum:
+        - telnyx
+        - twilio
+        - messagebird
+      x-enum-varnames:
+        - MessageManagerMessageProviderNameTelnyx
+        - MessageManagerMessageProviderNameTwilio
+        - MessageManagerMessageProviderNameMessagebird
+    MessageManagerMessageType:
+      type: string
+      description: Type of the message.
+      enum:
+        - sms
+      x-enum-varnames:
+        - MessageManagerMessageTypeSMS
+    MessageManagerMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the message.
+        customer_id:
+          type: string
+          description: Unique identifier for the customer.
+        type:
+          $ref: '#/components/schemas/MessageManagerMessageType'
+          description: The type of the message.
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+          description: The source address of the message.
+        targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageManagerTarget'
+          description: List of target addresses to which the message is sent.
+        text:
+          type: string
+          description: The text delivered in the body of the message.
+        direction:
+          $ref: '#/components/schemas/MessageManagerMessageDirection'
+          description: The direction of the message (outbound/inbound).
+        tm_create:
+          type: string
+          description: Timestamp when the message was created.
+        tm_update:
+          type: string
+          description: Timestamp when the message was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the message was deleted.
+    
+    MessageManagerTargetStatus:
+      type: string
+      description: The status of the message for the target.
+      enum:
+        - received
+        - queued
+        - gw_timeout
+        - sent
+        - dlr_timeout
+        - failed
+        - delivered
+      x-enum-varnames:
+        - MessageManagerTargetStatusReceived
+        - MessageManagerTargetStatusQueued
+        - MessageManagerTargetStatusGWTimeout
+        - MessageManagerTargetStatusSent
+        - MessageManagerTargetStatusDLRTimeout
+        - MessageManagerTargetStatusFailed
+        - MessageManagerTargetStatusDelivered
+    MessageManagerTarget:
+      type: object
+      properties:
+        destination:
+          description: The destination address for the message.
+          $ref: '#/components/schemas/CommonAddress'
+        status:
+          description: The current status of the message for the target.
+          $ref: '#/components/schemas/MessageManagerTargetStatus'
+        parts:
+          type: integer
+          description: The number of message parts (if the message is split).
+        tm_update:
+          type: string
+          description: Timestamp when the target message was last updated.
+
+
+#########################################
+# Number Manager
+#########################################
+    NumberManagerAvailableNumber:
+      type: string
+      description: A feature supported by the phone number.
+      enum:
+        - emergency
+        - fax
+        - mms
+        - sms
+        - voice
+      x-enum-varnames:
+        - NumberManagerAvailableNumberFeatureEmergency
+        - NumberManagerAvailableNumberFeatureFax
+        - NumberManagerAvailableNumberFeatureMMS
+        - NumberManagerAvailableNumberFeatureSMS
+        - NumberManagerAvailableNumberFeatureVoice
+    NumberManagerAvailableNumberFeature:
+      type: object
+      properties:
+        number:
+          type: string
+          description: The available phone number.
+        country:
+          type: string
+          description: The country where the number is available.
+        region:
+          type: string
+          description: The region within the country.
+        postal_code:
+          type: string
+          description: The postal code associated with the number.
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/NumberManagerAvailableNumberFeature'
+          description: The list of features supported by the number.
+
+    NumberManagerNumberProviderName:
+      type: string
+      description: The provider name for the number.
+      enum:
+        - telnyx
+        - twilio
+        - messagebird
+      x-enum-varnames:
+        - NumberManagerProviderNameTelnyx
+        - NumberManagerProviderNameTwilio
+        - NumberManagerProviderNameMessagebird
+    NumberManagerNumberStatus:
+      type: string
+      description: The status of the number.
+      enum:
+        - active
+        - deleted
+      x-enum-varnames:
+        - NumberManagerStatusActive
+        - NumberManagerStatusDeleted
+    NumberManagerNumber:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the number.
+        customer_id:
+          type: string
+          description: The customer ID associated with the number.
+        number:
+          type: string
+          description: The phone number.
+        call_flow_id:
+          type: string
+          description: The ID of the associated call flow.
+        message_flow_id:
+          type: string
+          description: The ID of the associated message flow.
+        name:
+          type: string
+          description: The name of the number.
+        detail:
+          type: string
+          description: Additional details about the number.
+        status:
+          $ref: '#/components/schemas/NumberManagerNumberStatus'
+          description: The status of the number.
+        t38_enabled:
+          type: boolean
+          description: Whether T38 is enabled for the number.
+        emergency_enabled:
+          type: boolean
+          description: Whether emergency services are enabled for the number.
+        tm_purchase:
+          type: string
+          description: The timestamp of when the number was purchased.
+        tm_renew:
+          type: string
+          description: The timestamp of when the number was renewed.
+        tm_create:
+          type: string
+          description: The timestamp of when the number was created.
+        tm_update:
+          type: string
+          description: The timestamp of when the number was last updated.
+        tm_delete:
+          type: string
+          description: The timestamp of when the number was deleted.
+
+#########################################
+# Outdial Manager
+#########################################
+    OutdialManagerOutdial:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the outdial.
+        customer_id:
+          type: string
+          description: The unique identifier for the customer associated with the outdial.
+        campaign_id:
+          type: string
+          description: The unique identifier for the campaign associated with the outdial.
+        name:
+          type: string
+          description: The name of the outdial.
+        detail:
+          type: string
+          description: The detailed description of the outdial.
+        data:
+          type: string
+          description: The data associated with the outdial.
+        tm_create:
+          type: string
+          description: Timestamp when the outdial was created.
+        tm_update:
+          type: string
+          description: Timestamp when the outdial was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the outdial was deleted.
+
+    OutdialManagerOutdialtargetStatus:
+      type: string
+      description: The status of the outdial.
+      enum:
+        - progressing
+        - done
+        - idle
+      x-enum-varnames:
+        - OutdialManagerOutdialtargetStatusProgressing
+        - OutdialManagerOutdialtargetStatusDone
+        - OutdialManagerOutdialtargetStatusIdle
+    OutdialManagerOutdialtarget:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the outdial.
+        outdial_id:
+          type: string
+          description: The outdial reference ID.
+        name:
+          type: string
+          description: The name of the outdial.
+        detail:
+          type: string
+          description: Additional details about the outdial.
+        data:
+          type: string
+          description: The data associated with the outdial.
+        status:
+          $ref: '#/components/schemas/OutdialManagerOutdialtargetStatus'
+          description: The status of the outdial.
+        destination_0:
+          $ref: '#/components/schemas/CommonAddress'
+          description: The destination address 0.
+        destination_1:
+          $ref: '#/components/schemas/CommonAddress'
+          description: The destination address 1.
+        destination_2:
+          $ref: '#/components/schemas/CommonAddress'
+          description: The destination address 2.
+        destination_3:
+          $ref: '#/components/schemas/CommonAddress'
+          description: The destination address 3.
+        destination_4:
+          $ref: '#/components/schemas/CommonAddress'
+          description: The destination address 4.
+        try_count_0:
+          type: integer
+          description: The try count for destination 0.
+        try_count_1:
+          type: integer
+          description: The try count for destination 1.
+        try_count_2:
+          type: integer
+          description: The try count for destination 2.
+        try_count_3:
+          type: integer
+          description: The try count for destination 3.
+        try_count_4:
+          type: integer
+          description: The try count for destination 4.
+        tm_create:
+          type: string
+          format: date-time
+          description: The creation timestamp.
+        tm_update:
+          type: string
+          format: date-time
+          description: The update timestamp.
+        tm_delete:
+          type: string
+          format: date-time
+          description: The deletion timestamp.
+
+
+#########################################
+# Queue Manager
+#########################################
+    QueueManagerQueueRoutingMethod:
+      type: string
+      enum:
+        - ""
+        - random
+      x-enum-varnames:
+        - QueueManagerQueueRoutingMethodNone
+        - QueueManagerQueueRoutingMethodRandom
+    QueueManagerQueue:
+      type: object
+      properties:
+        id:
+          type: string
+        customer_id:
+          type: string
+        name:
+          type: string
+        detail:
+          type: string
+        routing_method:
+          $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
+        tag_ids:
+          type: array
+          items:
+            type: string
+        wait_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowManagerAction'
+        wait_timeout:
+          type: integer
+          description: "Wait queue timeout in milliseconds."
+        service_timeout:
+          type: integer
+          description: "Service queue timeout in milliseconds."
+        wait_queuecall_ids:
+          type: array
+          items:
+            type: string
+        service_queuecall_ids:
+          type: array
+          items:
+            type: string
+        total_incoming_count:
+          type: integer
+          description: "Total incoming call count."
+        total_serviced_count:
+          type: integer
+          description: "Total serviced call count."
+        total_abandoned_count:
+          type: integer
+          description: "Total abandoned call count."
+        tm_create:
+          type: string
+        tm_update:
+          type: string
+        tm_delete:
+          type: string
+
+    QueueManagerQueuecallReferenceType:
+      type: string
+      enum:
+        - call
+      x-enum-varnames:
+        - QueueManagerQueuecallReferenceTypeCall
+    QueueManagerQueuecallStatus:
+      type: string
+      enum:
+        - initiating
+        - waiting
+        - connecting
+        - kicking
+        - service
+        - done
+        - abandoned
+      x-enum-varnames:
+        - QueueManagerQueuecallStatusInitiating
+        - QueueManagerQueuecallStatusWaiting
+        - QueueManagerQueuecallStatusConnecting
+        - QueueManagerQueuecallStatusKicking
+        - QueueManagerQueuecallStatusService
+        - QueueManagerQueuecallStatusDone
+        - QueueManagerQueuecallStatusAbandoned
+    QueueManagerQueuecall:
+      type: object
+      properties:
+        id:
+          type: string
+        customer_id:
+          type: string
+        reference_type:
+          $ref: '#/components/schemas/QueueManagerQueuecallReferenceType'
+        reference_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/QueueManagerQueuecallStatus'
+        service_agent_id:
+          type: string
+          description: "The ID of the service agent handling the queue call"
+        duration_waiting:
+          type: integer
+          description: "Duration for waiting in milliseconds"
+        duration_service:
+          type: integer
+          description: "Duration for service in milliseconds"
+        tm_create:
+          type: string
+          description: "Timestamp when the queue call was created"
+        tm_service:
+          type: string
+          description: "Timestamp when the queue call started service"
+        tm_update:
+          type: string
+          description: "Timestamp when the queue call was last updated"
+        tm_delete:
+          type: string
+          description: "Timestamp when the queue call was deleted"
+
+
+#########################################
+# Registrar Manager
+#########################################
+    RegistrarManagerAuthType:
+      type: string
+      description: "Defines the authentication type. Can be 'basic' or 'ip'."
+      enum:
+        - basic
+        - ip
+      x-enum-varnames:
+        - RegistrarManagerAuthTypeBasic
+        - RegistrarManagerAuthTypeIP
+    RegistrarManagerExtension:
+      type: object
+      properties:
+        id:
+          type: string
+        customer_id:
+          type: string
+        name:
+          type: string
+        detail:
+          type: string
+        extension:
+          type: string
+        domain_name:
+          type: string
+          description: "Domain name, same as the customer_id, used by Kamailio's INVITE validation"
+        username:
+          type: string
+          description: "Username, same as the Extension, used by Kamailio's INVITE validation"
+        password:
+          type: string
+        tm_create:
+          type: string
+          description: "Timestamp when the extension was created"
+        tm_update:
+          type: string
+          description: "Timestamp when the extension was last updated"
+        tm_delete:
+          type: string
+          description: "Timestamp when the extension was deleted"
+    RegistrarManagerTrunk:
+      type: object
+      properties:
+        id:
+          type: string
+        customer_id:
+          type: string
+        name:
+          type: string
+        detail:
+          type: string
+        domain_name:
+          type: string
+        auth_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistrarManagerAuthType'
+        username:
+          type: string
+        password:
+          type: string
+        allowed_ips:
+          type: array
+          items:
+            type: string
+        tm_create:
+          type: string
+          description: "Timestamp when the trunk was created"
+        tm_update:
+          type: string
+          description: "Timestamp when the trunk was last updated"
+        tm_delete:
+          type: string
+          description: "Timestamp when the trunk was deleted"
+
+
+#########################################
+# Route Manager
+#########################################
+    RouteManagerProviderType:
+      type: string
+      description: "Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers."
+      enum:
+        - sip
+      x-enum-varnames:
+        - RouteManagerProviderTypeSIP
+    RouteManagerProvider:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The unique identifier for the provider."
+        type:
+          $ref: '#/components/schemas/RouteManagerProviderType'
+        hostname:
+          type: string
+          description: "The destination hostname for the provider."
+        tech_prefix:
+          type: string
+          description: "The tech prefix, valid only for SIP type providers."
+        tech_postfix:
+          type: string
+          description: "The tech postfix, valid only for SIP type providers."
+        tech_headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: "The tech headers, valid only for SIP type providers."
+        name:
+          type: string
+          description: "The name of the provider."
+        detail:
+          type: string
+          description: "The details about the provider."
+        tm_create:
+          type: string
+          format: date-time
+          description: "Timestamp when the provider was created."
+        tm_update:
+          type: string
+          format: date-time
+          description: "Timestamp when the provider was last updated."
+        tm_delete:
+          type: string
+          format: date-time
+          description: "Timestamp when the provider was deleted."
+
+    RouteManagerRoute:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The unique identifier for the route."
+        customer_id:
+          type: string
+          description: "The customer ID associated with the route."
+        name:
+          type: string
+          description: "The name of the route."
+        detail:
+          type: string
+          description: "The details about the route."
+        provider_id:
+          type: string
+          description: "The unique identifier of the provider associated with this route."
+        priority:
+          type: integer
+          description: "The priority of the route, used for routing decisions."
+        target:
+          type: string
+          description: "The target destination for the route (e.g., country code or 'all')."
+        tm_create:
+          type: string
+          format: date-time
+          description: "Timestamp when the route was created."
+        tm_update:
+          type: string
+          format: date-time
+          description: "Timestamp when the route was last updated."
+        tm_delete:
+          type: string
+          format: date-time
+          description: "Timestamp when the route was deleted."
+
+
+#########################################
+# Storage Manager
+#########################################
+    StorageManagerAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The unique identifier for the account."
+        customer_id:
+          type: string
+          description: "The customer ID associated with the account."
+        total_file_count:
+          type: integer
+          format: int64
+          description: "The total number of files in the account."
+        total_file_size:
+          type: integer
+          format: int64
+          description: "The total file size in bytes."
+        tm_create:
+          type: string
+          format: date-time
+          description: "Timestamp when the account was created."
+        tm_update:
+          type: string
+          format: date-time
+          description: "Timestamp when the account was last updated."
+        tm_delete:
+          type: string
+          format: date-time
+          description: "Timestamp when the account was deleted."
+
+    StorageManagerFileReferenceType:
+      type: string
+      description: "The reference type of the file."
+      enum:
+        - ""
+        - "normal"
+        - "recording"
+      x-enum-varnames:
+        - StorageManagerFileReferenceTypeNone
+        - StorageManagerFileReferenceTypeNormal
+        - StorageManagerFileReferenceTypeRecording
+    StorageManagerFile:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The unique identifier for the file."
+        customer_id:
+          type: string
+          description: "The customer ID associated with the file."
+        owner_id:
+          type: string
+          description: "The owner ID of the file."
+        reference_type:
+          $ref: '#/components/schemas/StorageManagerFileReferenceType'
+        reference_id:
+          type: string
+          description: "The reference ID associated with the file."
+        name:
+          type: string
+          description: "The name of the file."
+        detail:
+          type: string
+          description: "The details of the file."
+        filename:
+          type: string
+          description: "The filename of the file."
+        filesize:
+          type: integer
+          format: int64
+          description: "The size of the file in bytes."
+        uri_download:
+          type: string
+          description: "The URI for downloading the file."
+        tm_download_expire:
+          type: string
+          format: date-time
+          description: "The timestamp when the download link expires."
+        tm_create:
+          type: string
+          format: date-time
+          description: "Timestamp when the file was created."
+        tm_update:
+          type: string
+          format: date-time
+          description: "Timestamp when the file was last updated."
+        tm_delete:
+          type: string
+          format: date-time
+          description: "Timestamp when the file was deleted."
+
+
+#########################################
+# Tag Manager
+#########################################
+    TagManagerTag:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The unique identifier for the tag."
+        name:
+          type: string
+          description: "The name of the tag."
+        detail:
+          type: string
+          description: "The details about the tag."
+        tm_create:
+          type: string
+          format: date-time
+          description: "Timestamp when the tag was created."
+        tm_update:
+          type: string
+          format: date-time
+          description: "Timestamp when the tag was last updated."
+        tm_delete:
+          type: string
+          format: date-time
+          description: "Timestamp when the tag was deleted."
+
+
+#########################################
+# Transcribe Manager
+#########################################
+    TranscribeManagerTranscribeDirection:
+      type: string
+      enum:
+        - both
+        - in
+        - out
+      x-enum-varnames:
+        - TranscribeManagerTranscribeDirectionBoth
+        - TranscribeManagerTranscribeDirectionIn
+        - TranscribeManagerTranscribeDirectionOut
+    TranscribeManagerTranscribeReferenceType:
+      type: string
+      enum:
+        - unknown
+        - recording
+        - call
+        - confbridge
+      x-enum-varnames:
+        - TranscribeManagerTranscribeReferenceTypeUnknown
+        - TranscribeManagerTranscribeReferenceTypeRecording
+        - TranscribeManagerTranscribeReferenceTypeCall
+        - TranscribeManagerTranscribeReferenceTypeConfbridge
+    TranscribeManagerTranscribeStatus:
+      type: string
+      enum:
+        - progressing
+        - done
+      x-enum-varnames:
+        - TranscribeManagerTranscribeStatusProgressing
+        - TranscribeManagerTranscribeStatusDone
+    TranscribeManagerTranscribe:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Transcribe id
+        customer_id:
+          type: string
+          description: Customer ID
+        reference_type:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeReferenceType'
+        reference_id:
+          type: string
+          description: Call/Conference/Recording's ID
+        status:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeStatus'
+        language:
+          type: string
+          description: BCP47 type's language code.
+        direction:
+          $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when created
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when updated
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when deleted
+
+    TranscribeManagerTranscriptDirection:
+      type: string
+      enum:
+        - both
+        - in
+        - out
+      x-enum-varnames:
+        - TranscribeManagerTranscriptDirectionBoth
+        - TranscribeManagerTranscriptDirectionIn
+        - TranscribeManagerTranscriptDirectionOut
+    TranscribeManagerTranscript:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Transcript ID
+        transcribe_id:
+          type: string
+          description: Transcribe ID
+        direction:
+          $ref: '#/components/schemas/TranscribeManagerTranscriptDirection'
+        message:
+          type: string
+          description: Transcript message
+        tm_transcript:
+          type: string
+          description: Timestamp for the transcript
+        tm_create:
+          type: string
+          description: Timestamp when created
+
+
+#########################################
+# Transfer Manager
+#########################################
+    TransferManagerTransferType:
+      type: string
+      enum:
+        - attended
+        - blind
+      x-enum-varnames:
+        - TransferManagerTransferTypeAttended
+        - TransferManagerTransferTypeBlind
+    TransferManagerTransfer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Transfer ID
+        customer_id:
+          type: string
+          description: Customer ID
+        type:
+          $ref: '#/components/schemas/TransferManagerTransferType'
+        transferer_call_id:
+          type: string
+          description: Transferer Call ID
+        transferee_addresses:
+          type: array
+          description: List of transferee addresses
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+        transferee_call_id:
+          type: string
+          description: Transferee Call ID
+        groupcall_id:
+          type: string
+          description: Created Groupcall ID
+        confbridge_id:
+          type: string
+          description: Conference Bridge ID
+        tm_create:
+          type: string
+          description: Timestamp when created
+        tm_update:
+          type: string
+          description: Timestamp when updated
+        tm_delete:
+          type: string
+          description: Timestamp when deleted
+
+
+###########################################################################################################################
+# Path
+###########################################################################################################################
 paths:
-  /accesskeys/{id}:
-    $ref: './paths/accesskeys/id.yaml'
   /accesskeys:
     $ref: './paths/accesskeys/main.yaml'
+  /accesskeys/{id}:
+    $ref: './paths/accesskeys/id.yaml'
 
   /activeflows:
     $ref: './paths/activeflows/main.yaml'
@@ -56,6 +2889,9 @@ paths:
   #   $ref: './paths/billing_accounts/id_balance_add_force.yaml'
   # /billing_accounts/{id}/balance_subtract_force:
   #   $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
+
+  # /billings:
+  #   $ref: './paths/billings/main.yaml'
 
   # /calls/{id}/hangup:
   #   $ref: './paths/calls/id_hangup.yaml'

@@ -2,8 +2,8 @@ get:
   summary: Get a list of campaigns
   description: Retrieves a paginated list of campaigns.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of campaigns.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+                      $ref: '#/components/schemas/CampaignManagerCampaign'
 
 post:
   summary: Create a new campaign
@@ -36,17 +36,17 @@ post:
               type: string
               description: Detailed description of the campaign
             type:
-              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignType'
+              $ref: '#/components/schemas/CampaignManagerCampaignType'
             serviceLevel:
               type: number
               description: Service level of the campaign
             endHandle:
-              $ref: '../../components/campaign_manager/main.yaml#/components/schemas/CampaignEndHandle'
+              $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
             actions:
               type: array
               description: Actions associated with the campaign
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
             outplanId:
               type: string
               description: Outplan ID for the campaign
@@ -68,4 +68,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaign'
+            $ref: '#/components/schemas/CampaignManagerCampaign'

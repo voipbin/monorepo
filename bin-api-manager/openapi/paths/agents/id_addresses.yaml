@@ -18,11 +18,11 @@ put:
             addresses:
               type: array
               items:
-                $ref: '../../components/common/main.yaml#/components/schemas/Address'
+                $ref: '#/components/schemas/CommonAddress'
   responses:
     '200':
       description: Successful response.
       content:
         application/json:
           schema:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+            $ref: '#/components/schemas/AgentManagerAgent'

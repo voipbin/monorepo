@@ -2,8 +2,8 @@ get:
   summary: Get list of calls
   description: Returns a list of calls for the given customer.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of calls.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/call_manager/main.yaml#/components/schemas/Call'
+                      $ref: '#/components/schemas/CallManagerCall'
 
 post:
   summary: Make an outbound call
@@ -33,13 +33,13 @@ post:
             actions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
             source:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
             destinations:
               type: array
               items:
-                $ref: '../../components/common/main.yaml#/components/schemas/Address'
+                $ref: '#/components/schemas/CommonAddress'
   responses:
     '200':
       description: The details of the created call.
@@ -52,8 +52,8 @@ post:
                   calls:
                     type: array
                     items:
-                      $ref: '../../components/call_manager/main.yaml#/components/schemas/Call'
+                      $ref: '#/components/schemas/CallManagerCall'
                   groupcalls:
                     type: array
                     items:
-                      $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+                      $ref: '#/components/schemas/CallManagerGroupcall'

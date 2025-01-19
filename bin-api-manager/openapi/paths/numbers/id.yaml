@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/number_manager/main.yaml#/components/schemas/Number'
+            $ref: '#/components/schemas/NumberManagerNumber'
 
 delete:
   summary: Delete order number by ID
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/number_manager/main.yaml#/components/schemas/Number'
+            $ref: '#/components/schemas/NumberManagerNumber'
 
 put:
   summary: Update order number by ID
@@ -68,4 +68,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/number_manager/main.yaml#/components/schemas/Number'
+            $ref: '#/components/schemas/NumberManagerNumber'

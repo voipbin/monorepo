@@ -17,14 +17,14 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+            $ref: '#/components/schemas/TagManagerTag'
 
 get:
   summary: List tags
   description: Retrieves a list of tags for the customer.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of tags.
@@ -32,10 +32,10 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/tag_manager/main.yaml#/components/schemas/Tag'
+                      $ref: '#/components/schemas/TagManagerTag'

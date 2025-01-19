@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaigncall'
+            $ref: '#/components/schemas/CampaignManagerCampaigncall'
 
 delete:
   summary: Delete a campaign call
@@ -32,4 +32,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/campaign_manager/main.yaml#/components/schemas/Campaigncall'
+            $ref: '#/components/schemas/CampaignManagerCampaigncall'

@@ -2,8 +2,8 @@ get:
   summary: Get a list of groupcalls
   description: Retrieves a list of groupcalls based on the provided parameters.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of groupcalls.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+                      $ref: '#/components/schemas/CallManagerGroupcall'
 
 post:
   summary: Create a new groupcall
@@ -29,25 +29,25 @@ post:
           type: object
           properties:
             source:
-              $ref: '../../components/common/main.yaml#/components/schemas/Address'
+              $ref: '#/components/schemas/CommonAddress'
             destinations:
               type: array
               items:
-                $ref: '../../components/common/main.yaml#/components/schemas/Address'
+                $ref: '#/components/schemas/CommonAddress'
             flowID:
               type: string
             actions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
             ring_method:
-              $ref: '../../components/call_manager/main.yaml#/components/schemas/GroupcallRingMethod'
+              $ref: '#/components/schemas/CallManagerGroupcallRingMethod'
             answer_method:
-              $ref: '../../components/call_manager/main.yaml#/components/schemas/GroupcallAnswerMethod'
+              $ref: '#/components/schemas/CallManagerGroupcallAnswerMethod'
   responses:
     '200':
       description: The created groupcall details.
       content:
         application/json:
           schema:
-            $ref: '../../components/call_manager/main.yaml#/components/schemas/Groupcall'
+            $ref: '#/components/schemas/CallManagerGroupcall'

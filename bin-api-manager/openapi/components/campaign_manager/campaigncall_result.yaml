@@ -1,9 +1,0 @@
-type: string
-enum:
-  - ""
-  - success
-  - fail
-x-enum-varnames:
-  - CampaigncallResultNone
-  - CampaigncallResultSuccess
-  - CampaigncallResultFail

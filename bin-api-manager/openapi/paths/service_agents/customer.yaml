@@ -7,4 +7,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerManagerCustomer'

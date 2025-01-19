@@ -2,8 +2,8 @@ get:
   summary: Retrieve a list of outdials.
   description: Gets a list of outdials based on the specified page size and page token.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of outdials.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+                      $ref: '#/components/schemas/OutdialManagerOutdial'
 
 post:
   summary: Create a new outdial.
@@ -42,4 +42,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/outdial_manager/main.yaml#/components/schemas/Outdial'
+            $ref: '#/components/schemas/OutdialManagerOutdial'

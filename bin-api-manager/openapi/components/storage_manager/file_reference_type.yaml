@@ -1,6 +1,0 @@
-type: string
-description: "The reference type of the file."
-enum:
-  - ""
-  - "normal"
-  - "recording"

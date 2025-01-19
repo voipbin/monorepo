@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbot'
+            $ref: '#/components/schemas/ChatbotManagerChatbot'
 
 delete:
   summary: Delete a chatbot.
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbot'
+            $ref: '#/components/schemas/ChatbotManagerChatbot'
 
 put:
   summary: Update a chatbot.
@@ -56,7 +56,7 @@ put:
             detail:
               type: string
             engineType:
-              $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/ChatbotEngineType'
+              $ref: '#/components/schemas/ChatbotManagerChatbotEngineType'
             initPrompt:
               type: string
   responses:
@@ -65,4 +65,4 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/chatbot_manager/main.yaml#/components/schemas/Chatbot'
+            $ref: '#/components/schemas/ChatbotManagerChatbot'

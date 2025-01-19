@@ -89,7 +89,7 @@ func (h *server) PostAccesskeys(c *gin.Context) {
 
 	expire := 0
 	if req.Expire != nil {
-		expire = *req.Expire
+		expire = int(*req.Expire)
 	}
 
 	res, err := h.serviceHandler.AccesskeyCreate(c.Request.Context(), &a, name, detail, int32(expire))

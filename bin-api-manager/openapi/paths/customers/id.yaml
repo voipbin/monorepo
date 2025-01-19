@@ -12,7 +12,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerManagerCustomer'
 
 put:
   summary: Update a customer.
@@ -41,7 +41,7 @@ put:
             address:
               type: string
             webhookMethod:
-              $ref: '../../components/customer_manager/main.yaml#/components/schemas/CustomerWebhookMethod'
+              $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
             webhookURI:
               type: string
   responses:
@@ -49,7 +49,7 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerManagerCustomer'
 
 delete:
   summary: Delete a customer.
@@ -65,4 +65,4 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/customer_manager/main.yaml#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerManagerCustomer'

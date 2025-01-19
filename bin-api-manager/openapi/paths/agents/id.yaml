@@ -14,7 +14,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+            $ref: '#/components/schemas/AgentManagerAgent'
 
 delete:
   summary: Delete the agent
@@ -32,7 +32,7 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+            $ref: '#/components/schemas/AgentManagerAgent'
 
 put:
   summary: Update an agent
@@ -54,11 +54,11 @@ put:
           Detail:
             type: string
           RingMethod:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/AgentRingMethod'
+            $ref: '#/components/schemas/AgentManagerAgentRingMethod'
   responses:
     '200':
       description: Successful response.
       content:
         application/json:
           schema:
-            $ref: '../../components/agent_manager/main.yaml#/components/schemas/Agent'
+            $ref: '#/components/schemas/AgentManagerAgent'

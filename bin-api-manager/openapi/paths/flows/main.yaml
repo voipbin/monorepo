@@ -2,8 +2,8 @@ get:
   summary: Retrieve a list of flows
   description: Retrieves a paginated list of flows accessible to the authenticated agent.
   parameters:
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageSize'
-    - $ref: '../../components/common/main.yaml#/components/parameters/PageToken'
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
       description: A list of flows.
@@ -11,13 +11,13 @@ get:
         application/json:
           schema:
             allOf:
-              - $ref: '../../components/common/main.yaml#/components/schemas/Pagination'
+              - $ref: '#/components/schemas/CommonPagination'
               - type: object
                 properties:
                   result:
                     type: array
                     items:
-                      $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'
+                      $ref: '#/components/schemas/FlowManagerFlow'
 
 post:
   summary: Create a new flow
@@ -38,7 +38,7 @@ post:
             actions:
               type: array
               items:
-                $ref: '../../components/flow_manager/main.yaml#/components/schemas/Action'
+                $ref: '#/components/schemas/FlowManagerAction'
               description: List of actions associated with the flow.
   responses:
     '200':
@@ -46,4 +46,4 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/flow_manager/main.yaml#/components/schemas/Flow'
+            $ref: '#/components/schemas/FlowManagerFlow'
