@@ -190,7 +190,10 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	// swagger
 	// app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	app.Static("/swagger/*any", "gens/openapi_redoc/api.html")
+	// app.Static("/swagger/*any", "gens/openapi_redoc/api.html")
+	app.GET("/swagger/*any", func(c *gin.Context) {
+		c.File("gens/openapi_redoc/api.html")
+	})
 
 	// docs
 	app.Static("/docs", "docsdev/build")
