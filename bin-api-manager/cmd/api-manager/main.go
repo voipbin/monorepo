@@ -19,6 +19,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	// swagger embed files
 	// gin-swagger middleware
@@ -183,20 +185,17 @@ func runSubscribe(
 
 func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "runListen",
+		"func": "runListenHTTP",
 	})
 
 	app := gin.Default()
 
-	// swagger
-	// app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	// app.Static("/swagger/*any", "gens/openapi_redoc/api.html")
-	app.GET("/swagger/*any", func(c *gin.Context) {
+	// documents
+	app.Static("/docs", "docsdev/build")
+	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	app.GET("/redoc/*any", func(c *gin.Context) {
 		c.File("gens/openapi_redoc/api.html")
 	})
-
-	// docs
-	app.Static("/docs", "docsdev/build")
 
 	// CORS setting
 	// CORS for https://foo.com and https://github.com origins, allowing:
