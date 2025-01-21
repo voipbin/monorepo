@@ -8,6 +8,12 @@ get:
       description: The ID of the call
       schema:
         type: string
+    - encapsulation:
+      name: encapsulation
+      in: query
+      required: false
+      schema:
+        type: string
   responses:
     '200':
       description: Media stream information retrieved successfully

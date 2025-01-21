@@ -2573,6 +2573,58 @@ type PutBillingAccountsIdPaymentInfoJSONBody struct {
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 }
 
+// GetBillingsParams defines parameters for GetBillings.
+type GetBillingsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetCallsParams defines parameters for GetCalls.
+type GetCallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostCallsJSONBody defines parameters for PostCalls.
+type PostCallsJSONBody struct {
+	Actions      *[]FlowManagerAction `json:"actions,omitempty"`
+	Destinations *[]CommonAddress     `json:"destinations,omitempty"`
+	FlowId       *string              `json:"flow_id,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+}
+
+// GetCallsIdMediaStreamParams defines parameters for GetCallsIdMediaStream.
+type GetCallsIdMediaStreamParams struct {
+	Encapsulation *string `form:"encapsulation,omitempty" json:"encapsulation,omitempty"`
+}
+
+// DeleteCallsIdMuteJSONBody defines parameters for DeleteCallsIdMute.
+type DeleteCallsIdMuteJSONBody struct {
+	// Direction Possible mute directions for the call
+	Direction *CallManagerCallMuteDirection `json:"direction,omitempty"`
+}
+
+// PostCallsIdMuteJSONBody defines parameters for PostCallsIdMute.
+type PostCallsIdMuteJSONBody struct {
+	// Direction Possible mute directions for the call
+	Direction *CallManagerCallMuteDirection `json:"direction,omitempty"`
+}
+
+// PostCallsIdTalkJSONBody defines parameters for PostCallsIdTalk.
+type PostCallsIdTalkJSONBody struct {
+	Gender   *string `json:"gender,omitempty"`
+	Language *string `json:"language,omitempty"`
+	Text     *string `json:"text,omitempty"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -2617,6 +2669,18 @@ type PostBillingAccountsIdBalanceSubtractForceJSONRequestBody PostBillingAccount
 
 // PutBillingAccountsIdPaymentInfoJSONRequestBody defines body for PutBillingAccountsIdPaymentInfo for application/json ContentType.
 type PutBillingAccountsIdPaymentInfoJSONRequestBody PutBillingAccountsIdPaymentInfoJSONBody
+
+// PostCallsJSONRequestBody defines body for PostCalls for application/json ContentType.
+type PostCallsJSONRequestBody PostCallsJSONBody
+
+// DeleteCallsIdMuteJSONRequestBody defines body for DeleteCallsIdMute for application/json ContentType.
+type DeleteCallsIdMuteJSONRequestBody DeleteCallsIdMuteJSONBody
+
+// PostCallsIdMuteJSONRequestBody defines body for PostCallsIdMute for application/json ContentType.
+type PostCallsIdMuteJSONRequestBody PostCallsIdMuteJSONBody
+
+// PostCallsIdTalkJSONRequestBody defines body for PostCallsIdTalk for application/json ContentType.
+type PostCallsIdTalkJSONRequestBody PostCallsIdTalkJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -2807,6 +2871,62 @@ type ClientInterface interface {
 	PutBillingAccountsIdPaymentInfoWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PutBillingAccountsIdPaymentInfo(ctx context.Context, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetBillings request
+	GetBillings(ctx context.Context, params *GetBillingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCalls request
+	GetCalls(ctx context.Context, params *GetCallsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCallsWithBody request with any body
+	PostCallsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostCalls(ctx context.Context, body PostCallsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCallsId request
+	DeleteCallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCallsId request
+	GetCallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCallsIdHangup request
+	PostCallsIdHangup(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCallsIdHold request
+	DeleteCallsIdHold(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCallsIdHold request
+	PostCallsIdHold(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCallsIdMediaStream request
+	GetCallsIdMediaStream(ctx context.Context, id string, params *GetCallsIdMediaStreamParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCallsIdMoh request
+	DeleteCallsIdMoh(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCallsIdMoh request
+	PostCallsIdMoh(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCallsIdMuteWithBody request with any body
+	DeleteCallsIdMuteWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeleteCallsIdMute(ctx context.Context, id string, body DeleteCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCallsIdMuteWithBody request with any body
+	PostCallsIdMuteWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostCallsIdMute(ctx context.Context, id string, body PostCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCallsIdSilence request
+	DeleteCallsIdSilence(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCallsIdSilence request
+	PostCallsIdSilence(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostCallsIdTalkWithBody request with any body
+	PostCallsIdTalkWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostCallsIdTalk(ctx context.Context, id string, body PostCallsIdTalkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccesskeys(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3327,6 +3447,246 @@ func (c *Client) PutBillingAccountsIdPaymentInfoWithBody(ctx context.Context, id
 
 func (c *Client) PutBillingAccountsIdPaymentInfo(ctx context.Context, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPutBillingAccountsIdPaymentInfoRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBillings(ctx context.Context, params *GetBillingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBillingsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCalls(ctx context.Context, params *GetCallsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCallsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCalls(ctx context.Context, body PostCallsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCallsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCallsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdHangup(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdHangupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCallsIdHold(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCallsIdHoldRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdHold(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdHoldRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCallsIdMediaStream(ctx context.Context, id string, params *GetCallsIdMediaStreamParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCallsIdMediaStreamRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCallsIdMoh(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCallsIdMohRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdMoh(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdMohRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCallsIdMuteWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCallsIdMuteRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCallsIdMute(ctx context.Context, id string, body DeleteCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCallsIdMuteRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdMuteWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdMuteRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdMute(ctx context.Context, id string, body PostCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdMuteRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCallsIdSilence(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCallsIdSilenceRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdSilence(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdSilenceRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdTalkWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdTalkRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostCallsIdTalk(ctx context.Context, id string, body PostCallsIdTalkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostCallsIdTalkRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4673,6 +5033,679 @@ func NewPutBillingAccountsIdPaymentInfoRequestWithBody(server string, id string,
 	return req, nil
 }
 
+// NewGetBillingsRequest generates requests for GetBillings
+func NewGetBillingsRequest(server string, params *GetBillingsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billings")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCallsRequest generates requests for GetCalls
+func NewGetCallsRequest(server string, params *GetCallsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostCallsRequest calls the generic PostCalls builder with application/json body
+func NewPostCallsRequest(server string, body PostCallsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostCallsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostCallsRequestWithBody generates requests for PostCalls with any type of body
+func NewPostCallsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteCallsIdRequest generates requests for DeleteCallsId
+func NewDeleteCallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCallsIdRequest generates requests for GetCallsId
+func NewGetCallsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostCallsIdHangupRequest generates requests for PostCallsIdHangup
+func NewPostCallsIdHangupRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/hangup", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteCallsIdHoldRequest generates requests for DeleteCallsIdHold
+func NewDeleteCallsIdHoldRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/hold", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostCallsIdHoldRequest generates requests for PostCallsIdHold
+func NewPostCallsIdHoldRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/hold", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCallsIdMediaStreamRequest generates requests for GetCallsIdMediaStream
+func NewGetCallsIdMediaStreamRequest(server string, id string, params *GetCallsIdMediaStreamParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/media_stream", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Encapsulation != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "encapsulation", runtime.ParamLocationQuery, *params.Encapsulation); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteCallsIdMohRequest generates requests for DeleteCallsIdMoh
+func NewDeleteCallsIdMohRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/moh", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostCallsIdMohRequest generates requests for PostCallsIdMoh
+func NewPostCallsIdMohRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/moh", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteCallsIdMuteRequest calls the generic DeleteCallsIdMute builder with application/json body
+func NewDeleteCallsIdMuteRequest(server string, id string, body DeleteCallsIdMuteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteCallsIdMuteRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewDeleteCallsIdMuteRequestWithBody generates requests for DeleteCallsIdMute with any type of body
+func NewDeleteCallsIdMuteRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/mute", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostCallsIdMuteRequest calls the generic PostCallsIdMute builder with application/json body
+func NewPostCallsIdMuteRequest(server string, id string, body PostCallsIdMuteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostCallsIdMuteRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostCallsIdMuteRequestWithBody generates requests for PostCallsIdMute with any type of body
+func NewPostCallsIdMuteRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/mute", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteCallsIdSilenceRequest generates requests for DeleteCallsIdSilence
+func NewDeleteCallsIdSilenceRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/silence", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostCallsIdSilenceRequest generates requests for PostCallsIdSilence
+func NewPostCallsIdSilenceRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/silence", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostCallsIdTalkRequest calls the generic PostCallsIdTalk builder with application/json body
+func NewPostCallsIdTalkRequest(server string, id string, body PostCallsIdTalkJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostCallsIdTalkRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostCallsIdTalkRequestWithBody generates requests for PostCallsIdTalk with any type of body
+func NewPostCallsIdTalkRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/calls/%s/talk", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -4832,6 +5865,62 @@ type ClientWithResponsesInterface interface {
 	PutBillingAccountsIdPaymentInfoWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdPaymentInfoResponse, error)
 
 	PutBillingAccountsIdPaymentInfoWithResponse(ctx context.Context, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdPaymentInfoResponse, error)
+
+	// GetBillingsWithResponse request
+	GetBillingsWithResponse(ctx context.Context, params *GetBillingsParams, reqEditors ...RequestEditorFn) (*GetBillingsResponse, error)
+
+	// GetCallsWithResponse request
+	GetCallsWithResponse(ctx context.Context, params *GetCallsParams, reqEditors ...RequestEditorFn) (*GetCallsResponse, error)
+
+	// PostCallsWithBodyWithResponse request with any body
+	PostCallsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCallsResponse, error)
+
+	PostCallsWithResponse(ctx context.Context, body PostCallsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCallsResponse, error)
+
+	// DeleteCallsIdWithResponse request
+	DeleteCallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdResponse, error)
+
+	// GetCallsIdWithResponse request
+	GetCallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCallsIdResponse, error)
+
+	// PostCallsIdHangupWithResponse request
+	PostCallsIdHangupWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdHangupResponse, error)
+
+	// DeleteCallsIdHoldWithResponse request
+	DeleteCallsIdHoldWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdHoldResponse, error)
+
+	// PostCallsIdHoldWithResponse request
+	PostCallsIdHoldWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdHoldResponse, error)
+
+	// GetCallsIdMediaStreamWithResponse request
+	GetCallsIdMediaStreamWithResponse(ctx context.Context, id string, params *GetCallsIdMediaStreamParams, reqEditors ...RequestEditorFn) (*GetCallsIdMediaStreamResponse, error)
+
+	// DeleteCallsIdMohWithResponse request
+	DeleteCallsIdMohWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdMohResponse, error)
+
+	// PostCallsIdMohWithResponse request
+	PostCallsIdMohWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdMohResponse, error)
+
+	// DeleteCallsIdMuteWithBodyWithResponse request with any body
+	DeleteCallsIdMuteWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteCallsIdMuteResponse, error)
+
+	DeleteCallsIdMuteWithResponse(ctx context.Context, id string, body DeleteCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteCallsIdMuteResponse, error)
+
+	// PostCallsIdMuteWithBodyWithResponse request with any body
+	PostCallsIdMuteWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCallsIdMuteResponse, error)
+
+	PostCallsIdMuteWithResponse(ctx context.Context, id string, body PostCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCallsIdMuteResponse, error)
+
+	// DeleteCallsIdSilenceWithResponse request
+	DeleteCallsIdSilenceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdSilenceResponse, error)
+
+	// PostCallsIdSilenceWithResponse request
+	PostCallsIdSilenceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdSilenceResponse, error)
+
+	// PostCallsIdTalkWithBodyWithResponse request with any body
+	PostCallsIdTalkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCallsIdTalkResponse, error)
+
+	PostCallsIdTalkWithResponse(ctx context.Context, id string, body PostCallsIdTalkJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCallsIdTalkResponse, error)
 }
 
 type GetAccesskeysResponse struct {
@@ -5488,6 +6577,359 @@ func (r PutBillingAccountsIdPaymentInfoResponse) StatusCode() int {
 	return 0
 }
 
+type GetBillingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]BillingManagerBilling `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBillingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBillingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string            `json:"next_page_token,omitempty"`
+		Result        *[]CallManagerCall `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCallsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Calls      *[]CallManagerCall      `json:"calls,omitempty"`
+		Groupcalls *[]CallManagerGroupcall `json:"groupcalls,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCallsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCallsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerCall
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCallsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerCall
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCallsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCallsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCallsIdHangupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CallManagerCall
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCallsIdHangupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCallsIdHangupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCallsIdHoldResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCallsIdHoldResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCallsIdHoldResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCallsIdHoldResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCallsIdHoldResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCallsIdHoldResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCallsIdMediaStreamResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCallsIdMediaStreamResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCallsIdMediaStreamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCallsIdMohResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCallsIdMohResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCallsIdMohResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCallsIdMohResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCallsIdMohResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCallsIdMohResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCallsIdMuteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCallsIdMuteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCallsIdMuteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCallsIdMuteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCallsIdMuteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCallsIdMuteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCallsIdSilenceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCallsIdSilenceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCallsIdSilenceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCallsIdSilenceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCallsIdSilenceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCallsIdSilenceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostCallsIdTalkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostCallsIdTalkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostCallsIdTalkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccesskeysWithResponse request returning *GetAccesskeysResponse
 func (c *ClientWithResponses) GetAccesskeysWithResponse(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*GetAccesskeysResponse, error) {
 	rsp, err := c.GetAccesskeys(ctx, params, reqEditors...)
@@ -5867,6 +7309,182 @@ func (c *ClientWithResponses) PutBillingAccountsIdPaymentInfoWithResponse(ctx co
 		return nil, err
 	}
 	return ParsePutBillingAccountsIdPaymentInfoResponse(rsp)
+}
+
+// GetBillingsWithResponse request returning *GetBillingsResponse
+func (c *ClientWithResponses) GetBillingsWithResponse(ctx context.Context, params *GetBillingsParams, reqEditors ...RequestEditorFn) (*GetBillingsResponse, error) {
+	rsp, err := c.GetBillings(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBillingsResponse(rsp)
+}
+
+// GetCallsWithResponse request returning *GetCallsResponse
+func (c *ClientWithResponses) GetCallsWithResponse(ctx context.Context, params *GetCallsParams, reqEditors ...RequestEditorFn) (*GetCallsResponse, error) {
+	rsp, err := c.GetCalls(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCallsResponse(rsp)
+}
+
+// PostCallsWithBodyWithResponse request with arbitrary body returning *PostCallsResponse
+func (c *ClientWithResponses) PostCallsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCallsResponse, error) {
+	rsp, err := c.PostCallsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostCallsWithResponse(ctx context.Context, body PostCallsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCallsResponse, error) {
+	rsp, err := c.PostCalls(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsResponse(rsp)
+}
+
+// DeleteCallsIdWithResponse request returning *DeleteCallsIdResponse
+func (c *ClientWithResponses) DeleteCallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdResponse, error) {
+	rsp, err := c.DeleteCallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCallsIdResponse(rsp)
+}
+
+// GetCallsIdWithResponse request returning *GetCallsIdResponse
+func (c *ClientWithResponses) GetCallsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCallsIdResponse, error) {
+	rsp, err := c.GetCallsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCallsIdResponse(rsp)
+}
+
+// PostCallsIdHangupWithResponse request returning *PostCallsIdHangupResponse
+func (c *ClientWithResponses) PostCallsIdHangupWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdHangupResponse, error) {
+	rsp, err := c.PostCallsIdHangup(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdHangupResponse(rsp)
+}
+
+// DeleteCallsIdHoldWithResponse request returning *DeleteCallsIdHoldResponse
+func (c *ClientWithResponses) DeleteCallsIdHoldWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdHoldResponse, error) {
+	rsp, err := c.DeleteCallsIdHold(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCallsIdHoldResponse(rsp)
+}
+
+// PostCallsIdHoldWithResponse request returning *PostCallsIdHoldResponse
+func (c *ClientWithResponses) PostCallsIdHoldWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdHoldResponse, error) {
+	rsp, err := c.PostCallsIdHold(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdHoldResponse(rsp)
+}
+
+// GetCallsIdMediaStreamWithResponse request returning *GetCallsIdMediaStreamResponse
+func (c *ClientWithResponses) GetCallsIdMediaStreamWithResponse(ctx context.Context, id string, params *GetCallsIdMediaStreamParams, reqEditors ...RequestEditorFn) (*GetCallsIdMediaStreamResponse, error) {
+	rsp, err := c.GetCallsIdMediaStream(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCallsIdMediaStreamResponse(rsp)
+}
+
+// DeleteCallsIdMohWithResponse request returning *DeleteCallsIdMohResponse
+func (c *ClientWithResponses) DeleteCallsIdMohWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdMohResponse, error) {
+	rsp, err := c.DeleteCallsIdMoh(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCallsIdMohResponse(rsp)
+}
+
+// PostCallsIdMohWithResponse request returning *PostCallsIdMohResponse
+func (c *ClientWithResponses) PostCallsIdMohWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdMohResponse, error) {
+	rsp, err := c.PostCallsIdMoh(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdMohResponse(rsp)
+}
+
+// DeleteCallsIdMuteWithBodyWithResponse request with arbitrary body returning *DeleteCallsIdMuteResponse
+func (c *ClientWithResponses) DeleteCallsIdMuteWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteCallsIdMuteResponse, error) {
+	rsp, err := c.DeleteCallsIdMuteWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCallsIdMuteResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeleteCallsIdMuteWithResponse(ctx context.Context, id string, body DeleteCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteCallsIdMuteResponse, error) {
+	rsp, err := c.DeleteCallsIdMute(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCallsIdMuteResponse(rsp)
+}
+
+// PostCallsIdMuteWithBodyWithResponse request with arbitrary body returning *PostCallsIdMuteResponse
+func (c *ClientWithResponses) PostCallsIdMuteWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCallsIdMuteResponse, error) {
+	rsp, err := c.PostCallsIdMuteWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdMuteResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostCallsIdMuteWithResponse(ctx context.Context, id string, body PostCallsIdMuteJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCallsIdMuteResponse, error) {
+	rsp, err := c.PostCallsIdMute(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdMuteResponse(rsp)
+}
+
+// DeleteCallsIdSilenceWithResponse request returning *DeleteCallsIdSilenceResponse
+func (c *ClientWithResponses) DeleteCallsIdSilenceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCallsIdSilenceResponse, error) {
+	rsp, err := c.DeleteCallsIdSilence(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCallsIdSilenceResponse(rsp)
+}
+
+// PostCallsIdSilenceWithResponse request returning *PostCallsIdSilenceResponse
+func (c *ClientWithResponses) PostCallsIdSilenceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostCallsIdSilenceResponse, error) {
+	rsp, err := c.PostCallsIdSilence(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdSilenceResponse(rsp)
+}
+
+// PostCallsIdTalkWithBodyWithResponse request with arbitrary body returning *PostCallsIdTalkResponse
+func (c *ClientWithResponses) PostCallsIdTalkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostCallsIdTalkResponse, error) {
+	rsp, err := c.PostCallsIdTalkWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdTalkResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostCallsIdTalkWithResponse(ctx context.Context, id string, body PostCallsIdTalkJSONRequestBody, reqEditors ...RequestEditorFn) (*PostCallsIdTalkResponse, error) {
+	rsp, err := c.PostCallsIdTalk(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostCallsIdTalkResponse(rsp)
 }
 
 // ParseGetAccesskeysResponse parses an HTTP response from a GetAccesskeysWithResponse call
@@ -6616,6 +8234,333 @@ func ParsePutBillingAccountsIdPaymentInfoResponse(rsp *http.Response) (*PutBilli
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseGetBillingsResponse parses an HTTP response from a GetBillingsWithResponse call
+func ParseGetBillingsResponse(rsp *http.Response) (*GetBillingsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBillingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]BillingManagerBilling `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCallsResponse parses an HTTP response from a GetCallsWithResponse call
+func ParseGetCallsResponse(rsp *http.Response) (*GetCallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string            `json:"next_page_token,omitempty"`
+			Result        *[]CallManagerCall `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostCallsResponse parses an HTTP response from a PostCallsWithResponse call
+func ParsePostCallsResponse(rsp *http.Response) (*PostCallsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCallsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Calls      *[]CallManagerCall      `json:"calls,omitempty"`
+			Groupcalls *[]CallManagerGroupcall `json:"groupcalls,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCallsIdResponse parses an HTTP response from a DeleteCallsIdWithResponse call
+func ParseDeleteCallsIdResponse(rsp *http.Response) (*DeleteCallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerCall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCallsIdResponse parses an HTTP response from a GetCallsIdWithResponse call
+func ParseGetCallsIdResponse(rsp *http.Response) (*GetCallsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCallsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerCall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostCallsIdHangupResponse parses an HTTP response from a PostCallsIdHangupWithResponse call
+func ParsePostCallsIdHangupResponse(rsp *http.Response) (*PostCallsIdHangupResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCallsIdHangupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CallManagerCall
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCallsIdHoldResponse parses an HTTP response from a DeleteCallsIdHoldWithResponse call
+func ParseDeleteCallsIdHoldResponse(rsp *http.Response) (*DeleteCallsIdHoldResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCallsIdHoldResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostCallsIdHoldResponse parses an HTTP response from a PostCallsIdHoldWithResponse call
+func ParsePostCallsIdHoldResponse(rsp *http.Response) (*PostCallsIdHoldResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCallsIdHoldResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetCallsIdMediaStreamResponse parses an HTTP response from a GetCallsIdMediaStreamWithResponse call
+func ParseGetCallsIdMediaStreamResponse(rsp *http.Response) (*GetCallsIdMediaStreamResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCallsIdMediaStreamResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCallsIdMohResponse parses an HTTP response from a DeleteCallsIdMohWithResponse call
+func ParseDeleteCallsIdMohResponse(rsp *http.Response) (*DeleteCallsIdMohResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCallsIdMohResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostCallsIdMohResponse parses an HTTP response from a PostCallsIdMohWithResponse call
+func ParsePostCallsIdMohResponse(rsp *http.Response) (*PostCallsIdMohResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCallsIdMohResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCallsIdMuteResponse parses an HTTP response from a DeleteCallsIdMuteWithResponse call
+func ParseDeleteCallsIdMuteResponse(rsp *http.Response) (*DeleteCallsIdMuteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCallsIdMuteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostCallsIdMuteResponse parses an HTTP response from a PostCallsIdMuteWithResponse call
+func ParsePostCallsIdMuteResponse(rsp *http.Response) (*PostCallsIdMuteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCallsIdMuteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCallsIdSilenceResponse parses an HTTP response from a DeleteCallsIdSilenceWithResponse call
+func ParseDeleteCallsIdSilenceResponse(rsp *http.Response) (*DeleteCallsIdSilenceResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCallsIdSilenceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostCallsIdSilenceResponse parses an HTTP response from a PostCallsIdSilenceWithResponse call
+func ParsePostCallsIdSilenceResponse(rsp *http.Response) (*PostCallsIdSilenceResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCallsIdSilenceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePostCallsIdTalkResponse parses an HTTP response from a PostCallsIdTalkWithResponse call
+func ParsePostCallsIdTalkResponse(rsp *http.Response) (*PostCallsIdTalkResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostCallsIdTalkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

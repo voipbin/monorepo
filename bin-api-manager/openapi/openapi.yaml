@@ -2886,27 +2886,27 @@ paths:
   /billing_accounts/{id}/balance_subtract_force:
     $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
 
-  # /billings:
-  #   $ref: './paths/billings/main.yaml'
+  /billings:
+    $ref: './paths/billings/main.yaml'
 
-  # /calls/{id}/hangup:
-  #   $ref: './paths/calls/id_hangup.yaml'
-  # /calls/{id}/hold:
-  #   $ref: './paths/calls/id_hold.yaml'
-  # /calls/{id}/media_stream:
-  #   $ref: './paths/calls/id_media_stream.yaml'
-  # /calls/{id}/moh:
-  #   $ref: './paths/calls/id_moh.yaml'
-  # /calls/{id}/mute:
-  #   $ref: './paths/calls/id_mute.yaml'
-  # /calls/{id}/silence:
-  #   $ref: './paths/calls/id_silence.yaml'
-  # /calls/{id}/talk:
-  #   $ref: './paths/calls/id_talk.yaml'
-  # /calls/{id}:
-  #   $ref: './paths/calls/id.yaml'
-  # /calls:
-  #   $ref: './paths/calls/main.yaml'
+  /calls/{id}/hangup:
+    $ref: './paths/calls/id_hangup.yaml'
+  /calls/{id}/hold:
+    $ref: './paths/calls/id_hold.yaml'
+  /calls/{id}/media_stream:
+    $ref: './paths/calls/id_media_stream.yaml'
+  /calls/{id}/moh:
+    $ref: './paths/calls/id_moh.yaml'
+  /calls/{id}/mute:
+    $ref: './paths/calls/id_mute.yaml'
+  /calls/{id}/silence:
+    $ref: './paths/calls/id_silence.yaml'
+  /calls/{id}/talk:
+    $ref: './paths/calls/id_talk.yaml'
+  /calls/{id}:
+    $ref: './paths/calls/id.yaml'
+  /calls:
+    $ref: './paths/calls/main.yaml'
 
   # /campaigncalls/{id}:
   #   $ref: './paths/campaigncalls/id.yaml'

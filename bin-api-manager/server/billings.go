@@ -2,17 +2,15 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
-
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
-func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAvailableNumbersParams) {
+func (h *server) GetBillings(c *gin.Context, params openapi_server.GetBillingsParams) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetAvailableNumbers",
+		"func":            "GetBillings",
 		"request_address": c.ClientIP,
 	})
 
@@ -36,25 +34,23 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
 
-	countryCode := params.CountryCode
-	if countryCode == "" {
-		log.Infof("Not acceptable country code. country_code: %s", countryCode)
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.BillingGets(c.Request.Context(), &a, pageSize, pageToken)
+	if err != nil {
+		logrus.Errorf("Could not get billing accounts info. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	tmps, err := h.serviceHandler.AvailableNumberGets(c.Request.Context(), &a, pageSize, countryCode)
-	if err != nil {
-		log.Errorf("Could not get available numbers. err: %v", err)
-		c.AbortWithStatus(500)
-		return
+	nextToken := ""
+	if len(tmps) > 0 {
+		nextToken = tmps[len(tmps)-1].TMCreate
 	}
 
-	res := struct {
-		Result []*nmavailablenumber.WebhookMessage `json:"result"`
-	}{
-		Result: tmps,
-	}
-
+	res := GenerateListResponse(tmps, nextToken)
 	c.JSON(200, res)
 }

@@ -7,6 +7,14 @@ post:
       required: true
       schema:
         type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            direction:
+              $ref: '#/components/schemas/CallManagerCallMuteDirection'
   responses:
     '200':
       description: The result of the mute action.
@@ -20,6 +28,14 @@ delete:
       required: true
       schema:
         type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            direction:
+              $ref: '#/components/schemas/CallManagerCallMuteDirection'
   responses:
     '200':
       description: The result of the unmute action.

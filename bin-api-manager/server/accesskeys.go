@@ -31,6 +31,10 @@ func (h *server) GetAccesskeys(c *gin.Context, params openapi_server.GetAccesske
 	if params.PageSize != nil {
 		pageSize = uint64(*params.PageSize)
 	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
 
 	pageToken := ""
 	if params.PageToken != nil {
@@ -120,6 +124,11 @@ func (h *server) GetAccesskeysId(c *gin.Context, id string) {
 	})
 
 	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
 	log = log.WithField("accesskey_id", target)
 
 	res, err := h.serviceHandler.AccesskeyGet(c.Request.Context(), &a, target)

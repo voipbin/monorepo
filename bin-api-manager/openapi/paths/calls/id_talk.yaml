@@ -7,6 +7,18 @@ post:
       required: true
       schema:
         type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            text:
+              type: string
+            gender:
+              type: string
+            language:
+              type: string
   responses:
     '200':
       description: The result of the talk action.

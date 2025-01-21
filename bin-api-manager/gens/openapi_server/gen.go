@@ -2571,6 +2571,58 @@ type PutBillingAccountsIdPaymentInfoJSONBody struct {
 	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
 }
 
+// GetBillingsParams defines parameters for GetBillings.
+type GetBillingsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetCallsParams defines parameters for GetCalls.
+type GetCallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostCallsJSONBody defines parameters for PostCalls.
+type PostCallsJSONBody struct {
+	Actions      *[]FlowManagerAction `json:"actions,omitempty"`
+	Destinations *[]CommonAddress     `json:"destinations,omitempty"`
+	FlowId       *string              `json:"flow_id,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+}
+
+// GetCallsIdMediaStreamParams defines parameters for GetCallsIdMediaStream.
+type GetCallsIdMediaStreamParams struct {
+	Encapsulation *string `form:"encapsulation,omitempty" json:"encapsulation,omitempty"`
+}
+
+// DeleteCallsIdMuteJSONBody defines parameters for DeleteCallsIdMute.
+type DeleteCallsIdMuteJSONBody struct {
+	// Direction Possible mute directions for the call
+	Direction *CallManagerCallMuteDirection `json:"direction,omitempty"`
+}
+
+// PostCallsIdMuteJSONBody defines parameters for PostCallsIdMute.
+type PostCallsIdMuteJSONBody struct {
+	// Direction Possible mute directions for the call
+	Direction *CallManagerCallMuteDirection `json:"direction,omitempty"`
+}
+
+// PostCallsIdTalkJSONBody defines parameters for PostCallsIdTalk.
+type PostCallsIdTalkJSONBody struct {
+	Gender   *string `json:"gender,omitempty"`
+	Language *string `json:"language,omitempty"`
+	Text     *string `json:"text,omitempty"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -2615,6 +2667,18 @@ type PostBillingAccountsIdBalanceSubtractForceJSONRequestBody PostBillingAccount
 
 // PutBillingAccountsIdPaymentInfoJSONRequestBody defines body for PutBillingAccountsIdPaymentInfo for application/json ContentType.
 type PutBillingAccountsIdPaymentInfoJSONRequestBody PutBillingAccountsIdPaymentInfoJSONBody
+
+// PostCallsJSONRequestBody defines body for PostCalls for application/json ContentType.
+type PostCallsJSONRequestBody PostCallsJSONBody
+
+// DeleteCallsIdMuteJSONRequestBody defines body for DeleteCallsIdMute for application/json ContentType.
+type DeleteCallsIdMuteJSONRequestBody DeleteCallsIdMuteJSONBody
+
+// PostCallsIdMuteJSONRequestBody defines body for PostCallsIdMute for application/json ContentType.
+type PostCallsIdMuteJSONRequestBody PostCallsIdMuteJSONBody
+
+// PostCallsIdTalkJSONRequestBody defines body for PostCallsIdTalk for application/json ContentType.
+type PostCallsIdTalkJSONRequestBody PostCallsIdTalkJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -2705,6 +2769,54 @@ type ServerInterface interface {
 	// Update billing account's payment info
 	// (PUT /billing_accounts/{id}/payment_info)
 	PutBillingAccountsIdPaymentInfo(c *gin.Context, id string)
+	// Get list of billings
+	// (GET /billings)
+	GetBillings(c *gin.Context, params GetBillingsParams)
+	// Get list of calls
+	// (GET /calls)
+	GetCalls(c *gin.Context, params GetCallsParams)
+	// Make an outbound call
+	// (POST /calls)
+	PostCalls(c *gin.Context)
+	// Delete up the call
+	// (DELETE /calls/{id})
+	DeleteCallsId(c *gin.Context, id string)
+	// Get detail call info
+	// (GET /calls/{id})
+	GetCallsId(c *gin.Context, id string)
+	// Hang up the call
+	// (POST /calls/{id}/hangup)
+	PostCallsIdHangup(c *gin.Context, id string)
+	// Unhold the call
+	// (DELETE /calls/{id}/hold)
+	DeleteCallsIdHold(c *gin.Context, id string)
+	// Hold the call
+	// (POST /calls/{id}/hold)
+	PostCallsIdHold(c *gin.Context, id string)
+	// Get media stream for the call
+	// (GET /calls/{id}/media_stream)
+	GetCallsIdMediaStream(c *gin.Context, id string, params GetCallsIdMediaStreamParams)
+	// Disable Music on Hold (MOH)
+	// (DELETE /calls/{id}/moh)
+	DeleteCallsIdMoh(c *gin.Context, id string)
+	// Enable Music on Hold (MOH)
+	// (POST /calls/{id}/moh)
+	PostCallsIdMoh(c *gin.Context, id string)
+	// Unmute the call
+	// (DELETE /calls/{id}/mute)
+	DeleteCallsIdMute(c *gin.Context, id string)
+	// Mute the call
+	// (POST /calls/{id}/mute)
+	PostCallsIdMute(c *gin.Context, id string)
+	// Un-silence a call
+	// (DELETE /calls/{id}/silence)
+	DeleteCallsIdSilence(c *gin.Context, id string)
+	// Silence a call
+	// (POST /calls/{id}/silence)
+	PostCallsIdSilence(c *gin.Context, id string)
+	// Talk to the call
+	// (POST /calls/{id}/talk)
+	PostCallsIdTalk(c *gin.Context, id string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -3441,6 +3553,410 @@ func (siw *ServerInterfaceWrapper) PutBillingAccountsIdPaymentInfo(c *gin.Contex
 	siw.Handler.PutBillingAccountsIdPaymentInfo(c, id)
 }
 
+// GetBillings operation middleware
+func (siw *ServerInterfaceWrapper) GetBillings(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetBillingsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetBillings(c, params)
+}
+
+// GetCalls operation middleware
+func (siw *ServerInterfaceWrapper) GetCalls(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCallsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCalls(c, params)
+}
+
+// PostCalls operation middleware
+func (siw *ServerInterfaceWrapper) PostCalls(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCalls(c)
+}
+
+// DeleteCallsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCallsId(c, id)
+}
+
+// GetCallsId operation middleware
+func (siw *ServerInterfaceWrapper) GetCallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCallsId(c, id)
+}
+
+// PostCallsIdHangup operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdHangup(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdHangup(c, id)
+}
+
+// DeleteCallsIdHold operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCallsIdHold(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCallsIdHold(c, id)
+}
+
+// PostCallsIdHold operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdHold(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdHold(c, id)
+}
+
+// GetCallsIdMediaStream operation middleware
+func (siw *ServerInterfaceWrapper) GetCallsIdMediaStream(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCallsIdMediaStreamParams
+
+	// ------------- Optional query parameter "encapsulation" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "encapsulation", c.Request.URL.Query(), &params.Encapsulation)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter encapsulation: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCallsIdMediaStream(c, id, params)
+}
+
+// DeleteCallsIdMoh operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCallsIdMoh(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCallsIdMoh(c, id)
+}
+
+// PostCallsIdMoh operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdMoh(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdMoh(c, id)
+}
+
+// DeleteCallsIdMute operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCallsIdMute(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCallsIdMute(c, id)
+}
+
+// PostCallsIdMute operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdMute(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdMute(c, id)
+}
+
+// DeleteCallsIdSilence operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCallsIdSilence(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCallsIdSilence(c, id)
+}
+
+// PostCallsIdSilence operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdSilence(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdSilence(c, id)
+}
+
+// PostCallsIdTalk operation middleware
+func (siw *ServerInterfaceWrapper) PostCallsIdTalk(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCallsIdTalk(c, id)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -3497,6 +4013,22 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_add_force", wrapper.PostBillingAccountsIdBalanceAddForce)
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_subtract_force", wrapper.PostBillingAccountsIdBalanceSubtractForce)
 	router.PUT(options.BaseURL+"/billing_accounts/:id/payment_info", wrapper.PutBillingAccountsIdPaymentInfo)
+	router.GET(options.BaseURL+"/billings", wrapper.GetBillings)
+	router.GET(options.BaseURL+"/calls", wrapper.GetCalls)
+	router.POST(options.BaseURL+"/calls", wrapper.PostCalls)
+	router.DELETE(options.BaseURL+"/calls/:id", wrapper.DeleteCallsId)
+	router.GET(options.BaseURL+"/calls/:id", wrapper.GetCallsId)
+	router.POST(options.BaseURL+"/calls/:id/hangup", wrapper.PostCallsIdHangup)
+	router.DELETE(options.BaseURL+"/calls/:id/hold", wrapper.DeleteCallsIdHold)
+	router.POST(options.BaseURL+"/calls/:id/hold", wrapper.PostCallsIdHold)
+	router.GET(options.BaseURL+"/calls/:id/media_stream", wrapper.GetCallsIdMediaStream)
+	router.DELETE(options.BaseURL+"/calls/:id/moh", wrapper.DeleteCallsIdMoh)
+	router.POST(options.BaseURL+"/calls/:id/moh", wrapper.PostCallsIdMoh)
+	router.DELETE(options.BaseURL+"/calls/:id/mute", wrapper.DeleteCallsIdMute)
+	router.POST(options.BaseURL+"/calls/:id/mute", wrapper.PostCallsIdMute)
+	router.DELETE(options.BaseURL+"/calls/:id/silence", wrapper.DeleteCallsIdSilence)
+	router.POST(options.BaseURL+"/calls/:id/silence", wrapper.PostCallsIdSilence)
+	router.POST(options.BaseURL+"/calls/:id/talk", wrapper.PostCallsIdTalk)
 }
 
 type GetAccesskeysRequestObject struct {
@@ -4083,6 +4615,299 @@ func (response PutBillingAccountsIdPaymentInfo200JSONResponse) VisitPutBillingAc
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetBillingsRequestObject struct {
+	Params GetBillingsParams
+}
+
+type GetBillingsResponseObject interface {
+	VisitGetBillingsResponse(w http.ResponseWriter) error
+}
+
+type GetBillings200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]BillingManagerBilling `json:"result,omitempty"`
+}
+
+func (response GetBillings200JSONResponse) VisitGetBillingsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsRequestObject struct {
+	Params GetCallsParams
+}
+
+type GetCallsResponseObject interface {
+	VisitGetCallsResponse(w http.ResponseWriter) error
+}
+
+type GetCalls200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string            `json:"next_page_token,omitempty"`
+	Result        *[]CallManagerCall `json:"result,omitempty"`
+}
+
+func (response GetCalls200JSONResponse) VisitGetCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsRequestObject struct {
+	Body *PostCallsJSONRequestBody
+}
+
+type PostCallsResponseObject interface {
+	VisitPostCallsResponse(w http.ResponseWriter) error
+}
+
+type PostCalls200JSONResponse struct {
+	Calls      *[]CallManagerCall      `json:"calls,omitempty"`
+	Groupcalls *[]CallManagerGroupcall `json:"groupcalls,omitempty"`
+}
+
+func (response PostCalls200JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteCallsIdResponseObject interface {
+	VisitDeleteCallsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteCallsId200JSONResponse CallManagerCall
+
+func (response DeleteCallsId200JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetCallsIdResponseObject interface {
+	VisitGetCallsIdResponse(w http.ResponseWriter) error
+}
+
+type GetCallsId200JSONResponse CallManagerCall
+
+func (response GetCallsId200JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHangupRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostCallsIdHangupResponseObject interface {
+	VisitPostCallsIdHangupResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdHangup200JSONResponse CallManagerCall
+
+func (response PostCallsIdHangup200JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdHoldRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteCallsIdHoldResponseObject interface {
+	VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error
+}
+
+type DeleteCallsIdHold200Response struct {
+}
+
+func (response DeleteCallsIdHold200Response) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostCallsIdHoldRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostCallsIdHoldResponseObject interface {
+	VisitPostCallsIdHoldResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdHold200Response struct {
+}
+
+func (response PostCallsIdHold200Response) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type GetCallsIdMediaStreamRequestObject struct {
+	Id     string `json:"id"`
+	Params GetCallsIdMediaStreamParams
+}
+
+type GetCallsIdMediaStreamResponseObject interface {
+	VisitGetCallsIdMediaStreamResponse(w http.ResponseWriter) error
+}
+
+type GetCallsIdMediaStream200Response struct {
+}
+
+func (response GetCallsIdMediaStream200Response) VisitGetCallsIdMediaStreamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteCallsIdMohRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteCallsIdMohResponseObject interface {
+	VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error
+}
+
+type DeleteCallsIdMoh200Response struct {
+}
+
+func (response DeleteCallsIdMoh200Response) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostCallsIdMohRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostCallsIdMohResponseObject interface {
+	VisitPostCallsIdMohResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdMoh200Response struct {
+}
+
+func (response PostCallsIdMoh200Response) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteCallsIdMuteRequestObject struct {
+	Id   string `json:"id"`
+	Body *DeleteCallsIdMuteJSONRequestBody
+}
+
+type DeleteCallsIdMuteResponseObject interface {
+	VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error
+}
+
+type DeleteCallsIdMute200Response struct {
+}
+
+func (response DeleteCallsIdMute200Response) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostCallsIdMuteRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostCallsIdMuteJSONRequestBody
+}
+
+type PostCallsIdMuteResponseObject interface {
+	VisitPostCallsIdMuteResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdMute200Response struct {
+}
+
+func (response PostCallsIdMute200Response) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteCallsIdSilenceRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteCallsIdSilenceResponseObject interface {
+	VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error
+}
+
+type DeleteCallsIdSilence200Response struct {
+}
+
+func (response DeleteCallsIdSilence200Response) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteCallsIdSilence400Response struct {
+}
+
+func (response DeleteCallsIdSilence400Response) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostCallsIdSilenceRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostCallsIdSilenceResponseObject interface {
+	VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdSilence200Response struct {
+}
+
+func (response PostCallsIdSilence200Response) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostCallsIdSilence400Response struct {
+}
+
+func (response PostCallsIdSilence400Response) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostCallsIdTalkRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostCallsIdTalkJSONRequestBody
+}
+
+type PostCallsIdTalkResponseObject interface {
+	VisitPostCallsIdTalkResponse(w http.ResponseWriter) error
+}
+
+type PostCallsIdTalk200Response struct {
+}
+
+func (response PostCallsIdTalk200Response) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get list of accesskeys
@@ -4172,6 +4997,54 @@ type StrictServerInterface interface {
 	// Update billing account's payment info
 	// (PUT /billing_accounts/{id}/payment_info)
 	PutBillingAccountsIdPaymentInfo(ctx context.Context, request PutBillingAccountsIdPaymentInfoRequestObject) (PutBillingAccountsIdPaymentInfoResponseObject, error)
+	// Get list of billings
+	// (GET /billings)
+	GetBillings(ctx context.Context, request GetBillingsRequestObject) (GetBillingsResponseObject, error)
+	// Get list of calls
+	// (GET /calls)
+	GetCalls(ctx context.Context, request GetCallsRequestObject) (GetCallsResponseObject, error)
+	// Make an outbound call
+	// (POST /calls)
+	PostCalls(ctx context.Context, request PostCallsRequestObject) (PostCallsResponseObject, error)
+	// Delete up the call
+	// (DELETE /calls/{id})
+	DeleteCallsId(ctx context.Context, request DeleteCallsIdRequestObject) (DeleteCallsIdResponseObject, error)
+	// Get detail call info
+	// (GET /calls/{id})
+	GetCallsId(ctx context.Context, request GetCallsIdRequestObject) (GetCallsIdResponseObject, error)
+	// Hang up the call
+	// (POST /calls/{id}/hangup)
+	PostCallsIdHangup(ctx context.Context, request PostCallsIdHangupRequestObject) (PostCallsIdHangupResponseObject, error)
+	// Unhold the call
+	// (DELETE /calls/{id}/hold)
+	DeleteCallsIdHold(ctx context.Context, request DeleteCallsIdHoldRequestObject) (DeleteCallsIdHoldResponseObject, error)
+	// Hold the call
+	// (POST /calls/{id}/hold)
+	PostCallsIdHold(ctx context.Context, request PostCallsIdHoldRequestObject) (PostCallsIdHoldResponseObject, error)
+	// Get media stream for the call
+	// (GET /calls/{id}/media_stream)
+	GetCallsIdMediaStream(ctx context.Context, request GetCallsIdMediaStreamRequestObject) (GetCallsIdMediaStreamResponseObject, error)
+	// Disable Music on Hold (MOH)
+	// (DELETE /calls/{id}/moh)
+	DeleteCallsIdMoh(ctx context.Context, request DeleteCallsIdMohRequestObject) (DeleteCallsIdMohResponseObject, error)
+	// Enable Music on Hold (MOH)
+	// (POST /calls/{id}/moh)
+	PostCallsIdMoh(ctx context.Context, request PostCallsIdMohRequestObject) (PostCallsIdMohResponseObject, error)
+	// Unmute the call
+	// (DELETE /calls/{id}/mute)
+	DeleteCallsIdMute(ctx context.Context, request DeleteCallsIdMuteRequestObject) (DeleteCallsIdMuteResponseObject, error)
+	// Mute the call
+	// (POST /calls/{id}/mute)
+	PostCallsIdMute(ctx context.Context, request PostCallsIdMuteRequestObject) (PostCallsIdMuteResponseObject, error)
+	// Un-silence a call
+	// (DELETE /calls/{id}/silence)
+	DeleteCallsIdSilence(ctx context.Context, request DeleteCallsIdSilenceRequestObject) (DeleteCallsIdSilenceResponseObject, error)
+	// Silence a call
+	// (POST /calls/{id}/silence)
+	PostCallsIdSilence(ctx context.Context, request PostCallsIdSilenceRequestObject) (PostCallsIdSilenceResponseObject, error)
+	// Talk to the call
+	// (POST /calls/{id}/talk)
+	PostCallsIdTalk(ctx context.Context, request PostCallsIdTalkRequestObject) (PostCallsIdTalkResponseObject, error)
 }
 
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
@@ -5074,6 +5947,469 @@ func (sh *strictHandler) PutBillingAccountsIdPaymentInfo(ctx *gin.Context, id st
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutBillingAccountsIdPaymentInfoResponseObject); ok {
 		if err := validResponse.VisitPutBillingAccountsIdPaymentInfoResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetBillings operation middleware
+func (sh *strictHandler) GetBillings(ctx *gin.Context, params GetBillingsParams) {
+	var request GetBillingsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetBillings(ctx, request.(GetBillingsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetBillings")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetBillingsResponseObject); ok {
+		if err := validResponse.VisitGetBillingsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCalls operation middleware
+func (sh *strictHandler) GetCalls(ctx *gin.Context, params GetCallsParams) {
+	var request GetCallsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCalls(ctx, request.(GetCallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCallsResponseObject); ok {
+		if err := validResponse.VisitGetCallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCalls operation middleware
+func (sh *strictHandler) PostCalls(ctx *gin.Context) {
+	var request PostCallsRequestObject
+
+	var body PostCallsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCalls(ctx, request.(PostCallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsResponseObject); ok {
+		if err := validResponse.VisitPostCallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCallsId operation middleware
+func (sh *strictHandler) DeleteCallsId(ctx *gin.Context, id string) {
+	var request DeleteCallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCallsId(ctx, request.(DeleteCallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCallsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteCallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCallsId operation middleware
+func (sh *strictHandler) GetCallsId(ctx *gin.Context, id string) {
+	var request GetCallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCallsId(ctx, request.(GetCallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCallsIdResponseObject); ok {
+		if err := validResponse.VisitGetCallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCallsIdHangup operation middleware
+func (sh *strictHandler) PostCallsIdHangup(ctx *gin.Context, id string) {
+	var request PostCallsIdHangupRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdHangup(ctx, request.(PostCallsIdHangupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdHangup")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdHangupResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdHangupResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCallsIdHold operation middleware
+func (sh *strictHandler) DeleteCallsIdHold(ctx *gin.Context, id string) {
+	var request DeleteCallsIdHoldRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCallsIdHold(ctx, request.(DeleteCallsIdHoldRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCallsIdHold")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCallsIdHoldResponseObject); ok {
+		if err := validResponse.VisitDeleteCallsIdHoldResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCallsIdHold operation middleware
+func (sh *strictHandler) PostCallsIdHold(ctx *gin.Context, id string) {
+	var request PostCallsIdHoldRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdHold(ctx, request.(PostCallsIdHoldRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdHold")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdHoldResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdHoldResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCallsIdMediaStream operation middleware
+func (sh *strictHandler) GetCallsIdMediaStream(ctx *gin.Context, id string, params GetCallsIdMediaStreamParams) {
+	var request GetCallsIdMediaStreamRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCallsIdMediaStream(ctx, request.(GetCallsIdMediaStreamRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCallsIdMediaStream")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCallsIdMediaStreamResponseObject); ok {
+		if err := validResponse.VisitGetCallsIdMediaStreamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCallsIdMoh operation middleware
+func (sh *strictHandler) DeleteCallsIdMoh(ctx *gin.Context, id string) {
+	var request DeleteCallsIdMohRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCallsIdMoh(ctx, request.(DeleteCallsIdMohRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCallsIdMoh")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCallsIdMohResponseObject); ok {
+		if err := validResponse.VisitDeleteCallsIdMohResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCallsIdMoh operation middleware
+func (sh *strictHandler) PostCallsIdMoh(ctx *gin.Context, id string) {
+	var request PostCallsIdMohRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdMoh(ctx, request.(PostCallsIdMohRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdMoh")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdMohResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdMohResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCallsIdMute operation middleware
+func (sh *strictHandler) DeleteCallsIdMute(ctx *gin.Context, id string) {
+	var request DeleteCallsIdMuteRequestObject
+
+	request.Id = id
+
+	var body DeleteCallsIdMuteJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCallsIdMute(ctx, request.(DeleteCallsIdMuteRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCallsIdMute")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCallsIdMuteResponseObject); ok {
+		if err := validResponse.VisitDeleteCallsIdMuteResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCallsIdMute operation middleware
+func (sh *strictHandler) PostCallsIdMute(ctx *gin.Context, id string) {
+	var request PostCallsIdMuteRequestObject
+
+	request.Id = id
+
+	var body PostCallsIdMuteJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdMute(ctx, request.(PostCallsIdMuteRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdMute")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdMuteResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdMuteResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCallsIdSilence operation middleware
+func (sh *strictHandler) DeleteCallsIdSilence(ctx *gin.Context, id string) {
+	var request DeleteCallsIdSilenceRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCallsIdSilence(ctx, request.(DeleteCallsIdSilenceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCallsIdSilence")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCallsIdSilenceResponseObject); ok {
+		if err := validResponse.VisitDeleteCallsIdSilenceResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCallsIdSilence operation middleware
+func (sh *strictHandler) PostCallsIdSilence(ctx *gin.Context, id string) {
+	var request PostCallsIdSilenceRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdSilence(ctx, request.(PostCallsIdSilenceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdSilence")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdSilenceResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdSilenceResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCallsIdTalk operation middleware
+func (sh *strictHandler) PostCallsIdTalk(ctx *gin.Context, id string) {
+	var request PostCallsIdTalkRequestObject
+
+	request.Id = id
+
+	var body PostCallsIdTalkJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCallsIdTalk(ctx, request.(PostCallsIdTalkRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCallsIdTalk")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCallsIdTalkResponseObject); ok {
+		if err := validResponse.VisitPostCallsIdTalkResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

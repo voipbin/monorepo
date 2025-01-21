@@ -2,7 +2,6 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 
@@ -82,14 +81,6 @@ func (h *server) GetBillingAccounts(c *gin.Context, params openapi_server.GetBil
 		"agent": a,
 	})
 
-	var requestParam request.ParamBillingAccountsGET
-	if err := c.BindQuery(&requestParam); err != nil {
-		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-	log.Debugf("callsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
-
 	pageSize := uint64(100)
 	if params.PageSize != nil {
 		pageSize = uint64(*params.PageSize)
@@ -99,7 +90,12 @@ func (h *server) GetBillingAccounts(c *gin.Context, params openapi_server.GetBil
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
 
-	tmps, err := h.serviceHandler.BillingAccountGets(c.Request.Context(), &a, pageSize, requestParam.PageToken)
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.BillingAccountGets(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get billing accounts info. err: %v", err)
 		c.AbortWithStatus(400)

@@ -32,6 +32,10 @@ func (h *server) GetActiveflows(c *gin.Context, params openapi_server.GetActivef
 	if params.PageSize != nil {
 		pageSize = uint64(*params.PageSize)
 	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
 
 	pageToken := ""
 	if params.PageToken != nil {

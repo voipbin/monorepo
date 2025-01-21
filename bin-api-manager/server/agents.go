@@ -4,6 +4,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -132,11 +133,11 @@ func (h *server) PostAgents(c *gin.Context) {
 		}
 	}
 
-	addresses := []commonaddress.Address{}
-	if req.Addresses != nil {
-		for _, addr := range *req.Addresses {
-			addresses = append(addresses, ConvertCommonAddressToAddress(addr))
-		}
+	addresses, err := MarshalUnmarshal[[]commonaddress.Address](req.Addresses)
+	if err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	res, err := h.serviceHandler.AgentCreate(c.Request.Context(), &a, username, password, name, detail, amagent.RingMethod(ringMethod), permission, tagIDs, addresses)
@@ -309,11 +310,11 @@ func (h *server) PutAgentsIdAddresses(c *gin.Context, id string) {
 		return
 	}
 
-	addresses := []commonaddress.Address{}
-	if req.Addresses != nil {
-		for _, addr := range *req.Addresses {
-			addresses = append(addresses, ConvertCommonAddressToAddress(addr))
-		}
+	addresses, err := MarshalUnmarshal[[]commonaddress.Address](req.Addresses)
+	if err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	res, err := h.serviceHandler.AgentUpdateAddresses(c.Request.Context(), &a, target, addresses)
