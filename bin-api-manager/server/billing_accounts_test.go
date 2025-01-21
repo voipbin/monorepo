@@ -75,10 +75,9 @@ func Test_PostBillingAccounts(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
-			req, _ := http.NewRequest("POST", "/v1.0/billing_accounts", bytes.NewBuffer(tt.reqBody))
+			req, _ := http.NewRequest("POST", "/billing_accounts", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().BillingAccountCreate(req.Context(), &tt.agent, tt.expectedName, tt.expectedDetail, tt.expectedPaymentType, tt.expectedPaymentMethod).Return(tt.responsBillingAccount, nil)
@@ -120,7 +119,7 @@ func Test_GetBillingAccounts(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billing_accounts?page_size=10&page_token=2020-09-20T03:23:20.995000",
+			reqQuery: "/billing_accounts?page_size=10&page_token=2020-09-20T03:23:20.995000",
 
 			resBillingAccounts: []*bmaccount.WebhookMessage{
 				{
@@ -140,7 +139,7 @@ func Test_GetBillingAccounts(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billing_accounts?page_size=10&page_token=2020-09-20T03:23:20.995000",
+			reqQuery: "/billing_accounts?page_size=10&page_token=2020-09-20T03:23:20.995000",
 
 			resBillingAccounts: []*bmaccount.WebhookMessage{
 				{
@@ -180,8 +179,7 @@ func Test_GetBillingAccounts(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
@@ -221,7 +219,7 @@ func Test_DeleteBillingAccountsId(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billing_accounts/9738a486-11ea-11ee-b56b-db24f5d2c81a",
+			reqQuery: "/billing_accounts/9738a486-11ea-11ee-b56b-db24f5d2c81a",
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
 				ID: uuid.FromStringOrNil("9738a486-11ea-11ee-b56b-db24f5d2c81a"),
@@ -248,8 +246,7 @@ func Test_DeleteBillingAccountsId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			mockSvc.EXPECT().BillingAccountDelete(req.Context(), &tt.agent, tt.expectBillingAccountID).Return(tt.responseBillingAccount, nil)
@@ -288,7 +285,7 @@ func Test_GetBillingAccountsId(t *testing.T) {
 				},
 			},
 
-			reqQuery:         "/v1.0/billing_accounts/602eb6b4-11eb-11ee-b79f-03124621dcc4",
+			reqQuery:         "/billing_accounts/602eb6b4-11eb-11ee-b79f-03124621dcc4",
 			billingAccountID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
@@ -315,8 +312,7 @@ func Test_GetBillingAccountsId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			mockSvc.EXPECT().BillingAccountGet(req.Context(), &tt.agent, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
@@ -339,14 +335,15 @@ func Test_PutBillingAccountsId(t *testing.T) {
 		name  string
 		agent amagent.Agent
 
-		reqQuery         string
-		reqBody          []byte
-		billingAccountID uuid.UUID
+		reqQuery string
+		reqBody  []byte
 
 		responsBillingAccount *bmaccount.WebhookMessage
-		expectName            string
-		expectDetail          string
-		expectRes             string
+
+		expectBillingAccountID uuid.UUID
+		expectName             string
+		expectDetail           string
+		expectRes              string
 	}
 
 	tests := []test{
@@ -358,17 +355,17 @@ func Test_PutBillingAccountsId(t *testing.T) {
 				},
 			},
 
-			reqQuery:         "/v1.0/billing_accounts/8d1d01bc-4cdd-11ee-a22f-03714037d3db",
-			reqBody:          []byte(`{"name":"update name","detail":"update detail"}`),
-			billingAccountID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
+			reqQuery: "/billing_accounts/8d1d01bc-4cdd-11ee-a22f-03714037d3db",
+			reqBody:  []byte(`{"name":"update name","detail":"update detail"}`),
 
 			responsBillingAccount: &bmaccount.WebhookMessage{
 				ID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
 			},
 
-			expectName:   "update name",
-			expectDetail: "update detail",
-			expectRes:    `{"id":"8d1d01bc-4cdd-11ee-a22f-03714037d3db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectBillingAccountID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
+			expectName:             "update name",
+			expectDetail:           "update detail",
+			expectRes:              `{"id":"8d1d01bc-4cdd-11ee-a22f-03714037d3db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -389,13 +386,12 @@ func Test_PutBillingAccountsId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.agent, tt.billingAccountID, tt.expectName, tt.expectDetail).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectName, tt.expectDetail).Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -419,7 +415,8 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responsBillingAccount  *bmaccount.WebhookMessage
+		responsBillingAccount *bmaccount.WebhookMessage
+
 		expectBillingAccountID uuid.UUID
 		expectPaymentType      bmaccount.PaymentType
 		expectPaymentMethod    bmaccount.PaymentMethod
@@ -435,7 +432,7 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billing_accounts/64461024-4cdf-11ee-be1f-e7111eb57d28/payment_info",
+			reqQuery: "/billing_accounts/64461024-4cdf-11ee-be1f-e7111eb57d28/payment_info",
 			reqBody:  []byte(`{"payment_type":"prepaid","payment_method":"credit card"}`),
 
 			responsBillingAccount: &bmaccount.WebhookMessage{
@@ -466,8 +463,7 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
@@ -512,7 +508,7 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billing_accounts/605eae78-11eb-11ee-b8d3-6fd8da9d9879/balance_add_force",
+			reqQuery: "/billing_accounts/605eae78-11eb-11ee-b8d3-6fd8da9d9879/balance_add_force",
 			reqBody:  []byte(`{"balance": 20.9}`),
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
@@ -542,8 +538,7 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			mockSvc.EXPECT().BillingAccountAddBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
@@ -585,7 +580,7 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billing_accounts/e4e38ff6-11eb-11ee-879b-cb22a78168e4/balance_subtract_force",
+			reqQuery: "/billing_accounts/e4e38ff6-11eb-11ee-879b-cb22a78168e4/balance_subtract_force",
 			reqBody:  []byte(`{"balance": 20.9}`),
 
 			responseBillingAccount: &bmaccount.WebhookMessage{
@@ -615,8 +610,7 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)

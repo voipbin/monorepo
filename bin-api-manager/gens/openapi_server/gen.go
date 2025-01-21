@@ -2623,6 +2623,122 @@ type PostCallsIdTalkJSONBody struct {
 	Text     *string `json:"text,omitempty"`
 }
 
+// GetCampaigncallsParams defines parameters for GetCampaigncalls.
+type GetCampaigncallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetCampaignsParams defines parameters for GetCampaigns.
+type GetCampaignsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostCampaignsJSONBody defines parameters for PostCampaigns.
+type PostCampaignsJSONBody struct {
+	// Actions Actions associated with the campaign
+	Actions []FlowManagerAction `json:"actions"`
+
+	// Detail Detailed description of the campaign
+	Detail string `json:"detail"`
+
+	// EndHandle Behavior of the campaign after outdial has no more targets.
+	EndHandle CampaignManagerCampaignEndHandle `json:"end_handle"`
+
+	// Name Name of the campaign
+	Name string `json:"name"`
+
+	// NextCampaignId ID of the next campaign
+	NextCampaignId string `json:"next_campaign_id"`
+
+	// OutdialId Outdial ID for the campaign
+	OutdialId string `json:"outdial_id"`
+
+	// OutplanId Outplan ID for the campaign
+	OutplanId string `json:"outplan_id"`
+
+	// QueueId Queue ID for the campaign
+	QueueId string `json:"queue_id"`
+
+	// ServiceLevel Service level of the campaign
+	ServiceLevel int `json:"service_level"`
+
+	// Type Type of campaign.
+	Type CampaignManagerCampaignType `json:"type"`
+}
+
+// PutCampaignsIdJSONBody defines parameters for PutCampaignsId.
+type PutCampaignsIdJSONBody struct {
+	// Detail Updated details of the campaign
+	Detail string `json:"detail"`
+
+	// EndHandle Behavior of the campaign after outdial has no more targets.
+	EndHandle CampaignManagerCampaignEndHandle `json:"end_handle"`
+
+	// Name Updated name of the campaign
+	Name string `json:"name"`
+
+	// ServiceLevel Updated service level of the campaign
+	ServiceLevel int `json:"service_level"`
+
+	// Type Type of campaign.
+	Type CampaignManagerCampaignType `json:"type"`
+}
+
+// PutCampaignsIdActionsJSONBody defines parameters for PutCampaignsIdActions.
+type PutCampaignsIdActionsJSONBody struct {
+	Actions []FlowManagerAction `json:"actions"`
+}
+
+// GetCampaignsIdCampaigncallsParams defines parameters for GetCampaignsIdCampaigncalls.
+type GetCampaignsIdCampaigncallsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PutCampaignsIdNextCampaignIdJSONBody defines parameters for PutCampaignsIdNextCampaignId.
+type PutCampaignsIdNextCampaignIdJSONBody struct {
+	// NextCampaignId The next campaign's id.
+	NextCampaignId string `json:"next_campaign_id"`
+}
+
+// PutCampaignsIdResourceInfoJSONBody defines parameters for PutCampaignsIdResourceInfo.
+type PutCampaignsIdResourceInfoJSONBody struct {
+	// NextCampaignId next campaign's id.
+	NextCampaignId string `json:"next_campaign_id"`
+
+	// OutdialId outplan's id.
+	OutdialId string `json:"outdial_id"`
+
+	// OutplanId outplan's id.
+	OutplanId string `json:"outplan_id"`
+
+	// QueueId queue's id.
+	QueueId string `json:"queue_id"`
+}
+
+// PutCampaignsIdServiceLevelJSONBody defines parameters for PutCampaignsIdServiceLevel.
+type PutCampaignsIdServiceLevelJSONBody struct {
+	// ServiceLevel The campaign's service level.
+	ServiceLevel int `json:"service_level"`
+}
+
+// PutCampaignsIdStatusJSONBody defines parameters for PutCampaignsIdStatus.
+type PutCampaignsIdStatusJSONBody struct {
+	// Status Status of the campaign.
+	Status CampaignManagerCampaignStatus `json:"status"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -2679,6 +2795,27 @@ type PostCallsIdMuteJSONRequestBody PostCallsIdMuteJSONBody
 
 // PostCallsIdTalkJSONRequestBody defines body for PostCallsIdTalk for application/json ContentType.
 type PostCallsIdTalkJSONRequestBody PostCallsIdTalkJSONBody
+
+// PostCampaignsJSONRequestBody defines body for PostCampaigns for application/json ContentType.
+type PostCampaignsJSONRequestBody PostCampaignsJSONBody
+
+// PutCampaignsIdJSONRequestBody defines body for PutCampaignsId for application/json ContentType.
+type PutCampaignsIdJSONRequestBody PutCampaignsIdJSONBody
+
+// PutCampaignsIdActionsJSONRequestBody defines body for PutCampaignsIdActions for application/json ContentType.
+type PutCampaignsIdActionsJSONRequestBody PutCampaignsIdActionsJSONBody
+
+// PutCampaignsIdNextCampaignIdJSONRequestBody defines body for PutCampaignsIdNextCampaignId for application/json ContentType.
+type PutCampaignsIdNextCampaignIdJSONRequestBody PutCampaignsIdNextCampaignIdJSONBody
+
+// PutCampaignsIdResourceInfoJSONRequestBody defines body for PutCampaignsIdResourceInfo for application/json ContentType.
+type PutCampaignsIdResourceInfoJSONRequestBody PutCampaignsIdResourceInfoJSONBody
+
+// PutCampaignsIdServiceLevelJSONRequestBody defines body for PutCampaignsIdServiceLevel for application/json ContentType.
+type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBody
+
+// PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
+type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -2817,6 +2954,48 @@ type ServerInterface interface {
 	// Talk to the call
 	// (POST /calls/{id}/talk)
 	PostCallsIdTalk(c *gin.Context, id string)
+	// Get list of campaign calls
+	// (GET /campaigncalls)
+	GetCampaigncalls(c *gin.Context, params GetCampaigncallsParams)
+	// Delete a campaign call
+	// (DELETE /campaigncalls/{id})
+	DeleteCampaigncallsId(c *gin.Context, id string)
+	// Get campaign call details
+	// (GET /campaigncalls/{id})
+	GetCampaigncallsId(c *gin.Context, id string)
+	// Get a list of campaigns
+	// (GET /campaigns)
+	GetCampaigns(c *gin.Context, params GetCampaignsParams)
+	// Create a new campaign
+	// (POST /campaigns)
+	PostCampaigns(c *gin.Context)
+	// Delete a campaign
+	// (DELETE /campaigns/{id})
+	DeleteCampaignsId(c *gin.Context, id string)
+	// Get campaign details
+	// (GET /campaigns/{id})
+	GetCampaignsId(c *gin.Context, id string)
+	// Update a campaign
+	// (PUT /campaigns/{id})
+	PutCampaignsId(c *gin.Context, id string)
+	// Update campaign's actions
+	// (PUT /campaigns/{id}/actions)
+	PutCampaignsIdActions(c *gin.Context, id string)
+	// Update campaign's actions
+	// (GET /campaigns/{id}/campaigncalls)
+	GetCampaignsIdCampaigncalls(c *gin.Context, id string, params GetCampaignsIdCampaigncallsParams)
+	// Update campaign's service level
+	// (PUT /campaigns/{id}/next_campaign_id)
+	PutCampaignsIdNextCampaignId(c *gin.Context, id string)
+	// Update campaign's resource info
+	// (PUT /campaigns/{id}/resource_info)
+	PutCampaignsIdResourceInfo(c *gin.Context, id string)
+	// Update campaign's service level
+	// (PUT /campaigns/{id}/service_level)
+	PutCampaignsIdServiceLevel(c *gin.Context, id string)
+	// Update campaign status
+	// (PUT /campaigns/{id}/status)
+	PutCampaignsIdStatus(c *gin.Context, id string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -3957,6 +4136,370 @@ func (siw *ServerInterfaceWrapper) PostCallsIdTalk(c *gin.Context) {
 	siw.Handler.PostCallsIdTalk(c, id)
 }
 
+// GetCampaigncalls operation middleware
+func (siw *ServerInterfaceWrapper) GetCampaigncalls(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCampaigncallsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCampaigncalls(c, params)
+}
+
+// DeleteCampaigncallsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCampaigncallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCampaigncallsId(c, id)
+}
+
+// GetCampaigncallsId operation middleware
+func (siw *ServerInterfaceWrapper) GetCampaigncallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCampaigncallsId(c, id)
+}
+
+// GetCampaigns operation middleware
+func (siw *ServerInterfaceWrapper) GetCampaigns(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCampaignsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCampaigns(c, params)
+}
+
+// PostCampaigns operation middleware
+func (siw *ServerInterfaceWrapper) PostCampaigns(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCampaigns(c)
+}
+
+// DeleteCampaignsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCampaignsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCampaignsId(c, id)
+}
+
+// GetCampaignsId operation middleware
+func (siw *ServerInterfaceWrapper) GetCampaignsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCampaignsId(c, id)
+}
+
+// PutCampaignsId operation middleware
+func (siw *ServerInterfaceWrapper) PutCampaignsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCampaignsId(c, id)
+}
+
+// PutCampaignsIdActions operation middleware
+func (siw *ServerInterfaceWrapper) PutCampaignsIdActions(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCampaignsIdActions(c, id)
+}
+
+// GetCampaignsIdCampaigncalls operation middleware
+func (siw *ServerInterfaceWrapper) GetCampaignsIdCampaigncalls(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCampaignsIdCampaigncallsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCampaignsIdCampaigncalls(c, id, params)
+}
+
+// PutCampaignsIdNextCampaignId operation middleware
+func (siw *ServerInterfaceWrapper) PutCampaignsIdNextCampaignId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCampaignsIdNextCampaignId(c, id)
+}
+
+// PutCampaignsIdResourceInfo operation middleware
+func (siw *ServerInterfaceWrapper) PutCampaignsIdResourceInfo(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCampaignsIdResourceInfo(c, id)
+}
+
+// PutCampaignsIdServiceLevel operation middleware
+func (siw *ServerInterfaceWrapper) PutCampaignsIdServiceLevel(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCampaignsIdServiceLevel(c, id)
+}
+
+// PutCampaignsIdStatus operation middleware
+func (siw *ServerInterfaceWrapper) PutCampaignsIdStatus(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutCampaignsIdStatus(c, id)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -4029,6 +4572,20 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/calls/:id/silence", wrapper.DeleteCallsIdSilence)
 	router.POST(options.BaseURL+"/calls/:id/silence", wrapper.PostCallsIdSilence)
 	router.POST(options.BaseURL+"/calls/:id/talk", wrapper.PostCallsIdTalk)
+	router.GET(options.BaseURL+"/campaigncalls", wrapper.GetCampaigncalls)
+	router.DELETE(options.BaseURL+"/campaigncalls/:id", wrapper.DeleteCampaigncallsId)
+	router.GET(options.BaseURL+"/campaigncalls/:id", wrapper.GetCampaigncallsId)
+	router.GET(options.BaseURL+"/campaigns", wrapper.GetCampaigns)
+	router.POST(options.BaseURL+"/campaigns", wrapper.PostCampaigns)
+	router.DELETE(options.BaseURL+"/campaigns/:id", wrapper.DeleteCampaignsId)
+	router.GET(options.BaseURL+"/campaigns/:id", wrapper.GetCampaignsId)
+	router.PUT(options.BaseURL+"/campaigns/:id", wrapper.PutCampaignsId)
+	router.PUT(options.BaseURL+"/campaigns/:id/actions", wrapper.PutCampaignsIdActions)
+	router.GET(options.BaseURL+"/campaigns/:id/campaigncalls", wrapper.GetCampaignsIdCampaigncalls)
+	router.PUT(options.BaseURL+"/campaigns/:id/next_campaign_id", wrapper.PutCampaignsIdNextCampaignId)
+	router.PUT(options.BaseURL+"/campaigns/:id/resource_info", wrapper.PutCampaignsIdResourceInfo)
+	router.PUT(options.BaseURL+"/campaigns/:id/service_level", wrapper.PutCampaignsIdServiceLevel)
+	router.PUT(options.BaseURL+"/campaigns/:id/status", wrapper.PutCampaignsIdStatus)
 }
 
 type GetAccesskeysRequestObject struct {
@@ -4908,6 +5465,263 @@ func (response PostCallsIdTalk200Response) VisitPostCallsIdTalkResponse(w http.R
 	return nil
 }
 
+type GetCampaigncallsRequestObject struct {
+	Params GetCampaigncallsParams
+}
+
+type GetCampaigncallsResponseObject interface {
+	VisitGetCampaigncallsResponse(w http.ResponseWriter) error
+}
+
+type GetCampaigncalls200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]CampaignManagerCampaigncall `json:"result,omitempty"`
+}
+
+func (response GetCampaigncalls200JSONResponse) VisitGetCampaigncallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCampaigncallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteCampaigncallsIdResponseObject interface {
+	VisitDeleteCampaigncallsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteCampaigncallsId200JSONResponse CampaignManagerCampaigncall
+
+func (response DeleteCampaigncallsId200JSONResponse) VisitDeleteCampaigncallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCampaigncallsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetCampaigncallsIdResponseObject interface {
+	VisitGetCampaigncallsIdResponse(w http.ResponseWriter) error
+}
+
+type GetCampaigncallsId200JSONResponse CampaignManagerCampaigncall
+
+func (response GetCampaigncallsId200JSONResponse) VisitGetCampaigncallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCampaignsRequestObject struct {
+	Params GetCampaignsParams
+}
+
+type GetCampaignsResponseObject interface {
+	VisitGetCampaignsResponse(w http.ResponseWriter) error
+}
+
+type GetCampaigns200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                    `json:"next_page_token,omitempty"`
+	Result        *[]CampaignManagerCampaign `json:"result,omitempty"`
+}
+
+func (response GetCampaigns200JSONResponse) VisitGetCampaignsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCampaignsRequestObject struct {
+	Body *PostCampaignsJSONRequestBody
+}
+
+type PostCampaignsResponseObject interface {
+	VisitPostCampaignsResponse(w http.ResponseWriter) error
+}
+
+type PostCampaigns200JSONResponse CampaignManagerCampaign
+
+func (response PostCampaigns200JSONResponse) VisitPostCampaignsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCampaignsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteCampaignsIdResponseObject interface {
+	VisitDeleteCampaignsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteCampaignsId200JSONResponse CampaignManagerCampaign
+
+func (response DeleteCampaignsId200JSONResponse) VisitDeleteCampaignsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCampaignsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetCampaignsIdResponseObject interface {
+	VisitGetCampaignsIdResponse(w http.ResponseWriter) error
+}
+
+type GetCampaignsId200JSONResponse CampaignManagerCampaign
+
+func (response GetCampaignsId200JSONResponse) VisitGetCampaignsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCampaignsIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutCampaignsIdJSONRequestBody
+}
+
+type PutCampaignsIdResponseObject interface {
+	VisitPutCampaignsIdResponse(w http.ResponseWriter) error
+}
+
+type PutCampaignsId200JSONResponse CampaignManagerCampaign
+
+func (response PutCampaignsId200JSONResponse) VisitPutCampaignsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCampaignsIdActionsRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutCampaignsIdActionsJSONRequestBody
+}
+
+type PutCampaignsIdActionsResponseObject interface {
+	VisitPutCampaignsIdActionsResponse(w http.ResponseWriter) error
+}
+
+type PutCampaignsIdActions200JSONResponse CampaignManagerCampaign
+
+func (response PutCampaignsIdActions200JSONResponse) VisitPutCampaignsIdActionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCampaignsIdCampaigncallsRequestObject struct {
+	Id     string `json:"id"`
+	Params GetCampaignsIdCampaigncallsParams
+}
+
+type GetCampaignsIdCampaigncallsResponseObject interface {
+	VisitGetCampaignsIdCampaigncallsResponse(w http.ResponseWriter) error
+}
+
+type GetCampaignsIdCampaigncalls200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]CampaignManagerCampaigncall `json:"result,omitempty"`
+}
+
+func (response GetCampaignsIdCampaigncalls200JSONResponse) VisitGetCampaignsIdCampaigncallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCampaignsIdNextCampaignIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutCampaignsIdNextCampaignIdJSONRequestBody
+}
+
+type PutCampaignsIdNextCampaignIdResponseObject interface {
+	VisitPutCampaignsIdNextCampaignIdResponse(w http.ResponseWriter) error
+}
+
+type PutCampaignsIdNextCampaignId200JSONResponse CampaignManagerCampaign
+
+func (response PutCampaignsIdNextCampaignId200JSONResponse) VisitPutCampaignsIdNextCampaignIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCampaignsIdResourceInfoRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutCampaignsIdResourceInfoJSONRequestBody
+}
+
+type PutCampaignsIdResourceInfoResponseObject interface {
+	VisitPutCampaignsIdResourceInfoResponse(w http.ResponseWriter) error
+}
+
+type PutCampaignsIdResourceInfo200JSONResponse CampaignManagerCampaign
+
+func (response PutCampaignsIdResourceInfo200JSONResponse) VisitPutCampaignsIdResourceInfoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCampaignsIdServiceLevelRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutCampaignsIdServiceLevelJSONRequestBody
+}
+
+type PutCampaignsIdServiceLevelResponseObject interface {
+	VisitPutCampaignsIdServiceLevelResponse(w http.ResponseWriter) error
+}
+
+type PutCampaignsIdServiceLevel200JSONResponse CampaignManagerCampaign
+
+func (response PutCampaignsIdServiceLevel200JSONResponse) VisitPutCampaignsIdServiceLevelResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCampaignsIdStatusRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutCampaignsIdStatusJSONRequestBody
+}
+
+type PutCampaignsIdStatusResponseObject interface {
+	VisitPutCampaignsIdStatusResponse(w http.ResponseWriter) error
+}
+
+type PutCampaignsIdStatus200JSONResponse CampaignManagerCampaign
+
+func (response PutCampaignsIdStatus200JSONResponse) VisitPutCampaignsIdStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get list of accesskeys
@@ -5045,6 +5859,48 @@ type StrictServerInterface interface {
 	// Talk to the call
 	// (POST /calls/{id}/talk)
 	PostCallsIdTalk(ctx context.Context, request PostCallsIdTalkRequestObject) (PostCallsIdTalkResponseObject, error)
+	// Get list of campaign calls
+	// (GET /campaigncalls)
+	GetCampaigncalls(ctx context.Context, request GetCampaigncallsRequestObject) (GetCampaigncallsResponseObject, error)
+	// Delete a campaign call
+	// (DELETE /campaigncalls/{id})
+	DeleteCampaigncallsId(ctx context.Context, request DeleteCampaigncallsIdRequestObject) (DeleteCampaigncallsIdResponseObject, error)
+	// Get campaign call details
+	// (GET /campaigncalls/{id})
+	GetCampaigncallsId(ctx context.Context, request GetCampaigncallsIdRequestObject) (GetCampaigncallsIdResponseObject, error)
+	// Get a list of campaigns
+	// (GET /campaigns)
+	GetCampaigns(ctx context.Context, request GetCampaignsRequestObject) (GetCampaignsResponseObject, error)
+	// Create a new campaign
+	// (POST /campaigns)
+	PostCampaigns(ctx context.Context, request PostCampaignsRequestObject) (PostCampaignsResponseObject, error)
+	// Delete a campaign
+	// (DELETE /campaigns/{id})
+	DeleteCampaignsId(ctx context.Context, request DeleteCampaignsIdRequestObject) (DeleteCampaignsIdResponseObject, error)
+	// Get campaign details
+	// (GET /campaigns/{id})
+	GetCampaignsId(ctx context.Context, request GetCampaignsIdRequestObject) (GetCampaignsIdResponseObject, error)
+	// Update a campaign
+	// (PUT /campaigns/{id})
+	PutCampaignsId(ctx context.Context, request PutCampaignsIdRequestObject) (PutCampaignsIdResponseObject, error)
+	// Update campaign's actions
+	// (PUT /campaigns/{id}/actions)
+	PutCampaignsIdActions(ctx context.Context, request PutCampaignsIdActionsRequestObject) (PutCampaignsIdActionsResponseObject, error)
+	// Update campaign's actions
+	// (GET /campaigns/{id}/campaigncalls)
+	GetCampaignsIdCampaigncalls(ctx context.Context, request GetCampaignsIdCampaigncallsRequestObject) (GetCampaignsIdCampaigncallsResponseObject, error)
+	// Update campaign's service level
+	// (PUT /campaigns/{id}/next_campaign_id)
+	PutCampaignsIdNextCampaignId(ctx context.Context, request PutCampaignsIdNextCampaignIdRequestObject) (PutCampaignsIdNextCampaignIdResponseObject, error)
+	// Update campaign's resource info
+	// (PUT /campaigns/{id}/resource_info)
+	PutCampaignsIdResourceInfo(ctx context.Context, request PutCampaignsIdResourceInfoRequestObject) (PutCampaignsIdResourceInfoResponseObject, error)
+	// Update campaign's service level
+	// (PUT /campaigns/{id}/service_level)
+	PutCampaignsIdServiceLevel(ctx context.Context, request PutCampaignsIdServiceLevelRequestObject) (PutCampaignsIdServiceLevelResponseObject, error)
+	// Update campaign status
+	// (PUT /campaigns/{id}/status)
+	PutCampaignsIdStatus(ctx context.Context, request PutCampaignsIdStatusRequestObject) (PutCampaignsIdStatusResponseObject, error)
 }
 
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
@@ -6410,6 +7266,439 @@ func (sh *strictHandler) PostCallsIdTalk(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostCallsIdTalkResponseObject); ok {
 		if err := validResponse.VisitPostCallsIdTalkResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCampaigncalls operation middleware
+func (sh *strictHandler) GetCampaigncalls(ctx *gin.Context, params GetCampaigncallsParams) {
+	var request GetCampaigncallsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCampaigncalls(ctx, request.(GetCampaigncallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCampaigncalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCampaigncallsResponseObject); ok {
+		if err := validResponse.VisitGetCampaigncallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCampaigncallsId operation middleware
+func (sh *strictHandler) DeleteCampaigncallsId(ctx *gin.Context, id string) {
+	var request DeleteCampaigncallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCampaigncallsId(ctx, request.(DeleteCampaigncallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCampaigncallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCampaigncallsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteCampaigncallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCampaigncallsId operation middleware
+func (sh *strictHandler) GetCampaigncallsId(ctx *gin.Context, id string) {
+	var request GetCampaigncallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCampaigncallsId(ctx, request.(GetCampaigncallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCampaigncallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCampaigncallsIdResponseObject); ok {
+		if err := validResponse.VisitGetCampaigncallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCampaigns operation middleware
+func (sh *strictHandler) GetCampaigns(ctx *gin.Context, params GetCampaignsParams) {
+	var request GetCampaignsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCampaigns(ctx, request.(GetCampaignsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCampaigns")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCampaignsResponseObject); ok {
+		if err := validResponse.VisitGetCampaignsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCampaigns operation middleware
+func (sh *strictHandler) PostCampaigns(ctx *gin.Context) {
+	var request PostCampaignsRequestObject
+
+	var body PostCampaignsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCampaigns(ctx, request.(PostCampaignsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCampaigns")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCampaignsResponseObject); ok {
+		if err := validResponse.VisitPostCampaignsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCampaignsId operation middleware
+func (sh *strictHandler) DeleteCampaignsId(ctx *gin.Context, id string) {
+	var request DeleteCampaignsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCampaignsId(ctx, request.(DeleteCampaignsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCampaignsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCampaignsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteCampaignsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCampaignsId operation middleware
+func (sh *strictHandler) GetCampaignsId(ctx *gin.Context, id string) {
+	var request GetCampaignsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCampaignsId(ctx, request.(GetCampaignsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCampaignsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCampaignsIdResponseObject); ok {
+		if err := validResponse.VisitGetCampaignsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCampaignsId operation middleware
+func (sh *strictHandler) PutCampaignsId(ctx *gin.Context, id string) {
+	var request PutCampaignsIdRequestObject
+
+	request.Id = id
+
+	var body PutCampaignsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCampaignsId(ctx, request.(PutCampaignsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCampaignsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCampaignsIdResponseObject); ok {
+		if err := validResponse.VisitPutCampaignsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCampaignsIdActions operation middleware
+func (sh *strictHandler) PutCampaignsIdActions(ctx *gin.Context, id string) {
+	var request PutCampaignsIdActionsRequestObject
+
+	request.Id = id
+
+	var body PutCampaignsIdActionsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCampaignsIdActions(ctx, request.(PutCampaignsIdActionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCampaignsIdActions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCampaignsIdActionsResponseObject); ok {
+		if err := validResponse.VisitPutCampaignsIdActionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCampaignsIdCampaigncalls operation middleware
+func (sh *strictHandler) GetCampaignsIdCampaigncalls(ctx *gin.Context, id string, params GetCampaignsIdCampaigncallsParams) {
+	var request GetCampaignsIdCampaigncallsRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCampaignsIdCampaigncalls(ctx, request.(GetCampaignsIdCampaigncallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCampaignsIdCampaigncalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCampaignsIdCampaigncallsResponseObject); ok {
+		if err := validResponse.VisitGetCampaignsIdCampaigncallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCampaignsIdNextCampaignId operation middleware
+func (sh *strictHandler) PutCampaignsIdNextCampaignId(ctx *gin.Context, id string) {
+	var request PutCampaignsIdNextCampaignIdRequestObject
+
+	request.Id = id
+
+	var body PutCampaignsIdNextCampaignIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCampaignsIdNextCampaignId(ctx, request.(PutCampaignsIdNextCampaignIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCampaignsIdNextCampaignId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCampaignsIdNextCampaignIdResponseObject); ok {
+		if err := validResponse.VisitPutCampaignsIdNextCampaignIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCampaignsIdResourceInfo operation middleware
+func (sh *strictHandler) PutCampaignsIdResourceInfo(ctx *gin.Context, id string) {
+	var request PutCampaignsIdResourceInfoRequestObject
+
+	request.Id = id
+
+	var body PutCampaignsIdResourceInfoJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCampaignsIdResourceInfo(ctx, request.(PutCampaignsIdResourceInfoRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCampaignsIdResourceInfo")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCampaignsIdResourceInfoResponseObject); ok {
+		if err := validResponse.VisitPutCampaignsIdResourceInfoResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCampaignsIdServiceLevel operation middleware
+func (sh *strictHandler) PutCampaignsIdServiceLevel(ctx *gin.Context, id string) {
+	var request PutCampaignsIdServiceLevelRequestObject
+
+	request.Id = id
+
+	var body PutCampaignsIdServiceLevelJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCampaignsIdServiceLevel(ctx, request.(PutCampaignsIdServiceLevelRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCampaignsIdServiceLevel")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCampaignsIdServiceLevelResponseObject); ok {
+		if err := validResponse.VisitPutCampaignsIdServiceLevelResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutCampaignsIdStatus operation middleware
+func (sh *strictHandler) PutCampaignsIdStatus(ctx *gin.Context, id string) {
+	var request PutCampaignsIdStatusRequestObject
+
+	request.Id = id
+
+	var body PutCampaignsIdStatusJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutCampaignsIdStatus(ctx, request.(PutCampaignsIdStatusRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutCampaignsIdStatus")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutCampaignsIdStatusResponseObject); ok {
+		if err := validResponse.VisitPutCampaignsIdStatusResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

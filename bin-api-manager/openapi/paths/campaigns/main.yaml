@@ -37,31 +37,40 @@ post:
               description: Detailed description of the campaign
             type:
               $ref: '#/components/schemas/CampaignManagerCampaignType'
-            serviceLevel:
-              type: number
+            service_level:
+              type: integer
+              # format: float
               description: Service level of the campaign
-            endHandle:
+            end_handle:
               $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
             actions:
               type: array
               description: Actions associated with the campaign
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
-            outplanId:
+            outplan_id:
               type: string
               description: Outplan ID for the campaign
-            outdialId:
+            outdial_id:
               type: string
               description: Outdial ID for the campaign
-            queueId:
+            queue_id:
               type: string
               description: Queue ID for the campaign
-            nextCampaignId:
+            next_campaign_id:
               type: string
               description: ID of the next campaign
           required:
             - name
+            - detail
             - type
+            - service_level
+            - end_handle
+            - actions
+            - outplan_id
+            - outdial_id
+            - queue_id
+            - next_campaign_id
   responses:
     '200':
       description: Successfully subtracted balance from the billing account

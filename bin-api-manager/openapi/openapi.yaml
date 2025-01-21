@@ -2908,17 +2908,27 @@ paths:
   /calls:
     $ref: './paths/calls/main.yaml'
 
-  # /campaigncalls/{id}:
-  #   $ref: './paths/campaigncalls/id.yaml'
-  # /campaigncalls:
-  #   $ref: './paths/campaigncalls/main.yaml'
+  /campaigncalls/{id}:
+    $ref: './paths/campaigncalls/id.yaml'
+  /campaigncalls:
+    $ref: './paths/campaigncalls/main.yaml'
 
-  # /campaigns/{id}/status:
-  #   $ref: './paths/campaigns/id_status.yaml'
-  # /campaigns/{id}:
-  #   $ref: './paths/campaigns/id.yaml'
-  # /campaigns:
-  #   $ref: './paths/campaigns/main.yaml'
+  /campaigns/{id}/actions:
+    $ref: './paths/campaigns/id_actions.yaml'
+  /campaigns/{id}/campaigncalls:
+    $ref: './paths/campaigns/id_campaigncalls.yaml'
+  /campaigns/{id}/next_campaign_id:
+    $ref: './paths/campaigns/id_next_campaign_id.yaml'
+  /campaigns/{id}/resource_info:
+    $ref: './paths/campaigns/id_resource_info.yaml'
+  /campaigns/{id}/service_level:
+    $ref: './paths/campaigns/id_service_level.yaml'
+  /campaigns/{id}/status:
+    $ref: './paths/campaigns/id_status.yaml'
+  /campaigns/{id}:
+    $ref: './paths/campaigns/id.yaml'
+  /campaigns:
+    $ref: './paths/campaigns/main.yaml'
 
   # /chatbotcalls/{id}:
   #   $ref: './paths/chatbotcalls/id.yaml'

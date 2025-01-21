@@ -2,12 +2,10 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	"net/http"
@@ -25,8 +23,9 @@ func Test_GetAccesskeys(t *testing.T) {
 		name  string
 		agent amagent.Agent
 
-		reqQuery      string
-		resAccesskeys []*csaccesskey.WebhookMessage
+		reqQuery string
+
+		responseAccesskeys []*csaccesskey.WebhookMessage
 
 		expectedPageSize  uint64
 		expectedPageToken string
@@ -43,8 +42,9 @@ func Test_GetAccesskeys(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys",
-			resAccesskeys: []*csaccesskey.WebhookMessage{
+			reqQuery: "/accesskeys",
+
+			responseAccesskeys: []*csaccesskey.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
 					TMCreate: "2020-09-20 03:23:21.995000",
@@ -64,8 +64,9 @@ func Test_GetAccesskeys(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys?page_size=10&page_token=2020-09-20%2003:23:20.995000",
-			resAccesskeys: []*csaccesskey.WebhookMessage{
+			reqQuery: "/accesskeys?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+
+			responseAccesskeys: []*csaccesskey.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
 					TMCreate: "2020-09-20 03:23:21.995000",
@@ -85,8 +86,9 @@ func Test_GetAccesskeys(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys?page_size=10&page_token=2020-09-20%2003:23:20.995000",
-			resAccesskeys: []*csaccesskey.WebhookMessage{
+			reqQuery: "/accesskeys?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+
+			responseAccesskeys: []*csaccesskey.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb"),
 					TMCreate: "2020-09-20 03:23:21.995000",
@@ -123,11 +125,10 @@ func Test_GetAccesskeys(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.resAccesskeys, nil)
+			mockSvc.EXPECT().AccesskeyGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAccesskeys, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -148,9 +149,9 @@ func Test_PostAccesskeys(t *testing.T) {
 		agent amagent.Agent
 
 		reqQuery string
-		reqBody  openapi_server.PostAccesskeysJSONBody
+		reqBody  []byte
 
-		response *csaccesskey.WebhookMessage
+		responseAccesskey *csaccesskey.WebhookMessage
 
 		expectedName   string
 		expectedDetail string
@@ -165,14 +166,10 @@ func Test_PostAccesskeys(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys",
-			reqBody: openapi_server.PostAccesskeysJSONBody{
-				Name:   stringPtr("test name"),
-				Detail: stringPtr("test detail"),
-				Expire: intPtr(86400000),
-			},
+			reqQuery: "/accesskeys",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","expire":86400000}`),
 
-			response: &csaccesskey.WebhookMessage{
+			responseAccesskey: &csaccesskey.WebhookMessage{
 				ID: uuid.FromStringOrNil("18e018ae-ab4e-11ef-8be3-9b5666a5e592"),
 			},
 
@@ -189,10 +186,10 @@ func Test_PostAccesskeys(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys",
-			reqBody:  openapi_server.PostAccesskeysJSONBody{},
+			reqQuery: "/accesskeys",
+			reqBody:  []byte(`{}`),
 
-			response: &csaccesskey.WebhookMessage{
+			responseAccesskey: &csaccesskey.WebhookMessage{
 				ID: uuid.FromStringOrNil("4684c4c0-d363-11ef-acc4-f31a48cce971"),
 			},
 
@@ -219,15 +216,9 @@ func Test_PostAccesskeys(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
-			body, err := json.Marshal(tt.reqBody)
-			if err != nil {
-				t.Errorf("Could not marshal the request. err: %v", err)
-			}
-
-			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().AccesskeyCreate(
 				req.Context(),
@@ -235,7 +226,7 @@ func Test_PostAccesskeys(t *testing.T) {
 				tt.expectedName,
 				tt.expectedDetail,
 				tt.expectedExpire,
-			).Return(tt.response, nil)
+			).Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -257,7 +248,7 @@ func Test_GetAccesskeysId(t *testing.T) {
 
 		reqQuery string
 
-		response *csaccesskey.WebhookMessage
+		responseAccesskey *csaccesskey.WebhookMessage
 
 		expectedAccesskeyID uuid.UUID
 		expectRes           string
@@ -270,9 +261,9 @@ func Test_GetAccesskeysId(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys/14a2e40a-ab4f-11ef-a837-63a93a15cd69",
+			reqQuery: "/accesskeys/14a2e40a-ab4f-11ef-a837-63a93a15cd69",
 
-			response: &csaccesskey.WebhookMessage{
+			responseAccesskey: &csaccesskey.WebhookMessage{
 				ID: uuid.FromStringOrNil("14a2e40a-ab4f-11ef-a837-63a93a15cd69"),
 			},
 
@@ -297,11 +288,10 @@ func Test_GetAccesskeysId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyGet(req.Context(), &tt.agent, tt.expectedAccesskeyID).Return(tt.response, nil)
+			mockSvc.EXPECT().AccesskeyGet(req.Context(), &tt.agent, tt.expectedAccesskeyID).Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -323,7 +313,7 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 
 		reqQuery string
 
-		response *csaccesskey.WebhookMessage
+		responseAccesskey *csaccesskey.WebhookMessage
 
 		expectAccesskeyID uuid.UUID
 		expectRes         string
@@ -337,9 +327,9 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys/3629227e-ab4f-11ef-bcdb-ebc17777d865",
+			reqQuery: "/accesskeys/3629227e-ab4f-11ef-bcdb-ebc17777d865",
 
-			response: &csaccesskey.WebhookMessage{
+			responseAccesskey: &csaccesskey.WebhookMessage{
 				ID: uuid.FromStringOrNil("3629227e-ab4f-11ef-bcdb-ebc17777d865"),
 			},
 
@@ -364,11 +354,10 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyDelete(req.Context(), &tt.agent, tt.expectAccesskeyID).Return(tt.response, nil)
+			mockSvc.EXPECT().AccesskeyDelete(req.Context(), &tt.agent, tt.expectAccesskeyID).Return(tt.responseAccesskey, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -388,9 +377,9 @@ func Test_PutAccesskeysId(t *testing.T) {
 		agent amagent.Agent
 
 		reqQuery string
+		reqBody  []byte
 
-		reqBody  request.BodyAccesskeysIDPUT
-		response *csaccesskey.WebhookMessage
+		responseAccesskey *csaccesskey.WebhookMessage
 
 		expectedAccesskeyID uuid.UUID
 		expectedName        string
@@ -405,13 +394,11 @@ func Test_PutAccesskeysId(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/accesskeys/a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e",
+			reqQuery: "/accesskeys/a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e",
 
-			reqBody: request.BodyAccesskeysIDPUT{
-				Name:   "test name",
-				Detail: "test detail",
-			},
-			response: &csaccesskey.WebhookMessage{
+			reqBody: []byte(`{"name":"test name","detail":"test detail"}`),
+
+			responseAccesskey: &csaccesskey.WebhookMessage{
 				ID: uuid.FromStringOrNil("a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e"),
 			},
 
@@ -438,17 +425,11 @@ func Test_PutAccesskeysId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
-			body, err := json.Marshal(tt.reqBody)
-			if err != nil {
-				t.Errorf("Could not marshal the request. err: %v", err)
-			}
-
-			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().AccesskeyUpdate(req.Context(), &tt.agent, tt.expectedAccesskeyID, tt.expectedName, tt.expectedDetail).Return(tt.response, nil)
+			mockSvc.EXPECT().AccesskeyUpdate(req.Context(), &tt.agent, tt.expectedAccesskeyID, tt.expectedName, tt.expectedDetail).Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -24,7 +23,8 @@ func Test_GetActiveflows(t *testing.T) {
 		name  string
 		agent amagent.Agent
 
-		reqQuery       string
+		reqQuery string
+
 		resActiveflows []*fmactiveflow.WebhookMessage
 
 		expectedPageSize  uint64
@@ -42,7 +42,8 @@ func Test_GetActiveflows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/activeflows",
+			reqQuery: "/activeflows",
+
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("c9f6c460-d3aa-11ef-9062-db42ef820bc8"),
@@ -62,7 +63,8 @@ func Test_GetActiveflows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/activeflows?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("ca5324bc-d3aa-11ef-b3a2-5f9b2297d0b5"),
@@ -82,7 +84,8 @@ func Test_GetActiveflows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/activeflows?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("ca814ff4-d3aa-11ef-b654-4356ff1e24b8"),
@@ -117,8 +120,7 @@ func Test_GetActiveflows(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			mockSvc.EXPECT().ActiveflowGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.resActiveflows, nil)
@@ -142,7 +144,7 @@ func Test_PostActiveflows(t *testing.T) {
 		agent amagent.Agent
 
 		reqQuery string
-		reqBody  openapi_server.PostActiveflowsJSONBody
+		reqBody  []byte
 
 		response *fmactiveflow.WebhookMessage
 
@@ -159,16 +161,8 @@ func Test_PostActiveflows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/activeflows",
-			reqBody: openapi_server.PostActiveflowsJSONBody{
-				Actions: &[]openapi_server.FlowManagerAction{
-					{
-						Id: "692de0d6-d3ab-11ef-a2cd-07af60d8bb91",
-					},
-				},
-				FlowId: stringPtr("8917167e-d3ab-11ef-b322-b36809068d12"),
-				Id:     stringPtr("88eaacce-d3ab-11ef-ac99-23f970b154a2"),
-			},
+			reqQuery: "/activeflows",
+			reqBody:  []byte(`{"actions":[{"id":"692de0d6-d3ab-11ef-a2cd-07af60d8bb91"}],"flow_id":"8917167e-d3ab-11ef-b322-b36809068d12","id":"88eaacce-d3ab-11ef-ac99-23f970b154a2"}`),
 
 			response: &fmactiveflow.WebhookMessage{
 				ID: uuid.FromStringOrNil("893ebb34-d3ab-11ef-90e4-f31b0ef8762a"),
@@ -191,8 +185,8 @@ func Test_PostActiveflows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/activeflows",
-			reqBody:  openapi_server.PostActiveflowsJSONBody{},
+			reqQuery: "/activeflows",
+			reqBody:  []byte(`{}`),
 
 			response: &fmactiveflow.WebhookMessage{
 				ID: uuid.FromStringOrNil("8969817a-d3ab-11ef-b01b-c358a80962d3"),
@@ -221,15 +215,9 @@ func Test_PostActiveflows(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
-			body, err := json.Marshal(tt.reqBody)
-			if err != nil {
-				t.Errorf("Could not marshal the request. err: %v", err)
-			}
-
-			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().ActiveflowCreate(
 				req.Context(),
@@ -257,8 +245,9 @@ func Test_GetActiveflowsId(t *testing.T) {
 		name  string
 		agent amagent.Agent
 
-		reqQuery      string
-		resActiveflow *fmactiveflow.WebhookMessage
+		reqQuery string
+
+		responseActiveflow *fmactiveflow.WebhookMessage
 
 		expectedActiveflowID uuid.UUID
 		expectedRes          string
@@ -273,8 +262,9 @@ func Test_GetActiveflowsId(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/activeflows/31c3088a-cb2c-11ed-b323-2b5e8c1da422",
-			resActiveflow: &fmactiveflow.WebhookMessage{
+			reqQuery: "/activeflows/31c3088a-cb2c-11ed-b323-2b5e8c1da422",
+
+			responseActiveflow: &fmactiveflow.WebhookMessage{
 				ID:       uuid.FromStringOrNil("31c3088a-cb2c-11ed-b323-2b5e8c1da422"),
 				TMCreate: "2020-09-20 03:23:21.995000",
 			},
@@ -300,11 +290,10 @@ func Test_GetActiveflowsId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowGet(req.Context(), &tt.agent, tt.expectedActiveflowID).Return(tt.resActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowGet(req.Context(), &tt.agent, tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -324,28 +313,28 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 		agent amagent.Agent
 
 		reqQuery string
-		callID   uuid.UUID
 
 		responseActiveflow *fmactiveflow.WebhookMessage
 
-		expectRes string
+		expectActiveflowID uuid.UUID
+		expectRes          string
 	}{
 		{
-			"normal",
-			amagent.Agent{
+			name: "normal",
+			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
 			},
 
-			"/v1.0/activeflows/8abf67b2-cb2c-11ed-997d-4ff8509599f7",
-			uuid.FromStringOrNil("8abf67b2-cb2c-11ed-997d-4ff8509599f7"),
+			reqQuery: "/activeflows/8abf67b2-cb2c-11ed-997d-4ff8509599f7",
 
-			&fmactiveflow.WebhookMessage{
+			responseActiveflow: &fmactiveflow.WebhookMessage{
 				ID: uuid.FromStringOrNil("8abf67b2-cb2c-11ed-997d-4ff8509599f7"),
 			},
 
-			`{"id":"8abf67b2-cb2c-11ed-997d-4ff8509599f7","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_action_id":"00000000-0000-0000-0000-000000000000","executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectActiveflowID: uuid.FromStringOrNil("8abf67b2-cb2c-11ed-997d-4ff8509599f7"),
+			expectRes:          `{"id":"8abf67b2-cb2c-11ed-997d-4ff8509599f7","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_action_id":"00000000-0000-0000-0000-000000000000","executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -365,11 +354,10 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowDelete(req.Context(), &tt.agent, tt.callID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowDelete(req.Context(), &tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -389,12 +377,12 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 		name  string
 		agent amagent.Agent
 
-		reqQuery     string
-		activeflowID uuid.UUID
+		reqQuery string
 
 		responseActiveflow *fmactiveflow.WebhookMessage
 
-		expectRes string
+		expectActiveflowID uuid.UUID
+		expectRes          string
 	}{
 		{
 			name: "normal",
@@ -404,14 +392,14 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 				},
 			},
 
-			reqQuery:     "/v1.0/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop",
-			activeflowID: uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4"),
+			reqQuery: "/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop",
 
 			responseActiveflow: &fmactiveflow.WebhookMessage{
 				ID: uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4"),
 			},
 
-			expectRes: `{"id":"da10d24c-cb2c-11ed-be08-1fca5d4747f4","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_action_id":"00000000-0000-0000-0000-000000000000","executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectActiveflowID: uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4"),
+			expectRes:          `{"id":"da10d24c-cb2c-11ed-be08-1fca5d4747f4","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_action_id":"00000000-0000-0000-0000-000000000000","executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -431,11 +419,10 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowStop(req.Context(), &tt.agent, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowStop(req.Context(), &tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -41,7 +41,7 @@ func Test_billingsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billings?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/billings?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
 			responseBillings: []*bmbilling.WebhookMessage{
 				{
@@ -62,7 +62,7 @@ func Test_billingsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/billings?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/billings?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
 			responseBillings: []*bmbilling.WebhookMessage{
 				{
@@ -101,8 +101,7 @@ func Test_billingsGET(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 

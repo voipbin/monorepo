@@ -2,9 +2,12 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	fmaction "monorepo/bin-flow-manager/models/action"
+
+	"github.com/gofrs/uuid"
 )
 
 type Server interface{}
@@ -19,19 +22,52 @@ func NewServer(serviceHandler servicehandler.ServiceHandler) openapi_server.Serv
 	}
 }
 
-func MarshalUnmarshal[T any](input interface{}) (T, error) {
-	marshal, err := json.Marshal(input)
-	if err != nil {
-		return *new(T), fmt.Errorf("could not marshal the data: %w", err)
+func ConvertCommonAddress(ca openapi_server.CommonAddress) commonaddress.Address {
+	safeString := func(s *string) string {
+		if s != nil {
+			return *s
+		}
+		return ""
 	}
 
-	var result T
-	err = json.Unmarshal(marshal, &result)
-	if err != nil {
-		return *new(T), fmt.Errorf("could not unmarshal the data: %w", err)
+	return commonaddress.Address{
+		Type:       commonaddress.Type(safeString((*string)(ca.Type))),
+		Target:     safeString(ca.Target),
+		TargetName: safeString(ca.TargetName),
+		Name:       safeString(ca.Name),
+		Detail:     safeString(ca.Detail),
+	}
+}
+
+func ConvertFlowManagerAction(fma openapi_server.FlowManagerAction) fmaction.Action {
+	id := uuid.FromStringOrNil(fma.Id)
+
+	nextID := uuid.Nil
+	if fma.NextId != nil && *fma.NextId != "" {
+		nextID = uuid.FromStringOrNil(*fma.NextId)
 	}
 
-	return result, nil
+	var option json.RawMessage
+	if fma.Option != nil {
+		optionBytes, err := json.Marshal(fma.Option)
+		if err == nil {
+			option = optionBytes
+		}
+	}
+
+	res := fmaction.Action{
+		ID:        id,
+		NextID:    nextID,
+		Type:      fmaction.Type(fma.Type),
+		Option:    option,
+		TMExecute: "",
+	}
+
+	if fma.TmExecute != nil {
+		res.TMExecute = *fma.TmExecute
+	}
+
+	return res
 }
 
 func stringPtr(s string) *string {

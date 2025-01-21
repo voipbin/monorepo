@@ -2,9 +2,7 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/api/models/request"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -24,7 +22,8 @@ func Test_PostAgents(t *testing.T) {
 	tests := []struct {
 		name  string
 		agent amagent.Agent
-		req   request.BodyAgentsPOST
+
+		reqBody []byte
 
 		responseAgent *amagent.WebhookMessage
 
@@ -36,26 +35,17 @@ func Test_PostAgents(t *testing.T) {
 		expectedPermission amagent.Permission
 		expectedTagIDs     []uuid.UUID
 		expectedAddresses  []commonaddress.Address
-		expectedRes        string
+		expectRes          string
 	}{
 		{
-			name: "normal",
+			name: "full data",
 			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7cb6256c-8df4-11ee-bc2b-476ff1dc3eb8"),
 				},
 			},
 
-			req: request.BodyAgentsPOST{
-				Username:   "test1",
-				Password:   "password1",
-				Name:       "test1 name",
-				Detail:     "test1 detail",
-				RingMethod: "ringall",
-				Permission: 0,
-				TagIDs:     []uuid.UUID{},
-				Addresses:  []commonaddress.Address{},
-			},
+			reqBody: []byte(`{"username":"test1","password":"password1","name":"test1 name","detail":"test1 detail","ring_method":"ringall","permission":255,"tag_ids":["682374ac-d7c6-11ef-8f43-8f2c18384cd4","70100856-d7c6-11ef-9eeb-d389722f0caf"],"addresses":[{"type":"tel","target":"+123456789"}]}`),
 
 			responseAgent: &amagent.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -68,29 +58,28 @@ func Test_PostAgents(t *testing.T) {
 			expectedName:       "test1 name",
 			expectedDetail:     "test1 detail",
 			expectedRingMethod: amagent.RingMethodRingAll,
-			expectedPermission: 0,
-			expectedTagIDs:     []uuid.UUID{},
-			expectedAddresses:  []commonaddress.Address{},
-			expectedRes:        `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectedPermission: 255,
+			expectedTagIDs: []uuid.UUID{
+				uuid.FromStringOrNil("682374ac-d7c6-11ef-8f43-8f2c18384cd4"),
+				uuid.FromStringOrNil("70100856-d7c6-11ef-9eeb-d389722f0caf"),
+			},
+			expectedAddresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+123456789",
+				},
+			},
+			expectRes: `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 		{
-			name: "have webhook",
+			name: "empty",
 			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7cf444aa-8df4-11ee-abd9-b762d225dc87"),
 				},
 			},
 
-			req: request.BodyAgentsPOST{
-				Username:   "test1",
-				Password:   "password1",
-				Name:       "test1 name",
-				Detail:     "test1 detail",
-				RingMethod: "ringall",
-				Permission: 0,
-				TagIDs:     []uuid.UUID{},
-				Addresses:  []commonaddress.Address{},
-			},
+			reqBody: []byte(`{}`),
 
 			responseAgent: &amagent.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -98,15 +87,15 @@ func Test_PostAgents(t *testing.T) {
 				},
 			},
 
-			expectedUsername:   "test1",
-			expectedPassword:   "password1",
-			expectedName:       "test1 name",
-			expectedDetail:     "test1 detail",
+			expectedUsername:   "",
+			expectedPassword:   "",
+			expectedName:       "",
+			expectedDetail:     "",
 			expectedRingMethod: amagent.RingMethodRingAll,
 			expectedPermission: 0,
 			expectedTagIDs:     []uuid.UUID{},
 			expectedAddresses:  []commonaddress.Address{},
-			expectedRes:        `{"id":"3071bee2-79af-11ec-9f30-83b56e9d88b5","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:          `{"id":"3071bee2-79af-11ec-9f30-83b56e9d88b5","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		}}
 
 	for _, tt := range tests {
@@ -125,15 +114,9 @@ func Test_PostAgents(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
-			body, err := json.Marshal(tt.req)
-			if err != nil {
-				t.Errorf("Wong match. expect: ok, got: %v", err)
-			}
-
-			req, _ := http.NewRequest("POST", "/v1.0/agents", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", "/agents", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().AgentCreate(req.Context(), &tt.agent, tt.expectedUsername, tt.expectedPassword, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod, tt.expectedPermission, tt.expectedTagIDs, tt.expectedAddresses).Return(tt.responseAgent, nil)
@@ -143,8 +126,8 @@ func Test_PostAgents(t *testing.T) {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
 
-			if w.Body.String() != tt.expectedRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}
@@ -153,8 +136,9 @@ func Test_PostAgents(t *testing.T) {
 func Test_GetAgents(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		agent    amagent.Agent
+		name  string
+		agent amagent.Agent
+
 		reqQuery string
 
 		responseAgents []*amagent.WebhookMessage
@@ -171,7 +155,8 @@ func Test_GetAgents(t *testing.T) {
 					ID: uuid.FromStringOrNil("7d2835bc-8df4-11ee-bde2-377a8d7b62a2"),
 				},
 			},
-			reqQuery: "/v1.0/agents?page_size=11&page_token=2020-09-20T03:23:20.995000&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3",
+
+			reqQuery: "/agents?page_size=11&page_token=2020-09-20T03:23:20.995000&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3",
 
 			responseAgents: []*amagent.WebhookMessage{
 				{
@@ -198,7 +183,8 @@ func Test_GetAgents(t *testing.T) {
 					ID: uuid.FromStringOrNil("7d5c0be4-8df4-11ee-866d-e7d040a2316f"),
 				},
 			},
-			reqQuery: "/v1.0/agents?page_size=10&page_token=&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3&status=available",
+
+			reqQuery: "/agents?page_size=10&page_token=&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3&status=available",
 
 			responseAgents: []*amagent.WebhookMessage{
 				{
@@ -226,7 +212,8 @@ func Test_GetAgents(t *testing.T) {
 					ID: uuid.FromStringOrNil("7d961122-8df4-11ee-8e1b-9bd95bec6c75"),
 				},
 			},
-			reqQuery: "/v1.0/agents?page_size=10&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c&status=available",
+
+			reqQuery: "/agents?page_size=10&tag_ids=b79599f2-4f2a-11ec-b49d-df70a67f68d3,39fa07ce-4fb8-11ec-8e5b-db7c7886455c&status=available",
 
 			responseAgents: []*amagent.WebhookMessage{
 				{
@@ -269,8 +256,7 @@ func Test_GetAgents(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
@@ -312,7 +298,7 @@ func Test_PutAgentsIdStatus(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/status",
+			reqQuery: "/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/status",
 			reqBody:  []byte(`{"status":"available"}`),
 
 			responseAgent: &amagent.WebhookMessage{
@@ -343,8 +329,7 @@ func Test_PutAgentsIdStatus(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
@@ -385,7 +370,7 @@ func Test_PutAgentsIdPermission(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/permission",
+			reqQuery: "/agents/a8ba6662-540a-11ec-9a9f-b31de1a77615/permission",
 			reqBody:  []byte(`{"permission":32}`),
 
 			responseAgent: &amagent.WebhookMessage{
@@ -416,8 +401,7 @@ func Test_PutAgentsIdPermission(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
@@ -458,7 +442,7 @@ func Test_PutAgentsIdPassword(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/agents/d3481932-d3cf-11ee-ab64-5b6368efe4ce/password",
+			reqQuery: "/agents/d3481932-d3cf-11ee-ab64-5b6368efe4ce/password",
 			reqBody:  []byte(`{"password":"updatepassword"}`),
 
 			responseAgent: &amagent.WebhookMessage{
@@ -489,8 +473,7 @@ func Test_PutAgentsIdPassword(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 

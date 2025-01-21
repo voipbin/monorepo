@@ -94,13 +94,9 @@ func (h *server) PostActiveflows(c *gin.Context) {
 
 	actions := []fmaction.Action{}
 	if req.Actions != nil {
-		tmp, err := MarshalUnmarshal[[]fmaction.Action](req.Actions)
-		if err != nil {
-			log.Errorf("Could not marshal the data. err: %v", err)
-			c.AbortWithStatus(400)
-			return
+		for _, v := range *req.Actions {
+			actions = append(actions, ConvertFlowManagerAction(v))
 		}
-		actions = tmp
 	}
 
 	res, err := h.serviceHandler.ActiveflowCreate(c.Request.Context(), &a, id, flowID, actions)

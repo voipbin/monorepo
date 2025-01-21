@@ -3,16 +3,17 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
-	commonaddress "monorepo/bin-common-handler/models/address"
+	cmcampaign "monorepo/bin-campaign-manager/models/campaign"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
-func (h *server) GetAgents(c *gin.Context, params openapi_server.GetAgentsParams) {
+func (h *server) PostCampaigns(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetAgents",
+		"func":            "PostCampaigns",
 		"request_address": c.ClientIP,
 	})
 
@@ -24,8 +25,52 @@ func (h *server) GetAgents(c *gin.Context, params openapi_server.GetAgentsParams
 	}
 	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
+		"agent": a,
+	})
+
+	var req openapi_server.PostCampaignsJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	actions := []fmaction.Action{}
+	for _, v := range req.Actions {
+		tmp := ConvertFlowManagerAction(v)
+		actions = append(actions, tmp)
+	}
+
+	outplanID := uuid.FromStringOrNil(req.OutplanId)
+	outdialID := uuid.FromStringOrNil(req.OutdialId)
+	queueID := uuid.FromStringOrNil(req.QueueId)
+	nextCampaignID := uuid.FromStringOrNil(req.NextCampaignId)
+
+	res, err := h.serviceHandler.CampaignCreate(c.Request.Context(), &a, req.Name, req.Detail, cmcampaign.Type(req.Type), req.ServiceLevel, cmcampaign.EndHandle(req.EndHandle), actions, outplanID, outdialID, queueID, nextCampaignID)
+	if err != nil {
+		log.Errorf("Could not create a campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) GetCampaigns(c *gin.Context, params openapi_server.GetCampaignsParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetCampaigns",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
 	})
 
 	pageSize := uint64(100)
@@ -42,22 +87,9 @@ func (h *server) GetAgents(c *gin.Context, params openapi_server.GetAgentsParams
 		pageToken = *params.PageToken
 	}
 
-	filters := map[string]string{
-		"customer_id": a.CustomerID.String(),
-		"deleted":     "false",
-	}
-
-	if params.TagIds != nil {
-		filters["tag_ids"] = *params.TagIds
-	}
-
-	if params.Status != nil && string(*params.Status) != string(amagent.StatusNone) {
-		filters["status"] = string(*params.Status)
-	}
-
-	tmps, err := h.serviceHandler.AgentGets(c.Request.Context(), &a, pageSize, pageToken, filters)
+	tmps, err := h.serviceHandler.CampaignGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
-		log.Errorf("Could not get agents info. err: %v", err)
+		log.Errorf("Could not get a campaign list. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -71,360 +103,9 @@ func (h *server) GetAgents(c *gin.Context, params openapi_server.GetAgentsParams
 	c.JSON(200, res)
 }
 
-func (h *server) PostAgents(c *gin.Context) {
+func (h *server) GetCampaignsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostAgents",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	var req openapi_server.PostAgentsJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	username := ""
-	if req.Username != nil {
-		username = *req.Username
-	}
-
-	password := ""
-	if req.Password != nil {
-		password = *req.Password
-	}
-
-	name := ""
-	if req.Name != nil {
-		name = *req.Name
-	}
-
-	detail := ""
-	if req.Detail != nil {
-		detail = *req.Detail
-	}
-
-	ringMethod := amagent.RingMethodRingAll
-	if req.RingMethod != nil {
-		ringMethod = string(*req.RingMethod)
-	}
-
-	permission := amagent.PermissionNone
-	if req.Permission != nil {
-		permission = amagent.Permission(*req.Permission)
-	}
-
-	tagIDs := []uuid.UUID{}
-	if req.TagIds != nil {
-		for _, v := range *req.TagIds {
-			tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
-		}
-	}
-
-	addresses := []commonaddress.Address{}
-	if req.Addresses != nil {
-		for _, v := range *req.Addresses {
-			addresses = append(addresses, ConvertCommonAddress(v))
-		}
-	}
-
-	res, err := h.serviceHandler.AgentCreate(c.Request.Context(), &a, username, password, name, detail, amagent.RingMethod(ringMethod), permission, tagIDs, addresses)
-	if err != nil {
-		log.Errorf("Could not create a flow for outoing call. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) GetAgentsId(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetAgentsId",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	res, err := h.serviceHandler.AgentGet(c.Request.Context(), &a, target)
-	if err != nil {
-		log.Infof("Could not get the agent info. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) DeleteAgentsId(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "DeleteAgentsId",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	res, err := h.serviceHandler.AgentDelete(c.Request.Context(), &a, target)
-	if err != nil {
-		log.Infof("Could not get the delete the agent info. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) PutAgentsId(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutAgentsId",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	var req openapi_server.PutAgentsIdJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	name := ""
-	if req.Name != nil {
-		name = *req.Name
-	}
-
-	detail := ""
-	if req.Detail != nil {
-		detail = *req.Detail
-	}
-
-	ringMethod := amagent.RingMethodRingAll
-	if req.RingMethod != nil {
-		ringMethod = string(*req.RingMethod)
-	}
-
-	// update the agent
-	res, err := h.serviceHandler.AgentUpdate(c.Request.Context(), &a, target, name, detail, amagent.RingMethod(ringMethod))
-	if err != nil {
-		log.Errorf("Could not update the agent. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) PutAgentsIdAddresses(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutAgentsIdAddresses",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	var req openapi_server.PutAgentsIdAddressesJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	addresses := []commonaddress.Address{}
-	if req.Addresses != nil {
-		for _, v := range *req.Addresses {
-			addresses = append(addresses, ConvertCommonAddress(v))
-		}
-	}
-
-	res, err := h.serviceHandler.AgentUpdateAddresses(c.Request.Context(), &a, target, addresses)
-	if err != nil {
-		log.Errorf("Could not update the agent. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) PutAgentsIdTagIds(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutAgentsIdTagIds",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	var req openapi_server.PutAgentsIdTagIdsJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	tagIDs := []uuid.UUID{}
-	if req.TagIds != nil {
-		for _, v := range *req.TagIds {
-			tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
-		}
-	}
-
-	res, err := h.serviceHandler.AgentUpdateTagIDs(c.Request.Context(), &a, target, tagIDs)
-	if err != nil {
-		log.Errorf("Could not update the agent. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) PutAgentsIdStatus(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutAgentsIdStatus",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent":    a,
-		"username": a.Username,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	var req openapi_server.PutAgentsIdStatusJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	status := amagent.StatusNone
-	if req.Status != nil {
-		status = amagent.Status(*req.Status)
-	}
-
-	res, err := h.serviceHandler.AgentUpdateStatus(c.Request.Context(), &a, target, status)
-	if err != nil {
-		log.Errorf("Could not update the agent's status. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) PutAgentsIdPermission(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutAgentsIdPermission",
+		"func":            "GetCampaignsId",
 		"request_address": c.ClientIP,
 	})
 
@@ -446,21 +127,9 @@ func (h *server) PutAgentsIdPermission(c *gin.Context, id string) {
 		return
 	}
 
-	var req openapi_server.PutAgentsIdPermissionJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	permission := amagent.PermissionNone
-	if req.Permission != nil {
-		permission = amagent.Permission(*req.Permission)
-	}
-
-	res, err := h.serviceHandler.AgentUpdatePermission(c.Request.Context(), &a, target, permission)
+	res, err := h.serviceHandler.CampaignGet(c.Request.Context(), &a, target)
 	if err != nil {
-		log.Errorf("Could not update the agent's permission. err: %v", err)
+		log.Errorf("Could not get a campaign. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
@@ -468,9 +137,9 @@ func (h *server) PutAgentsIdPermission(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
-func (h *server) PutAgentsIdPassword(c *gin.Context, id string) {
+func (h *server) DeleteCampaignsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutAgentsIdPassword",
+		"func":            "campaignsIDDELETE",
 		"request_address": c.ClientIP,
 	})
 
@@ -492,29 +161,325 @@ func (h *server) PutAgentsIdPassword(c *gin.Context, id string) {
 		return
 	}
 
-	var req openapi_server.PutAgentsIdPasswordJSONBody
+	res, err := h.serviceHandler.CampaignDelete(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not delete the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PutCampaignsId(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "campaignsIDPUT",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCampaignsIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	password := ""
-	if req.Password != nil {
-		password = *req.Password
-	}
-	if password == "" {
-		log.Error("Empty password is not valid.")
-		c.AbortWithStatus(400)
-		return
-	}
-
-	res, err := h.serviceHandler.AgentUpdatePassword(c.Request.Context(), &a, target, password)
+	res, err := h.serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), &a, target, req.Name, req.Detail, cmcampaign.Type(req.Type), req.ServiceLevel, cmcampaign.EndHandle(req.EndHandle))
 	if err != nil {
-		log.Errorf("Could not update the agent's password. err: %v", err)
+		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
+	c.JSON(200, res)
+}
+
+func (h *server) PutCampaignsIdStatus(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutCampaignsIdStatus",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCampaignsIdStatusJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.CampaignUpdateStatus(c.Request.Context(), &a, target, cmcampaign.Status(req.Status))
+	if err != nil {
+		log.Errorf("Could not update the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PutCampaignsIdServiceLevel(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "campaignsIDServiceLevelPUT",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCampaignsIdServiceLevelJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.CampaignUpdateServiceLevel(c.Request.Context(), &a, target, req.ServiceLevel)
+	if err != nil {
+		log.Errorf("Could not update the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PutCampaignsIdActions(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "campaignsIDActionsPUT",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCampaignsIdActionsJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	actions := []fmaction.Action{}
+	for _, v := range req.Actions {
+		tmp := ConvertFlowManagerAction(v)
+		actions = append(actions, tmp)
+	}
+
+	res, err := h.serviceHandler.CampaignUpdateActions(c.Request.Context(), &a, target, actions)
+	if err != nil {
+		log.Errorf("Could not update the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PutCampaignsIdResourceInfo(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutCampaignsIdResourceInfo",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCampaignsIdResourceInfoJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	outplanID := uuid.FromStringOrNil(req.OutplanId)
+	outdialID := uuid.FromStringOrNil(req.OutdialId)
+	queueID := uuid.FromStringOrNil(req.QueueId)
+	nextCampaignID := uuid.FromStringOrNil(req.NextCampaignId)
+
+	res, err := h.serviceHandler.CampaignUpdateResourceInfo(c.Request.Context(), &a, target, outplanID, outdialID, queueID, nextCampaignID)
+	if err != nil {
+		log.Errorf("Could not update the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PutCampaignsIdNextCampaignId(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutCampaignsIdNextCampaignId",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCampaignsIdNextCampaignIdJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextCampaignID := uuid.FromStringOrNil(req.NextCampaignId)
+
+	res, err := h.serviceHandler.CampaignUpdateNextCampaignID(c.Request.Context(), &a, target, nextCampaignID)
+	if err != nil {
+		log.Errorf("Could not update the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) GetCampaignsIdCampaigncalls(c *gin.Context, id string, params openapi_server.GetCampaignsIdCampaigncallsParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetCampaignsIdCampaigncalls",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.CampaigncallGetsByCampaignID(c.Request.Context(), &a, target, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get a campaign list. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(tmps) > 0 {
+		nextToken = tmps[len(tmps)-1].TMCreate
+	}
+
+	res := GenerateListResponse(tmps, nextToken)
 	c.JSON(200, res)
 }

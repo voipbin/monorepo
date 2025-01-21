@@ -8,8 +8,6 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -46,38 +44,24 @@ func (h *server) PostCalls(c *gin.Context) {
 
 	actions := []fmaction.Action{}
 	if req.Actions != nil {
-		tmp, err := MarshalUnmarshal[[]fmaction.Action](req.Actions)
-		if err != nil {
-			log.Errorf("Could not marshal the data. err: %v", err)
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
+		for _, v := range *req.Actions {
+			actions = append(actions, ConvertFlowManagerAction(v))
 		}
-		actions = tmp
 	}
 
 	source := commonaddress.Address{}
 	if req.Source != nil {
-		tmp, err := MarshalUnmarshal[commonaddress.Address](req.Source)
-		if err != nil {
-			log.Errorf("Could not marshal the data. err: %v", err)
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-		source = tmp
+		source = ConvertCommonAddress(*req.Source)
 	}
 
 	destinations := []commonaddress.Address{}
 	if req.Destinations != nil {
-		tmp, err := MarshalUnmarshal[[]commonaddress.Address](req.Destinations)
-		if err != nil {
-			log.Errorf("Could not marshal the data. err: %v", err)
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
+
+		for _, v := range *req.Destinations {
+			destinations = append(destinations, ConvertCommonAddress(v))
 		}
-		destinations = tmp
 	}
 
-	// create call
 	tmpCalls, tmpGroupcalls, err := h.serviceHandler.CallCreate(c.Request.Context(), &a, flowID, actions, &source, destinations)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)

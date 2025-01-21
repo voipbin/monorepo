@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -40,14 +41,14 @@ func Test_CallsPOST(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "normal",
+			name: "full data",
 			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
 			},
 
-			reqBody: []byte(`{"source":{"type":"sip","target":"source@test.voipbin.net"},"destinations":[{"type":"sip","target":"destination@test.voipbin.net"}]}}`),
+			reqBody: []byte(`{"source":{"type":"sip","target":"source@test.voipbin.net"},"destinations":[{"type":"sip","target":"destination@test.voipbin.net"}],"flow_id":"f0f80af2-d7c8-11ef-bc6a-03858a6b220f","actions":[{"type":"answer"}]}`),
 
 			responseCalls: []*cmcall.WebhookMessage{
 				{
@@ -64,8 +65,13 @@ func Test_CallsPOST(t *testing.T) {
 				},
 			},
 
-			expectFlowID:  uuid.Nil,
-			expectActions: []fmaction.Action{},
+			expectFlowID: uuid.FromStringOrNil("f0f80af2-d7c8-11ef-bc6a-03858a6b220f"),
+			expectActions: []fmaction.Action{
+				{
+					Type:   fmaction.TypeAnswer,
+					Option: json.RawMessage(`{}`),
+				},
+			},
 			expectSource: &commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
 				Target: "source@test.voipbin.net",
@@ -97,11 +103,9 @@ func Test_CallsPOST(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
-			req, _ := http.NewRequest("POST", "/v1.0/calls", bytes.NewBuffer(tt.reqBody))
-
+			req, _ := http.NewRequest("POST", "/calls", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().CallCreate(req.Context(), &tt.agent, tt.expectFlowID, tt.expectActions, tt.expectSource, tt.expectDestinations).Return(tt.responseCalls, tt.responseGroupcalls, nil)
@@ -143,7 +147,7 @@ func Test_CallsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/calls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
 			responseCalls: []*cmcall.WebhookMessage{
 				{
@@ -166,7 +170,7 @@ func Test_CallsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/calls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 
 			responseCalls: []*cmcall.WebhookMessage{
 				{
@@ -212,8 +216,7 @@ func Test_CallsGET(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
@@ -238,7 +241,8 @@ func Test_CallsIDGET(t *testing.T) {
 		agent amagent.Agent
 
 		reqQuery string
-		resCall  *cmcall.WebhookMessage
+
+		responseCall *cmcall.WebhookMessage
 
 		expectRes string
 	}
@@ -252,8 +256,9 @@ func Test_CallsIDGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/395518ca-830a-11eb-badc-b3582bc51917",
-			resCall: &cmcall.WebhookMessage{
+			reqQuery: "/calls/395518ca-830a-11eb-badc-b3582bc51917",
+
+			responseCall: &cmcall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
 				},
@@ -281,12 +286,11 @@ func Test_CallsIDGET(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CallGet(req.Context(), &tt.agent, tt.resCall.ID).Return(tt.resCall, nil)
+			mockSvc.EXPECT().CallGet(req.Context(), &tt.agent, tt.responseCall.ID).Return(tt.responseCall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -320,7 +324,7 @@ func Test_callsIDDELETE(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/72709904-719c-11ed-94f7-b78b75ad5dce",
+			reqQuery: "/calls/72709904-719c-11ed-94f7-b78b75ad5dce",
 
 			responseCall: &cmcall.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -350,8 +354,7 @@ func Test_callsIDDELETE(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			mockSvc.EXPECT().CallDelete(req.Context(), &tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
@@ -389,7 +392,7 @@ func Test_callsIDHangupPOST(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/09b9bf4c-8927-11ed-b16c-5719373564c9/hangup",
+			reqQuery: "/calls/09b9bf4c-8927-11ed-b16c-5719373564c9/hangup",
 
 			responseCall: &cmcall.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -419,8 +422,7 @@ func Test_callsIDHangupPOST(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			mockSvc.EXPECT().CallHangup(req.Context(), &tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
@@ -461,7 +463,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
+			reqQuery: "/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
 			reqBody:  []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
 
 			expectCallID:   uuid.FromStringOrNil("ed229366-a4b7-11ed-bfe7-b38647d68a3d"),
@@ -488,8 +490,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
@@ -524,7 +525,7 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/eb763a4a-cf0f-11ed-a989-8fbebcdb62c2/hold",
+			reqQuery: "/calls/eb763a4a-cf0f-11ed-a989-8fbebcdb62c2/hold",
 
 			expectCallID: uuid.FromStringOrNil("eb763a4a-cf0f-11ed-a989-8fbebcdb62c2"),
 		},
@@ -547,8 +548,7 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
@@ -583,7 +583,7 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/ebbb2f06-cf0f-11ed-be2c-27600beaf155/hold",
+			reqQuery: "/calls/ebbb2f06-cf0f-11ed-be2c-27600beaf155/hold",
 
 			expectCallID: uuid.FromStringOrNil("ebbb2f06-cf0f-11ed-be2c-27600beaf155"),
 		},
@@ -606,8 +606,7 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
@@ -644,7 +643,7 @@ func Test_CallsIDMutePOST(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/ebeb87b4-cf0f-11ed-bd36-5f06aa4155f5/mute",
+			reqQuery: "/calls/ebeb87b4-cf0f-11ed-bd36-5f06aa4155f5/mute",
 			reqBody:  []byte(`{"direction":"both"}`),
 
 			expectCallID:    uuid.FromStringOrNil("ebeb87b4-cf0f-11ed-bd36-5f06aa4155f5"),
@@ -669,8 +668,7 @@ func Test_CallsIDMutePOST(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
@@ -707,7 +705,7 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/97b7fadc-cf10-11ed-b07a-7b718bb9eef9/mute",
+			reqQuery: "/calls/97b7fadc-cf10-11ed-b07a-7b718bb9eef9/mute",
 			reqBody:  []byte(`{"direction":"both"}`),
 
 			expectCallID:    uuid.FromStringOrNil("97b7fadc-cf10-11ed-b07a-7b718bb9eef9"),
@@ -732,8 +730,7 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
@@ -768,7 +765,7 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/4c72ec78-d13e-11ed-b853-cff593bdd1af/moh",
+			reqQuery: "/calls/4c72ec78-d13e-11ed-b853-cff593bdd1af/moh",
 
 			expectCallID: uuid.FromStringOrNil("4c72ec78-d13e-11ed-b853-cff593bdd1af"),
 		},
@@ -791,8 +788,7 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
@@ -827,7 +823,7 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/4cb3b1ae-d13e-11ed-a27d-f78da612d3c4/moh",
+			reqQuery: "/calls/4cb3b1ae-d13e-11ed-a27d-f78da612d3c4/moh",
 
 			expectCallID: uuid.FromStringOrNil("4cb3b1ae-d13e-11ed-a27d-f78da612d3c4"),
 		},
@@ -850,8 +846,7 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
@@ -886,7 +881,7 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/836320ae-d13e-11ed-9b0c-efff68751c5a/silence",
+			reqQuery: "/calls/836320ae-d13e-11ed-9b0c-efff68751c5a/silence",
 
 			expectCallID: uuid.FromStringOrNil("836320ae-d13e-11ed-9b0c-efff68751c5a"),
 		},
@@ -909,8 +904,7 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
@@ -945,7 +939,7 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/839a7b62-d13e-11ed-9448-e71729a96494/silence",
+			reqQuery: "/calls/839a7b62-d13e-11ed-9448-e71729a96494/silence",
 
 			expectCallID: uuid.FromStringOrNil("839a7b62-d13e-11ed-9448-e71729a96494"),
 		},
@@ -968,8 +962,7 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
@@ -1005,7 +998,7 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/v1.0/calls/906c71fe-e922-11ee-808c-a721a8e44e90/media_stream?encapsulation=rtp",
+			reqQuery: "/calls/906c71fe-e922-11ee-808c-a721a8e44e90/media_stream?encapsulation=rtp",
 
 			expectCallID:        uuid.FromStringOrNil("906c71fe-e922-11ee-808c-a721a8e44e90"),
 			expectEncapsulation: "rtp",
@@ -1029,8 +1022,7 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 			r.Use(func(c *gin.Context) {
 				c.Set("agent", tt.agent)
 			})
-			v1 := r.RouterGroup.Group("v1.0")
-			openapi_server.RegisterHandlers(v1, h)
+			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")

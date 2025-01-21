@@ -40,11 +40,17 @@ put:
               description: Updated details of the campaign
             type:
               $ref: '#/components/schemas/CampaignManagerCampaignType'
-            serviceLevel:
-              type: number
+            service_level:
+              type: integer
               description: Updated service level of the campaign
-            endHandle:
+            end_handle:
               $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
+          required:
+            - name
+            - detail
+            - type
+            - service_level
+            - end_handle
   responses:
     '200':
       content:
