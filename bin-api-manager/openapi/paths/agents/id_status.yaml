@@ -1,6 +1,6 @@
 put:
-  summary: Update an agent's permission
-  description: Update an agent's permission and return updated details.
+  summary: Update an agent's status
+  description: Update an agent's status and return updated details.
   parameters:
     - name: id
       in: path
@@ -15,8 +15,8 @@ put:
         schema:
           type: object
           properties:
-            permission:
-              $ref: '#/components/schemas/AgentManagerAgentPermission'
+            status:
+              $ref: '#/components/schemas/AgentManagerAgentStatus'
   responses:
     '200':
       description: Successful response.

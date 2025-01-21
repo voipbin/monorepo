@@ -15,7 +15,7 @@ put:
         schema:
           type: object
           properties:
-            TagIDs:
+            tag_ids:
               type: array
               items:
                 type: string

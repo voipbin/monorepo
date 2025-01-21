@@ -42,23 +42,23 @@ post:
         schema:
           type: object
           properties:
-            Username:
+            username:
               type: string
-            Password:
+            password:
               type: string
-            Name:
+            name:
               type: string
-            Detail:
+            detail:
               type: string
-            RingMethod:
+            ring_method:
               $ref: '#/components/schemas/AgentManagerAgentRingMethod'
-            Permission:
+            permission:
               $ref: '#/components/schemas/AgentManagerAgentPermission'
-            TagIDs:
+            tag_ids:
               type: array
               items:
                 type: string
-            Addresses:
+            addresses:
               type: array
               items:
                 $ref: '#/components/schemas/CommonAddress'

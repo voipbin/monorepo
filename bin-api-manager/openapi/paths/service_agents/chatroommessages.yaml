@@ -6,7 +6,16 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/ChatManagerMessagechatroom'
+          type: object
+          properties:
+            chatroom_id:
+              type: string
+            text:
+              type: string
+            medias:
+              type: array
+                items:
+                  $ref: '#/components/schemas/ChatManagerMedia'
   responses:
     '200':
       description: The details of the created chatroom message.

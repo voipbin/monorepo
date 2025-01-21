@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/oapi-codegen/runtime"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for AgentManagerAgentPermission.
@@ -933,17 +932,17 @@ type CallManagerRecordingStatus string
 // CampaignManagerCampaign defines model for CampaignManagerCampaign.
 type CampaignManagerCampaign struct {
 	Actions    *[]FlowManagerAction `json:"actions,omitempty"`
-	CustomerId *openapi_types.UUID  `json:"customer_id,omitempty"`
+	CustomerId *string              `json:"customer_id,omitempty"`
 	Detail     *string              `json:"detail,omitempty"`
 
 	// EndHandle Behavior of the campaign after outdial has no more targets.
 	EndHandle      *CampaignManagerCampaignEndHandle `json:"end_handle,omitempty"`
-	Id             *openapi_types.UUID               `json:"id,omitempty"`
+	Id             *string                           `json:"id,omitempty"`
 	Name           *string                           `json:"name,omitempty"`
-	NextCampaignId *openapi_types.UUID               `json:"next_campaign_id,omitempty"`
-	OutdialId      *openapi_types.UUID               `json:"outdial_id,omitempty"`
-	OutplanId      *openapi_types.UUID               `json:"outplan_id,omitempty"`
-	QueueId        *openapi_types.UUID               `json:"queue_id,omitempty"`
+	NextCampaignId *string                           `json:"next_campaign_id,omitempty"`
+	OutdialId      *string                           `json:"outdial_id,omitempty"`
+	OutplanId      *string                           `json:"outplan_id,omitempty"`
+	QueueId        *string                           `json:"queue_id,omitempty"`
 	ServiceLevel   *int                              `json:"service_level,omitempty"`
 
 	// Status Status of the campaign.
@@ -2452,6 +2451,128 @@ type PostActiveflowsJSONBody struct {
 	Id *string `json:"id,omitempty"`
 }
 
+// GetAgentsParams defines parameters for GetAgents.
+type GetAgentsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// TagIds Comma separated tag ids.
+	TagIds *string `form:"tag_ids,omitempty" json:"tag_ids,omitempty"`
+
+	// Status Agent status.
+	Status *AgentManagerAgentStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// PostAgentsJSONBody defines parameters for PostAgents.
+type PostAgentsJSONBody struct {
+	Addresses *[]CommonAddress `json:"addresses,omitempty"`
+	Detail    *string          `json:"detail,omitempty"`
+	Name      *string          `json:"name,omitempty"`
+	Password  *string          `json:"password,omitempty"`
+
+	// Permission Permission type
+	Permission *AgentManagerAgentPermission `json:"permission,omitempty"`
+
+	// RingMethod Represents an agent resource.
+	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
+	TagIds     *[]string                    `json:"tag_ids,omitempty"`
+	Username   *string                      `json:"username,omitempty"`
+}
+
+// PutAgentsIdJSONBody defines parameters for PutAgentsId.
+type PutAgentsIdJSONBody struct {
+	Detail *string `json:"detail,omitempty"`
+	Name   *string `json:"name,omitempty"`
+
+	// RingMethod Represents an agent resource.
+	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
+}
+
+// PutAgentsIdAddressesJSONBody defines parameters for PutAgentsIdAddresses.
+type PutAgentsIdAddressesJSONBody struct {
+	Addresses *[]CommonAddress `json:"addresses,omitempty"`
+}
+
+// PutAgentsIdPasswordJSONBody defines parameters for PutAgentsIdPassword.
+type PutAgentsIdPasswordJSONBody struct {
+	Password *string `json:"password,omitempty"`
+}
+
+// PutAgentsIdPermissionJSONBody defines parameters for PutAgentsIdPermission.
+type PutAgentsIdPermissionJSONBody struct {
+	// Permission Permission type
+	Permission *AgentManagerAgentPermission `json:"permission,omitempty"`
+}
+
+// PutAgentsIdStatusJSONBody defines parameters for PutAgentsIdStatus.
+type PutAgentsIdStatusJSONBody struct {
+	// Status Agent's status
+	Status *AgentManagerAgentStatus `json:"status,omitempty"`
+}
+
+// PutAgentsIdTagIdsJSONBody defines parameters for PutAgentsIdTagIds.
+type PutAgentsIdTagIdsJSONBody struct {
+	TagIds *[]string `json:"tag_ids,omitempty"`
+}
+
+// GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
+type GetAvailableNumbersParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// CountryCode The ISO country code.
+	CountryCode string `form:"country_code" json:"country_code"`
+}
+
+// GetBillingAccountsParams defines parameters for GetBillingAccounts.
+type GetBillingAccountsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostBillingAccountsJSONBody defines parameters for PostBillingAccounts.
+type PostBillingAccountsJSONBody struct {
+	Detail *string `json:"detail,omitempty"`
+	Name   *string `json:"name,omitempty"`
+
+	// PaymentMethod The method of payment used for the account.
+	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
+
+	// PaymentType The type of payment associated with the account.
+	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
+}
+
+// PutBillingAccountsIdJSONBody defines parameters for PutBillingAccountsId.
+type PutBillingAccountsIdJSONBody struct {
+	Detail *string `json:"detail,omitempty"`
+	Name   *string `json:"name,omitempty"`
+}
+
+// PostBillingAccountsIdBalanceAddForceJSONBody defines parameters for PostBillingAccountsIdBalanceAddForce.
+type PostBillingAccountsIdBalanceAddForceJSONBody struct {
+	Balance *float32 `json:"balance,omitempty"`
+}
+
+// PostBillingAccountsIdBalanceSubtractForceJSONBody defines parameters for PostBillingAccountsIdBalanceSubtractForce.
+type PostBillingAccountsIdBalanceSubtractForceJSONBody struct {
+	Balance *float32 `json:"balance,omitempty"`
+}
+
+// PutBillingAccountsIdPaymentInfoJSONBody defines parameters for PutBillingAccountsIdPaymentInfo.
+type PutBillingAccountsIdPaymentInfoJSONBody struct {
+	// PaymentMethod The method of payment used for the account.
+	PaymentMethod *BillingManagerAccountPaymentMethod `json:"payment_method,omitempty"`
+
+	// PaymentType The type of payment associated with the account.
+	PaymentType *BillingManagerAccountPaymentType `json:"payment_type,omitempty"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -2460,6 +2581,42 @@ type PutAccesskeysIdJSONRequestBody PutAccesskeysIdJSONBody
 
 // PostActiveflowsJSONRequestBody defines body for PostActiveflows for application/json ContentType.
 type PostActiveflowsJSONRequestBody PostActiveflowsJSONBody
+
+// PostAgentsJSONRequestBody defines body for PostAgents for application/json ContentType.
+type PostAgentsJSONRequestBody PostAgentsJSONBody
+
+// PutAgentsIdJSONRequestBody defines body for PutAgentsId for application/json ContentType.
+type PutAgentsIdJSONRequestBody PutAgentsIdJSONBody
+
+// PutAgentsIdAddressesJSONRequestBody defines body for PutAgentsIdAddresses for application/json ContentType.
+type PutAgentsIdAddressesJSONRequestBody PutAgentsIdAddressesJSONBody
+
+// PutAgentsIdPasswordJSONRequestBody defines body for PutAgentsIdPassword for application/json ContentType.
+type PutAgentsIdPasswordJSONRequestBody PutAgentsIdPasswordJSONBody
+
+// PutAgentsIdPermissionJSONRequestBody defines body for PutAgentsIdPermission for application/json ContentType.
+type PutAgentsIdPermissionJSONRequestBody PutAgentsIdPermissionJSONBody
+
+// PutAgentsIdStatusJSONRequestBody defines body for PutAgentsIdStatus for application/json ContentType.
+type PutAgentsIdStatusJSONRequestBody PutAgentsIdStatusJSONBody
+
+// PutAgentsIdTagIdsJSONRequestBody defines body for PutAgentsIdTagIds for application/json ContentType.
+type PutAgentsIdTagIdsJSONRequestBody PutAgentsIdTagIdsJSONBody
+
+// PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
+type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
+
+// PutBillingAccountsIdJSONRequestBody defines body for PutBillingAccountsId for application/json ContentType.
+type PutBillingAccountsIdJSONRequestBody PutBillingAccountsIdJSONBody
+
+// PostBillingAccountsIdBalanceAddForceJSONRequestBody defines body for PostBillingAccountsIdBalanceAddForce for application/json ContentType.
+type PostBillingAccountsIdBalanceAddForceJSONRequestBody PostBillingAccountsIdBalanceAddForceJSONBody
+
+// PostBillingAccountsIdBalanceSubtractForceJSONRequestBody defines body for PostBillingAccountsIdBalanceSubtractForce for application/json ContentType.
+type PostBillingAccountsIdBalanceSubtractForceJSONRequestBody PostBillingAccountsIdBalanceSubtractForceJSONBody
+
+// PutBillingAccountsIdPaymentInfoJSONRequestBody defines body for PutBillingAccountsIdPaymentInfo for application/json ContentType.
+type PutBillingAccountsIdPaymentInfoJSONRequestBody PutBillingAccountsIdPaymentInfoJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -2569,6 +2726,87 @@ type ClientInterface interface {
 
 	// PostActiveflowsIdStop request
 	PostActiveflowsIdStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAgents request
+	GetAgents(ctx context.Context, params *GetAgentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostAgentsWithBody request with any body
+	PostAgentsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostAgents(ctx context.Context, body PostAgentsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAgentsId request
+	DeleteAgentsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAgentsId request
+	GetAgentsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutAgentsIdWithBody request with any body
+	PutAgentsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutAgentsId(ctx context.Context, id string, body PutAgentsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutAgentsIdAddressesWithBody request with any body
+	PutAgentsIdAddressesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutAgentsIdAddresses(ctx context.Context, id string, body PutAgentsIdAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutAgentsIdPasswordWithBody request with any body
+	PutAgentsIdPasswordWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutAgentsIdPassword(ctx context.Context, id string, body PutAgentsIdPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutAgentsIdPermissionWithBody request with any body
+	PutAgentsIdPermissionWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutAgentsIdPermission(ctx context.Context, id string, body PutAgentsIdPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutAgentsIdStatusWithBody request with any body
+	PutAgentsIdStatusWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutAgentsIdStatus(ctx context.Context, id string, body PutAgentsIdStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutAgentsIdTagIdsWithBody request with any body
+	PutAgentsIdTagIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutAgentsIdTagIds(ctx context.Context, id string, body PutAgentsIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAvailableNumbers request
+	GetAvailableNumbers(ctx context.Context, params *GetAvailableNumbersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetBillingAccounts request
+	GetBillingAccounts(ctx context.Context, params *GetBillingAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostBillingAccountsWithBody request with any body
+	PostBillingAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostBillingAccounts(ctx context.Context, body PostBillingAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteBillingAccountsId request
+	DeleteBillingAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetBillingAccountsId request
+	GetBillingAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutBillingAccountsIdWithBody request with any body
+	PutBillingAccountsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutBillingAccountsId(ctx context.Context, id string, body PutBillingAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostBillingAccountsIdBalanceAddForceWithBody request with any body
+	PostBillingAccountsIdBalanceAddForceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostBillingAccountsIdBalanceAddForce(ctx context.Context, id string, body PostBillingAccountsIdBalanceAddForceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostBillingAccountsIdBalanceSubtractForceWithBody request with any body
+	PostBillingAccountsIdBalanceSubtractForceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostBillingAccountsIdBalanceSubtractForce(ctx context.Context, id string, body PostBillingAccountsIdBalanceSubtractForceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutBillingAccountsIdPaymentInfoWithBody request with any body
+	PutBillingAccountsIdPaymentInfoWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutBillingAccountsIdPaymentInfo(ctx context.Context, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccesskeys(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2717,6 +2955,378 @@ func (c *Client) GetActiveflowsId(ctx context.Context, id string, reqEditors ...
 
 func (c *Client) PostActiveflowsIdStop(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostActiveflowsIdStopRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAgents(ctx context.Context, params *GetAgentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAgentsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostAgentsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostAgentsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostAgents(ctx context.Context, body PostAgentsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostAgentsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAgentsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAgentsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAgentsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAgentsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsId(ctx context.Context, id string, body PutAgentsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdAddressesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdAddressesRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdAddresses(ctx context.Context, id string, body PutAgentsIdAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdAddressesRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdPasswordWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdPasswordRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdPassword(ctx context.Context, id string, body PutAgentsIdPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdPasswordRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdPermissionWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdPermissionRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdPermission(ctx context.Context, id string, body PutAgentsIdPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdPermissionRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdStatusWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdStatusRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdStatus(ctx context.Context, id string, body PutAgentsIdStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdStatusRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdTagIdsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdTagIdsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAgentsIdTagIds(ctx context.Context, id string, body PutAgentsIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAgentsIdTagIdsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAvailableNumbers(ctx context.Context, params *GetAvailableNumbersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAvailableNumbersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBillingAccounts(ctx context.Context, params *GetBillingAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBillingAccountsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostBillingAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostBillingAccountsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostBillingAccounts(ctx context.Context, body PostBillingAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostBillingAccountsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteBillingAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteBillingAccountsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBillingAccountsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBillingAccountsIdRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutBillingAccountsIdWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutBillingAccountsIdRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutBillingAccountsId(ctx context.Context, id string, body PutBillingAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutBillingAccountsIdRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostBillingAccountsIdBalanceAddForceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostBillingAccountsIdBalanceAddForceRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostBillingAccountsIdBalanceAddForce(ctx context.Context, id string, body PostBillingAccountsIdBalanceAddForceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostBillingAccountsIdBalanceAddForceRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostBillingAccountsIdBalanceSubtractForceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostBillingAccountsIdBalanceSubtractForceRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostBillingAccountsIdBalanceSubtractForce(ctx context.Context, id string, body PostBillingAccountsIdBalanceSubtractForceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostBillingAccountsIdBalanceSubtractForceRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutBillingAccountsIdPaymentInfoWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutBillingAccountsIdPaymentInfoRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutBillingAccountsIdPaymentInfo(ctx context.Context, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutBillingAccountsIdPaymentInfoRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3154,6 +3764,915 @@ func NewPostActiveflowsIdStopRequest(server string, id string) (*http.Request, e
 	return req, nil
 }
 
+// NewGetAgentsRequest generates requests for GetAgents
+func NewGetAgentsRequest(server string, params *GetAgentsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.TagIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "tag_ids", runtime.ParamLocationQuery, *params.TagIds); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostAgentsRequest calls the generic PostAgents builder with application/json body
+func NewPostAgentsRequest(server string, body PostAgentsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostAgentsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostAgentsRequestWithBody generates requests for PostAgents with any type of body
+func NewPostAgentsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAgentsIdRequest generates requests for DeleteAgentsId
+func NewDeleteAgentsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAgentsIdRequest generates requests for GetAgentsId
+func NewGetAgentsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutAgentsIdRequest calls the generic PutAgentsId builder with application/json body
+func NewPutAgentsIdRequest(server string, id string, body PutAgentsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutAgentsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutAgentsIdRequestWithBody generates requests for PutAgentsId with any type of body
+func NewPutAgentsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutAgentsIdAddressesRequest calls the generic PutAgentsIdAddresses builder with application/json body
+func NewPutAgentsIdAddressesRequest(server string, id string, body PutAgentsIdAddressesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutAgentsIdAddressesRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutAgentsIdAddressesRequestWithBody generates requests for PutAgentsIdAddresses with any type of body
+func NewPutAgentsIdAddressesRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s/addresses", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutAgentsIdPasswordRequest calls the generic PutAgentsIdPassword builder with application/json body
+func NewPutAgentsIdPasswordRequest(server string, id string, body PutAgentsIdPasswordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutAgentsIdPasswordRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutAgentsIdPasswordRequestWithBody generates requests for PutAgentsIdPassword with any type of body
+func NewPutAgentsIdPasswordRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s/password", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutAgentsIdPermissionRequest calls the generic PutAgentsIdPermission builder with application/json body
+func NewPutAgentsIdPermissionRequest(server string, id string, body PutAgentsIdPermissionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutAgentsIdPermissionRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutAgentsIdPermissionRequestWithBody generates requests for PutAgentsIdPermission with any type of body
+func NewPutAgentsIdPermissionRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s/permission", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutAgentsIdStatusRequest calls the generic PutAgentsIdStatus builder with application/json body
+func NewPutAgentsIdStatusRequest(server string, id string, body PutAgentsIdStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutAgentsIdStatusRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutAgentsIdStatusRequestWithBody generates requests for PutAgentsIdStatus with any type of body
+func NewPutAgentsIdStatusRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s/status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutAgentsIdTagIdsRequest calls the generic PutAgentsIdTagIds builder with application/json body
+func NewPutAgentsIdTagIdsRequest(server string, id string, body PutAgentsIdTagIdsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutAgentsIdTagIdsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutAgentsIdTagIdsRequestWithBody generates requests for PutAgentsIdTagIds with any type of body
+func NewPutAgentsIdTagIdsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/agents/%s/tag_ids", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAvailableNumbersRequest generates requests for GetAvailableNumbers
+func NewGetAvailableNumbersRequest(server string, params *GetAvailableNumbersParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/available_numbers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "country_code", runtime.ParamLocationQuery, params.CountryCode); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetBillingAccountsRequest generates requests for GetBillingAccounts
+func NewGetBillingAccountsRequest(server string, params *GetBillingAccountsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_size", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageToken != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page_token", runtime.ParamLocationQuery, *params.PageToken); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostBillingAccountsRequest calls the generic PostBillingAccounts builder with application/json body
+func NewPostBillingAccountsRequest(server string, body PostBillingAccountsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostBillingAccountsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostBillingAccountsRequestWithBody generates requests for PostBillingAccounts with any type of body
+func NewPostBillingAccountsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteBillingAccountsIdRequest generates requests for DeleteBillingAccountsId
+func NewDeleteBillingAccountsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetBillingAccountsIdRequest generates requests for GetBillingAccountsId
+func NewGetBillingAccountsIdRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPutBillingAccountsIdRequest calls the generic PutBillingAccountsId builder with application/json body
+func NewPutBillingAccountsIdRequest(server string, id string, body PutBillingAccountsIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutBillingAccountsIdRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutBillingAccountsIdRequestWithBody generates requests for PutBillingAccountsId with any type of body
+func NewPutBillingAccountsIdRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostBillingAccountsIdBalanceAddForceRequest calls the generic PostBillingAccountsIdBalanceAddForce builder with application/json body
+func NewPostBillingAccountsIdBalanceAddForceRequest(server string, id string, body PostBillingAccountsIdBalanceAddForceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostBillingAccountsIdBalanceAddForceRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostBillingAccountsIdBalanceAddForceRequestWithBody generates requests for PostBillingAccountsIdBalanceAddForce with any type of body
+func NewPostBillingAccountsIdBalanceAddForceRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts/%s/balance_add_force", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostBillingAccountsIdBalanceSubtractForceRequest calls the generic PostBillingAccountsIdBalanceSubtractForce builder with application/json body
+func NewPostBillingAccountsIdBalanceSubtractForceRequest(server string, id string, body PostBillingAccountsIdBalanceSubtractForceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostBillingAccountsIdBalanceSubtractForceRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPostBillingAccountsIdBalanceSubtractForceRequestWithBody generates requests for PostBillingAccountsIdBalanceSubtractForce with any type of body
+func NewPostBillingAccountsIdBalanceSubtractForceRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts/%s/balance_subtract_force", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutBillingAccountsIdPaymentInfoRequest calls the generic PutBillingAccountsIdPaymentInfo builder with application/json body
+func NewPutBillingAccountsIdPaymentInfoRequest(server string, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutBillingAccountsIdPaymentInfoRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPutBillingAccountsIdPaymentInfoRequestWithBody generates requests for PutBillingAccountsIdPaymentInfo with any type of body
+func NewPutBillingAccountsIdPaymentInfoRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/billing_accounts/%s/payment_info", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -3232,6 +4751,87 @@ type ClientWithResponsesInterface interface {
 
 	// PostActiveflowsIdStopWithResponse request
 	PostActiveflowsIdStopWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostActiveflowsIdStopResponse, error)
+
+	// GetAgentsWithResponse request
+	GetAgentsWithResponse(ctx context.Context, params *GetAgentsParams, reqEditors ...RequestEditorFn) (*GetAgentsResponse, error)
+
+	// PostAgentsWithBodyWithResponse request with any body
+	PostAgentsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostAgentsResponse, error)
+
+	PostAgentsWithResponse(ctx context.Context, body PostAgentsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostAgentsResponse, error)
+
+	// DeleteAgentsIdWithResponse request
+	DeleteAgentsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteAgentsIdResponse, error)
+
+	// GetAgentsIdWithResponse request
+	GetAgentsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAgentsIdResponse, error)
+
+	// PutAgentsIdWithBodyWithResponse request with any body
+	PutAgentsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdResponse, error)
+
+	PutAgentsIdWithResponse(ctx context.Context, id string, body PutAgentsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdResponse, error)
+
+	// PutAgentsIdAddressesWithBodyWithResponse request with any body
+	PutAgentsIdAddressesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdAddressesResponse, error)
+
+	PutAgentsIdAddressesWithResponse(ctx context.Context, id string, body PutAgentsIdAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdAddressesResponse, error)
+
+	// PutAgentsIdPasswordWithBodyWithResponse request with any body
+	PutAgentsIdPasswordWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdPasswordResponse, error)
+
+	PutAgentsIdPasswordWithResponse(ctx context.Context, id string, body PutAgentsIdPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdPasswordResponse, error)
+
+	// PutAgentsIdPermissionWithBodyWithResponse request with any body
+	PutAgentsIdPermissionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdPermissionResponse, error)
+
+	PutAgentsIdPermissionWithResponse(ctx context.Context, id string, body PutAgentsIdPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdPermissionResponse, error)
+
+	// PutAgentsIdStatusWithBodyWithResponse request with any body
+	PutAgentsIdStatusWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdStatusResponse, error)
+
+	PutAgentsIdStatusWithResponse(ctx context.Context, id string, body PutAgentsIdStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdStatusResponse, error)
+
+	// PutAgentsIdTagIdsWithBodyWithResponse request with any body
+	PutAgentsIdTagIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdTagIdsResponse, error)
+
+	PutAgentsIdTagIdsWithResponse(ctx context.Context, id string, body PutAgentsIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdTagIdsResponse, error)
+
+	// GetAvailableNumbersWithResponse request
+	GetAvailableNumbersWithResponse(ctx context.Context, params *GetAvailableNumbersParams, reqEditors ...RequestEditorFn) (*GetAvailableNumbersResponse, error)
+
+	// GetBillingAccountsWithResponse request
+	GetBillingAccountsWithResponse(ctx context.Context, params *GetBillingAccountsParams, reqEditors ...RequestEditorFn) (*GetBillingAccountsResponse, error)
+
+	// PostBillingAccountsWithBodyWithResponse request with any body
+	PostBillingAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostBillingAccountsResponse, error)
+
+	PostBillingAccountsWithResponse(ctx context.Context, body PostBillingAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostBillingAccountsResponse, error)
+
+	// DeleteBillingAccountsIdWithResponse request
+	DeleteBillingAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteBillingAccountsIdResponse, error)
+
+	// GetBillingAccountsIdWithResponse request
+	GetBillingAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetBillingAccountsIdResponse, error)
+
+	// PutBillingAccountsIdWithBodyWithResponse request with any body
+	PutBillingAccountsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdResponse, error)
+
+	PutBillingAccountsIdWithResponse(ctx context.Context, id string, body PutBillingAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdResponse, error)
+
+	// PostBillingAccountsIdBalanceAddForceWithBodyWithResponse request with any body
+	PostBillingAccountsIdBalanceAddForceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceAddForceResponse, error)
+
+	PostBillingAccountsIdBalanceAddForceWithResponse(ctx context.Context, id string, body PostBillingAccountsIdBalanceAddForceJSONRequestBody, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceAddForceResponse, error)
+
+	// PostBillingAccountsIdBalanceSubtractForceWithBodyWithResponse request with any body
+	PostBillingAccountsIdBalanceSubtractForceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceSubtractForceResponse, error)
+
+	PostBillingAccountsIdBalanceSubtractForceWithResponse(ctx context.Context, id string, body PostBillingAccountsIdBalanceSubtractForceJSONRequestBody, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceSubtractForceResponse, error)
+
+	// PutBillingAccountsIdPaymentInfoWithBodyWithResponse request with any body
+	PutBillingAccountsIdPaymentInfoWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdPaymentInfoResponse, error)
+
+	PutBillingAccountsIdPaymentInfoWithResponse(ctx context.Context, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdPaymentInfoResponse, error)
 }
 
 type GetAccesskeysResponse struct {
@@ -3460,6 +5060,434 @@ func (r PostActiveflowsIdStopResponse) StatusCode() int {
 	return 0
 }
 
+type GetAgentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string              `json:"next_page_token,omitempty"`
+		Result        *[]AgentManagerAgent `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAgentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAgentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostAgentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PostAgentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostAgentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAgentsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAgentsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAgentsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAgentsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAgentsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAgentsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutAgentsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutAgentsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutAgentsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutAgentsIdAddressesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutAgentsIdAddressesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutAgentsIdAddressesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutAgentsIdPasswordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutAgentsIdPasswordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutAgentsIdPasswordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutAgentsIdPermissionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutAgentsIdPermissionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutAgentsIdPermissionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutAgentsIdStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutAgentsIdStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutAgentsIdStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutAgentsIdTagIdsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentManagerAgent
+}
+
+// Status returns HTTPResponse.Status
+func (r PutAgentsIdTagIdsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutAgentsIdTagIdsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAvailableNumbersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Result *[]NumberManagerAvailableNumber `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAvailableNumbersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAvailableNumbersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBillingAccountsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// NextPageToken The token for next pagination.
+		NextPageToken *string                  `json:"next_page_token,omitempty"`
+		Result        *[]BillingManagerAccount `json:"result,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBillingAccountsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBillingAccountsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostBillingAccountsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PostBillingAccountsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostBillingAccountsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteBillingAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteBillingAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteBillingAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBillingAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBillingAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBillingAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutBillingAccountsIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PutBillingAccountsIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutBillingAccountsIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostBillingAccountsIdBalanceAddForceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PostBillingAccountsIdBalanceAddForceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostBillingAccountsIdBalanceAddForceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostBillingAccountsIdBalanceSubtractForceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PostBillingAccountsIdBalanceSubtractForceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostBillingAccountsIdBalanceSubtractForceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutBillingAccountsIdPaymentInfoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingManagerAccount
+}
+
+// Status returns HTTPResponse.Status
+func (r PutBillingAccountsIdPaymentInfoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutBillingAccountsIdPaymentInfoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccesskeysWithResponse request returning *GetAccesskeysResponse
 func (c *ClientWithResponses) GetAccesskeysWithResponse(ctx context.Context, params *GetAccesskeysParams, reqEditors ...RequestEditorFn) (*GetAccesskeysResponse, error) {
 	rsp, err := c.GetAccesskeys(ctx, params, reqEditors...)
@@ -3572,6 +5600,273 @@ func (c *ClientWithResponses) PostActiveflowsIdStopWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParsePostActiveflowsIdStopResponse(rsp)
+}
+
+// GetAgentsWithResponse request returning *GetAgentsResponse
+func (c *ClientWithResponses) GetAgentsWithResponse(ctx context.Context, params *GetAgentsParams, reqEditors ...RequestEditorFn) (*GetAgentsResponse, error) {
+	rsp, err := c.GetAgents(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAgentsResponse(rsp)
+}
+
+// PostAgentsWithBodyWithResponse request with arbitrary body returning *PostAgentsResponse
+func (c *ClientWithResponses) PostAgentsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostAgentsResponse, error) {
+	rsp, err := c.PostAgentsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostAgentsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostAgentsWithResponse(ctx context.Context, body PostAgentsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostAgentsResponse, error) {
+	rsp, err := c.PostAgents(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostAgentsResponse(rsp)
+}
+
+// DeleteAgentsIdWithResponse request returning *DeleteAgentsIdResponse
+func (c *ClientWithResponses) DeleteAgentsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteAgentsIdResponse, error) {
+	rsp, err := c.DeleteAgentsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAgentsIdResponse(rsp)
+}
+
+// GetAgentsIdWithResponse request returning *GetAgentsIdResponse
+func (c *ClientWithResponses) GetAgentsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAgentsIdResponse, error) {
+	rsp, err := c.GetAgentsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAgentsIdResponse(rsp)
+}
+
+// PutAgentsIdWithBodyWithResponse request with arbitrary body returning *PutAgentsIdResponse
+func (c *ClientWithResponses) PutAgentsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdResponse, error) {
+	rsp, err := c.PutAgentsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutAgentsIdWithResponse(ctx context.Context, id string, body PutAgentsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdResponse, error) {
+	rsp, err := c.PutAgentsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdResponse(rsp)
+}
+
+// PutAgentsIdAddressesWithBodyWithResponse request with arbitrary body returning *PutAgentsIdAddressesResponse
+func (c *ClientWithResponses) PutAgentsIdAddressesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdAddressesResponse, error) {
+	rsp, err := c.PutAgentsIdAddressesWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdAddressesResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutAgentsIdAddressesWithResponse(ctx context.Context, id string, body PutAgentsIdAddressesJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdAddressesResponse, error) {
+	rsp, err := c.PutAgentsIdAddresses(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdAddressesResponse(rsp)
+}
+
+// PutAgentsIdPasswordWithBodyWithResponse request with arbitrary body returning *PutAgentsIdPasswordResponse
+func (c *ClientWithResponses) PutAgentsIdPasswordWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdPasswordResponse, error) {
+	rsp, err := c.PutAgentsIdPasswordWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdPasswordResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutAgentsIdPasswordWithResponse(ctx context.Context, id string, body PutAgentsIdPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdPasswordResponse, error) {
+	rsp, err := c.PutAgentsIdPassword(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdPasswordResponse(rsp)
+}
+
+// PutAgentsIdPermissionWithBodyWithResponse request with arbitrary body returning *PutAgentsIdPermissionResponse
+func (c *ClientWithResponses) PutAgentsIdPermissionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdPermissionResponse, error) {
+	rsp, err := c.PutAgentsIdPermissionWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdPermissionResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutAgentsIdPermissionWithResponse(ctx context.Context, id string, body PutAgentsIdPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdPermissionResponse, error) {
+	rsp, err := c.PutAgentsIdPermission(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdPermissionResponse(rsp)
+}
+
+// PutAgentsIdStatusWithBodyWithResponse request with arbitrary body returning *PutAgentsIdStatusResponse
+func (c *ClientWithResponses) PutAgentsIdStatusWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdStatusResponse, error) {
+	rsp, err := c.PutAgentsIdStatusWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutAgentsIdStatusWithResponse(ctx context.Context, id string, body PutAgentsIdStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdStatusResponse, error) {
+	rsp, err := c.PutAgentsIdStatus(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdStatusResponse(rsp)
+}
+
+// PutAgentsIdTagIdsWithBodyWithResponse request with arbitrary body returning *PutAgentsIdTagIdsResponse
+func (c *ClientWithResponses) PutAgentsIdTagIdsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAgentsIdTagIdsResponse, error) {
+	rsp, err := c.PutAgentsIdTagIdsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdTagIdsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutAgentsIdTagIdsWithResponse(ctx context.Context, id string, body PutAgentsIdTagIdsJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAgentsIdTagIdsResponse, error) {
+	rsp, err := c.PutAgentsIdTagIds(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAgentsIdTagIdsResponse(rsp)
+}
+
+// GetAvailableNumbersWithResponse request returning *GetAvailableNumbersResponse
+func (c *ClientWithResponses) GetAvailableNumbersWithResponse(ctx context.Context, params *GetAvailableNumbersParams, reqEditors ...RequestEditorFn) (*GetAvailableNumbersResponse, error) {
+	rsp, err := c.GetAvailableNumbers(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAvailableNumbersResponse(rsp)
+}
+
+// GetBillingAccountsWithResponse request returning *GetBillingAccountsResponse
+func (c *ClientWithResponses) GetBillingAccountsWithResponse(ctx context.Context, params *GetBillingAccountsParams, reqEditors ...RequestEditorFn) (*GetBillingAccountsResponse, error) {
+	rsp, err := c.GetBillingAccounts(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBillingAccountsResponse(rsp)
+}
+
+// PostBillingAccountsWithBodyWithResponse request with arbitrary body returning *PostBillingAccountsResponse
+func (c *ClientWithResponses) PostBillingAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostBillingAccountsResponse, error) {
+	rsp, err := c.PostBillingAccountsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostBillingAccountsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostBillingAccountsWithResponse(ctx context.Context, body PostBillingAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostBillingAccountsResponse, error) {
+	rsp, err := c.PostBillingAccounts(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostBillingAccountsResponse(rsp)
+}
+
+// DeleteBillingAccountsIdWithResponse request returning *DeleteBillingAccountsIdResponse
+func (c *ClientWithResponses) DeleteBillingAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteBillingAccountsIdResponse, error) {
+	rsp, err := c.DeleteBillingAccountsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteBillingAccountsIdResponse(rsp)
+}
+
+// GetBillingAccountsIdWithResponse request returning *GetBillingAccountsIdResponse
+func (c *ClientWithResponses) GetBillingAccountsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetBillingAccountsIdResponse, error) {
+	rsp, err := c.GetBillingAccountsId(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBillingAccountsIdResponse(rsp)
+}
+
+// PutBillingAccountsIdWithBodyWithResponse request with arbitrary body returning *PutBillingAccountsIdResponse
+func (c *ClientWithResponses) PutBillingAccountsIdWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdResponse, error) {
+	rsp, err := c.PutBillingAccountsIdWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutBillingAccountsIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutBillingAccountsIdWithResponse(ctx context.Context, id string, body PutBillingAccountsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdResponse, error) {
+	rsp, err := c.PutBillingAccountsId(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutBillingAccountsIdResponse(rsp)
+}
+
+// PostBillingAccountsIdBalanceAddForceWithBodyWithResponse request with arbitrary body returning *PostBillingAccountsIdBalanceAddForceResponse
+func (c *ClientWithResponses) PostBillingAccountsIdBalanceAddForceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceAddForceResponse, error) {
+	rsp, err := c.PostBillingAccountsIdBalanceAddForceWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostBillingAccountsIdBalanceAddForceResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostBillingAccountsIdBalanceAddForceWithResponse(ctx context.Context, id string, body PostBillingAccountsIdBalanceAddForceJSONRequestBody, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceAddForceResponse, error) {
+	rsp, err := c.PostBillingAccountsIdBalanceAddForce(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostBillingAccountsIdBalanceAddForceResponse(rsp)
+}
+
+// PostBillingAccountsIdBalanceSubtractForceWithBodyWithResponse request with arbitrary body returning *PostBillingAccountsIdBalanceSubtractForceResponse
+func (c *ClientWithResponses) PostBillingAccountsIdBalanceSubtractForceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceSubtractForceResponse, error) {
+	rsp, err := c.PostBillingAccountsIdBalanceSubtractForceWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostBillingAccountsIdBalanceSubtractForceResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostBillingAccountsIdBalanceSubtractForceWithResponse(ctx context.Context, id string, body PostBillingAccountsIdBalanceSubtractForceJSONRequestBody, reqEditors ...RequestEditorFn) (*PostBillingAccountsIdBalanceSubtractForceResponse, error) {
+	rsp, err := c.PostBillingAccountsIdBalanceSubtractForce(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostBillingAccountsIdBalanceSubtractForceResponse(rsp)
+}
+
+// PutBillingAccountsIdPaymentInfoWithBodyWithResponse request with arbitrary body returning *PutBillingAccountsIdPaymentInfoResponse
+func (c *ClientWithResponses) PutBillingAccountsIdPaymentInfoWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdPaymentInfoResponse, error) {
+	rsp, err := c.PutBillingAccountsIdPaymentInfoWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutBillingAccountsIdPaymentInfoResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutBillingAccountsIdPaymentInfoWithResponse(ctx context.Context, id string, body PutBillingAccountsIdPaymentInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*PutBillingAccountsIdPaymentInfoResponse, error) {
+	rsp, err := c.PutBillingAccountsIdPaymentInfo(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutBillingAccountsIdPaymentInfoResponse(rsp)
 }
 
 // ParseGetAccesskeysResponse parses an HTTP response from a GetAccesskeysWithResponse call
@@ -3812,6 +6107,510 @@ func ParsePostActiveflowsIdStopResponse(rsp *http.Response) (*PostActiveflowsIdS
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest FlowManagerActiveflow
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAgentsResponse parses an HTTP response from a GetAgentsWithResponse call
+func ParseGetAgentsResponse(rsp *http.Response) (*GetAgentsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAgentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string              `json:"next_page_token,omitempty"`
+			Result        *[]AgentManagerAgent `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostAgentsResponse parses an HTTP response from a PostAgentsWithResponse call
+func ParsePostAgentsResponse(rsp *http.Response) (*PostAgentsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostAgentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAgentsIdResponse parses an HTTP response from a DeleteAgentsIdWithResponse call
+func ParseDeleteAgentsIdResponse(rsp *http.Response) (*DeleteAgentsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAgentsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAgentsIdResponse parses an HTTP response from a GetAgentsIdWithResponse call
+func ParseGetAgentsIdResponse(rsp *http.Response) (*GetAgentsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAgentsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutAgentsIdResponse parses an HTTP response from a PutAgentsIdWithResponse call
+func ParsePutAgentsIdResponse(rsp *http.Response) (*PutAgentsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutAgentsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutAgentsIdAddressesResponse parses an HTTP response from a PutAgentsIdAddressesWithResponse call
+func ParsePutAgentsIdAddressesResponse(rsp *http.Response) (*PutAgentsIdAddressesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutAgentsIdAddressesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutAgentsIdPasswordResponse parses an HTTP response from a PutAgentsIdPasswordWithResponse call
+func ParsePutAgentsIdPasswordResponse(rsp *http.Response) (*PutAgentsIdPasswordResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutAgentsIdPasswordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutAgentsIdPermissionResponse parses an HTTP response from a PutAgentsIdPermissionWithResponse call
+func ParsePutAgentsIdPermissionResponse(rsp *http.Response) (*PutAgentsIdPermissionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutAgentsIdPermissionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutAgentsIdStatusResponse parses an HTTP response from a PutAgentsIdStatusWithResponse call
+func ParsePutAgentsIdStatusResponse(rsp *http.Response) (*PutAgentsIdStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutAgentsIdStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutAgentsIdTagIdsResponse parses an HTTP response from a PutAgentsIdTagIdsWithResponse call
+func ParsePutAgentsIdTagIdsResponse(rsp *http.Response) (*PutAgentsIdTagIdsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutAgentsIdTagIdsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentManagerAgent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAvailableNumbersResponse parses an HTTP response from a GetAvailableNumbersWithResponse call
+func ParseGetAvailableNumbersResponse(rsp *http.Response) (*GetAvailableNumbersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAvailableNumbersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Result *[]NumberManagerAvailableNumber `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBillingAccountsResponse parses an HTTP response from a GetBillingAccountsWithResponse call
+func ParseGetBillingAccountsResponse(rsp *http.Response) (*GetBillingAccountsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBillingAccountsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// NextPageToken The token for next pagination.
+			NextPageToken *string                  `json:"next_page_token,omitempty"`
+			Result        *[]BillingManagerAccount `json:"result,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostBillingAccountsResponse parses an HTTP response from a PostBillingAccountsWithResponse call
+func ParsePostBillingAccountsResponse(rsp *http.Response) (*PostBillingAccountsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostBillingAccountsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteBillingAccountsIdResponse parses an HTTP response from a DeleteBillingAccountsIdWithResponse call
+func ParseDeleteBillingAccountsIdResponse(rsp *http.Response) (*DeleteBillingAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteBillingAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBillingAccountsIdResponse parses an HTTP response from a GetBillingAccountsIdWithResponse call
+func ParseGetBillingAccountsIdResponse(rsp *http.Response) (*GetBillingAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBillingAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutBillingAccountsIdResponse parses an HTTP response from a PutBillingAccountsIdWithResponse call
+func ParsePutBillingAccountsIdResponse(rsp *http.Response) (*PutBillingAccountsIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutBillingAccountsIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostBillingAccountsIdBalanceAddForceResponse parses an HTTP response from a PostBillingAccountsIdBalanceAddForceWithResponse call
+func ParsePostBillingAccountsIdBalanceAddForceResponse(rsp *http.Response) (*PostBillingAccountsIdBalanceAddForceResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostBillingAccountsIdBalanceAddForceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostBillingAccountsIdBalanceSubtractForceResponse parses an HTTP response from a PostBillingAccountsIdBalanceSubtractForceWithResponse call
+func ParsePostBillingAccountsIdBalanceSubtractForceResponse(rsp *http.Response) (*PostBillingAccountsIdBalanceSubtractForceResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostBillingAccountsIdBalanceSubtractForceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingManagerAccount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutBillingAccountsIdPaymentInfoResponse parses an HTTP response from a PutBillingAccountsIdPaymentInfoWithResponse call
+func ParsePutBillingAccountsIdPaymentInfoResponse(rsp *http.Response) (*PutBillingAccountsIdPaymentInfoResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutBillingAccountsIdPaymentInfoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingManagerAccount
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

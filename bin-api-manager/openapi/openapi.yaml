@@ -679,10 +679,8 @@ components:
       properties:
         id:
           type: string
-          format: uuid
         customer_id:
           type: string
-          format: uuid
         type:
           $ref: '#/components/schemas/CampaignManagerCampaignType'
         name:
@@ -701,16 +699,12 @@ components:
             $ref: '#/components/schemas/FlowManagerAction'
         outplan_id:
           type: string
-          format: uuid
         outdial_id:
           type: string
-          format: uuid
         queue_id:
           type: string
-          format: uuid
         next_campaign_id:
           type: string
-          format: uuid
         tm_create:
           type: string
           format: date-time
@@ -2863,32 +2857,34 @@ paths:
   /activeflows/{id}/stop:
     $ref: './paths/activeflows/id_stop.yaml'
 
-  # /agents:
-  #   $ref: './paths/agents/main.yaml'
-  # /agents/{id}:
-  #   $ref: './paths/agents/id.yaml'
-  # /agents/{id}/addresses:
-  #   $ref: './paths/agents/id_addresses.yaml'
-  # /agents/{id}/tag_ids:
-  #   $ref: './paths/agents/id_tag_ids.yaml'
-  # /agents/{id}/permission:
-  #   $ref: './paths/agents/id_permission.yaml'
-  # /agents/{id}/password:
-  #   $ref: './paths/agents/id_password.yaml'
+  /agents:
+    $ref: './paths/agents/main.yaml'
+  /agents/{id}:
+    $ref: './paths/agents/id.yaml'
+  /agents/{id}/addresses:
+    $ref: './paths/agents/id_addresses.yaml'
+  /agents/{id}/tag_ids:
+    $ref: './paths/agents/id_tag_ids.yaml'
+  /agents/{id}/permission:
+    $ref: './paths/agents/id_permission.yaml'
+  /agents/{id}/status:
+    $ref: './paths/agents/id_status.yaml'
+  /agents/{id}/password:
+    $ref: './paths/agents/id_password.yaml'
 
-  # /available_numbers:
-  #   $ref: './paths/available_numbers/main.yaml'
+  /available_numbers:
+    $ref: './paths/available_numbers/main.yaml'
 
-  # /billing_accounts:
-  #   $ref: './paths/billing_accounts/main.yaml'
-  # /billing_accounts/{id}:
-  #   $ref: './paths/billing_accounts/id.yaml'
-  # /billing_accounts/{id}/payment_info:
-  #   $ref: './paths/billing_accounts/id_payment_info.yaml'
-  # /billing_accounts/{id}/balance_add_force:
-  #   $ref: './paths/billing_accounts/id_balance_add_force.yaml'
-  # /billing_accounts/{id}/balance_subtract_force:
-  #   $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
+  /billing_accounts:
+    $ref: './paths/billing_accounts/main.yaml'
+  /billing_accounts/{id}:
+    $ref: './paths/billing_accounts/id.yaml'
+  /billing_accounts/{id}/payment_info:
+    $ref: './paths/billing_accounts/id_payment_info.yaml'
+  /billing_accounts/{id}/balance_add_force:
+    $ref: './paths/billing_accounts/id_balance_add_force.yaml'
+  /billing_accounts/{id}/balance_subtract_force:
+    $ref: './paths/billing_accounts/id_balance_subtract_force.yaml'
 
   # /billings:
   #   $ref: './paths/billings/main.yaml'

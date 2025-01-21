@@ -49,12 +49,14 @@ put:
     content:
       application/json:
         schema:
-          Name:
-            type: string
-          Detail:
-            type: string
-          RingMethod:
-            $ref: '#/components/schemas/AgentManagerAgentRingMethod'
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            ring_method:
+              $ref: '#/components/schemas/AgentManagerAgentRingMethod'
   responses:
     '200':
       description: Successful response.

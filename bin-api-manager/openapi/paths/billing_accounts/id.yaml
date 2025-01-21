@@ -7,7 +7,6 @@ get:
       required: true
       schema:
         type: string
-        format: uuid
       description: The ID of the billing account.
   responses:
     200:
@@ -26,7 +25,6 @@ delete:
       required: true
       schema:
         type: string
-        format: uuid
       description: The ID of the billing account.
   responses:
     200:
@@ -45,7 +43,6 @@ put:
       required: true
       schema:
         type: string
-        format: uuid
       description: The ID of the billing account.
   requestBody:
     required: true

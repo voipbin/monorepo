@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 type Server interface{}
@@ -59,5 +60,22 @@ func GenerateListResponse[T any](tmps []*T, nextTokenValue string) struct {
 		CommonPagination: openapi_server.CommonPagination{
 			NextPageToken: &nextToken,
 		},
+	}
+}
+
+func ConvertCommonAddressToAddress(ca openapi_server.CommonAddress) commonaddress.Address {
+	safeString := func(s *string) string {
+		if s != nil {
+			return *s
+		}
+		return ""
+	}
+
+	return commonaddress.Address{
+		Type:       commonaddress.Type(safeString((*string)(ca.Type))),
+		Target:     safeString(ca.Target),
+		TargetName: safeString(ca.TargetName),
+		Name:       safeString(ca.Name),
+		Detail:     safeString(ca.Detail),
 	}
 }
